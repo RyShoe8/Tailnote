@@ -96,7 +96,9 @@ function MobileSignaturePreviewFrame({
       if (!frameRef.current || !contentRef.current) return;
       const frameW = frameRef.current.clientWidth || mobileFrameWidth;
       const { width: nw, height: nh } = measureContentSize(contentRef.current);
-      const nextScale = nw > 0 ? Math.min(1, frameW / nw) : 1;
+      const scaleFrameW =
+        previewContext === 'marketing' ? Math.max(1, frameW - 8) : frameW;
+      const nextScale = nw > 0 ? Math.min(1, scaleFrameW / nw) : 1;
       setNaturalW(nw);
       setNaturalH(nh);
       setScale(nextScale);
@@ -117,13 +119,15 @@ function MobileSignaturePreviewFrame({
       ro.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [html, animationKey, mobileFrameWidth]);
+  }, [html, animationKey, mobileFrameWidth, previewContext]);
 
   const hasProfCardShell = html.includes('sig-prof-card-shell');
   const hasExecutiveRoot = html.includes('sig-executive-root');
+  const hasCreatorRoot = html.includes('sig-creator-root');
   const isMarketing = previewContext === 'marketing';
-  const useVisibleOverflow = hasProfCardShell || (isMarketing && !hasExecutiveRoot);
-  const useCenteredScale = isMarketing && !hasProfCardShell && !hasExecutiveRoot;
+  const useWideMarketingLayout = hasExecutiveRoot || hasCreatorRoot;
+  const useVisibleOverflow = hasProfCardShell || (isMarketing && !useWideMarketingLayout);
+  const useCenteredScale = isMarketing && !hasProfCardShell && !useWideMarketingLayout;
   const borderBleed = hasProfCardShell ? PROF_CARD_SHELL_BLEED_PX : 0;
   const clipPad = hasProfCardShell ? CLIP_PADDING_PX : 0;
   const scaledW = Math.ceil(naturalW * scale) + borderBleed + clipPad * 2;
@@ -133,7 +137,11 @@ function MobileSignaturePreviewFrame({
   return (
     <div
       ref={frameRef}
-      className="signature-email-preview signature-email-preview--mobile sig-mobile-preview-container w-full rounded-md border bg-white p-4 text-left"
+      className={
+        isMarketing
+          ? 'signature-email-preview signature-email-preview--mobile signature-email-preview--marketing sig-mobile-preview-container w-full rounded-md border bg-white p-4 text-left'
+          : 'signature-email-preview signature-email-preview--mobile sig-mobile-preview-container w-full rounded-md border bg-white p-4 text-left'
+      }
       style={{
         width: mobileFrameWidth,
         maxWidth: mobileFrameWidth,

@@ -1,7 +1,7 @@
 /**
  * Creator layout — dark card, logo + social in left column, monospace tagline, pill promos.
  */
-export const CREATOR_SIGNATURE_TEMPLATE = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 550px; font-family: {{fontFamily}}, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #1e1f22; border-radius: 8px; border-left: 4px solid {{primaryColor}};">
+export const CREATOR_SIGNATURE_TEMPLATE = `<table class="sig-creator-root" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 550px; font-family: {{fontFamily}}, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #1e1f22; border-radius: 8px; border-left: 4px solid {{primaryColor}};">
   <tr>
     <td style="padding: 20px;">
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse: collapse;">
