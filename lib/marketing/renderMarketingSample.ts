@@ -13,7 +13,7 @@ const DEMO_PROFILE: SignatureProfile = {
   firstName: 'Alex',
   lastName: 'Morgan',
   title: 'Account Executive',
-  email: 'alex@acmecorp.com',
+  email: 'myemail@themediashop.co',
   officePhone: '(555) 123-4567',
 };
 
@@ -150,10 +150,22 @@ function marketingContentBlocks(
           ],
         },
         {
-          type: 'image',
+          type: 'latest_blogs',
           enabled: true,
-          imageUrl: img,
-          imageLinkUrl: 'https://www.acmecorp.com/promo',
+          rssItems: [
+            {
+              title: 'How to launch a brand refresh in 30 days',
+              url: 'https://www.acmecorp.com/blog/brand-refresh',
+            },
+            {
+              title: 'Inside our Q3 customer report',
+              url: 'https://www.acmecorp.com/blog/q3-report',
+            },
+            {
+              title: 'Why every team email is marketing',
+              url: 'https://www.acmecorp.com/blog/email-marketing',
+            },
+          ],
         },
       ];
     case 'professional':
@@ -180,6 +192,12 @@ function marketingContentBlocks(
               url: 'https://www.acmecorp.com/stories',
             },
           ],
+        },
+        {
+          type: 'image',
+          enabled: true,
+          imageUrl: img,
+          imageLinkUrl: 'https://www.acmecorp.com/spring',
         },
       ];
     default:

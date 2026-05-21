@@ -157,59 +157,19 @@ export const CORPORATE_SIGNATURE_TEMPLATE = `<style type="text/css">
             {{#if showSocialBlock}}
             <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:10px;"><tr>
               {{#if hasLinkedin}}
-              <td style="{{socialTdLiStyle}}">
-                <a href="{{linkedin}}" style="text-decoration:none;border:0;outline:none;display:inline-block;">
-                  <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
-                    <td width="28" height="28" align="center" valign="middle" bgcolor="{{primaryColor}}" style="width:28px;height:28px;border-radius:14px;text-align:center;vertical-align:middle;background-color:{{primaryColor}};padding:0;">
-                      <img src="{{iconLinkedin}}" width="14" height="14" border="0" alt="" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;" />
-                    </td>
-                  </tr></table>
-                </a>
-              </td>
+              <td style="{{socialTdLiStyle}}"><a href="{{linkedin}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconLinkedin}}" alt="LinkedIn" width="20" height="20" style="display:block;width:20px;height:20px;border:0;outline:none;text-decoration:none;" /></a></td>
               {{/if}}
               {{#if hasFacebook}}
-              <td style="{{socialTdFbStyle}}">
-                <a href="{{facebook}}" style="text-decoration:none;border:0;outline:none;display:inline-block;">
-                  <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
-                    <td width="28" height="28" align="center" valign="middle" bgcolor="{{primaryColor}}" style="width:28px;height:28px;border-radius:14px;text-align:center;vertical-align:middle;background-color:{{primaryColor}};padding:0;">
-                      <img src="{{iconFacebook}}" width="14" height="14" border="0" alt="" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;" />
-                    </td>
-                  </tr></table>
-                </a>
-              </td>
+              <td style="{{socialTdFbStyle}}"><a href="{{facebook}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconFacebook}}" alt="Facebook" width="20" height="20" style="display:block;width:20px;height:20px;border:0;outline:none;text-decoration:none;" /></a></td>
               {{/if}}
               {{#if hasInstagram}}
-              <td style="{{socialTdIgStyle}}">
-                <a href="{{instagram}}" style="text-decoration:none;border:0;outline:none;display:inline-block;">
-                  <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
-                    <td width="28" height="28" align="center" valign="middle" bgcolor="{{primaryColor}}" style="width:28px;height:28px;border-radius:14px;text-align:center;vertical-align:middle;background-color:{{primaryColor}};padding:0;">
-                      <img src="{{iconInstagram}}" width="14" height="14" border="0" alt="" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;" />
-                    </td>
-                  </tr></table>
-                </a>
-              </td>
+              <td style="{{socialTdIgStyle}}"><a href="{{instagram}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconInstagram}}" alt="Instagram" width="20" height="20" style="display:block;width:20px;height:20px;border:0;outline:none;text-decoration:none;" /></a></td>
               {{/if}}
               {{#if hasReddit}}
-              <td style="{{socialTdRedditStyle}}">
-                <a href="{{reddit}}" style="text-decoration:none;border:0;outline:none;display:inline-block;">
-                  <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
-                    <td width="28" height="28" align="center" valign="middle" bgcolor="{{primaryColor}}" style="width:28px;height:28px;border-radius:14px;text-align:center;vertical-align:middle;background-color:{{primaryColor}};padding:0;">
-                      <img src="{{iconReddit}}" width="14" height="14" border="0" alt="" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;" />
-                    </td>
-                  </tr></table>
-                </a>
-              </td>
+              <td style="{{socialTdRedditStyle}}"><a href="{{reddit}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconReddit}}" alt="Reddit" width="20" height="20" style="display:block;width:20px;height:20px;border:0;outline:none;text-decoration:none;" /></a></td>
               {{/if}}
               {{#if hasDiscord}}
-              <td style="{{socialTdDiscordStyle}}">
-                <a href="{{discord}}" style="text-decoration:none;border:0;outline:none;display:inline-block;">
-                  <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
-                    <td width="28" height="28" align="center" valign="middle" bgcolor="{{primaryColor}}" style="width:28px;height:28px;border-radius:14px;text-align:center;vertical-align:middle;background-color:{{primaryColor}};padding:0;">
-                      <img src="{{iconDiscord}}" width="14" height="14" border="0" alt="" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;" />
-                    </td>
-                  </tr></table>
-                </a>
-              </td>
+              <td style="{{socialTdDiscordStyle}}"><a href="{{discord}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconDiscord}}" alt="Discord" width="20" height="20" style="display:block;width:20px;height:20px;border:0;outline:none;text-decoration:none;" /></a></td>
               {{/if}}
             </tr></table>
             {{/if}}

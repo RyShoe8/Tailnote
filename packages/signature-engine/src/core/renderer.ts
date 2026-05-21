@@ -417,19 +417,19 @@ function buildDefaultContactRowHtml(
       phoneInner = `<a href="${escapeHtml(mobilePhoneTelHref)}" style="color: #555555; text-decoration: none;">${escapeHtml(mobilePhone)}</a>`;
     }
     parts.push(
-      `<span style="font-weight: 600; color: #111111;">P:</span> ${phoneInner}`
+      `<span style="font-weight: 600; color: #111111;">P:&nbsp;</span>${phoneInner}`
     );
   }
 
   if (email) {
     parts.push(
-      `<span style="font-weight: 600; color: #111111;">E:</span> <a href="mailto:${escapeHtml(email)}" style="color: #555555; text-decoration: none;">${escapeHtml(email)}</a>`
+      `<span style="font-weight: 600; color: #111111;">E:&nbsp;</span><a href="mailto:${escapeHtml(email)}" style="color: #555555; text-decoration: none;">${escapeHtml(email)}</a>`
     );
   }
 
   if (website) {
     parts.push(
-      `<span style="font-weight: 600; color: #111111;">W:</span> <a href="${escapeHtml(website)}" style="color: #555555; text-decoration: none;">${escapeHtml(websiteDisplay)}</a>`
+      `<span style="font-weight: 600; color: #111111;">W:&nbsp;</span><a href="${escapeHtml(website)}" style="color: #555555; text-decoration: none;">${escapeHtml(websiteDisplay)}</a>`
     );
   }
 

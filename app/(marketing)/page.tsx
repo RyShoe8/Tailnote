@@ -1,6 +1,7 @@
 import { HomeHero } from '@/components/marketing/HomeHero';
 import { HomeFeatures } from '@/components/marketing/HomeFeatures';
 import { HomeHowItWorks } from '@/components/marketing/HomeHowItWorks';
+import { HomePromoBlocksShowcase } from '@/components/marketing/HomePromoBlocksShowcase';
 import { HomeTemplateShowcase } from '@/components/marketing/HomeTemplateShowcase';
 import { HomePricingTeaser } from '@/components/marketing/HomePricingTeaser';
 import { HomeFAQ } from '@/components/marketing/HomeFAQ';
@@ -24,6 +25,7 @@ export default async function HomePage() {
       <HomeHero />
       <HomeFeatures />
       <HomeHowItWorks />
+      <HomePromoBlocksShowcase />
       <HomeTemplateShowcase presets={presets} />
       <HomePricingTeaser plans={plans} />
       <HomeFAQ />

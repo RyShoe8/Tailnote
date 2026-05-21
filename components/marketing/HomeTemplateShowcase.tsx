@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarketingSignaturePreview } from '@/components/marketing/MarketingSignaturePreview';
 import type { TemplatePresetId } from '@/lib/email/templatePresets';
-import { marketingTemplateScreenshotPath } from '@/lib/marketing/marketingTemplateScreenshots';
+import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
 import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
 
 type Props = {
@@ -50,9 +50,9 @@ export function HomeTemplateShowcase({ presets }: Props) {
               <div className="bg-gradient-to-b from-slate-50/50 to-white p-6">
                 <div className="overflow-hidden rounded-lg transition-transform duration-500 group-hover:scale-[1.01]">
                   <MarketingSignaturePreview
-                    imageSrc={marketingTemplateScreenshotPath(presetId)}
+                    html={renderMarketingSample(presetId)}
                     alt={`${preset.name} signature example`}
-                    className="min-w-0"
+                    className="signature-email-preview min-w-0 overflow-x-auto rounded-md border bg-white p-3 text-left"
                   />
                 </div>
               </div>

@@ -20,14 +20,29 @@ function statusBadgeVariant(status: AdminFeedbackRow['status']): 'default' | 'ac
 }
 
 function typeLabel(type: AdminFeedbackRow['type']): string {
-  return type === 'bug' ? 'Bug' : 'Feature';
+  if (type === 'bug') return 'Bug';
+  if (type === 'feature') return 'Feature';
+  return 'Contact';
 }
+
+type TypeFilter = 'all' | AdminFeedbackRow['type'];
+
+const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'bug', label: 'Bugs' },
+  { value: 'feature', label: 'Features' },
+  { value: 'contact', label: 'Contact' },
+];
 
 export function FeedbackAdminTable({ initialSubmissions }: { initialSubmissions: AdminFeedbackRow[] }) {
   const [submissions, setSubmissions] = useState(initialSubmissions);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+
+  const visibleSubmissions =
+    typeFilter === 'all' ? submissions : submissions.filter((s) => s.type === typeFilter);
 
   const updateStatus = async (id: string, status: AdminFeedbackRow['status']) => {
     setUpdatingId(id);
@@ -57,6 +72,19 @@ export function FeedbackAdminTable({ initialSubmissions }: { initialSubmissions:
   return (
     <div className="space-y-4">
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      <div className="flex flex-wrap gap-2">
+        {TYPE_FILTERS.map((f) => (
+          <Button
+            key={f.value}
+            type="button"
+            size="sm"
+            variant={typeFilter === f.value ? 'default' : 'outline'}
+            onClick={() => setTypeFilter(f.value)}
+          >
+            {f.label}
+          </Button>
+        ))}
+      </div>
       <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <div className="overflow-x-auto rounded-md border min-w-0">
           <table className="w-full min-w-[48rem] text-sm">
@@ -72,14 +100,14 @@ export function FeedbackAdminTable({ initialSubmissions }: { initialSubmissions:
               </tr>
             </thead>
             <tbody>
-              {submissions.length === 0 ? (
+              {visibleSubmissions.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="p-6 text-center text-muted-foreground">
-                    No feedback submissions yet.
+                    No submissions in this view.
                   </td>
                 </tr>
               ) : (
-                submissions.map((s) => {
+                visibleSubmissions.map((s) => {
                   const expanded = expandedId === s.id;
                   return (
                     <Fragment key={s.id}>

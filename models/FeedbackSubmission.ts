@@ -2,11 +2,11 @@ import mongoose, { Schema, type InferSchemaType } from 'mongoose';
 
 const FeedbackSubmissionSchema = new Schema(
   {
-    type: { type: String, enum: ['bug', 'feature'], required: true },
+    type: { type: String, enum: ['bug', 'feature', 'contact'], required: true },
     subject: { type: String, required: true, trim: true, maxlength: 200 },
     details: { type: String, required: true, trim: true, maxlength: 5000 },
     imageUrl: { type: String, default: '' },
-    userId: { type: String, required: true, index: true },
+    userId: { type: String, default: '', index: true },
     userEmail: { type: String, required: true, trim: true },
     userName: { type: String, default: '', trim: true },
     organizationId: { type: String, default: '', index: true },

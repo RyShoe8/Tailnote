@@ -1,8 +1,9 @@
 import { connectMongoose } from '@/lib/mongoose';
 import { getActiveCatalogPresets } from '@/lib/templates/getEnabledPresets';
 import { MarketingSignaturePreview } from '@/components/marketing/MarketingSignaturePreview';
+import { HomePromoBlocksShowcase } from '@/components/marketing/HomePromoBlocksShowcase';
 import type { TemplatePresetId } from '@/lib/email/templatePresets';
-import { marketingTemplateScreenshotPath } from '@/lib/marketing/marketingTemplateScreenshots';
+import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,9 +55,9 @@ export default async function TemplatesMarketingPage() {
                   <div className="bg-gradient-to-b from-slate-50/50 to-white p-6">
                     <div className="overflow-hidden rounded-lg transition-transform duration-500 group-hover:scale-[1.01]">
                       <MarketingSignaturePreview
-                        imageSrc={marketingTemplateScreenshotPath(presetId)}
+                        html={renderMarketingSample(presetId)}
                         alt={`${t.name} signature example`}
-                        className="min-w-0"
+                        className="signature-email-preview min-w-0 overflow-x-auto rounded-md border bg-white p-3 text-left"
                       />
                     </div>
                   </div>
@@ -66,6 +67,7 @@ export default async function TemplatesMarketingPage() {
           </div>
         )}
       </div>
+      <HomePromoBlocksShowcase />
     </div>
   );
 }

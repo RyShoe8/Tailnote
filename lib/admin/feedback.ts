@@ -4,7 +4,7 @@ import { FeedbackSubmissionModel } from '@/models/FeedbackSubmission';
 
 export type AdminFeedbackRow = {
   id: string;
-  type: 'bug' | 'feature';
+  type: 'bug' | 'feature' | 'contact';
   subject: string;
   details: string;
   imageUrl: string;
@@ -20,7 +20,7 @@ export type AdminFeedbackRow = {
 
 type FeedbackLean = {
   _id: mongoose.Types.ObjectId;
-  type: 'bug' | 'feature';
+  type: 'bug' | 'feature' | 'contact';
   subject: string;
   details: string;
   imageUrl?: string;
@@ -41,7 +41,7 @@ function toRow(doc: FeedbackLean): AdminFeedbackRow {
     subject: doc.subject,
     details: doc.details,
     imageUrl: doc.imageUrl ?? '',
-    userId: doc.userId,
+    userId: doc.userId ?? '',
     userEmail: doc.userEmail,
     userName: doc.userName ?? '',
     organizationId: doc.organizationId ?? '',

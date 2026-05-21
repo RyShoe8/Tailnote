@@ -776,7 +776,7 @@ const htmlDefault = renderSignature({
   publicSiteOrigin: origin,
 });
 assert.ok(
-  htmlDefault.includes('border-right: 2px solid') && htmlDefault.includes('font-weight: 600; color: #111111;">P:</'),
+  htmlDefault.includes('border-right: 2px solid') && htmlDefault.includes('font-weight: 600; color: #111111;">P:&nbsp;</'),
   'default: accent border and P|E|W contact row'
 );
 
