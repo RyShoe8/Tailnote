@@ -53,7 +53,7 @@ export function EmailClientMock({ signatureHtml }: Props) {
             call this week if you&apos;d like to dig into the numbers.
           </p>
           <p>Cheers,</p>
-          <div className="signature-email-preview min-w-0 overflow-x-auto rounded-lg border border-slate-100 bg-white p-4 text-left">
+          <div className="signature-email-preview signature-email-preview--static min-w-0 overflow-x-auto rounded-lg border border-slate-100 bg-white p-4 text-left [&_a]:pointer-events-none [&_a]:cursor-default">
             <div className="min-w-0" dangerouslySetInnerHTML={{ __html: signatureHtml }} />
           </div>
         </div>

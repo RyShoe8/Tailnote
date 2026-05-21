@@ -3,9 +3,10 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmailClientMock } from '@/components/marketing/EmailClientMock';
 import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
+import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
 
 export function HomeHero() {
-  const signatureHtml = renderMarketingSample('default');
+  const signatureHtml = stripSignaturePreviewLinks(renderMarketingSample('default'));
 
   return (
     <section className="relative isolate overflow-hidden">

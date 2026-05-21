@@ -481,6 +481,15 @@ assert.match(
   /sig-corp-blocks-stack[\s\S]*Recent Wins/,
   'professional: content blocks in header side column on desktop'
 );
+assert.ok(
+  !htmlProfessional.includes('border-radius:13px'),
+  'professional: flat social icons without primaryColor circles'
+);
+assert.match(
+  htmlProfessional,
+  /alt="LinkedIn" width="20" height="20"/,
+  'professional: 20px brand social icons'
+);
 
 // Minimal (standard layout) should render content blocks in the desktop side column.
 const minimalTemplate: import('../src/core/types').SignatureTemplate = {

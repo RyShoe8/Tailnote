@@ -23,17 +23,26 @@ function ListDemo() {
         Featured offers
       </p>
       <ul className="space-y-1 text-sm">
-        <li className="flex items-baseline gap-1.5">
-          <span className="h-1.5 w-1.5 shrink-0 translate-y-1 rounded-full bg-primary" />
-          <span className="text-slate-900">Spring sale &mdash; 20% off</span>
+        <li className="flex items-start gap-2">
+          <span
+            className="mt-[0.5em] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+            aria-hidden
+          />
+          <span className="leading-snug text-slate-900">Spring sale &mdash; 20% off</span>
         </li>
-        <li className="flex items-baseline gap-1.5">
-          <span className="h-1.5 w-1.5 shrink-0 translate-y-1 rounded-full bg-primary" />
-          <span className="text-slate-900">Customer stories</span>
+        <li className="flex items-start gap-2">
+          <span
+            className="mt-[0.5em] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+            aria-hidden
+          />
+          <span className="leading-snug text-slate-900">Customer stories</span>
         </li>
-        <li className="flex items-baseline gap-1.5">
-          <span className="h-1.5 w-1.5 shrink-0 translate-y-1 rounded-full bg-primary" />
-          <span className="text-slate-900">Pricing &amp; plans</span>
+        <li className="flex items-start gap-2">
+          <span
+            className="mt-[0.5em] h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+            aria-hidden
+          />
+          <span className="leading-snug text-slate-900">Pricing &amp; plans</span>
         </li>
       </ul>
     </div>
