@@ -18,7 +18,7 @@ const DEMO_PROFILE: SignatureProfile = {
 };
 
 function promoImageUrl(origin: string): string {
-  return `${origin.replace(/\/+$/, '')}/images/tailnote-logo.png`;
+  return `${origin.replace(/\/+$/, '')}/images/tailnote-logo-mark.png`;
 }
 
 /** Diversified promotional blocks per template so marketing previews showcase the product. */

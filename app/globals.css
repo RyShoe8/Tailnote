@@ -218,25 +218,8 @@
         box-sizing: border-box !important;
         overflow: visible !important;
       }
-      /* Default layout: stack logo | main columns in marketing preview only */
-      & table.sig-default-layout-table > tbody > tr > td,
-      & table.sig-default-layout-table > tr > td {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-      }
-      & table.sig-default-layout-table > tbody > tr > td:first-child,
-      & table.sig-default-layout-table > tr > td:first-child {
-        border-right: none !important;
-        padding-right: 0 !important;
-        padding-bottom: 12px !important;
-      }
-      & table.sig-default-layout-table > tbody > tr > td:last-child,
-      & table.sig-default-layout-table > tr > td:last-child {
-        padding-left: 0 !important;
-      }
-      /* Standard (Minimal): stack logo | main; hide desktop blocks column */
+      /* Standard (Minimal): stack logo | main; hide desktop blocks column.
+         Mirrors the template's real @media so marketing matches dashboard mobile preview. */
       & td.sig-logo-stack,
       & td.sig-main-stack {
         display: block !important;
@@ -256,23 +239,6 @@
       }
       & td.sig-blocks-stack.sig-blocks-desktop {
         min-width: 0 !important;
-      }
-      /* Executive Minimalist: stack name band | logo */
-      & table.sig-executive-header-table > tbody > tr > td,
-      & table.sig-executive-header-table > tr > td {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-      }
-      & table.sig-executive-header-table > tbody > tr > td:first-child,
-      & table.sig-executive-header-table > tr > td:first-child {
-        padding-right: 0 !important;
-        padding-bottom: 10px !important;
-      }
-      & table.sig-executive-header-table > tbody > tr > td:last-child,
-      & table.sig-executive-header-table > tr > td:last-child {
-        text-align: left !important;
       }
       & table.sig-stacked-root {
         table-layout: auto !important;
