@@ -491,6 +491,34 @@ assert.match(
   'professional: 20px brand social icons'
 );
 
+const htmlProfessionalBookCall = renderSignature({
+  profile,
+  brand: {
+    ...mockSignatureBrand,
+    contentBlocks: [
+      {
+        type: 'book_a_call',
+        enabled: true,
+        callTitle: 'Talk to sales',
+        callUrl: 'https://example.com/contact',
+        callButtonText: 'Get pricing',
+      },
+    ],
+  },
+  template: professionalTemplate,
+  publicSiteOrigin: origin,
+});
+assert.match(
+  htmlProfessionalBookCall,
+  /background-color:#2563eb/,
+  'book_a_call: CTA button uses resolved brand primaryColor background'
+);
+assert.doesNotMatch(
+  htmlProfessionalBookCall,
+  /background-color:\{\{primaryColor\}\}/,
+  'book_a_call: promo HTML must not leave unresolved primaryColor placeholder'
+);
+
 // Minimal (standard layout) should render content blocks in the desktop side column.
 const minimalTemplate: import('../src/core/types').SignatureTemplate = {
   id: 'minimal-smoke',

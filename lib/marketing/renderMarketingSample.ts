@@ -69,12 +69,20 @@ function marketingContentBlocks(
         {
           type: 'list',
           enabled: true,
+          listTitle: 'Featured work',
           listItems: [
             { title: 'Nucleas', url: 'https://www.acmecorp.com/nucleas' },
             { title: 'The Ad Shop', url: 'https://www.acmecorp.com/ad-shop' },
             { title: 'Tailnote', url: 'https://www.acmecorp.com/tailnote' },
-            { title: 'The Frugal Gambler', url: 'https://www.acmecorp.com/frugal' },
-            { title: 'DocSpot', url: 'https://www.acmecorp.com/docspot' },
+          ],
+        },
+        {
+          type: 'list',
+          enabled: true,
+          listTitle: 'Resources',
+          listItems: [
+            { title: 'Case studies', url: 'https://www.acmecorp.com/customers' },
+            { title: 'Product tour', url: 'https://www.acmecorp.com/tour' },
           ],
         },
       ];
@@ -107,28 +115,21 @@ function marketingContentBlocks(
     case 'modern':
       return [
         {
-          type: 'latest_blogs',
+          type: 'book_a_call',
           enabled: true,
-          rssItems: [
-            {
-              title: 'Turn every email into a marketing touchpoint',
-              url: 'https://www.acmecorp.com/blog/marketing',
-            },
-            {
-              title: 'Promo blocks that actually get clicks',
-              url: 'https://www.acmecorp.com/blog/promos',
-            },
-            {
-              title: 'Track signature traffic with built-in UTMs',
-              url: 'https://www.acmecorp.com/blog/utm',
-            },
-          ],
+          callTitle: 'Free workshop',
+          callUrl: 'https://www.acmecorp.com/workshop',
+          callButtonText: 'Save your seat',
         },
         {
-          type: 'image',
+          type: 'list',
           enabled: true,
-          imageUrl: img,
-          imageLinkUrl: 'https://www.acmecorp.com/webinar',
+          listTitle: 'Quick links',
+          listItems: [
+            { title: 'Product tour', url: 'https://www.acmecorp.com/tour' },
+            { title: 'Case studies', url: 'https://www.acmecorp.com/customers' },
+            { title: 'Pricing', url: 'https://www.acmecorp.com/pricing' },
+          ],
         },
       ];
     case 'corporate':

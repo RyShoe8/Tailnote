@@ -202,7 +202,12 @@ function substituteVariables(html: string, strings: Record<string, string>): str
   });
 }
 
-function buildContentBlockParts(blocks: ContentBlockData[], origin: string): string[] {
+function buildContentBlockParts(
+  blocks: ContentBlockData[],
+  origin: string,
+  primaryColor: string
+): string[] {
+  const btnBg = escapeHtml(primaryColor);
   const enabled = blocks.filter((b) => b.enabled).slice(0, 2);
   if (enabled.length === 0) return [];
 
@@ -218,7 +223,7 @@ function buildContentBlockParts(blocks: ContentBlockData[], origin: string): str
   <tr><td style="padding:0;">
     <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;">
       <tr>
-        <td align="center" valign="middle" style="background-color:{{primaryColor}};border-radius:4px;padding:8px 18px;">
+        <td align="center" valign="middle" bgcolor="${btnBg}" style="background-color:${btnBg};border-radius:4px;padding:8px 18px;">
           <a href="${url}" style="color:#ffffff;font-size:12px;font-weight:600;text-decoration:none;display:inline-block;line-height:1.3;">${btnText}</a>
         </td>
       </tr>
@@ -325,9 +330,10 @@ function buildContentBlockParts(blocks: ContentBlockData[], origin: string): str
  */
 function renderContentBlocksHtml(
   blocks: ContentBlockData[],
-  origin: string
+  origin: string,
+  primaryColor: string
 ): { desktop: string; stacked: string } {
-  const parts = buildContentBlockParts(blocks, origin);
+  const parts = buildContentBlockParts(blocks, origin, primaryColor);
   if (parts.length === 0) return { desktop: '', stacked: '' };
 
   const stacked = parts.join('');
@@ -834,8 +840,9 @@ export function mergeRenderContext(
   // Content blocks
   const contentBlocks = brand.contentBlocks?.filter((b) => b.enabled) ?? [];
   const hasContentBlocks = hasContentBlocksEl && contentBlocks.length > 0;
+  const brandPrimaryColor = brand.primaryColor.trim() || '#2563eb';
   const contentBlocksRendered = hasContentBlocks
-    ? renderContentBlocksHtml(contentBlocks, origin)
+    ? renderContentBlocksHtml(contentBlocks, origin, brandPrimaryColor)
     : { desktop: '', stacked: '' };
   const isDefaultLayout = template.layout === 'default';
   const isCreatorLayout = template.layout === 'creator';
