@@ -19,11 +19,24 @@ export const EXECUTIVE_MINIMALIST_SIGNATURE_TEMPLATE = `<table class="sig-execut
             </div>
             {{/if}}
           </td>
-          {{#if hasLogo}}
-          <td valign="middle" align="right" width="90" style="width: 90px;">
-            <a href="{{logoLink}}" style="text-decoration: none; border: 0; outline: none; display: inline-block;">
-              <img src="{{logoUrl}}" alt="{{companyName}}" width="90" style="display: block; max-width: 90px; height: auto; border: 0;" />
-            </a>
+          {{#if hasExecutiveLogoColumn}}
+          <td valign="middle" style="text-align: left;">
+            <table cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse;">
+              <tr>
+                {{#if hasLogo}}
+                <td valign="middle" style="padding-right: 10px; line-height: 0; font-size: 0; width: 90px;">
+                  <a href="{{logoLink}}" style="text-decoration: none; border: 0; outline: none; display: inline-block;">
+                    <img src="{{logoUrl}}" alt="{{companyName}}" width="90" style="display: block; max-width: 90px; height: auto; border: 0;" />
+                  </a>
+                </td>
+                {{/if}}
+                {{#if showAddressBlock}}
+                <td valign="top" style="font-size: 11px; color: #888888; line-height: 1.35; letter-spacing: 0.2px;">
+                  {{addressBlockHtml}}
+                </td>
+                {{/if}}
+              </tr>
+            </table>
           </td>
           {{/if}}
         </tr>

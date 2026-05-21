@@ -68,16 +68,27 @@ export const STANDARD_SIGNATURE_TEMPLATE = `<style type="text/css">
 <table class="sig-root-layout-table" cellpadding="0" cellspacing="0" border="0" width="100%" style="font-family: {{fontFamily}}, Arial, Helvetica, sans-serif; font-size:14px; color:#1a1a1a; line-height:1.4;width:100%;max-width:660px;">
   <tr>
     <td class="sig-logo-stack" width="{{logoWidth}}" style="vertical-align:top;line-height:0;font-size:0;padding-right:24px;width:{{logoWidth}}px;">
-      {{#if hasLogo}}
-      <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:inline-block;">
+      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+        <tr>
+          {{#if hasLogo}}
+          <td valign="top" style="padding-right:12px;line-height:0;font-size:0;">
+            <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:inline-block;">
 {{#if hasLogoSizedHeight}}
-        <img src="{{logoUrl}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" border="0" alt="" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;border:0;outline:none;text-decoration:none;" />
+              <img src="{{logoUrl}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" border="0" alt="" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;border:0;outline:none;text-decoration:none;" />
 {{/if}}
 {{#if hasLogoAutoHeight}}
-        <img src="{{logoUrl}}" width="{{logoWidth}}" border="0" alt="" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:auto;border:0;outline:none;text-decoration:none;" />
+              <img src="{{logoUrl}}" width="{{logoWidth}}" border="0" alt="" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:auto;border:0;outline:none;text-decoration:none;" />
 {{/if}}
-      </a>
-      {{/if}}
+            </a>
+          </td>
+          {{/if}}
+          {{#if showAddressBlock}}
+          <td valign="top" style="font-size:12px;color:#555;line-height:1.35;letter-spacing:0.2px;">
+            {{addressBlockHtml}}
+          </td>
+          {{/if}}
+        </tr>
+      </table>
     </td>
     <td class="sig-main-stack" style="vertical-align:top; border-left:2px solid {{primaryColor}}; padding-left:13px;padding-right:9px;">
       
@@ -169,14 +180,6 @@ export const STANDARD_SIGNATURE_TEMPLATE = `<style type="text/css">
           <td bgcolor="#e5e5e5" height="1" style="font-size:0;line-height:0;mso-line-height-rule:exactly;padding:0;height:1px;background-color:#e5e5e5;border:0;">&nbsp;</td>
         </tr>
       </table>
-    </td>
-  </tr>
-  {{/if}}
-
-  {{#if showAddressBlock}}
-  <tr>
-    <td colspan="{{signatureRootColspan}}" style="padding-top:10px; font-size:12px; color:#555;">
-      {{addressBlockHtml}}
     </td>
   </tr>
   {{/if}}

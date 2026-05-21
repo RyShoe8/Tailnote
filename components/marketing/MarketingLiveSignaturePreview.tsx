@@ -1,6 +1,9 @@
 'use client';
 
-import { SignaturePreviewFrame } from '@/components/signature/SignaturePreviewFrame';
+import {
+  DEFAULT_MOBILE_FRAME_WIDTH,
+  SignaturePreviewFrame,
+} from '@/components/signature/SignaturePreviewFrame';
 import { presetToEngineTemplate, type TemplatePresetId } from '@/lib/email/templatePresets';
 import type { SignatureLayout } from 'emailsignature-engine';
 
@@ -10,6 +13,7 @@ const MARKETING_STACKED_MOBILE_FRAME_WIDTH = 580;
 
 function marketingMobileFrameWidthForLayout(layout?: SignatureLayout): number {
   if (layout === 'stacked') return MARKETING_STACKED_MOBILE_FRAME_WIDTH;
+  if (layout === 'executive_minimalist') return DEFAULT_MOBILE_FRAME_WIDTH;
   return MARKETING_MOBILE_FRAME_WIDTH;
 }
 

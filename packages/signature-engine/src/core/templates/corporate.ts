@@ -96,6 +96,11 @@ export const CORPORATE_SIGNATURE_TEMPLATE = `<style type="text/css">
 {{/if}}
             </a>
             {{/if}}
+            {{#if showAddressBlock}}
+            <div style="margin-top: 8px; font-size: 11px; color: #888888; line-height: 1.35; letter-spacing: 0.2px;">
+              {{addressBlockHtml}}
+            </div>
+            {{/if}}
           </td>
 
           <!-- Info column -->
@@ -193,14 +198,6 @@ export const CORPORATE_SIGNATURE_TEMPLATE = `<style type="text/css">
           <td bgcolor="#e5e5e5" height="1" style="font-size:0;line-height:0;mso-line-height-rule:exactly;padding:0;height:1px;background-color:#e5e5e5;border:0;">&nbsp;</td>
         </tr>
       </table>
-    </td>
-  </tr>
-  {{/if}}
-
-  {{#if showAddressBlock}}
-  <tr>
-    <td colspan="3" style="padding-top:10px; font-size:11px; color:#888; letter-spacing:0.2px;">
-      {{addressBlockHtml}}
     </td>
   </tr>
   {{/if}}

@@ -34,6 +34,11 @@ export const CREATOR_SIGNATURE_TEMPLATE = `<table cellpadding="0" cellspacing="0
               </tr>
             </table>
             {{/if}}
+            {{#if showAddressBlock}}
+            <div style="margin-top: 10px; font-size: 11px; color: #72767d; line-height: 1.35; text-align: center;">
+              {{addressBlockHtml}}
+            </div>
+            {{/if}}
           </td>
           <td valign="top" style="padding-left: 20px;">
             {{#if hasName}}

@@ -110,6 +110,11 @@ export const PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
               </td>
             </tr></table>
             {{/if}}
+            {{#if showAddressBlock}}
+            <div style="margin-top: 8px; font-size: 11px; color: #5c6370; line-height: 1.35; letter-spacing: 0.2px;">
+              {{addressBlockHtml}}
+            </div>
+            {{/if}}
           </td>
 
           <!-- Info column -->
@@ -222,18 +227,6 @@ export const PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
           <td bgcolor="{{primaryColor}}" height="1" style="font-size:0;line-height:0;mso-line-height-rule:exactly;padding:0;height:1px;background-color:{{primaryColor}};border:0;opacity:0.35;">&nbsp;</td>
         </tr>
       </table>
-    </td>
-  </tr>
-  {{/if}}
-
-  {{#if showAddressBlock}}
-  <tr>
-    <td colspan="3" style="padding:8px 10px 0 10px;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;"><tr>
-        <td bgcolor="#f3f4f6" style="background-color:#f3f4f6;border-radius:8px;padding:8px 12px;font-size:11px;color:#5c6370;letter-spacing:0.2px;">
-          {{addressBlockHtml}}
-        </td>
-      </tr></table>
     </td>
   </tr>
   {{/if}}

@@ -64,6 +64,7 @@ function elementsMinimal(): SignatureElement[] {
     { type: 'title' },
     { type: 'contact' },
     { type: 'social' },
+    { type: 'address' },
     { type: 'contentBlocks' },
   ];
 }
@@ -76,6 +77,7 @@ function elementsModern(): SignatureElement[] {
     { type: 'contact' },
     { type: 'social' },
     { type: 'divider' },
+    { type: 'address' },
     { type: 'contentBlocks' },
   ];
 }
@@ -87,6 +89,7 @@ function elementsDefault(): SignatureElement[] {
     { type: 'title' },
     { type: 'contact' },
     { type: 'social' },
+    { type: 'address' },
     { type: 'contentBlocks' },
   ];
 }

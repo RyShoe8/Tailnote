@@ -120,9 +120,10 @@ function MobileSignaturePreviewFrame({
   }, [html, animationKey, mobileFrameWidth]);
 
   const hasProfCardShell = html.includes('sig-prof-card-shell');
+  const hasExecutiveRoot = html.includes('sig-executive-root');
   const isMarketing = previewContext === 'marketing';
-  const useVisibleOverflow = hasProfCardShell || isMarketing;
-  const useCenteredScale = isMarketing && !hasProfCardShell;
+  const useVisibleOverflow = hasProfCardShell || (isMarketing && !hasExecutiveRoot);
+  const useCenteredScale = isMarketing && !hasProfCardShell && !hasExecutiveRoot;
   const borderBleed = hasProfCardShell ? PROF_CARD_SHELL_BLEED_PX : 0;
   const clipPad = hasProfCardShell ? CLIP_PADDING_PX : 0;
   const scaledW = Math.ceil(naturalW * scale) + borderBleed + clipPad * 2;

@@ -245,6 +245,23 @@
         width: 100% !important;
         max-width: 100% !important;
       }
+      /* Executive Minimalist: stack name band | logo (logo+address stay paired inside logo cell) */
+      & table.sig-executive-header-table > tbody > tr > td,
+      & table.sig-executive-header-table > tr > td {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      & table.sig-executive-header-table > tbody > tr > td:first-child,
+      & table.sig-executive-header-table > tr > td:first-child {
+        padding-right: 0 !important;
+        padding-bottom: 10px !important;
+      }
+      & table.sig-executive-header-table > tbody > tr > td:last-child,
+      & table.sig-executive-header-table > tr > td:last-child {
+        text-align: left !important;
+      }
     }
   }
 
@@ -252,10 +269,13 @@
   .signature-email-preview--mobile .mobile-signature-scale-root > table:first-of-type,
   .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-prof-card-shell,
   .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-default-layout-table,
-  .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-stacked-root,
-  .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-executive-root {
+  .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-stacked-root {
     max-width: 100% !important;
     width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-executive-root {
+    max-width: 100% !important;
     box-sizing: border-box !important;
   }
 }

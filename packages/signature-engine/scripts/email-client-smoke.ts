@@ -893,6 +893,72 @@ assert.doesNotMatch(htmlExecutive, />Portfolio:</, 'executive: no hardcoded Port
 assert.ok(htmlExecutive.includes('Nucleas') && htmlExecutive.includes('|'), 'executive: portfolio pipe separators');
 assert.ok(htmlExecutive.includes('#901a1e'), 'executive: primary color on portfolio links');
 
+// Address placement across layouts (mockSignatureBrand includes street/state/zip)
+assert.ok(htmlDefault.includes('123 Main St'), 'default: address renders');
+assert.match(
+  htmlDefault,
+  /sig-default-layout-table[\s\S]*?123 Main St[\s\S]*?font-weight: 600; color: #111111;">P:&nbsp;</,
+  'default: address beside logo in left column'
+);
+assert.ok(htmlCreator.includes('123 Main St'), 'creator: address renders');
+assert.match(
+  htmlCreator,
+  /icon-linkedin\.png[\s\S]*?123 Main St[\s\S]*?font-size: 22px/,
+  'creator: address under social icons in left column'
+);
+assert.ok(htmlExecutive.includes('123 Main St'), 'executive: address renders');
+assert.match(
+  htmlExecutive,
+  /width: 90px[\s\S]*?123 Main St/,
+  'executive: address to the right of logo in header'
+);
+assert.ok(htmlStandard.includes('123 Main St'), 'minimal: address renders');
+assert.match(
+  htmlMinimalBlocks,
+  /sig-logo-stack[\s\S]*?123 Main St/,
+  'minimal: address beside logo in logo column'
+);
+assert.doesNotMatch(
+  htmlMinimalBlocks,
+  /<tr>\s*<td colspan="3"[^>]*>\s*123 Main St/,
+  'minimal: address not in full-width colspan row'
+);
+const htmlStackedAddr = renderSignature({
+  profile,
+  brand: mockSignatureBrand,
+  template: mockSignatureTemplate('stacked'),
+  publicSiteOrigin: origin,
+});
+assert.ok(htmlStackedAddr.includes('123 Main St'), 'stacked: address renders');
+assert.match(
+  htmlStackedAddr,
+  /sig-stacked-root[\s\S]*?<tr>[\s\S]*?123 Main St[\s\S]*?border-top:2px solid/,
+  'stacked: address beside logo in first row'
+);
+assert.ok(htmlListImage.includes('123 Main St'), 'corporate: address renders');
+assert.match(
+  htmlListImage,
+  /sig-corp-logo-stack[\s\S]*?123 Main St/,
+  'corporate: address under logo'
+);
+assert.doesNotMatch(
+  htmlListImage,
+  /<tr>\s*<td colspan="3"[^>]*>\s*123 Main St/,
+  'corporate: address not in full-width colspan row'
+);
+const htmlProfessionalAddr = renderSignature({
+  profile,
+  brand: mockSignatureBrand,
+  template: professionalTemplate,
+  publicSiteOrigin: origin,
+});
+assert.ok(htmlProfessionalAddr.includes('123 Main St'), 'professional: address renders');
+assert.match(
+  htmlProfessionalAddr,
+  /sig-corp-logo-stack[\s\S]*?123 Main St/,
+  'professional: address under logo'
+);
+
 // Legacy custom block still renders for back-compat reads — but without "Learn more".
 const htmlLegacyCustom = renderSignature({
   profile,

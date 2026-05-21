@@ -5,11 +5,22 @@
 export const DEFAULT_SIGNATURE_TEMPLATE = `<table class="sig-default-layout-table" cellpadding="0" cellspacing="0" border="0" style="font-family: {{fontFamily}}, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; color: #333333; line-height: 1.5; background-color: #ffffff; max-width: 660px; width: 100%;">
   <tr>
     <td valign="top" style="padding-right: 20px; border-right: 2px solid {{primaryColor}};">
-      {{#if hasLogo}}
-      <a href="{{logoLink}}" style="text-decoration: none; border: 0; outline: none; display: inline-block;">
-        <img src="{{logoUrl}}" alt="{{companyName}}" width="130" style="display: block; max-width: 130px; height: auto; border: 0;" />
-      </a>
-      {{/if}}
+      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse;">
+        <tr>
+          {{#if hasLogo}}
+          <td valign="top" style="padding-right: 12px; line-height: 0; font-size: 0;">
+            <a href="{{logoLink}}" style="text-decoration: none; border: 0; outline: none; display: inline-block;">
+              <img src="{{logoUrl}}" alt="{{companyName}}" width="130" style="display: block; max-width: 130px; height: auto; border: 0;" />
+            </a>
+          </td>
+          {{/if}}
+          {{#if showAddressBlock}}
+          <td valign="top" style="font-size: 11px; color: #888888; line-height: 1.35; letter-spacing: 0.2px;">
+            {{addressBlockHtml}}
+          </td>
+          {{/if}}
+        </tr>
+      </table>
     </td>
     <td valign="top" style="padding-left: 20px;">
       {{#if hasName}}

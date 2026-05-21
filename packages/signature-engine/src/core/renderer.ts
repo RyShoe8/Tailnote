@@ -995,6 +995,8 @@ export function mergeRenderContext(
     hasExecutiveContactLine,
     hasExecutiveSocialLine,
     hasExecutivePromoRows,
+    hasExecutiveLogoColumn:
+      isExecutiveLayout && (hasLogo || (hasAddressEl && Boolean(addressLine || stateLine || zipLine))),
   };
 
   const stringCtx: Record<string, string> = {
