@@ -110,13 +110,13 @@ export function ContentBlocksEditor({ value, onChange }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 border-b">
+      <div className="flex gap-2 overflow-x-auto border-b hide-scrollbar">
         {blocks.map((b, i) => (
           <button
             key={i}
             type="button"
             onClick={() => setActiveSlot(i)}
-            className={`px-3 py-1.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            className={`px-3 py-1.5 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
               activeSlot === i
                 ? 'border-primary text-foreground'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -234,7 +234,7 @@ function LatestBlogsEditor({
           placeholder="https://blog.example.com/rss.xml"
         />
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
         <Button
           type="button"
           variant="outline"
@@ -432,13 +432,14 @@ function ImageEditor({
     <>
       <div className="space-y-2">
         <Label>Image URL</Label>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Input
             value={block.imageUrl || ''}
             onChange={(e) => onChange({ imageUrl: e.target.value })}
             placeholder="https://..."
+            className="min-w-0 flex-1"
           />
-          <div className="relative">
+          <div className="relative shrink-0">
             <Input
               type="file"
               className="absolute inset-0 opacity-0 cursor-pointer"
@@ -463,7 +464,7 @@ function ImageEditor({
                 }
               }}
             />
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" className="w-full sm:w-auto">
               Upload
             </Button>
           </div>

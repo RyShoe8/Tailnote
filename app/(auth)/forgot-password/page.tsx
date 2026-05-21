@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <Card>
+    <Card className="shadow-card">
       <CardHeader>
         <CardTitle>Forgot password</CardTitle>
         <CardDescription>We will email you a reset link when configured.</CardDescription>

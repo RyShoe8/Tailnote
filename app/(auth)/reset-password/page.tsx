@@ -47,21 +47,23 @@ function ResetPasswordForm() {
 
   if (invalidToken) {
     return (
-      <Card>
+      <Card className="shadow-card">
         <CardHeader>
           <CardTitle>Reset link invalid</CardTitle>
           <CardDescription>This link has expired or was already used.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-center text-sm text-muted-foreground">
+          <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground sm:flex-row sm:justify-center sm:gap-x-3">
             <Link href="/forgot-password" className="underline underline-offset-4">
               Request a new link
             </Link>
-            {' · '}
+            <span aria-hidden className="hidden sm:inline">
+              &middot;
+            </span>
             <Link href="/login" className="underline underline-offset-4">
               Log in
             </Link>
-          </p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -69,29 +71,31 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <Card>
+      <Card className="shadow-card">
         <CardHeader>
           <CardTitle>Reset password</CardTitle>
           <CardDescription>Use the link from your reset email.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <p className="text-center text-sm text-muted-foreground">
+          <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground sm:flex-row sm:justify-center sm:gap-x-3">
             <Link href="/forgot-password" className="underline underline-offset-4">
               Request a new link
             </Link>
-            {' · '}
+            <span aria-hidden className="hidden sm:inline">
+              &middot;
+            </span>
             <Link href="/login" className="underline underline-offset-4">
               Log in
             </Link>
-          </p>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
+    <Card className="shadow-card">
       <CardHeader>
         <CardTitle>New password</CardTitle>
         <CardDescription>Choose a password at least 8 characters long.</CardDescription>

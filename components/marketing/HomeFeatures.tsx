@@ -17,7 +17,7 @@ const FEATURES = [
     icon: LayoutTemplate,
     title: 'Curated templates',
     description:
-      'Minimal, Stacked, Corporate, and Professional layouts designed for real inboxes — signature plus promos, no broken HTML.',
+      'Default, Creator, Executive, Minimal, Stacked, Corporate, and Professional layouts designed for real inboxes — no broken HTML.',
   },
   {
     icon: BarChart3,
@@ -39,27 +39,32 @@ const FEATURES = [
 
 export function HomeFeatures() {
   return (
-    <section className="space-y-8">
-      <div className="max-w-2xl">
-        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          More than a signature — a marketing channel in every send
+    <section className="container py-16 sm:py-20 lg:py-24">
+      <div className="mx-auto max-w-2xl text-center">
+        <p className="text-sm font-semibold uppercase tracking-wider text-primary">Features</p>
+        <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+          A marketing channel in every send
         </h2>
-        <p className="mt-2 text-muted-foreground">
-          Tailnote combines on-brand signatures with promotional blocks and measurable links, so every
-          employee email promotes your business without extra tools.
+        <p className="mt-4 text-pretty text-muted-foreground">
+          Tailnote combines on-brand signatures with promotional blocks and measurable links, so
+          every employee email promotes your business without extra tools.
         </p>
       </div>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
         {FEATURES.map(({ icon: Icon, title, description }) => (
           <div
             key={title}
-            className="rounded-xl border border-border bg-card p-5 shadow-sm"
+            className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ring"
           >
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            />
+            <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl tn-grad-bg text-white shadow-sm">
               <Icon className="h-5 w-5" aria-hidden />
             </div>
-            <h3 className="font-semibold text-foreground">{title}</h3>
-            <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{description}</p>
+            <h3 className="font-semibold tracking-tight text-foreground">{title}</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>
           </div>
         ))}
       </div>

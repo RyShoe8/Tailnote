@@ -54,22 +54,32 @@ function MediaShopCopyright() {
 export function SiteFooter({ variant = 'full' }: SiteFooterProps) {
   if (variant === 'compact') {
     return (
-      <footer className="border-t border-border px-4 py-6">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 text-center text-sm text-muted-foreground">
-          <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-            {COMPACT_LINKS.map((item) => (
-              <FooterLink key={item.href} href={item.href} label={item.label} />
-            ))}
-          </nav>
-          <MediaShopCopyright />
+      <footer className="relative border-t border-slate-200/70">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
+        />
+        <div className="container py-6">
+          <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 text-center text-sm text-muted-foreground">
+            <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+              {COMPACT_LINKS.map((item) => (
+                <FooterLink key={item.href} href={item.href} label={item.label} />
+              ))}
+            </nav>
+            <MediaShopCopyright />
+          </div>
         </div>
       </footer>
     );
   }
 
   return (
-    <footer className="border-t border-border px-4 py-10 sm:py-12">
-      <div className="mx-auto max-w-5xl">
+    <footer className="relative border-t border-slate-200/70 py-10 sm:py-14">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
+      />
+      <div className="container">
         <div className="grid gap-8 sm:grid-cols-3 sm:gap-10">
           <div>
             <p className="mb-3 text-sm font-medium text-foreground">Product</p>
@@ -102,7 +112,7 @@ export function SiteFooter({ variant = 'full' }: SiteFooterProps) {
             </ul>
           </div>
         </div>
-        <div className="mt-10 flex flex-col gap-2 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 flex flex-col gap-2 border-t border-slate-200/70 pt-8 sm:flex-row sm:items-center sm:justify-between">
           <MediaShopCopyright />
           <p className="text-sm text-muted-foreground">
             Tailnote is operated by{' '}

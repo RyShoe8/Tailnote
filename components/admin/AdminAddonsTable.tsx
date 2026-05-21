@@ -46,8 +46,9 @@ export function AdminAddonsTable({ initialAddons }: { initialAddons: AddonRow[] 
   return (
     <div className="space-y-4">
       {msg ? <p className="text-sm text-muted-foreground">{msg}</p> : null}
-      <div className="overflow-x-auto rounded-md border">
-        <table className="w-full min-w-[36rem] text-sm">
+      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <div className="overflow-x-auto rounded-md border min-w-0">
+          <table className="w-full min-w-[36rem] text-sm">
           <thead>
             <tr className="border-b bg-muted/40 text-left">
               <th className="p-3 font-medium">Name</th>
@@ -83,6 +84,7 @@ export function AdminAddonsTable({ initialAddons }: { initialAddons: AddonRow[] 
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

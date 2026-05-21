@@ -52,7 +52,7 @@ function SignupForm() {
   }
 
   return (
-    <Card>
+    <Card className="shadow-card">
       <CardHeader>
         <CardTitle>Create account</CardTitle>
         <CardDescription>

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { PublicPricingPlan } from '@/lib/billing/getPublicPricingPlans';
 
@@ -33,43 +34,54 @@ export function HomePricingTeaser({ plans }: Props) {
   const fallback = lowest ?? lowestPricedPlan(plans);
 
   return (
-    <section className="rounded-2xl border bg-muted/30 px-6 py-10 sm:px-10">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="min-w-0 space-y-3">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Enterprise marketing in every inbox — without enterprise pricing
-          </h2>
-          <p className="max-w-2xl text-muted-foreground">
-            Skip expensive agency rebuilds. Tailnote gives your whole team on-brand signatures, promotional
-            content blocks, built-in UTM tracking, and Gmail-ready installs — for a fraction of what
-            you&apos;d pay elsewhere.
-          </p>
-          {fallback ? (
-            <p className="text-lg font-medium text-foreground">
-              Plans from{' '}
-              <span className="text-primary">
-                {formatUsd(fallback.basePriceCents)}
-                {fallback.interval === 'lifetime' ? '' : ` / ${intervalLabel(fallback.interval)}`}
-              </span>{' '}
-              per subscription
+    <section className="container py-16 sm:py-20 lg:py-24">
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-8 shadow-card sm:p-12">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-[#0065c9]/15 via-[#0c8fa3]/10 to-[#4fd6b2]/15 blur-3xl"
+        />
+        <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0 max-w-2xl space-y-4">
+            <p className="text-sm font-semibold uppercase tracking-wider text-primary">Pricing</p>
+            <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+              Enterprise marketing in every inbox &mdash;{' '}
+              <span className="tn-grad-text">without enterprise pricing</span>
+            </h2>
+            <p className="text-pretty text-muted-foreground">
+              Skip expensive agency rebuilds. Tailnote gives your whole team on-brand signatures,
+              promotional content blocks, built-in UTM tracking, and Gmail-ready installs &mdash; for
+              a fraction of what you&apos;d pay elsewhere.
             </p>
-          ) : null}
-          {plans.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {plans.map((p) => (
-                <span
-                  key={p.slug}
-                  className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground"
-                >
-                  {p.name}
-                </span>
-              ))}
-            </div>
-          ) : null}
+            {fallback ? (
+              <p className="text-lg font-medium text-foreground">
+                Plans from{' '}
+                <span className="tn-grad-text font-semibold">
+                  {formatUsd(fallback.basePriceCents)}
+                  {fallback.interval === 'lifetime' ? '' : ` / ${intervalLabel(fallback.interval)}`}
+                </span>{' '}
+                per subscription
+              </p>
+            ) : null}
+            {plans.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {plans.map((p) => (
+                  <span
+                    key={p.slug}
+                    className="rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-medium text-muted-foreground"
+                  >
+                    {p.name}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </div>
+          <Button asChild size="lg" className="shrink-0 gap-2 self-start shadow-card lg:self-center">
+            <Link href="/pricing">
+              See pricing
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </Button>
         </div>
-        <Button asChild size="lg" className="shrink-0 self-start lg:self-center">
-          <Link href="/pricing">See pricing</Link>
-        </Button>
       </div>
     </section>
   );

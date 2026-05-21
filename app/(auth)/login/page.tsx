@@ -44,7 +44,7 @@ function LoginForm() {
   }
 
   return (
-    <Card>
+    <Card className="shadow-card">
       <CardHeader>
         <CardTitle>Log in</CardTitle>
         <CardDescription>

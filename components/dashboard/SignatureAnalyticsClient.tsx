@@ -45,9 +45,22 @@ function kindLabel(kind: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function useIsSm(): boolean {
+  const [isSm, setIsSm] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 640px)');
+    const update = () => setIsSm(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+  return isSm;
+}
+
 export function SignatureAnalyticsClient() {
   const [from, setFrom] = useState(defaultFromDate);
   const [to, setTo] = useState(defaultToDate);
+  const isSm = useIsSm();
   const [employeeId, setEmployeeId] = useState('');
   const [data, setData] = useState<AnalyticsPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -193,10 +206,15 @@ export function SignatureAnalyticsClient() {
                 <p className="text-sm text-muted-foreground">No clicks in this range.</p>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={kindChartData} layout="vertical" margin={{ left: 8, right: 16 }}>
+                  <BarChart data={kindChartData} layout="vertical" margin={{ left: 4, right: 12 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-                    <YAxis type="category" dataKey="kind" width={120} tick={{ fontSize: 11 }} />
+                    <YAxis
+                      type="category"
+                      dataKey="kind"
+                      width={isSm ? 120 : 80}
+                      tick={{ fontSize: isSm ? 11 : 10 }}
+                    />
                     <Tooltip />
                     <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
                   </BarChart>

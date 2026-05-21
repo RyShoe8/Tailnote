@@ -127,7 +127,9 @@ export function DashboardShell({ email, navLinks, showPlatformAdmin, children }:
         <DashboardSidebarFooter showPlatformAdmin={showPlatformAdmin} />
       </aside>
 
-      <main className="min-h-0 min-w-0 flex-1 overflow-auto p-4 md:p-6 lg:p-10">{children}</main>
+      <main className="min-h-0 min-w-0 flex-1 overflow-auto p-4 pb-24 md:p-6 md:pb-10 lg:p-10 lg:pb-12">
+        {children}
+      </main>
       <FeedbackFab />
     </div>
   );

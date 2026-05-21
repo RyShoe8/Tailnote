@@ -59,33 +59,35 @@ export function EmployeesList({ employees, canManage }: Props) {
         return (
           <div
             key={e._id}
-            className="flex items-center justify-between gap-3 p-4 border-b last:border-b-0 hover:bg-muted/40 transition-colors"
+            className="flex flex-col gap-3 border-b p-4 transition-colors last:border-b-0 hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between"
           >
             <Link href={`/dashboard/employees/${e._id}`} className="min-w-0 flex-1">
               <p className="truncate font-medium">{label}</p>
               <p className="truncate text-sm text-muted-foreground">{e.email}</p>
             </Link>
-            <EmployeeInviteBadge
-              employee={{
-                inviteSentAt: e.inviteSentAt,
-                inviteAcceptedAt: e.inviteAcceptedAt,
-              }}
-            />
-            <div className="flex shrink-0 items-center gap-2">
-              <Button asChild variant="ghost" size="sm">
-                <Link href={`/dashboard/employees/${e._id}`}>Edit</Link>
-              </Button>
-              {canManage ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={deletingId === e._id}
-                  onClick={() => void deleteEmployee(e._id, label)}
-                >
-                  {deletingId === e._id ? 'Deleting…' : 'Delete'}
+            <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-end">
+              <EmployeeInviteBadge
+                employee={{
+                  inviteSentAt: e.inviteSentAt,
+                  inviteAcceptedAt: e.inviteAcceptedAt,
+                }}
+              />
+              <div className="flex shrink-0 items-center gap-2">
+                <Button asChild variant="ghost" size="sm">
+                  <Link href={`/dashboard/employees/${e._id}`}>Edit</Link>
                 </Button>
-              ) : null}
+                {canManage ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={deletingId === e._id}
+                    onClick={() => void deleteEmployee(e._id, label)}
+                  >
+                    {deletingId === e._id ? 'Deleting…' : 'Delete'}
+                  </Button>
+                ) : null}
+              </div>
             </div>
           </div>
         );

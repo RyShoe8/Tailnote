@@ -100,7 +100,7 @@ export function OverviewOrganizationCard({
                 Add UTM parameters to signature links
               </Label>
               <p className="text-xs text-muted-foreground">
-                On by default. Appends <code className="text-[11px] bg-muted px-1 rounded">utm_source=Tailnote&amp;utm_medium=Email&amp;utm_campaign=Footer</code> to
+                On by default. Appends <code className="text-[11px] bg-muted px-1 rounded break-all">utm_source=Tailnote&amp;utm_medium=Email&amp;utm_campaign=Footer</code> to
                 all http/https links in rendered signatures (logo, website, social, content blocks). Does not affect
                 mailto: or tel: links. Useful for tracking signature-driven traffic in Google Analytics.
               </p>
