@@ -4,9 +4,9 @@ import { SignaturePreviewFrame } from '@/components/signature/SignaturePreviewFr
 import { presetToEngineTemplate, type TemplatePresetId } from '@/lib/email/templatePresets';
 import type { SignatureLayout } from 'emailsignature-engine';
 
-/** Wider than dashboard mobile preview so marketing cards read clearly. */
-const MARKETING_MOBILE_FRAME_WIDTH = 480;
-const MARKETING_STACKED_MOBILE_FRAME_WIDTH = 500;
+/** Wider than dashboard mobile preview; fills marketing card column up to cap. */
+const MARKETING_MOBILE_FRAME_WIDTH = 560;
+const MARKETING_STACKED_MOBILE_FRAME_WIDTH = 580;
 
 function marketingMobileFrameWidthForLayout(layout?: SignatureLayout): number {
   if (layout === 'stacked') return MARKETING_STACKED_MOBILE_FRAME_WIDTH;
@@ -34,6 +34,7 @@ export function MarketingLiveSignaturePreview({ presetId, html, className }: Pro
       <SignaturePreviewFrame
         html={html}
         variant="mobile"
+        previewContext="marketing"
         mobileFrameWidth={marketingMobileFrameWidthForLayout(layout)}
       />
     </div>

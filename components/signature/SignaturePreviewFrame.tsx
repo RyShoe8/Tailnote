@@ -9,6 +9,8 @@ type Props = {
   variant?: 'desktop' | 'mobile';
   /** Mobile frame width in CSS px; stacked layout uses a slightly wider frame. */
   mobileFrameWidth?: number;
+  /** Marketing cards use wider frames, visible overflow, and centered scale for non-prof layouts. */
+  previewContext?: 'dashboard' | 'marketing';
 };
 
 export const DEFAULT_MOBILE_FRAME_WIDTH = 404;
@@ -42,6 +44,7 @@ export function SignaturePreviewFrame({
   animationKey = 0,
   variant = 'desktop',
   mobileFrameWidth = DEFAULT_MOBILE_FRAME_WIDTH,
+  previewContext = 'dashboard',
 }: Props) {
   if (variant === 'mobile') {
     return (
@@ -49,6 +52,7 @@ export function SignaturePreviewFrame({
         html={html}
         animationKey={animationKey}
         mobileFrameWidth={mobileFrameWidth}
+        previewContext={previewContext}
       />
     );
   }
@@ -70,10 +74,12 @@ function MobileSignaturePreviewFrame({
   html,
   animationKey,
   mobileFrameWidth,
+  previewContext,
 }: {
   html: string;
   animationKey: string | number;
   mobileFrameWidth: number;
+  previewContext: 'dashboard' | 'marketing';
 }) {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -114,6 +120,9 @@ function MobileSignaturePreviewFrame({
   }, [html, animationKey, mobileFrameWidth]);
 
   const hasProfCardShell = html.includes('sig-prof-card-shell');
+  const isMarketing = previewContext === 'marketing';
+  const useVisibleOverflow = hasProfCardShell || isMarketing;
+  const useCenteredScale = isMarketing && !hasProfCardShell;
   const borderBleed = hasProfCardShell ? PROF_CARD_SHELL_BLEED_PX : 0;
   const clipPad = hasProfCardShell ? CLIP_PADDING_PX : 0;
   const scaledW = Math.ceil(naturalW * scale) + borderBleed + clipPad * 2;
@@ -122,15 +131,15 @@ function MobileSignaturePreviewFrame({
   return (
     <div
       ref={frameRef}
-      className="signature-email-preview signature-email-preview--mobile sig-mobile-preview-container rounded-md border bg-white p-4 text-left overflow-x-auto"
-      style={{ width: '100%', maxWidth: mobileFrameWidth, minHeight: 200 }}
+      className="signature-email-preview signature-email-preview--mobile sig-mobile-preview-container w-full rounded-md border bg-white p-4 text-left overflow-x-auto"
+      style={{ maxWidth: mobileFrameWidth, minHeight: 200 }}
     >
       <div
         style={{
           width: scaledW,
           maxWidth: '100%',
           height: scaledH,
-          overflow: hasProfCardShell ? 'visible' : 'hidden',
+          overflow: useVisibleOverflow ? 'visible' : 'hidden',
           boxSizing: 'border-box',
           padding: clipPad,
           marginLeft: 'auto',
@@ -141,7 +150,9 @@ function MobileSignaturePreviewFrame({
           key={animationKey}
           style={{
             width: naturalW,
-            transformOrigin: 'top left',
+            marginLeft: useCenteredScale ? 'auto' : undefined,
+            marginRight: useCenteredScale ? 'auto' : undefined,
+            transformOrigin: useCenteredScale ? 'top center' : 'top left',
             transform: `scale(${scale})`,
           }}
         >

@@ -2,7 +2,7 @@
  * Default layout — logo column with brand accent border, name/title band,
  * P|E|W contact row, social icons, two-column list footer for promo blocks.
  */
-export const DEFAULT_SIGNATURE_TEMPLATE = `<table cellpadding="0" cellspacing="0" border="0" style="font-family: {{fontFamily}}, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; color: #333333; line-height: 1.5; background-color: #ffffff; max-width: 660px; width: 100%;">
+export const DEFAULT_SIGNATURE_TEMPLATE = `<table class="sig-default-layout-table" cellpadding="0" cellspacing="0" border="0" style="font-family: {{fontFamily}}, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; color: #333333; line-height: 1.5; background-color: #ffffff; max-width: 660px; width: 100%;">
   <tr>
     <td valign="top" style="padding-right: 20px; border-right: 2px solid {{primaryColor}};">
       {{#if hasLogo}}

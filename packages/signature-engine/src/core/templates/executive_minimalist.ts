@@ -1,10 +1,10 @@
 /**
  * Executive Minimalist — serif name band, logo right, text social + portfolio rows.
  */
-export const EXECUTIVE_MINIMALIST_SIGNATURE_TEMPLATE = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 660px; font-family: {{fontFamily}}, Arial, Helvetica, sans-serif; font-size: 12px; color: #444444; line-height: 1.4; background-color: #ffffff;">
+export const EXECUTIVE_MINIMALIST_SIGNATURE_TEMPLATE = `<table class="sig-executive-root" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 660px; font-family: {{fontFamily}}, Arial, Helvetica, sans-serif; font-size: 12px; color: #444444; line-height: 1.4; background-color: #ffffff;">
   <tr>
     <td style="padding-bottom: 12px; border-bottom: 1px solid #dddddd;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse: collapse;">
+      <table class="sig-executive-header-table" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse: collapse;">
         <tr>
           <td valign="middle" style="padding-right: 20px;">
             {{#if hasName}}

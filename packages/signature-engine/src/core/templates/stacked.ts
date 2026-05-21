@@ -1,5 +1,5 @@
 /** Stacked layout: logo on top, full-width contact below (table-only, inline styles). */
-export const STACKED_SIGNATURE_TEMPLATE = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="font-family: {{fontFamily}}, Arial, Helvetica, sans-serif; font-size:14px; color:#1a1a1a; line-height:1.4;width:100%;max-width:665px;">
+export const STACKED_SIGNATURE_TEMPLATE = `<table class="sig-stacked-root" cellpadding="0" cellspacing="0" border="0" width="100%" style="font-family: {{fontFamily}}, Arial, Helvetica, sans-serif; font-size:14px; color:#1a1a1a; line-height:1.4;width:100%;max-width:665px;">
   <tr>
     <td colspan="2" style="vertical-align:top;line-height:0;font-size:0;padding-bottom:12px;">
       {{#if hasLogo}}
