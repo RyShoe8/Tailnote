@@ -9,7 +9,7 @@ type Props = {
   variant?: 'desktop' | 'mobile';
   /** Mobile frame width in CSS px; stacked layout uses a slightly wider frame. */
   mobileFrameWidth?: number;
-  /** Marketing cards use wider frames, visible overflow, and centered scale for non-prof layouts. */
+  /** Marketing cards fill the template column up to `mobileFrameWidth` and use fill-width measurement. */
   previewContext?: 'dashboard' | 'marketing';
 };
 
@@ -83,9 +83,11 @@ function MobileSignaturePreviewFrame({
 }) {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const transformRef = useRef<HTMLDivElement | null>(null);
   const [naturalW, setNaturalW] = useState(1);
   const [naturalH, setNaturalH] = useState(1);
   const [scale, setScale] = useState(1);
+  const isMarketing = previewContext === 'marketing';
 
   useLayoutEffect(() => {
     const frame = frameRef.current;
@@ -95,9 +97,18 @@ function MobileSignaturePreviewFrame({
     const measure = () => {
       if (!frameRef.current || !contentRef.current) return;
       const frameW = frameRef.current.clientWidth || mobileFrameWidth;
-      const { width: nw, height: nh } = measureContentSize(contentRef.current);
-      const scaleFrameW =
-        previewContext === 'marketing' ? Math.max(1, frameW - 8) : frameW;
+      const scaleFrameW = isMarketing ? Math.max(1, frameW - 8) : frameW;
+
+      const transformEl = transformRef.current;
+      if (transformEl) transformEl.style.width = '';
+
+      let { width: nw, height: nh } = measureContentSize(contentRef.current);
+
+      if (isMarketing && nw < scaleFrameW * 0.9 && transformEl) {
+        transformEl.style.width = `${scaleFrameW}px`;
+        ({ width: nw, height: nh } = measureContentSize(contentRef.current));
+      }
+
       const nextScale = nw > 0 ? Math.min(1, scaleFrameW / nw) : 1;
       setNaturalW(nw);
       setNaturalH(nh);
@@ -119,15 +130,13 @@ function MobileSignaturePreviewFrame({
       ro.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [html, animationKey, mobileFrameWidth, previewContext]);
+  }, [html, animationKey, mobileFrameWidth, previewContext, isMarketing]);
 
   const hasProfCardShell = html.includes('sig-prof-card-shell');
   const hasExecutiveRoot = html.includes('sig-executive-root');
   const hasCreatorRoot = html.includes('sig-creator-root');
-  const isMarketing = previewContext === 'marketing';
   const useWideMarketingLayout = hasExecutiveRoot || hasCreatorRoot;
   const useVisibleOverflow = hasProfCardShell || (isMarketing && !useWideMarketingLayout);
-  const useCenteredScale = isMarketing && !hasProfCardShell && !useWideMarketingLayout;
   const borderBleed = hasProfCardShell ? PROF_CARD_SHELL_BLEED_PX : 0;
   const clipPad = hasProfCardShell ? CLIP_PADDING_PX : 0;
   const scaledW = Math.ceil(naturalW * scale) + borderBleed + clipPad * 2;
@@ -143,7 +152,7 @@ function MobileSignaturePreviewFrame({
           : 'signature-email-preview signature-email-preview--mobile sig-mobile-preview-container w-full rounded-md border bg-white p-4 text-left'
       }
       style={{
-        width: mobileFrameWidth,
+        width: isMarketing ? '100%' : mobileFrameWidth,
         maxWidth: mobileFrameWidth,
         minHeight: 200,
         overflowX: frameOverflowX,
@@ -163,16 +172,20 @@ function MobileSignaturePreviewFrame({
         }}
       >
         <div
+          ref={transformRef}
           key={animationKey}
           style={{
-            width: naturalW,
-            marginLeft: useCenteredScale ? 'auto' : undefined,
-            marginRight: useCenteredScale ? 'auto' : undefined,
-            transformOrigin: useCenteredScale ? 'top center' : 'top left',
+            width: isMarketing ? '100%' : naturalW,
+            transformOrigin: 'top left',
             transform: `scale(${scale})`,
           }}
         >
-          <div ref={contentRef} className="mobile-signature-scale-root" dangerouslySetInnerHTML={{ __html: html }} />
+          <div
+            ref={contentRef}
+            className="mobile-signature-scale-root"
+            style={isMarketing ? { width: '100%', minWidth: 0, boxSizing: 'border-box' } : undefined}
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
         </div>
       </div>
     </div>

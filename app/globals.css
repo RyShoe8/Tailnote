@@ -270,6 +270,11 @@
 
     /* Marketing homepage/templates: wider frame + layout fixes (dashboard unchanged). */
     .signature-email-preview--mobile.sig-mobile-preview-container.signature-email-preview--marketing {
+      & .mobile-signature-scale-root {
+        width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+      }
       & td.sig-logo-stack table.sig-logo-address-group {
         width: auto !important;
         max-width: 100% !important;
@@ -290,6 +295,9 @@
         max-width: 100% !important;
         box-sizing: border-box !important;
       }
+      & table.sig-creator-root {
+        max-width: none !important;
+      }
     }
   }
 
@@ -303,6 +311,7 @@
     box-sizing: border-box !important;
   }
   .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-executive-root {
+    width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
   }
@@ -313,7 +322,7 @@
     .mobile-signature-scale-root
     > table.sig-creator-root {
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: none !important;
     box-sizing: border-box !important;
   }
 }
