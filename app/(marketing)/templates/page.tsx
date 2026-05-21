@@ -54,7 +54,7 @@ export default async function TemplatesMarketingPage() {
                     ) : null}
                   </div>
                   <div className="bg-gradient-to-b from-slate-50/50 to-white p-6">
-                    <div className="overflow-x-auto overflow-y-visible rounded-lg transition-transform duration-500 group-hover:scale-[1.01]">
+                    <div className="overflow-x-visible overflow-y-visible rounded-lg transition-transform duration-500 group-hover:scale-[1.01]">
                       <MarketingLiveSignaturePreview
                         presetId={presetId}
                         html={stripSignaturePreviewLinks(renderMarketingSample(presetId))}

@@ -897,8 +897,13 @@ assert.ok(htmlExecutive.includes('#901a1e'), 'executive: primary color on portfo
 assert.ok(htmlDefault.includes('123 Main St'), 'default: address renders');
 assert.match(
   htmlDefault,
-  /sig-default-layout-table[\s\S]*?123 Main St[\s\S]*?font-weight: 600; color: #111111;">P:&nbsp;</,
-  'default: address beside logo in left column'
+  /width="130"[\s\S]*?123 Main St[\s\S]*?font-weight: 600; color: #111111;">P:&nbsp;</,
+  'default: address under logo in left column'
+);
+assert.doesNotMatch(
+  htmlDefault,
+  /padding-right: 12px; line-height: 0; font-size: 0;[\s\S]*?123 Main St/,
+  'default: address not in horizontal row beside logo'
 );
 assert.ok(htmlCreator.includes('123 Main St'), 'creator: address renders');
 assert.match(
@@ -915,8 +920,13 @@ assert.match(
 assert.ok(htmlStandard.includes('123 Main St'), 'minimal: address renders');
 assert.match(
   htmlMinimalBlocks,
-  /sig-logo-stack[\s\S]*?123 Main St/,
-  'minimal: address beside logo in logo column'
+  /sig-logo-address-group[\s\S]*?123 Main St/,
+  'minimal: address beside logo in grouped logo column'
+);
+assert.match(
+  htmlMinimalBlocks,
+  /sig-logo-address-group[^>]*style="[^"]*width:auto/,
+  'minimal: logo+address table uses intrinsic width'
 );
 assert.doesNotMatch(
   htmlMinimalBlocks,

@@ -21,7 +21,7 @@ export const EXECUTIVE_MINIMALIST_SIGNATURE_TEMPLATE = `<table class="sig-execut
           </td>
           {{#if hasExecutiveLogoColumn}}
           <td valign="middle" style="text-align: left;">
-            <table cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse;">
+            <table class="sig-logo-address-group" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse; width: auto;">
               <tr>
                 {{#if hasLogo}}
                 <td valign="middle" style="padding-right: 10px; line-height: 0; font-size: 0; width: 90px;">

@@ -6,20 +6,22 @@ export const DEFAULT_SIGNATURE_TEMPLATE = `<table class="sig-default-layout-tabl
   <tr>
     <td valign="top" style="padding-right: 20px; border-right: 2px solid {{primaryColor}};">
       <table cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse;">
+        {{#if hasLogo}}
         <tr>
-          {{#if hasLogo}}
-          <td valign="top" style="padding-right: 12px; line-height: 0; font-size: 0;">
+          <td valign="top" style="line-height: 0; font-size: 0;">
             <a href="{{logoLink}}" style="text-decoration: none; border: 0; outline: none; display: inline-block;">
               <img src="{{logoUrl}}" alt="{{companyName}}" width="130" style="display: block; max-width: 130px; height: auto; border: 0;" />
             </a>
           </td>
-          {{/if}}
-          {{#if showAddressBlock}}
-          <td valign="top" style="font-size: 11px; color: #888888; line-height: 1.35; letter-spacing: 0.2px;">
+        </tr>
+        {{/if}}
+        {{#if showAddressBlock}}
+        <tr>
+          <td valign="top" style="padding-top: 8px; font-size: 11px; color: #888888; line-height: 1.35; letter-spacing: 0.2px;">
             {{addressBlockHtml}}
           </td>
-          {{/if}}
         </tr>
+        {{/if}}
       </table>
     </td>
     <td valign="top" style="padding-left: 20px;">

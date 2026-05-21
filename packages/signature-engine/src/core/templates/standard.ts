@@ -68,10 +68,10 @@ export const STANDARD_SIGNATURE_TEMPLATE = `<style type="text/css">
 <table class="sig-root-layout-table" cellpadding="0" cellspacing="0" border="0" width="100%" style="font-family: {{fontFamily}}, Arial, Helvetica, sans-serif; font-size:14px; color:#1a1a1a; line-height:1.4;width:100%;max-width:660px;">
   <tr>
     <td class="sig-logo-stack" width="{{logoWidth}}" style="vertical-align:top;line-height:0;font-size:0;padding-right:24px;width:{{logoWidth}}px;">
-      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <table class="sig-logo-address-group" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:auto;">
         <tr>
           {{#if hasLogo}}
-          <td valign="top" style="padding-right:12px;line-height:0;font-size:0;">
+          <td valign="top" style="padding-right:12px;line-height:0;font-size:0;white-space:nowrap;">
             <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:inline-block;">
 {{#if hasLogoSizedHeight}}
               <img src="{{logoUrl}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" border="0" alt="" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;border:0;outline:none;text-decoration:none;" />

@@ -1,7 +1,7 @@
 /** Stacked layout: logo on top, full-width contact below (table-only, inline styles). */
 export const STACKED_SIGNATURE_TEMPLATE = `<table class="sig-stacked-root" cellpadding="0" cellspacing="0" border="0" width="100%" style="font-family: {{fontFamily}}, Arial, Helvetica, sans-serif; font-size:14px; color:#1a1a1a; line-height:1.4;width:100%;max-width:665px;">
   <tr>
-    <td valign="top" style="vertical-align:top;line-height:0;font-size:0;padding-bottom:12px;padding-right:12px;">
+    <td valign="top" width="1%" style="vertical-align:top;line-height:0;font-size:0;padding-bottom:12px;padding-right:12px;white-space:nowrap;width:1%;">
       {{#if hasLogo}}
       <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:inline-block;">
 {{#if hasLogoSizedHeight}}
@@ -14,7 +14,7 @@ export const STACKED_SIGNATURE_TEMPLATE = `<table class="sig-stacked-root" cellp
       {{/if}}
     </td>
     {{#if showAddressBlock}}
-    <td valign="top" style="vertical-align:top;font-size:12px;color:#555;line-height:1.35;padding-bottom:12px;">
+    <td valign="top" style="vertical-align:top;font-size:12px;color:#555;line-height:1.35;padding-bottom:12px;white-space:nowrap;">
       {{addressBlockHtml}}
     </td>
     {{/if}}

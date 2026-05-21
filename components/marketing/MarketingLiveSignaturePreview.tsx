@@ -1,19 +1,15 @@
 'use client';
 
-import {
-  DEFAULT_MOBILE_FRAME_WIDTH,
-  SignaturePreviewFrame,
-} from '@/components/signature/SignaturePreviewFrame';
+import { SignaturePreviewFrame } from '@/components/signature/SignaturePreviewFrame';
 import { presetToEngineTemplate, type TemplatePresetId } from '@/lib/email/templatePresets';
 import type { SignatureLayout } from 'emailsignature-engine';
 
 /** Wider than dashboard mobile preview; fills marketing card column up to cap. */
-const MARKETING_MOBILE_FRAME_WIDTH = 560;
-const MARKETING_STACKED_MOBILE_FRAME_WIDTH = 580;
+const MARKETING_MOBILE_FRAME_WIDTH = 600;
+const MARKETING_STACKED_MOBILE_FRAME_WIDTH = 620;
 
 function marketingMobileFrameWidthForLayout(layout?: SignatureLayout): number {
   if (layout === 'stacked') return MARKETING_STACKED_MOBILE_FRAME_WIDTH;
-  if (layout === 'executive_minimalist') return DEFAULT_MOBILE_FRAME_WIDTH;
   return MARKETING_MOBILE_FRAME_WIDTH;
 }
 

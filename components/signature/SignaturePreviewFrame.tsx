@@ -13,8 +13,8 @@ type Props = {
   previewContext?: 'dashboard' | 'marketing';
 };
 
-export const DEFAULT_MOBILE_FRAME_WIDTH = 404;
-export const STACKED_MOBILE_FRAME_WIDTH = 420;
+export const DEFAULT_MOBILE_FRAME_WIDTH = 480;
+export const STACKED_MOBILE_FRAME_WIDTH = 500;
 
 const CLIP_PADDING_PX = 2;
 const PROF_CARD_SHELL_BLEED_PX = 8;
@@ -34,7 +34,7 @@ function measureContentSize(content: HTMLElement): { width: number; height: numb
 /**
  * Renders signature HTML in either a flexible desktop card or a phone-sized
  * mobile frame. The mobile variant:
- *   - constrains width (default 404px; wider when `mobileFrameWidth` is set for stacked)
+ *   - constrains width (default 480px; wider when `mobileFrameWidth` is set for stacked)
  *   - measures intrinsic content width/height, scales down if needed
  *   - clips using an outer box sized to the scaled footprint so transforms do not
  *     spill past overflow:hidden (avoids right-edge clipping)
@@ -128,12 +128,19 @@ function MobileSignaturePreviewFrame({
   const clipPad = hasProfCardShell ? CLIP_PADDING_PX : 0;
   const scaledW = Math.ceil(naturalW * scale) + borderBleed + clipPad * 2;
   const scaledH = Math.ceil(naturalH * scale) + borderBleed + clipPad * 2;
+  const frameOverflowX = useVisibleOverflow ? 'auto' : 'hidden';
 
   return (
     <div
       ref={frameRef}
-      className="signature-email-preview signature-email-preview--mobile sig-mobile-preview-container w-full rounded-md border bg-white p-4 text-left overflow-x-auto"
-      style={{ maxWidth: mobileFrameWidth, minHeight: 200 }}
+      className="signature-email-preview signature-email-preview--mobile sig-mobile-preview-container w-full rounded-md border bg-white p-4 text-left"
+      style={{
+        width: mobileFrameWidth,
+        maxWidth: mobileFrameWidth,
+        minHeight: 200,
+        overflowX: frameOverflowX,
+        overflowY: 'visible',
+      }}
     >
       <div
         style={{

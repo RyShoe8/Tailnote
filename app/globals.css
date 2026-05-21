@@ -245,6 +245,10 @@
         width: 100% !important;
         max-width: 100% !important;
       }
+      & table.sig-logo-address-group {
+        width: auto !important;
+        max-width: 100% !important;
+      }
       /* Executive Minimalist: stack name band | logo (logo+address stay paired inside logo cell) */
       & table.sig-executive-header-table > tbody > tr > td,
       & table.sig-executive-header-table > tr > td {
