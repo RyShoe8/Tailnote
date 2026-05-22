@@ -15,7 +15,8 @@ function isCatalogPresetId(id: string): id is CatalogPresetId {
     id === 'minimal' ||
     id === 'stacked' ||
     id === 'corporate' ||
-    id === 'professional'
+    id === 'professional' ||
+    id === 'portfolio'
   );
 }
 

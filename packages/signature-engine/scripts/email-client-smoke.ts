@@ -910,6 +910,63 @@ assert.doesNotMatch(htmlExecutive, />Portfolio:</, 'executive: no hardcoded Port
 assert.ok(htmlExecutive.includes('Nucleas') && htmlExecutive.includes('|'), 'executive: portfolio pipe separators');
 assert.ok(htmlExecutive.includes('#901a1e'), 'executive: primary color on portfolio links');
 
+// Portfolio layout + secondary color accents
+const htmlPortfolio = renderSignature({
+  profile: { ...profile, title: 'Founder' },
+  brand: {
+    ...mockSignatureBrand,
+    companyName: 'The Media Shop',
+    primaryColor: '#1A3A34',
+    secondaryColor: '#E29578',
+    website: 'https://themediashop.co',
+    contentBlocks: [
+      {
+        type: 'list',
+        enabled: true,
+        listTitle: 'Network Portfolio',
+        listItems: [
+          { title: 'Nucleas', url: 'https://example.com/nucleas' },
+          { title: 'Tailnote', url: 'https://example.com/tailnote' },
+        ],
+      },
+    ],
+  },
+  template: mockSignatureTemplate('portfolio'),
+  publicSiteOrigin: origin,
+});
+assert.ok(htmlPortfolio.includes('sig-portfolio-root'), 'portfolio: root class');
+assert.ok(htmlPortfolio.includes('background-color:#1A3A34'), 'portfolio: dark card shell');
+assert.ok(htmlPortfolio.includes('Email Me'), 'portfolio: email contact pill');
+assert.ok(htmlPortfolio.includes('Nucleas') && htmlPortfolio.includes('Tailnote'), 'portfolio: network pills');
+assert.ok(htmlPortfolio.includes('Network Portfolio'), 'portfolio: network section label');
+assert.ok(htmlPortfolio.includes(`${iconBase}icon-linkedin.png?v=6`), 'portfolio: hosted LinkedIn icon');
+assert.doesNotMatch(htmlPortfolio, /flaticon\.com/i, 'portfolio: no external flaticon CDN');
+assert.match(htmlPortfolio, /width="85"[^>]*height="85"/, 'portfolio: 85×85 circular logo');
+assert.ok(htmlPortfolio.includes('#E29578'), 'portfolio: secondary color on accents');
+assert.ok(htmlPortfolio.includes('Founder @ The Media Shop'), 'portfolio: role line with @ separator');
+
+const htmlPortfolioPrimaryFallback = renderSignature({
+  profile,
+  brand: {
+    ...mockSignatureBrand,
+    primaryColor: '#901a1e',
+    secondaryColor: '',
+    contentBlocks: [
+      {
+        type: 'list',
+        enabled: true,
+        listItems: [{ title: 'Nucleas', url: 'https://example.com/nucleas' }],
+      },
+    ],
+  },
+  template: mockSignatureTemplate('portfolio'),
+  publicSiteOrigin: origin,
+});
+assert.ok(
+  htmlPortfolioPrimaryFallback.includes('#901a1e'),
+  'portfolio: falls back to primaryColor when secondaryColor empty'
+);
+
 // Address placement across layouts (mockSignatureBrand includes street/state/zip)
 assert.ok(htmlDefault.includes('123 Main St'), 'default: address renders');
 assert.match(

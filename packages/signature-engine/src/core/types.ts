@@ -54,6 +54,8 @@ export type SignatureBrand = {
   logoShape?: 'rectangle' | 'circle';
   logoLink: string;
   primaryColor: string;
+  /** Accent color for Portfolio template; falls back to primaryColor when empty. */
+  secondaryColor?: string;
   fontFamily: string;
   socialLinks: {
     linkedin?: string;
@@ -90,7 +92,8 @@ export type SignatureLayout =
   | 'professional'
   | 'default'
   | 'creator'
-  | 'executive_minimalist';
+  | 'executive_minimalist'
+  | 'portfolio';
 
 export type SignatureTemplate = {
   id: string;

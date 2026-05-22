@@ -25,6 +25,7 @@ const BrandOverrideSchema = z
   .object({
     fontFamily: z.string().max(200).optional(),
     primaryColor: z.string().max(40).optional(),
+    secondaryColor: z.string().max(40).optional(),
     logoUrl: z.string().max(2000).optional(),
     logoShape: z.enum(['rectangle', 'circle']).optional(),
     logoLink: z.string().max(2000).optional(),
@@ -176,6 +177,7 @@ export async function POST(request: Request) {
       ...orgBrand,
       ...(override.fontFamily !== undefined ? { fontFamily: override.fontFamily } : {}),
       ...(override.primaryColor !== undefined ? { primaryColor: override.primaryColor } : {}),
+      ...(override.secondaryColor !== undefined ? { secondaryColor: override.secondaryColor } : {}),
       ...(override.logoUrl !== undefined ? { logoUrl: override.logoUrl } : {}),
       ...(override.logoShape !== undefined ? { logoShape: override.logoShape } : {}),
       ...(override.logoLink !== undefined ? { logoLink: override.logoLink } : {}),

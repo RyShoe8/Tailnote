@@ -12,9 +12,9 @@ const MARKETING_UTM = { source: 'Tailnote', medium: 'Email', campaign: 'Footer' 
 const DEMO_PROFILE: SignatureProfile = {
   firstName: 'Alex',
   lastName: 'Morgan',
-  title: 'Account Executive',
+  title: 'Founder',
   email: 'myemail@themediashop.co',
-  officePhone: '(555) 123-4567',
+  officePhone: '123-456-7899',
 };
 
 function promoImageUrl(origin: string): string {
@@ -169,6 +169,21 @@ function marketingContentBlocks(
           ],
         },
       ];
+    case 'portfolio':
+      return [
+        {
+          type: 'list',
+          enabled: true,
+          listTitle: 'Network Portfolio',
+          listItems: [
+            { title: 'Nucleas', url: 'https://www.acmecorp.com/nucleas' },
+            { title: 'The Ad Shop', url: 'https://www.acmecorp.com/ad-shop' },
+            { title: 'Tailnote', url: 'https://www.acmecorp.com/tailnote' },
+            { title: 'The Frugal Gambler', url: 'https://www.acmecorp.com/frugal' },
+            { title: 'DocSpot', url: 'https://www.acmecorp.com/docspot' },
+          ],
+        },
+      ];
     case 'professional':
       return [
         {
@@ -215,12 +230,15 @@ function marketingContentBlocks(
 
 function demoBrand(origin: string, presetId: TemplatePresetId): SignatureBrand {
   const logoUrl = promoImageUrl(origin);
+  const isPortfolio = presetId === 'portfolio';
   return {
-    companyName: 'Acme Corp',
-    website: 'www.acmecorp.com',
+    companyName: isPortfolio ? 'The Media Shop' : 'Acme Corp',
+    website: isPortfolio ? 'themediashop.co' : 'www.acmecorp.com',
     logoUrl,
     logoLink: 'https://www.acmecorp.com',
-    primaryColor: '#2563eb',
+    primaryColor: isPortfolio ? '#1A3A34' : '#2563eb',
+    secondaryColor: isPortfolio ? '#E29578' : '',
+    logoShape: isPortfolio ? 'circle' : 'rectangle',
     fontFamily: 'Arial',
     socialLinks: {
       linkedin: 'https://www.linkedin.com/company/example',

@@ -21,6 +21,7 @@ const PRESET_IDS = [
   'stacked',
   'corporate',
   'professional',
+  'portfolio',
 ] as const;
 
 function parsePresetId(raw: string): CatalogPresetId | null {

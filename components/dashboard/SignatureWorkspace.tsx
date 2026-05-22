@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ColorField } from '@/components/dashboard/ColorField';
 import { PrimaryColorField } from '@/components/dashboard/PrimaryColorField';
 import { ContentBlocksEditor } from '@/components/signature/ContentBlocksEditor';
 import { SocialLinksEditor } from '@/components/signature/SocialLinksEditor';
@@ -42,6 +43,7 @@ type OrgResponse = {
   logoShape?: 'rectangle' | 'circle';
   logoLink?: string;
   primaryColor?: string;
+  secondaryColor?: string;
   fontFamily?: string;
   socialLinks?: { linkedin?: string; facebook?: string; instagram?: string; reddit?: string; discord?: string };
   address?: string;
@@ -70,6 +72,7 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
     logoShape: org.logoShape === 'circle' ? 'circle' : 'rectangle',
     logoLink: (org.logoLink || '').trim(),
     primaryColor: org.primaryColor?.trim() || '#0a0a0a',
+    secondaryColor: org.secondaryColor?.trim() || '',
     fontFamily: org.fontFamily?.trim() || 'Arial',
     socialLinks: {
       linkedin: sl.linkedin?.trim(),
@@ -267,6 +270,7 @@ export function SignatureWorkspace() {
               brandOverride: {
                 fontFamily: brand.fontFamily,
                 primaryColor: brand.primaryColor,
+                secondaryColor: brand.secondaryColor,
                 logoUrl: brand.logoUrl,
                 logoShape: brand.logoShape,
                 logoLink: brand.logoLink,
@@ -312,6 +316,7 @@ export function SignatureWorkspace() {
     brand.logoShape,
     brand.logoLink,
     brand.primaryColor,
+    brand.secondaryColor,
     brand.fontFamily,
     brand.socialLinks?.linkedin,
     brand.socialLinks?.facebook,
@@ -421,6 +426,7 @@ export function SignatureWorkspace() {
           logoShape: org.logoShape === 'circle' ? 'circle' : 'rectangle',
           logoLink: org.logoLink,
           primaryColor: org.primaryColor,
+          secondaryColor: org.secondaryColor,
           fontFamily: org.fontFamily,
           socialLinks: org.socialLinks,
           address: org.address,
@@ -667,6 +673,19 @@ export function SignatureWorkspace() {
                 value={org.primaryColor ?? ''}
                 onChange={(primaryColor) => setOrg((o) => ({ ...(o || {}), primaryColor }))}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Secondary color</Label>
+              <ColorField
+                value={org.secondaryColor ?? ''}
+                onChange={(secondaryColor) => setOrg((o) => ({ ...(o || {}), secondaryColor }))}
+                placeholder="#E29578"
+                pickerAriaLabel="Pick secondary color"
+              />
+              <p className="text-xs text-muted-foreground">
+                Used by the Portfolio template for accents (title, logo ring, network label, website
+                button). Falls back to primary color when empty.
+              </p>
             </div>
             <div className="space-y-2">
               <Label>Font</Label>

@@ -19,6 +19,7 @@ const PATCHABLE_FIELDS = [
   'logoUrl',
   'logoShape',
   'primaryColor',
+  'secondaryColor',
   'website',
   'companyName',
   'fontFamily',

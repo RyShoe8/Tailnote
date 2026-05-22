@@ -13,6 +13,7 @@ import { PROFESSIONAL_SIGNATURE_TEMPLATE } from './templates/professional';
 import { DEFAULT_SIGNATURE_TEMPLATE } from './templates/default';
 import { CREATOR_SIGNATURE_TEMPLATE } from './templates/creator';
 import { EXECUTIVE_MINIMALIST_SIGNATURE_TEMPLATE } from './templates/executive_minimalist';
+import { PORTFOLIO_SIGNATURE_TEMPLATE } from './templates/portfolio';
 import { normalizePromoUrl } from './normalizePromoUrl';
 import {
   SOCIAL_ICON_DISCORD,
@@ -29,6 +30,7 @@ function hasElement(elements: SignatureElement[], type: ElementType): boolean {
 }
 
 function logoWidthForLayout(layout: SignatureTemplate['layout'], useCircle: boolean): string {
+  if (layout === 'portfolio') return '85';
   if (useCircle) return '110';
   switch (layout) {
     case 'default':
@@ -675,6 +677,80 @@ function buildExecutivePromoRowsHtml(blocks: ContentBlockData[], primaryColor: s
   return rows.join('');
 }
 
+function buildPortfolioRoleLine(title: string, companyName: string): string {
+  const t = title.trim();
+  const co = companyName.trim();
+  if (t && co) return `${escapeHtml(t)} @ ${escapeHtml(co)}`;
+  if (t) return escapeHtml(t);
+  if (co) return escapeHtml(co);
+  return '';
+}
+
+function formatPortfolioPhoneDisplay(phone: string): string {
+  const digits = phone.replace(/[^\d+]/g, '');
+  if (digits.length === 10) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  return phone.trim();
+}
+
+function buildPortfolioContactPillsHtml(
+  email: string,
+  phone: string,
+  phoneTelHref: string,
+  website: string,
+  websiteDisplay: string,
+  accentColor: string
+): string {
+  const rows: string[] = [];
+  const accent = escapeHtml(accentColor);
+  const cardText = escapeHtml('#1A3A34');
+
+  if (email) {
+    rows.push(`<tr><td style="padding-bottom:10px;"><a href="mailto:${escapeHtml(email)}" style="display:block;background-color:#254E46;color:#FFFFFF;text-decoration:none;padding:11px 16px;border-radius:30px;font-size:13px;font-weight:500;border:1px solid #2F6258;text-align:center;letter-spacing:0.2px;">&#9993; Email Me</a></td></tr>`);
+  }
+  if (phone && phoneTelHref) {
+    const label = escapeHtml(formatPortfolioPhoneDisplay(phone));
+    rows.push(`<tr><td style="padding-bottom:10px;"><a href="${escapeHtml(phoneTelHref)}" style="display:block;background-color:#254E46;color:#FFFFFF;text-decoration:none;padding:11px 16px;border-radius:30px;font-size:13px;font-weight:500;border:1px solid #2F6258;text-align:center;letter-spacing:0.2px;">&#128222; ${label}</a></td></tr>`);
+  }
+  if (website) {
+    const visitLabel = escapeHtml(`Visit ${websiteDisplay}`);
+    rows.push(`<tr><td style="padding-bottom:20px;"><a href="${escapeHtml(website)}" style="display:block;background-color:${accent};color:${cardText};text-decoration:none;padding:12px 16px;border-radius:30px;font-size:13px;font-weight:700;text-align:center;letter-spacing:0.3px;">&#127760; ${visitLabel}</a></td></tr>`);
+  } else if (rows.length > 0) {
+    rows[rows.length - 1] = rows[rows.length - 1].replace('padding-bottom:10px', 'padding-bottom:20px');
+  }
+
+  return rows.join('');
+}
+
+function buildPortfolioNetworkSectionHtml(blocks: ContentBlockData[], accentColor: string): string {
+  const enabledLists = blocks.filter((b) => b.enabled && b.type === 'list');
+  if (enabledLists.length === 0) return '';
+
+  const items = collectFlattenedListItems(enabledLists);
+  if (items.length === 0) return '';
+
+  const sectionTitle =
+    enabledLists.map((b) => (b.listTitle || b.customTitle || '').trim()).find(Boolean) ||
+    'Network Portfolio';
+  const accent = escapeHtml(accentColor);
+
+  let pills = '';
+  for (const item of items) {
+    const labelRaw = item.title || (item.url ? listItemLinkFallbackLabel(item.url) : '');
+    if (!labelRaw) continue;
+    const label = escapeHtml(labelRaw);
+    if (item.url) {
+      pills += `<a href="${escapeHtml(item.url)}" style="display:inline-block;background-color:#254E46;color:#F4F7F6;text-decoration:none;padding:6px 12px;border-radius:12px;font-size:12px;margin:0 6px 6px 0;font-weight:500;">${label}</a>`;
+    } else {
+      pills += `<span style="display:inline-block;background-color:#254E46;color:#F4F7F6;padding:6px 12px;border-radius:12px;font-size:12px;margin:0 6px 6px 0;font-weight:500;">${label}</span>`;
+    }
+  }
+  if (!pills) return '';
+
+  return `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${accent};font-weight:bold;margin-bottom:10px;text-align:left;">${escapeHtml(sectionTitle)}</div><div style="text-align:left;margin-bottom:18px;line-height:1.6;">${pills}</div>`;
+}
+
 function layoutSocialTdStyles(
   linkedin: string,
   facebook: string,
@@ -783,7 +859,9 @@ export function mergeRenderContext(
       ? Math.round(brand.logoHeightPx)
       : 0;
 
-  const useCircleLogo = hasLogo && !useAnimation && brand.logoShape === 'circle';
+  const isPortfolioLayout = template.layout === 'portfolio';
+  const useCircleLogo =
+    hasLogo && !useAnimation && (brand.logoShape === 'circle' || isPortfolioLayout);
   const logoWidthStr = hasLogo ? logoWidthForLayout(template.layout, useCircleLogo) : '110';
 
   let logoDisplayHeightStr = '';
@@ -887,7 +965,10 @@ export function mergeRenderContext(
   const isDefaultLayout = template.layout === 'default';
   const isCreatorLayout = template.layout === 'creator';
   const isExecutiveLayout = template.layout === 'executive_minimalist';
-  const usesCustomPromoLayout = isDefaultLayout || isCreatorLayout || isExecutiveLayout;
+  const usesCustomPromoLayout =
+    isDefaultLayout || isCreatorLayout || isExecutiveLayout || isPortfolioLayout;
+  const brandSecondaryColor =
+    brand.secondaryColor?.trim() || brand.primaryColor.trim() || '#2563eb';
   const useVerticalBlocksOnly = template.layout === 'stacked';
   const contentBlocksHtml = usesCustomPromoLayout
     ? ''
@@ -1000,6 +1081,34 @@ export function mergeRenderContext(
     : '';
   const hasExecutivePromoRows = Boolean(executivePromoRowsHtml);
 
+  const portfolioRoleLine =
+    isPortfolioLayout && (hasTitle || brand.companyName.trim())
+      ? buildPortfolioRoleLine(profile.title.trim(), brand.companyName.trim())
+      : '';
+  const hasPortfolioRoleLine = Boolean(portfolioRoleLine);
+  const portfolioPhone = officePhone || mobilePhone;
+  const portfolioPhoneTelHref = officePhone ? officePhoneTelHref : mobilePhoneTelHref;
+  const portfolioContactPillsHtml =
+    isPortfolioLayout && hasContact
+      ? buildPortfolioContactPillsHtml(
+          profile.email.trim(),
+          portfolioPhone,
+          portfolioPhoneTelHref,
+          website,
+          websiteDisplay,
+          brandSecondaryColor
+        )
+      : '';
+  const hasPortfolioContactPills = Boolean(portfolioContactPillsHtml);
+  const portfolioNetworkSectionHtml = isPortfolioLayout
+    ? buildPortfolioNetworkSectionHtml(contentBlocks, brandSecondaryColor)
+    : '';
+  const hasPortfolioNetworkSection = Boolean(portfolioNetworkSectionHtml);
+
+  const portfolioSocial = isPortfolioLayout
+    ? layoutSocialTdStyles(linkedin, facebook, instagram, reddit, discord, '10px')
+    : { li: '', fb: '', ig: '', rd: '', dc: '' };
+
   /** Standard layout: optional third column for blocks (stacked keeps blocks below). */
   const sideColumnContentBlocks =
     template.layout !== 'stacked' && !usesCustomPromoLayout && hasContentBlocks;
@@ -1037,6 +1146,9 @@ export function mergeRenderContext(
     hasExecutivePromoRows,
     hasExecutiveLogoColumn:
       isExecutiveLayout && (hasLogo || (hasAddressEl && Boolean(addressLine || stateLine || zipLine))),
+    hasPortfolioRoleLine,
+    hasPortfolioContactPills,
+    hasPortfolioNetworkSection,
   };
 
   const stringCtx: Record<string, string> = {
@@ -1055,6 +1167,7 @@ export function mergeRenderContext(
     logoDisplayHeight: logoDisplayHeightStr,
     logoImgBorderRadius,
     primaryColor: escapeHtml(brand.primaryColor.trim()),
+    secondaryColor: escapeHtml(brandSecondaryColor),
     fontFamily: escapeHtml(brand.fontFamily.trim()),
     companyName: escapeHtml(brand.companyName.trim()),
     website: escapeHtml(website),
@@ -1097,6 +1210,14 @@ export function mergeRenderContext(
     executiveContactLineHtml,
     executiveSocialLineHtml,
     executivePromoRowsHtml,
+    portfolioRoleLine,
+    portfolioContactPillsHtml,
+    portfolioNetworkSectionHtml,
+    portfolioSocialTdLiStyle: portfolioSocial.li,
+    portfolioSocialTdFbStyle: portfolioSocial.fb,
+    portfolioSocialTdIgStyle: portfolioSocial.ig,
+    portfolioSocialTdRedditStyle: portfolioSocial.rd,
+    portfolioSocialTdDiscordStyle: portfolioSocial.dc,
   };
 
   return { evalCtx, stringCtx };
@@ -1109,6 +1230,7 @@ function pickTemplate(layout: SignatureTemplate['layout']): string {
   if (layout === 'stacked') return STACKED_SIGNATURE_TEMPLATE;
   if (layout === 'corporate') return CORPORATE_SIGNATURE_TEMPLATE;
   if (layout === 'professional') return PROFESSIONAL_SIGNATURE_TEMPLATE;
+  if (layout === 'portfolio') return PORTFOLIO_SIGNATURE_TEMPLATE;
   return STANDARD_SIGNATURE_TEMPLATE;
 }
 

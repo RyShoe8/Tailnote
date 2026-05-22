@@ -8,6 +8,7 @@ const PRESET_IDS = [
   'stacked',
   'corporate',
   'professional',
+  'portfolio',
 ] as const;
 
 export type CatalogPresetId = (typeof PRESET_IDS)[number];

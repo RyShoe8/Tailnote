@@ -9,6 +9,7 @@ export const HOME_TEMPLATE_SHOWCASE_ORDER = [
   'corporate',
   'stacked',
   'minimal',
+  'portfolio',
 ] as const satisfies readonly TemplatePresetId[];
 
 export type HomeShowcasePresetId = (typeof HOME_TEMPLATE_SHOWCASE_ORDER)[number];

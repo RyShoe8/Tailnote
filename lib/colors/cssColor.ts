@@ -62,13 +62,16 @@ export function colorToHex({ r, g, b }: RgbColor): string {
 }
 
 /** Normalize user input to lowercase #rrggbb, or null if invalid. */
-export function normalizePrimaryColor(input: string): string | null {
+export function normalizeCssColor(input: string): string | null {
   const rgb = parseCssColor(input);
   if (!rgb) return null;
   return colorToHex(rgb);
 }
 
+/** @deprecated Use normalizeCssColor */
+export const normalizePrimaryColor = normalizeCssColor;
+
 /** Value for native `<input type="color">` (requires #rrggbb). */
 export function hexForNativeColorInput(stored: string): string {
-  return normalizePrimaryColor(stored) ?? '#000000';
+  return normalizeCssColor(stored) ?? '#000000';
 }

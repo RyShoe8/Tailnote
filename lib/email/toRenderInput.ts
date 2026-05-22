@@ -14,6 +14,7 @@ export type OrgBrandInput = {
   logoShape?: 'rectangle' | 'circle';
   logoLink?: string;
   primaryColor?: string;
+  secondaryColor?: string;
   fontFamily?: string;
   socialLinks: {
     linkedin?: string;
@@ -46,6 +47,7 @@ export function toSignatureBrand(input: OrgBrandInput): SignatureBrand {
     logoShape: input.logoShape === 'circle' ? 'circle' : 'rectangle',
     logoLink: (input.logoLink ?? '').trim(),
     primaryColor: (input.primaryColor ?? '#0a0a0a').trim(),
+    secondaryColor: (input.secondaryColor ?? '').trim(),
     fontFamily: (input.fontFamily ?? 'Arial').trim(),
     socialLinks: {
       linkedin: input.socialLinks.linkedin?.trim() || undefined,

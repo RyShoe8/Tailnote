@@ -7,7 +7,8 @@ export type TemplatePresetId =
   | 'minimal'
   | 'stacked'
   | 'corporate'
-  | 'professional';
+  | 'professional'
+  | 'portfolio';
 
 export type TemplatePresetMeta = {
   id: TemplatePresetId;
@@ -54,6 +55,12 @@ export const TEMPLATE_PRESET_META: TemplatePresetMeta[] = [
     name: 'Professional',
     description:
       'Card-style layout with the same structure as Corporate — curved frame, hero name band, tighter spacing, and richer brand color.',
+  },
+  {
+    id: 'portfolio',
+    name: 'Portfolio',
+    description:
+      'Dark card with circular logo, pill contact buttons, network portfolio tags from list blocks, and social icons — ideal for founders and personal brands.',
   },
 ];
 
@@ -119,6 +126,17 @@ function elementsProfessional(): SignatureElement[] {
   return elementsCorporate();
 }
 
+function elementsPortfolio(): SignatureElement[] {
+  return [
+    { type: 'logo' },
+    { type: 'name' },
+    { type: 'title' },
+    { type: 'contact' },
+    { type: 'social' },
+    { type: 'contentBlocks' },
+  ];
+}
+
 /**
  * Resolves a named preset to engine `SignatureTemplate` (no HTML in DB).
  * `templateDocId` is the Mongo id string of the org template row when persisted.
@@ -177,6 +195,13 @@ export function presetToEngineTemplate(
         name: displayName ?? 'Professional',
         layout: 'professional',
         elements: elementsProfessional(),
+      };
+    case 'portfolio':
+      return {
+        id: templateDocId,
+        name: displayName ?? 'Portfolio',
+        layout: 'portfolio',
+        elements: elementsPortfolio(),
       };
     default:
       return {

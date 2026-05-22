@@ -34,6 +34,7 @@ export { PROFESSIONAL_SIGNATURE_TEMPLATE } from './core/templates/professional';
 export { DEFAULT_SIGNATURE_TEMPLATE } from './core/templates/default';
 export { CREATOR_SIGNATURE_TEMPLATE } from './core/templates/creator';
 export { EXECUTIVE_MINIMALIST_SIGNATURE_TEMPLATE } from './core/templates/executive_minimalist';
+export { PORTFOLIO_SIGNATURE_TEMPLATE } from './core/templates/portfolio';
 
 export {
   mockSignatureBrand,

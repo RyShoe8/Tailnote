@@ -25,6 +25,7 @@ export function orgToBrandInput(org: OrganizationDoc, contentBlocks?: ContentBlo
     logoShape: org.logoShape === 'circle' ? 'circle' : 'rectangle',
     logoLink: (org.logoLink || '').trim(),
     primaryColor: org.primaryColor || '#0a0a0a',
+    secondaryColor: (org.secondaryColor as string | undefined)?.trim() || '',
     fontFamily: org.fontFamily || 'Arial',
     socialLinks: {
       linkedin: sl?.linkedin,
