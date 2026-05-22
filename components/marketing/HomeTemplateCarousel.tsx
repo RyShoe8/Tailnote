@@ -99,30 +99,14 @@ function CarouselDots({
   );
 }
 
-function MobileSwipeHint({
-  hidden,
-  activeIndex,
-  presets,
-  onGoToIndex,
-}: {
-  hidden: boolean;
-  activeIndex: number;
-  presets: CatalogPresetRow[];
-  onGoToIndex: (index: number) => void;
-}) {
+function MobileSwipeHint({ hidden }: { hidden: boolean }) {
   return (
     <div
-      className={`mb-3 flex flex-col items-center gap-2 transition-opacity duration-300 md:hidden ${
+      className={`mb-3 flex justify-center transition-opacity duration-300 md:hidden ${
         hidden ? 'pointer-events-none opacity-0' : 'opacity-100'
       }`}
       aria-hidden={hidden}
     >
-      <CarouselDots
-        activeIndex={activeIndex}
-        presets={presets}
-        onGoToIndex={onGoToIndex}
-        className="flex flex-wrap items-center justify-center gap-2"
-      />
       <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-white px-3 py-1 text-xs font-medium text-foreground shadow-sm">
         Swipe to explore
         <ChevronRight className="tn-swipe-hint h-3.5 w-3.5 text-primary" aria-hidden />
@@ -173,7 +157,6 @@ export function HomeTemplateCarousel({ presets }: Props) {
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
-  const activeSlideRef = useRef<HTMLElement | null>(null);
 
   const goToIndex = useCallback(
     (index: number) => {
@@ -184,28 +167,36 @@ export function HomeTemplateCarousel({ presets }: Props) {
   );
 
   useLayoutEffect(() => {
-    const el = activeSlideRef.current;
-    if (!el) return;
+    const root = viewportRef.current;
+    if (!root) return;
 
     const measure = () => {
-      const height = Math.ceil(el.getBoundingClientRect().height);
-      if (height > 0) setViewportHeight(height);
+      const nodes = root.querySelectorAll<HTMLElement>('[data-carousel-slide]');
+      let max = 0;
+      nodes.forEach((node) => {
+        max = Math.max(max, Math.ceil(node.getBoundingClientRect().height));
+      });
+      if (max > 0) setViewportHeight(max);
     };
 
     measure();
 
     const ro = new ResizeObserver(() => measure());
-    ro.observe(el);
+    const nodes = root.querySelectorAll<HTMLElement>('[data-carousel-slide]');
+    nodes.forEach((node) => ro.observe(node));
 
     const onImgLoad = () => measure();
-    el.querySelectorAll('img').forEach((img) => {
+    root.querySelectorAll('img').forEach((img) => {
       if (!img.complete) img.addEventListener('load', onImgLoad, { once: true });
     });
 
+    window.addEventListener('resize', measure);
+
     return () => {
       ro.disconnect();
+      window.removeEventListener('resize', measure);
     };
-  }, [activeIndex, presets]);
+  }, [presets]);
 
   function scrollBySlide(delta: number) {
     goToIndex(activeIndex + delta);
@@ -261,48 +252,45 @@ export function HomeTemplateCarousel({ presets }: Props) {
 
       <CarouselSlideMeta preset={activePreset} />
 
-      <MobileSwipeHint
-        hidden={hasSwiped}
-        activeIndex={activeIndex}
-        presets={presets}
-        onGoToIndex={goToIndex}
-      />
+      <MobileSwipeHint hidden={hasSwiped} />
 
       <div
-        ref={viewportRef}
-        className={`relative w-full min-w-0 overflow-hidden transition-[height] duration-300 ease-out motion-reduce:transition-none ${
-          viewportHeight == null ? 'min-h-[200px]' : ''
-        }`}
-        style={viewportHeight != null ? { height: viewportHeight } : undefined}
+        className="relative px-4 pb-6 pt-1 sm:px-6 sm:pb-8"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
         <div
-          className="flex items-start transition-transform duration-300 ease-out motion-reduce:transition-none"
-          style={{
-            width: `${presets.length * 100}%`,
-            transform: `translateX(-${trackOffsetPercent}%)`,
-          }}
+          ref={viewportRef}
+          className={`relative w-full min-w-0 overflow-x-hidden overflow-y-visible ${
+            viewportHeight == null ? 'min-h-[200px]' : ''
+          }`}
+          style={viewportHeight != null ? { height: viewportHeight } : undefined}
         >
-          {presets.map((preset, index) => (
-            <article
-              key={preset.presetId}
-              ref={index === activeIndex ? activeSlideRef : undefined}
-              className="shrink-0 grow-0"
-              style={{ width: `${slideSharePercent}%` }}
-              aria-roledescription="slide"
-              aria-hidden={index !== activeIndex}
-            >
-              <SlideCardShell>
-                <TemplateSlidePreview preset={preset} />
-              </SlideCardShell>
-            </article>
-          ))}
+          <div
+            className="flex items-start transition-transform duration-300 ease-out motion-reduce:transition-none"
+            style={{
+              width: `${presets.length * 100}%`,
+              transform: `translateX(-${trackOffsetPercent}%)`,
+            }}
+          >
+            {presets.map((preset, index) => (
+              <article
+                key={preset.presetId}
+                data-carousel-slide
+                className="shrink-0 grow-0"
+                style={{ width: `${slideSharePercent}%` }}
+                aria-roledescription="slide"
+                aria-hidden={index !== activeIndex}
+              >
+                <div className="overflow-visible">
+                  <SlideCardShell>
+                    <TemplateSlidePreview preset={preset} />
+                  </SlideCardShell>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
-      </div>
-
-      <div className="mt-5 md:hidden">
-        <CarouselDots activeIndex={activeIndex} presets={presets} onGoToIndex={goToIndex} />
       </div>
     </div>
   );
