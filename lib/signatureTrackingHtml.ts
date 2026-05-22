@@ -67,6 +67,9 @@ function classifyAnchor(
   const h = normalizeHref(hrefRaw);
   const hNoMarketing = normalizeHrefWithoutMarketing(hrefRaw);
   if (!h) return null;
+  if (h.includes('/api/vcard/') || hNoMarketing.includes('/api/vcard/')) {
+    return 'save_contact';
+  }
   if (hasImg) {
     const sk = ctx.socialByHref.get(h) ?? ctx.socialByHref.get(hNoMarketing);
     if (sk) return sk;

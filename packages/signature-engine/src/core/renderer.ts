@@ -14,7 +14,9 @@ import { DEFAULT_SIGNATURE_TEMPLATE } from './templates/default';
 import { CREATOR_SIGNATURE_TEMPLATE } from './templates/creator';
 import { EXECUTIVE_MINIMALIST_SIGNATURE_TEMPLATE } from './templates/executive_minimalist';
 import { PORTFOLIO_SIGNATURE_TEMPLATE } from './templates/portfolio';
+import { ECARD_SIGNATURE_TEMPLATE } from './templates/ecard';
 import { normalizePromoUrl } from './normalizePromoUrl';
+import { adjustHexLightness } from './colorUtils';
 import {
   SOCIAL_ICON_DISCORD,
   SOCIAL_ICON_FACEBOOK,
@@ -31,6 +33,7 @@ function hasElement(elements: SignatureElement[], type: ElementType): boolean {
 
 function logoWidthForLayout(layout: SignatureTemplate['layout'], useCircle: boolean): string {
   if (layout === 'portfolio') return '85';
+  if (layout === 'ecard') return '80';
   if (useCircle) return '110';
   switch (layout) {
     case 'default':
@@ -540,10 +543,11 @@ function collectFlattenedListItems(blocks: ContentBlockData[]): Array<{
   return out;
 }
 
-function buildCreatorPromoPillsHtml(blocks: ContentBlockData[]): string {
+function buildCreatorPromoPillsHtml(blocks: ContentBlockData[], panelColor: string): string {
   const items = collectFlattenedListItems(blocks);
   if (items.length === 0) return '';
 
+  const panel = escapeHtml(panelColor);
   let html = '';
   for (const item of items) {
     const labelRaw = item.title || (item.url ? listItemLinkFallbackLabel(item.url) : '');
@@ -552,7 +556,7 @@ function buildCreatorPromoPillsHtml(blocks: ContentBlockData[]): string {
     const inner = item.url
       ? `<a href="${escapeHtml(item.url)}" style="color: #b5bac1; text-decoration: none;">${label}</a>`
       : label;
-    html += `<span style="display: inline-block; background-color: #2b2d31; padding: 4px 8px; border-radius: 4px; margin: 0 4px 6px 0;">${inner}</span>`;
+    html += `<span style="display: inline-block; background-color: ${panel}; padding: 4px 8px; border-radius: 4px; margin: 0 4px 6px 0;">${inner}</span>`;
   }
   return html;
 }
@@ -700,18 +704,23 @@ function buildPortfolioContactPillsHtml(
   phoneTelHref: string,
   website: string,
   websiteDisplay: string,
-  accentColor: string
+  accentColor: string,
+  panelColor: string,
+  borderColor: string,
+  cardTextColor: string
 ): string {
   const rows: string[] = [];
   const accent = escapeHtml(accentColor);
-  const cardText = escapeHtml('#1A3A34');
+  const panel = escapeHtml(panelColor);
+  const border = escapeHtml(borderColor);
+  const cardText = escapeHtml(cardTextColor);
 
   if (email) {
-    rows.push(`<tr><td style="padding-bottom:10px;"><a href="mailto:${escapeHtml(email)}" style="display:block;background-color:#254E46;color:#FFFFFF;text-decoration:none;padding:11px 16px;border-radius:30px;font-size:13px;font-weight:500;border:1px solid #2F6258;text-align:center;letter-spacing:0.2px;">&#9993; Email Me</a></td></tr>`);
+    rows.push(`<tr><td style="padding-bottom:10px;"><a href="mailto:${escapeHtml(email)}" style="display:block;background-color:${panel};color:#FFFFFF;text-decoration:none;padding:11px 16px;border-radius:30px;font-size:13px;font-weight:500;border:1px solid ${border};text-align:center;letter-spacing:0.2px;">&#9993; Email Me</a></td></tr>`);
   }
   if (phone && phoneTelHref) {
     const label = escapeHtml(formatPortfolioPhoneDisplay(phone));
-    rows.push(`<tr><td style="padding-bottom:10px;"><a href="${escapeHtml(phoneTelHref)}" style="display:block;background-color:#254E46;color:#FFFFFF;text-decoration:none;padding:11px 16px;border-radius:30px;font-size:13px;font-weight:500;border:1px solid #2F6258;text-align:center;letter-spacing:0.2px;">&#128222; ${label}</a></td></tr>`);
+    rows.push(`<tr><td style="padding-bottom:10px;"><a href="${escapeHtml(phoneTelHref)}" style="display:block;background-color:${panel};color:#FFFFFF;text-decoration:none;padding:11px 16px;border-radius:30px;font-size:13px;font-weight:500;border:1px solid ${border};text-align:center;letter-spacing:0.2px;">&#128222; ${label}</a></td></tr>`);
   }
   if (website) {
     const visitLabel = escapeHtml(`Visit ${websiteDisplay}`);
@@ -723,7 +732,11 @@ function buildPortfolioContactPillsHtml(
   return rows.join('');
 }
 
-function buildPortfolioNetworkSectionHtml(blocks: ContentBlockData[], accentColor: string): string {
+function buildPortfolioNetworkSectionHtml(
+  blocks: ContentBlockData[],
+  accentColor: string,
+  panelColor: string
+): string {
   const enabledLists = blocks.filter((b) => b.enabled && b.type === 'list');
   if (enabledLists.length === 0) return '';
 
@@ -734,6 +747,7 @@ function buildPortfolioNetworkSectionHtml(blocks: ContentBlockData[], accentColo
     enabledLists.map((b) => (b.listTitle || b.customTitle || '').trim()).find(Boolean) ||
     'Network Portfolio';
   const accent = escapeHtml(accentColor);
+  const panel = escapeHtml(panelColor);
 
   let pills = '';
   for (const item of items) {
@@ -741,14 +755,97 @@ function buildPortfolioNetworkSectionHtml(blocks: ContentBlockData[], accentColo
     if (!labelRaw) continue;
     const label = escapeHtml(labelRaw);
     if (item.url) {
-      pills += `<a href="${escapeHtml(item.url)}" style="display:inline-block;background-color:#254E46;color:#F4F7F6;text-decoration:none;padding:6px 12px;border-radius:12px;font-size:12px;margin:0 6px 6px 0;font-weight:500;">${label}</a>`;
+      pills += `<a href="${escapeHtml(item.url)}" style="display:inline-block;background-color:${panel};color:#F4F7F6;text-decoration:none;padding:6px 12px;border-radius:12px;font-size:12px;margin:0 6px 6px 0;font-weight:500;">${label}</a>`;
     } else {
-      pills += `<span style="display:inline-block;background-color:#254E46;color:#F4F7F6;padding:6px 12px;border-radius:12px;font-size:12px;margin:0 6px 6px 0;font-weight:500;">${label}</span>`;
+      pills += `<span style="display:inline-block;background-color:${panel};color:#F4F7F6;padding:6px 12px;border-radius:12px;font-size:12px;margin:0 6px 6px 0;font-weight:500;">${label}</span>`;
     }
   }
   if (!pills) return '';
 
   return `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${accent};font-weight:bold;margin-bottom:10px;text-align:left;">${escapeHtml(sectionTitle)}</div><div style="text-align:left;margin-bottom:18px;line-height:1.6;">${pills}</div>`;
+}
+
+function buildEcardContactTableHtml(
+  officePhone: string,
+  mobilePhone: string,
+  officePhoneTelHref: string,
+  mobilePhoneTelHref: string,
+  email: string,
+  website: string,
+  websiteDisplay: string,
+  primaryColor: string
+): string {
+  const rows: string[] = [];
+  const accent = escapeHtml(primaryColor);
+  const phone = officePhone || mobilePhone;
+  const phoneHref = officePhone ? officePhoneTelHref : mobilePhoneTelHref;
+
+  if (phone && phoneHref) {
+    const label = escapeHtml(formatPortfolioPhoneDisplay(phone));
+    rows.push(
+      `<tr><td style="padding-bottom:6px;font-weight:bold;color:#111827;width:24px;">P:</td><td style="padding-bottom:6px;"><a href="${escapeHtml(phoneHref)}" style="color:#4B5563;text-decoration:none;">${label}</a></td></tr>`
+    );
+  }
+  if (email) {
+    rows.push(
+      `<tr><td style="padding-bottom:6px;font-weight:bold;color:#111827;">E:</td><td style="padding-bottom:6px;"><a href="mailto:${escapeHtml(email)}" style="color:#4B5563;text-decoration:none;">${escapeHtml(email)}</a></td></tr>`
+    );
+  }
+  if (website) {
+    rows.push(
+      `<tr><td style="padding-bottom:14px;font-weight:bold;color:#111827;">W:</td><td style="padding-bottom:14px;"><a href="${escapeHtml(website)}" style="color:${accent};text-decoration:none;font-weight:600;">${escapeHtml(websiteDisplay)}</a></td></tr>`
+    );
+  } else if (rows.length > 0) {
+    rows[rows.length - 1] = rows[rows.length - 1].replace('padding-bottom:6px', 'padding-bottom:14px');
+  }
+
+  return rows.join('');
+}
+
+function buildEcardPortfolioLinksHtml(
+  blocks: ContentBlockData[],
+  primaryColor: string
+): { title: string; linksHtml: string } {
+  const enabledLists = blocks.filter((b) => b.enabled && b.type === 'list');
+  if (enabledLists.length === 0) return { title: '', linksHtml: '' };
+
+  const items = collectFlattenedListItems(enabledLists);
+  if (items.length === 0) return { title: '', linksHtml: '' };
+
+  const title =
+    enabledLists.map((b) => (b.listTitle || b.customTitle || '').trim()).find(Boolean) ||
+    'Portfolio';
+  const accent = escapeHtml(primaryColor);
+  const parts: string[] = [];
+
+  for (const item of items) {
+    const labelRaw = item.title || (item.url ? listItemLinkFallbackLabel(item.url) : '');
+    if (!labelRaw) continue;
+    const label = escapeHtml(labelRaw);
+    const url = item.url
+      ? normalizePromoUrl(item.url, item.urlPrefix === 'www' ? 'www' : 'https')
+      : '';
+    if (url) {
+      parts.push(
+        `<a href="${escapeHtml(url)}" style="color:${accent};text-decoration:none;font-weight:500;">${label}</a>`
+      );
+    } else {
+      parts.push(`<span style="color:${accent};font-weight:500;">${label}</span>`);
+    }
+  }
+
+  if (parts.length === 0) return { title: '', linksHtml: '' };
+
+  let linksHtml = parts[0];
+  for (let i = 1; i < parts.length; i++) {
+    if (i % 3 === 0) {
+      linksHtml += `<br>${parts[i]}`;
+    } else {
+      linksHtml += ` &bull; ${parts[i]}`;
+    }
+  }
+
+  return { title, linksHtml };
 }
 
 function layoutSocialTdStyles(
@@ -815,7 +912,8 @@ export function mergeRenderContext(
   profile: SignatureProfile,
   brand: SignatureBrand,
   template: SignatureTemplate,
-  siteOrigin: string = DEFAULT_PUBLIC_SITE_ORIGIN
+  siteOrigin: string = DEFAULT_PUBLIC_SITE_ORIGIN,
+  vcardDownloadUrl?: string
 ): {
   evalCtx: Record<string, string | boolean | undefined>;
   stringCtx: Record<string, string>;
@@ -860,6 +958,7 @@ export function mergeRenderContext(
       : 0;
 
   const isPortfolioLayout = template.layout === 'portfolio';
+  const isEcardLayout = template.layout === 'ecard';
   const useCircleLogo =
     hasLogo && !useAnimation && (brand.logoShape === 'circle' || isPortfolioLayout);
   const logoWidthStr = hasLogo ? logoWidthForLayout(template.layout, useCircleLogo) : '110';
@@ -966,9 +1065,25 @@ export function mergeRenderContext(
   const isCreatorLayout = template.layout === 'creator';
   const isExecutiveLayout = template.layout === 'executive_minimalist';
   const usesCustomPromoLayout =
-    isDefaultLayout || isCreatorLayout || isExecutiveLayout || isPortfolioLayout;
+    isDefaultLayout ||
+    isCreatorLayout ||
+    isExecutiveLayout ||
+    isPortfolioLayout ||
+    isEcardLayout;
   const brandSecondaryColor =
     brand.secondaryColor?.trim() || brand.primaryColor.trim() || '#2563eb';
+  const portfolioPanelColor = isPortfolioLayout
+    ? adjustHexLightness(brandPrimaryColor, 0.1)
+    : '';
+  const portfolioBorderColor = isPortfolioLayout
+    ? adjustHexLightness(brandPrimaryColor, 0.18)
+    : '';
+  const creatorPanelColor = isCreatorLayout ? adjustHexLightness(brandPrimaryColor, 0.08) : '';
+  const creatorAccentColor = isCreatorLayout
+    ? brand.secondaryColor?.trim()
+      ? brand.secondaryColor.trim()
+      : adjustHexLightness(brandPrimaryColor, 0.2)
+    : '';
   const useVerticalBlocksOnly = template.layout === 'stacked';
   const contentBlocksHtml = usesCustomPromoLayout
     ? ''
@@ -1045,7 +1160,9 @@ export function mergeRenderContext(
         )
       : '';
   const hasCreatorContactTable = Boolean(creatorContactTableHtml);
-  const creatorPromoPillsHtml = isCreatorLayout ? buildCreatorPromoPillsHtml(contentBlocks) : '';
+  const creatorPromoPillsHtml = isCreatorLayout
+    ? buildCreatorPromoPillsHtml(contentBlocks, creatorPanelColor)
+    : '';
   const hasCreatorPromoPills = Boolean(creatorPromoPillsHtml);
 
   const creatorSocial = isCreatorLayout
@@ -1096,17 +1213,54 @@ export function mergeRenderContext(
           portfolioPhoneTelHref,
           website,
           websiteDisplay,
-          brandSecondaryColor
+          brandSecondaryColor,
+          portfolioPanelColor,
+          portfolioBorderColor,
+          brandPrimaryColor
         )
       : '';
   const hasPortfolioContactPills = Boolean(portfolioContactPillsHtml);
   const portfolioNetworkSectionHtml = isPortfolioLayout
-    ? buildPortfolioNetworkSectionHtml(contentBlocks, brandSecondaryColor)
+    ? buildPortfolioNetworkSectionHtml(contentBlocks, brandSecondaryColor, portfolioPanelColor)
     : '';
   const hasPortfolioNetworkSection = Boolean(portfolioNetworkSectionHtml);
 
   const portfolioSocial = isPortfolioLayout
     ? layoutSocialTdStyles(linkedin, facebook, instagram, reddit, discord, '10px')
+    : { li: '', fb: '', ig: '', rd: '', dc: '' };
+
+  const ecardRoleLine =
+    isEcardLayout && (hasTitle || brand.companyName.trim())
+      ? buildPortfolioRoleLine(profile.title.trim(), brand.companyName.trim())
+      : '';
+  const hasEcardRoleLine = Boolean(ecardRoleLine);
+  const ecardPhone = officePhone || mobilePhone;
+  const ecardPhoneTelHref = officePhone ? officePhoneTelHref : mobilePhoneTelHref;
+  const ecardContactTableHtml =
+    isEcardLayout && hasContact
+      ? buildEcardContactTableHtml(
+          officePhone,
+          mobilePhone,
+          officePhoneTelHref,
+          mobilePhoneTelHref,
+          profile.email.trim(),
+          website,
+          websiteDisplay,
+          brandPrimaryColor
+        )
+      : '';
+  const hasEcardContactTable = Boolean(ecardContactTableHtml);
+  const ecardPortfolio = isEcardLayout
+    ? buildEcardPortfolioLinksHtml(contentBlocks, brandPrimaryColor)
+    : { title: '', linksHtml: '' };
+  const hasEcardPortfolioSection = Boolean(ecardPortfolio.linksHtml);
+  const ecardPortfolioTitle = escapeHtml(ecardPortfolio.title);
+  const ecardPortfolioLinksHtml = ecardPortfolio.linksHtml;
+  const ecardVcardUrlTrimmed = (vcardDownloadUrl ?? '').trim();
+  const hasEcardVcardUrl = isEcardLayout && Boolean(ecardVcardUrlTrimmed);
+  const hasEcardFooter = isEcardLayout && (hasEcardPortfolioSection || showSocialBlock);
+  const ecardSocial = isEcardLayout
+    ? layoutSocialTdStyles(linkedin, facebook, instagram, reddit, discord, '8px')
     : { li: '', fb: '', ig: '', rd: '', dc: '' };
 
   /** Standard layout: optional third column for blocks (stacked keeps blocks below). */
@@ -1149,6 +1303,11 @@ export function mergeRenderContext(
     hasPortfolioRoleLine,
     hasPortfolioContactPills,
     hasPortfolioNetworkSection,
+    hasEcardRoleLine,
+    hasEcardContactTable,
+    hasEcardVcardUrl,
+    hasEcardPortfolioSection,
+    hasEcardFooter,
   };
 
   const stringCtx: Record<string, string> = {
@@ -1166,8 +1325,12 @@ export function mergeRenderContext(
     logoWidth: logoWidthStr,
     logoDisplayHeight: logoDisplayHeightStr,
     logoImgBorderRadius,
-    primaryColor: escapeHtml(brand.primaryColor.trim()),
+    primaryColor: escapeHtml(brandPrimaryColor),
     secondaryColor: escapeHtml(brandSecondaryColor),
+    portfolioPanelColor: escapeHtml(portfolioPanelColor),
+    portfolioBorderColor: escapeHtml(portfolioBorderColor),
+    creatorPanelColor: escapeHtml(creatorPanelColor),
+    creatorAccentColor: escapeHtml(creatorAccentColor),
     fontFamily: escapeHtml(brand.fontFamily.trim()),
     companyName: escapeHtml(brand.companyName.trim()),
     website: escapeHtml(website),
@@ -1218,6 +1381,16 @@ export function mergeRenderContext(
     portfolioSocialTdIgStyle: portfolioSocial.ig,
     portfolioSocialTdRedditStyle: portfolioSocial.rd,
     portfolioSocialTdDiscordStyle: portfolioSocial.dc,
+    ecardRoleLine,
+    ecardContactTableHtml,
+    ecardPortfolioTitle,
+    ecardPortfolioLinksHtml,
+    ecardVcardUrl: escapeHtml(ecardVcardUrlTrimmed),
+    ecardSocialTdLiStyle: ecardSocial.li,
+    ecardSocialTdFbStyle: ecardSocial.fb,
+    ecardSocialTdIgStyle: ecardSocial.ig,
+    ecardSocialTdRedditStyle: ecardSocial.rd,
+    ecardSocialTdDiscordStyle: ecardSocial.dc,
   };
 
   return { evalCtx, stringCtx };
@@ -1231,6 +1404,7 @@ function pickTemplate(layout: SignatureTemplate['layout']): string {
   if (layout === 'corporate') return CORPORATE_SIGNATURE_TEMPLATE;
   if (layout === 'professional') return PROFESSIONAL_SIGNATURE_TEMPLATE;
   if (layout === 'portfolio') return PORTFOLIO_SIGNATURE_TEMPLATE;
+  if (layout === 'ecard') return ECARD_SIGNATURE_TEMPLATE;
   return STANDARD_SIGNATURE_TEMPLATE;
 }
 
@@ -1240,7 +1414,13 @@ export function renderSignature(input: RenderSignatureInput): string {
     (publicSiteOrigin ?? DEFAULT_PUBLIC_SITE_ORIGIN).trim() || DEFAULT_PUBLIC_SITE_ORIGIN
   );
   const tmpl = pickTemplate(template.layout);
-  const { evalCtx, stringCtx } = mergeRenderContext(profile, brand, template, origin);
+  const { evalCtx, stringCtx } = mergeRenderContext(
+    profile,
+    brand,
+    template,
+    origin,
+    input.vcardDownloadUrl
+  );
   const afterIf = processConditionals(tmpl, evalCtx);
   let html = substituteVariables(afterIf, stringCtx);
 

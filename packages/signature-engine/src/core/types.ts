@@ -93,7 +93,8 @@ export type SignatureLayout =
   | 'default'
   | 'creator'
   | 'executive_minimalist'
-  | 'portfolio';
+  | 'portfolio'
+  | 'ecard';
 
 export type SignatureTemplate = {
   id: string;
@@ -110,4 +111,6 @@ export type RenderSignatureInput = {
   publicSiteOrigin?: string;
   /** UTM params to append to http/https links. false = disabled. */
   utm?: { source: string; medium: string; campaign: string } | false;
+  /** Public URL for eCard Save Contact vCard download (omit for marketing samples). */
+  vcardDownloadUrl?: string;
 };

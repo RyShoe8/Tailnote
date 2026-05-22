@@ -13,6 +13,7 @@ const KINDS = [
   'social_discord',
   'content_block_1',
   'content_block_2',
+  'save_contact',
 ] as const;
 
 export type SignatureClickKind = (typeof KINDS)[number];

@@ -18,6 +18,7 @@ import {
   isAllowedOrgLogoUrl,
   orgLogoUrlValidationMessage,
 } from '@/lib/org/validateOrgLogoUrl';
+import { vcardDownloadUrl } from '@/lib/vcard/vcardDownloadUrl';
 
 export const dynamic = 'force-dynamic';
 
@@ -112,6 +113,7 @@ export async function POST(request: Request) {
   }
 
   let employeeIdForTracking: string | undefined;
+  let previewTokenForVcard: string | undefined;
   let employee: EmployeeProfileInput;
   let orgBrand = orgToBrandInput(org as never);
 
@@ -124,6 +126,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
     }
     employeeIdForTracking = String(empDoc._id);
+    previewTokenForVcard = String(empDoc.previewToken ?? '').trim() || undefined;
     const li = parsed.data.linkedin ?? (typeof empDoc.linkedin === 'string' ? empDoc.linkedin : '');
     orgBrand = mergeEmployeeSocialIntoOrgBrand(org as never, { linkedin: li });
 
@@ -216,27 +219,34 @@ export async function POST(request: Request) {
   });
 
   const publicSiteOrigin = new URL(request.url).origin;
+
+  if (!previewTokenForVcard) {
+    const selfEmp = await EmployeeModel.findOne({
+      organizationId: org._id,
+      userId: user.id,
+    })
+      .select('_id previewToken')
+      .lean<{ _id: mongoose.Types.ObjectId; previewToken?: string }>();
+    if (selfEmp?._id) {
+      employeeIdForTracking = employeeIdForTracking ?? String(selfEmp._id);
+      previewTokenForVcard = selfEmp.previewToken?.trim() || undefined;
+    }
+  }
+
+  const vcardUrl = previewTokenForVcard
+    ? vcardDownloadUrl(publicSiteOrigin, previewTokenForVcard)
+    : undefined;
+
   const renderInput: RenderSignatureInput = {
     ...buildRenderInput({
       orgBrand,
       employee,
       template,
       publicSiteOrigin,
+      vcardDownloadUrl: vcardUrl,
     }),
     publicSiteOrigin,
   };
-
-  if (!employeeIdForTracking) {
-    const selfEmp = await EmployeeModel.findOne({
-      organizationId: org._id,
-      userId: user.id,
-    })
-      .select('_id')
-      .lean<{ _id: mongoose.Types.ObjectId }>();
-    if (selfEmp?._id) {
-      employeeIdForTracking = String(selfEmp._id);
-    }
-  }
 
   let html = renderSignature(renderInput);
   html = appendSignatureClickTrackingIfEnabled({

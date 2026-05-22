@@ -1,9 +1,10 @@
 /**
  * Portfolio layout — dark centered card, circular logo, contact pill buttons,
  * network portfolio tags from list blocks, social icons in footer.
+ * Card background uses {{primaryColor}}; panel/border colors are derived in the renderer.
  * Accent color uses {{secondaryColor}} (falls back to primaryColor in renderer).
  */
-export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:460px;width:100%;font-family:{{fontFamily}},-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background-color:#1A3A34;border-radius:24px;color:#F4F7F6;border:1px solid #254E46;">
+export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:460px;width:100%;font-family:{{fontFamily}},-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background-color:{{primaryColor}};border-radius:24px;color:#F4F7F6;border:1px solid {{portfolioBorderColor}};">
   <tr>
     <td style="padding:24px;text-align:center;">
       {{#if hasLogo}}
@@ -32,7 +33,7 @@ export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" c
       {{portfolioNetworkSectionHtml}}
       {{/if}}
       {{#if showSocialBlock}}
-      <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:18px auto 0 auto;border-collapse:collapse;border-top:1px solid #254E46;width:100%;">
+      <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:18px auto 0 auto;border-collapse:collapse;border-top:1px solid {{portfolioPanelColor}};width:100%;">
         <tr>
           <td style="padding-top:14px;text-align:center;line-height:0;font-size:0;">
             <table cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:collapse;">

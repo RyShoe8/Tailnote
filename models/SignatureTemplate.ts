@@ -4,7 +4,7 @@ const SignatureTemplateSchema = new Schema(
   {
     organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
     name: { type: String, required: true, trim: true },
-    /** default | creator | executive_minimalist | minimal | stacked | corporate | professional | portfolio */
+    /** default | creator | executive_minimalist | minimal | stacked | corporate | professional | portfolio | ecard */
     presetId: {
       type: String,
       enum: [
@@ -16,6 +16,7 @@ const SignatureTemplateSchema = new Schema(
         'corporate',
         'professional',
         'portfolio',
+        'ecard',
       ],
       required: true,
     },

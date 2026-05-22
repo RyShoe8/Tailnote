@@ -22,6 +22,7 @@ const PRESET_IDS = [
   'corporate',
   'professional',
   'portfolio',
+  'ecard',
 ] as const;
 
 function parsePresetId(raw: string): CatalogPresetId | null {

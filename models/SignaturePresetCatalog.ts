@@ -9,6 +9,7 @@ const PRESET_IDS = [
   'corporate',
   'professional',
   'portfolio',
+  'ecard',
 ] as const;
 
 export type CatalogPresetId = (typeof PRESET_IDS)[number];

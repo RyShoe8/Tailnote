@@ -86,13 +86,16 @@ export function buildRenderInput(args: {
   publicSiteOrigin?: string;
   /** UTM config. false = disabled. undefined = use defaults. */
   utm?: { source: string; medium: string; campaign: string } | false;
+  vcardDownloadUrl?: string;
 }): RenderSignatureInput {
   const origin = args.publicSiteOrigin?.trim();
+  const vcard = args.vcardDownloadUrl?.trim();
   return {
     profile: toSignatureProfile(args.employee),
     brand: toSignatureBrand(args.orgBrand),
     template: args.template,
     ...(origin ? { publicSiteOrigin: origin } : {}),
     ...(args.utm !== undefined ? { utm: args.utm } : {}),
+    ...(vcard ? { vcardDownloadUrl: vcard } : {}),
   };
 }

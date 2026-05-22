@@ -184,6 +184,21 @@ function marketingContentBlocks(
           ],
         },
       ];
+    case 'ecard':
+      return [
+        {
+          type: 'list',
+          enabled: true,
+          listTitle: 'Portfolio',
+          listItems: [
+            { title: 'Nucleas', url: 'https://www.acmecorp.com/nucleas' },
+            { title: 'The Ad Shop', url: 'https://www.acmecorp.com/ad-shop' },
+            { title: 'Tailnote', url: 'https://www.acmecorp.com/tailnote' },
+            { title: 'The Frugal Gambler', url: 'https://www.acmecorp.com/frugal' },
+            { title: 'DocSpot', url: 'https://www.acmecorp.com/docspot' },
+          ],
+        },
+      ];
     case 'professional':
       return [
         {
@@ -231,19 +246,27 @@ function marketingContentBlocks(
 function demoBrand(origin: string, presetId: TemplatePresetId): SignatureBrand {
   const logoUrl = promoImageUrl(origin);
   const isPortfolio = presetId === 'portfolio';
+  const isEcard = presetId === 'ecard';
+  const isMediaShop = isPortfolio || isEcard;
   return {
-    companyName: isPortfolio ? 'The Media Shop' : 'Acme Corp',
-    website: isPortfolio ? 'themediashop.co' : 'www.acmecorp.com',
+    companyName: isMediaShop ? 'The Media Shop' : 'Acme Corp',
+    website: isMediaShop ? 'themediashop.co' : 'www.acmecorp.com',
     logoUrl,
     logoLink: 'https://www.acmecorp.com',
-    primaryColor: isPortfolio ? '#1A3A34' : '#2563eb',
+    primaryColor: isPortfolio ? '#1A3A34' : isEcard ? '#4F46E5' : '#2563eb',
     secondaryColor: isPortfolio ? '#E29578' : '',
     logoShape: isPortfolio ? 'circle' : 'rectangle',
     fontFamily: 'Arial',
-    socialLinks: {
-      linkedin: 'https://www.linkedin.com/company/example',
-      facebook: 'https://www.facebook.com/example',
-    },
+    socialLinks: isEcard
+      ? {
+          linkedin: 'https://www.linkedin.com/company/example',
+          reddit: 'https://www.reddit.com/user/example',
+          discord: 'https://discord.gg/example',
+        }
+      : {
+          linkedin: 'https://www.linkedin.com/company/example',
+          facebook: 'https://www.facebook.com/example',
+        },
     address: '123 Main St',
     state: 'TX',
     zip: '75201',

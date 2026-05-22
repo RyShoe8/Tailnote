@@ -144,8 +144,17 @@ export function SignatureWorkspace() {
       }
       const list: TemplateRow[] = tJson.templates || [];
       setTemplates(list);
+      let savedTemplateId: string | undefined;
+      if (pJson.profile && typeof pJson.profile === 'object') {
+        const tid = (pJson.profile as { templateId?: string }).templateId;
+        if (typeof tid === 'string' && tid && list.some((t) => t._id === tid)) {
+          savedTemplateId = tid;
+        }
+      }
       const defaultRow = list.find((t) => t.presetId === 'default');
-      const pick = defaultRow ?? list[0];
+      const pick = savedTemplateId
+        ? list.find((t) => t._id === savedTemplateId) ?? defaultRow ?? list[0]
+        : defaultRow ?? list[0];
       if (pick) setSelectedTemplateId(pick._id);
       if (gJson.connected) {
         setGmailConnected(true);
@@ -364,6 +373,24 @@ export function SignatureWorkspace() {
     ) &&
     Boolean(profile.firstName.trim() && profile.lastName.trim() && profile.email.trim() && engineTemplate);
 
+  const patchSignatureProfile = async () => {
+    return fetch('/api/dashboard/me/signature-profile', {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        title: profile.title,
+        email: profile.email,
+        officePhone: profile.officePhone ?? '',
+        mobilePhone: profile.mobilePhone ?? '',
+        contentBlocks,
+        ...(selectedTemplateId ? { templateId: selectedTemplateId } : {}),
+      }),
+    });
+  };
+
   const handleSaveProfile = async () => {
     if (!profile.firstName.trim() || !profile.lastName.trim() || !profile.email.trim()) {
       setProfileMessage('First name, last name, and email are required to save.');
@@ -372,20 +399,7 @@ export function SignatureWorkspace() {
     setSavingProfile(true);
     setProfileMessage(null);
     try {
-      const res = await fetch('/api/dashboard/me/signature-profile', {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName: profile.firstName,
-          lastName: profile.lastName,
-          title: profile.title,
-          email: profile.email,
-          officePhone: profile.officePhone ?? '',
-          mobilePhone: profile.mobilePhone ?? '',
-          contentBlocks,
-        }),
-      });
+      const res = await patchSignatureProfile();
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
         setProfileMessage(typeof j.error === 'string' ? j.error : 'Could not save your details');
@@ -440,9 +454,23 @@ export function SignatureWorkspace() {
         setMessage(typeof j.error === 'string' ? j.error : 'Save failed');
         return;
       }
-      setMessage('Saved');
       const j = await res.json();
       if (j.organization) setOrg(j.organization as OrgResponse);
+
+      if (profile.firstName.trim() && profile.lastName.trim() && profile.email.trim()) {
+        const pRes = await patchSignatureProfile();
+        if (!pRes.ok) {
+          const pj = await pRes.json().catch(() => ({}));
+          setMessage(
+            typeof pj.error === 'string'
+              ? `Brand saved; profile/template: ${pj.error}`
+              : 'Brand saved; could not save profile or template'
+          );
+          return;
+        }
+      }
+
+      setMessage('Saved');
     } finally {
       setSaving(false);
     }
@@ -673,6 +701,10 @@ export function SignatureWorkspace() {
                 value={org.primaryColor ?? ''}
                 onChange={(primaryColor) => setOrg((o) => ({ ...(o || {}), primaryColor }))}
               />
+              <p className="text-xs text-muted-foreground">
+                Portfolio and Creator use this for the card background. Other templates use it for
+                borders, headers, and link accents.
+              </p>
             </div>
             <div className="space-y-2">
               <Label>Secondary color</Label>
@@ -683,8 +715,9 @@ export function SignatureWorkspace() {
                 pickerAriaLabel="Pick secondary color"
               />
               <p className="text-xs text-muted-foreground">
-                Used by the Portfolio template for accents (title, logo ring, network label, website
-                button). Falls back to primary color when empty.
+                Portfolio accents (role line, logo ring, network label, website button). Creator uses
+                this for the left stripe when primary fills the card. Falls back to a lighter primary
+                when empty.
               </p>
             </div>
             <div className="space-y-2">

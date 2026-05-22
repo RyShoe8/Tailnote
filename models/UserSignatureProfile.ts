@@ -11,6 +11,7 @@ const UserSignatureProfileSchema = new Schema(
     officePhone: { type: String, default: '' },
     mobilePhone: { type: String, default: '' },
     contentBlocks: { type: Schema.Types.Mixed, default: [] },
+    templateId: { type: Schema.Types.ObjectId, ref: 'SignatureTemplate', default: null },
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } }
 );

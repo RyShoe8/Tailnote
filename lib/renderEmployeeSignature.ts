@@ -8,6 +8,7 @@ import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
 import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
 import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
 import { appendSignatureClickTrackingIfEnabled } from '@/lib/signatureTrackingHtml';
+import { vcardDownloadUrl } from '@/lib/vcard/vcardDownloadUrl';
 
 /** Default UTM parameters for Tailnote signatures. */
 const DEFAULT_UTM = { source: 'Tailnote', medium: 'Email', campaign: 'Footer' };
@@ -103,6 +104,9 @@ export function renderSignatureForEmployee(
   const publicSiteOrigin = options?.publicSiteOrigin?.trim() || getSignatureAssetOrigin();
   const contentBlocks = employeeContentBlocks(emp);
   const utmEnabled = (org as unknown as { utmEnabled?: boolean }).utmEnabled !== false;
+  const vcardUrl = emp.previewToken
+    ? vcardDownloadUrl(publicSiteOrigin, String(emp.previewToken))
+    : undefined;
   const renderInput: RenderSignatureInput = {
     ...buildRenderInput({
       orgBrand: mergeEmployeeSocialIntoOrgBrand(org, emp, contentBlocks),
@@ -110,6 +114,7 @@ export function renderSignatureForEmployee(
       template,
       publicSiteOrigin,
       utm: utmEnabled ? DEFAULT_UTM : false,
+      vcardDownloadUrl: vcardUrl,
     }),
     publicSiteOrigin,
   };

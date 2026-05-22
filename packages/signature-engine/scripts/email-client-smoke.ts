@@ -859,20 +859,51 @@ const htmlCreator = renderSignature({
   template: mockSignatureTemplate('creator'),
   publicSiteOrigin: origin,
 });
-assert.ok(htmlCreator.includes('background-color: #1e1f22'), 'creator: dark card background');
+assert.ok(
+  htmlCreator.includes('background-color: #ff4655'),
+  'creator: card background uses primaryColor'
+);
+assert.doesNotMatch(htmlCreator, /background-color:\s*#1e1f22/i, 'creator: no hardcoded dark shell');
 assert.ok(htmlCreator.includes('border-collapse: collapse'), 'creator: nested tables');
 assert.ok(htmlCreator.includes(`${iconBase}icon-linkedin.png?v=6`), 'creator: hosted LinkedIn icon');
 assert.doesNotMatch(htmlCreator, /flaticon\.com/i, 'creator: no external flaticon CDN');
 assert.doesNotMatch(htmlCreator, /src="http:\/\//i, 'creator: no non-HTTPS images');
 assert.ok(htmlCreator.includes('mailto:test@example.com'), 'creator: mailto link');
 assert.ok(htmlCreator.includes('tel:'), 'creator: tel link');
-assert.ok(htmlCreator.includes('background-color: #2b2d31'), 'creator: promo pill styling');
+assert.doesNotMatch(htmlCreator, /background-color:\s*#2b2d31/i, 'creator: promo pills use derived panel color');
+assert.ok(htmlCreator.includes('background-color:'), 'creator: promo pills have panel background');
 assert.ok(htmlCreator.includes('Nucleas'), 'creator: promo pill label');
 assert.ok(htmlCreator.includes('color: #b5bac1'), 'creator: tagline uses readable light text on dark card');
 assert.doesNotMatch(
   htmlCreator,
   /font-size: 13px; color: #0a0a0a|font-size: 13px; color: {{primaryColor}}/,
   'creator: tagline does not use dark primary color on dark background'
+);
+
+const htmlCreatorSecondaryStripe = renderSignature({
+  profile,
+  brand: {
+    ...mockSignatureBrand,
+    primaryColor: '#1e1f22',
+    secondaryColor: '#ff5500',
+    contentBlocks: [
+      {
+        type: 'list',
+        enabled: true,
+        listItems: [{ title: 'Nucleas', url: 'https://example.com/nucleas' }],
+      },
+    ],
+  },
+  template: mockSignatureTemplate('creator'),
+  publicSiteOrigin: origin,
+});
+assert.ok(
+  htmlCreatorSecondaryStripe.includes('background-color: #1e1f22'),
+  'creator: card background follows primaryColor'
+);
+assert.ok(
+  htmlCreatorSecondaryStripe.includes('border-left: 4px solid #ff5500'),
+  'creator: left accent stripe uses secondaryColor when set'
 );
 
 // Executive Minimalist layout
@@ -935,7 +966,10 @@ const htmlPortfolio = renderSignature({
   publicSiteOrigin: origin,
 });
 assert.ok(htmlPortfolio.includes('sig-portfolio-root'), 'portfolio: root class');
-assert.ok(htmlPortfolio.includes('background-color:#1A3A34'), 'portfolio: dark card shell');
+assert.ok(
+  htmlPortfolio.includes('background-color:#1A3A34'),
+  'portfolio: card shell uses primaryColor'
+);
 assert.ok(htmlPortfolio.includes('Email Me'), 'portfolio: email contact pill');
 assert.ok(htmlPortfolio.includes('Nucleas') && htmlPortfolio.includes('Tailnote'), 'portfolio: network pills');
 assert.ok(htmlPortfolio.includes('Network Portfolio'), 'portfolio: network section label');
@@ -963,9 +997,67 @@ const htmlPortfolioPrimaryFallback = renderSignature({
   publicSiteOrigin: origin,
 });
 assert.ok(
-  htmlPortfolioPrimaryFallback.includes('#901a1e'),
-  'portfolio: falls back to primaryColor when secondaryColor empty'
+  htmlPortfolioPrimaryFallback.includes('background-color:#901a1e'),
+  'portfolio: card background uses primaryColor'
 );
+assert.ok(
+  htmlPortfolioPrimaryFallback.includes('#901a1e'),
+  'portfolio: falls back to primaryColor for accents when secondaryColor empty'
+);
+
+// eCard layout
+const ecardVcardUrl = `${origin}/api/vcard/preview-token-abc`;
+const htmlEcard = renderSignature({
+  profile: { ...profile, title: 'Founder' },
+  brand: {
+    ...mockSignatureBrand,
+    companyName: 'The Media Shop',
+    primaryColor: '#4F46E5',
+    website: 'https://themediashop.co',
+    socialLinks: {
+      linkedin: 'https://www.linkedin.com/company/example',
+      reddit: 'https://www.reddit.com/user/example',
+      discord: 'https://discord.gg/example',
+    },
+    contentBlocks: [
+      {
+        type: 'list',
+        enabled: true,
+        listTitle: 'Portfolio',
+        listItems: [
+          { title: 'Nucleas', url: 'https://example.com/nucleas' },
+          { title: 'Tailnote', url: 'https://example.com/tailnote' },
+        ],
+      },
+    ],
+  },
+  template: mockSignatureTemplate('ecard'),
+  publicSiteOrigin: origin,
+  vcardDownloadUrl: ecardVcardUrl,
+});
+const htmlEcardNoVcard = renderSignature({
+  profile: { ...profile, title: 'Founder' },
+  brand: mockSignatureBrand,
+  template: mockSignatureTemplate('ecard'),
+  publicSiteOrigin: origin,
+});
+assert.ok(htmlEcard.includes('sig-ecard-root'), 'ecard: root class');
+assert.ok(htmlEcard.includes('background-color:#4F46E5'), 'ecard: primary top accent bar');
+assert.ok(htmlEcard.includes('Save Contact'), 'ecard: save contact button when vcard URL set');
+assert.ok(htmlEcard.includes(ecardVcardUrl), 'ecard: Save Contact href uses vCard download URL');
+assert.doesNotMatch(
+  htmlEcard,
+  /Save Contact[\s\S]*mailto:/i,
+  'ecard: Save Contact must not use mailto when vcard URL set'
+);
+assert.doesNotMatch(htmlEcardNoVcard, /Save Contact/, 'ecard: no Save Contact without vcard URL');
+assert.ok(htmlEcard.includes('Founder @ The Media Shop'), 'ecard: role line');
+assert.ok(htmlEcard.includes('>P:</'), 'ecard: phone contact row');
+assert.ok(htmlEcard.includes('>Portfolio</'), 'ecard: portfolio section label');
+assert.ok(htmlEcard.includes('Nucleas') && htmlEcard.includes('&bull;'), 'ecard: portfolio bullet links');
+assert.ok(htmlEcard.includes(`${iconBase}icon-linkedin.png?v=6`), 'ecard: hosted LinkedIn icon');
+assert.doesNotMatch(htmlEcard, /flaticon\.com/i, 'ecard: no external flaticon CDN');
+assert.match(htmlEcard, /width="80"/, 'ecard: 80px logo in framed box');
 
 // Address placement across layouts (mockSignatureBrand includes street/state/zip)
 assert.ok(htmlDefault.includes('123 Main St'), 'default: address renders');

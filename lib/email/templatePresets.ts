@@ -8,7 +8,8 @@ export type TemplatePresetId =
   | 'stacked'
   | 'corporate'
   | 'professional'
-  | 'portfolio';
+  | 'portfolio'
+  | 'ecard';
 
 export type TemplatePresetMeta = {
   id: TemplatePresetId;
@@ -60,7 +61,13 @@ export const TEMPLATE_PRESET_META: TemplatePresetMeta[] = [
     id: 'portfolio',
     name: 'Portfolio',
     description:
-      'Dark card with circular logo, pill contact buttons, network portfolio tags from list blocks, and social icons — ideal for founders and personal brands.',
+      'Dark card with circular logo, pill contact buttons, and network portfolio tags. Primary color sets the card background; secondary color drives accents.',
+  },
+  {
+    id: 'ecard',
+    name: 'eCard',
+    description:
+      'Light card with primary top bar, contact rows, save-contact button, framed logo, and portfolio links with social icons in the footer.',
   },
 ];
 
@@ -137,6 +144,10 @@ function elementsPortfolio(): SignatureElement[] {
   ];
 }
 
+function elementsEcard(): SignatureElement[] {
+  return elementsPortfolio();
+}
+
 /**
  * Resolves a named preset to engine `SignatureTemplate` (no HTML in DB).
  * `templateDocId` is the Mongo id string of the org template row when persisted.
@@ -202,6 +213,13 @@ export function presetToEngineTemplate(
         name: displayName ?? 'Portfolio',
         layout: 'portfolio',
         elements: elementsPortfolio(),
+      };
+    case 'ecard':
+      return {
+        id: templateDocId,
+        name: displayName ?? 'eCard',
+        layout: 'ecard',
+        elements: elementsEcard(),
       };
     default:
       return {
