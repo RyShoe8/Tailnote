@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarketingLiveSignaturePreview } from '@/components/marketing/MarketingLiveSignaturePreview';
@@ -9,72 +9,79 @@ import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
 import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
 import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
 
+const SWIPE_THRESHOLD_PX = 50;
+
 type Props = {
   presets: CatalogPresetRow[];
 };
 
 export function HomeTemplateCarousel({ presets }: Props) {
-  const trackRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
 
-  const updateActiveIndex = useCallback(() => {
-    const track = trackRef.current;
-    if (!track || presets.length === 0) return;
-    const slideWidth = track.clientWidth;
-    if (slideWidth <= 0) return;
-    const index = Math.round(track.scrollLeft / slideWidth);
-    setActiveIndex(Math.min(Math.max(0, index), presets.length - 1));
-  }, [presets.length]);
-
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    updateActiveIndex();
-    track.addEventListener('scroll', updateActiveIndex, { passive: true });
-    window.addEventListener('resize', updateActiveIndex);
-    return () => {
-      track.removeEventListener('scroll', updateActiveIndex);
-      window.removeEventListener('resize', updateActiveIndex);
-    };
-  }, [updateActiveIndex]);
-
-  function scrollToIndex(index: number) {
-    const track = trackRef.current;
-    if (!track) return;
-    const clamped = Math.min(Math.max(0, index), presets.length - 1);
-    track.scrollTo({ left: clamped * track.clientWidth, behavior: 'smooth' });
-    setActiveIndex(clamped);
-  }
+  const goToIndex = useCallback(
+    (index: number) => {
+      if (presets.length === 0) return;
+      setActiveIndex(Math.min(Math.max(0, index), presets.length - 1));
+    },
+    [presets.length]
+  );
 
   function scrollBySlide(delta: number) {
-    scrollToIndex(activeIndex + delta);
+    goToIndex(activeIndex + delta);
+  }
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.changedTouches[0]?.clientX ?? null;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    const startX = touchStartX.current;
+    touchStartX.current = null;
+    if (startX === null) return;
+
+    const endX = e.changedTouches[0]?.clientX;
+    if (endX === undefined) return;
+
+    const deltaX = endX - startX;
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX) return;
+
+    if (deltaX < 0) {
+      scrollBySlide(1);
+    } else {
+      scrollBySlide(-1);
+    }
   }
 
   if (presets.length === 0) return null;
 
   return (
     <div className="relative mt-10">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-16 bg-gradient-to-r from-background to-transparent sm:block" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 hidden w-16 bg-gradient-to-l from-background to-transparent sm:block" />
-
       <div
-        ref={trackRef}
-        className="hide-scrollbar flex snap-x snap-mandatory overflow-x-auto scroll-smooth"
+        className="touch-pan-y"
         role="region"
         aria-roledescription="carousel"
         aria-label="Signature template previews"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
-        {presets.map((preset) => {
+        {presets.map((preset, index) => {
           const presetId = preset.presetId as TemplatePresetId;
+          const isActive = index === activeIndex;
+
           return (
             <article
               key={preset.presetId}
-              className="w-full shrink-0 snap-center px-0.5 sm:px-1"
+              className={isActive ? 'block' : 'hidden'}
               aria-roledescription="slide"
+              aria-hidden={!isActive}
             >
               <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card">
                 <div className="border-b border-slate-100 px-6 py-5">
-                  <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                  <h3
+                    className="text-lg font-semibold tracking-tight text-foreground"
+                    {...(isActive ? { 'aria-live': 'polite' as const } : {})}
+                  >
                     {preset.name}
                   </h3>
                   {preset.description ? (
@@ -94,7 +101,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
         })}
       </div>
 
-      <div className="mt-6 flex items-center justify-center gap-3">
+      <div className="mt-4 flex items-center justify-center gap-3">
         <Button
           type="button"
           variant="outline"
@@ -120,7 +127,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
                   ? 'w-8 bg-primary'
                   : 'w-2.5 bg-slate-300 hover:bg-slate-400'
               }`}
-              onClick={() => scrollToIndex(index)}
+              onClick={() => goToIndex(index)}
             />
           ))}
         </div>

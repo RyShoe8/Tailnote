@@ -38,9 +38,9 @@ export default async function HomePage() {
       />
       <HomeHero />
       <HomeFeatures />
+      <HomeTemplateShowcase presets={presets} />
       <HomeHowItWorks />
       <HomePromoBlocksShowcase />
-      <HomeTemplateShowcase presets={presets} />
       <HomePricingTeaser plans={plans} />
       <HomeFAQ />
       <HomeFinalCta />
