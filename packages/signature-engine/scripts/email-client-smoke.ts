@@ -834,6 +834,21 @@ assert.ok(
   'default: accent border and P|E|W contact row'
 );
 
+const htmlDefaultSecondaryBorder = renderSignature({
+  profile,
+  brand: {
+    ...mockSignatureBrand,
+    primaryColor: '#2563eb',
+    secondaryColor: '#E29578',
+  },
+  template: mockSignatureTemplate('default'),
+  publicSiteOrigin: origin,
+});
+assert.ok(
+  htmlDefaultSecondaryBorder.includes('border-right: 2px solid #E29578'),
+  'default: logo column divider uses secondaryColor'
+);
+
 // Creator layout
 const htmlCreator = renderSignature({
   profile,
@@ -989,8 +1004,21 @@ assert.ok(htmlPortfolio.includes('Nucleas') && htmlPortfolio.includes('Tailnote'
 assert.ok(htmlPortfolio.includes('Network Portfolio'), 'portfolio: network section label');
 assert.ok(htmlPortfolio.includes(`${iconBase}icon-linkedin.png?v=6`), 'portfolio: hosted LinkedIn icon');
 assert.doesNotMatch(htmlPortfolio, /flaticon\.com/i, 'portfolio: no external flaticon CDN');
-assert.match(htmlPortfolio, /width="85"[^>]*height="85"/, 'portfolio: 85×85 logo');
+assert.match(
+  htmlPortfolio,
+  /width="85"[^>]*style="[^"]*height:auto/,
+  'portfolio: rectangle logo keeps aspect ratio (width fixed, height auto)'
+);
 assert.doesNotMatch(htmlPortfolio, /border-radius:50%/, 'portfolio: rectangle logoShape avoids circular crop');
+
+const htmlPortfolioCircle = renderSignature({
+  profile: { ...profile, title: 'Founder' },
+  brand: { ...mockSignatureBrand, companyName: 'The Media Shop', logoShape: 'circle' },
+  template: mockSignatureTemplate('portfolio'),
+  publicSiteOrigin: origin,
+});
+assert.match(htmlPortfolioCircle, /width="85"[^>]*height="85"/, 'portfolio: circle logo is square 85×85');
+assert.ok(htmlPortfolioCircle.includes('border-radius:50%'), 'portfolio: circle logo uses circular crop');
 assert.ok(htmlPortfolio.includes('#E29578'), 'portfolio: secondary color on accents');
 assert.ok(htmlPortfolio.includes('Founder @ The Media Shop'), 'portfolio: role line with @ separator');
 

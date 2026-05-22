@@ -1,6 +1,6 @@
 /**
- * Portfolio layout — dark centered card, circular logo, contact pill buttons,
- * network portfolio tags from list blocks, social icons in footer.
+ * Portfolio layout — dark centered card, logo (rectangle preserves aspect ratio; circle is square),
+ * contact pill buttons, network portfolio tags from list blocks, social icons in footer.
  * Card background uses {{primaryColor}}; panel/border colors are derived in the renderer.
  * Accent color uses {{secondaryColor}} (falls back to primaryColor in renderer).
  */
@@ -12,7 +12,12 @@ export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" c
         <tr>
           <td align="center" style="line-height:0;font-size:0;">
             <a href="{{logoLink}}" style="text-decoration:none;border:0;outline:none;display:inline-block;">
+              {{#if hasLogoSizedHeight}}
               <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" style="display:block;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;max-width:{{logoWidth}}px;border-radius:{{logoImgBorderRadius}};border:3px solid {{secondaryColor}};background-color:#ffffff;" />
+              {{/if}}
+              {{#if hasLogoAutoHeight}}
+              <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:auto;border-radius:{{logoImgBorderRadius}};border:3px solid {{secondaryColor}};background-color:#ffffff;" />
+              {{/if}}
             </a>
           </td>
         </tr>

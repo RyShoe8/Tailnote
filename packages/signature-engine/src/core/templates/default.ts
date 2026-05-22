@@ -4,7 +4,7 @@
  */
 export const DEFAULT_SIGNATURE_TEMPLATE = `<table class="sig-default-layout-table" cellpadding="0" cellspacing="0" border="0" style="font-family: {{fontFamily}}, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; color: #333333; line-height: 1.5; background-color: #ffffff; max-width: 660px; width: 100%;">
   <tr>
-    <td valign="top" style="padding-right: 20px; border-right: 2px solid {{primaryColor}};">
+    <td valign="top" style="padding-right: 20px; border-right: 2px solid {{secondaryColor}};">
       <table cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse;">
         {{#if hasLogo}}
         <tr>

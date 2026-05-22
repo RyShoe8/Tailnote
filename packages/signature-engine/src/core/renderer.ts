@@ -976,7 +976,7 @@ export function mergeRenderContext(
     } else if (explicitLogoH) {
       logoDisplayHeightStr = String(logoHeightPxRounded);
       hasLogoSizedHeight = true;
-    } else if (isPortfolioLayout) {
+    } else if (isPortfolioLayout && useCircleLogo) {
       logoDisplayHeightStr = logoWidthStr;
       hasLogoSizedHeight = true;
     } else {
