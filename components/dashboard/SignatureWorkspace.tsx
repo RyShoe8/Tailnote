@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PrimaryColorField } from '@/components/dashboard/PrimaryColorField';
 import { ContentBlocksEditor } from '@/components/signature/ContentBlocksEditor';
 import { SocialLinksEditor } from '@/components/signature/SocialLinksEditor';
 import type { ContentBlockData } from 'emailsignature-engine';
@@ -636,9 +637,9 @@ export function SignatureWorkspace() {
             </div>
             <div className="space-y-2">
               <Label>Primary color</Label>
-              <Input
+              <PrimaryColorField
                 value={org.primaryColor ?? ''}
-                onChange={(e) => setOrg((o) => ({ ...(o || {}), primaryColor: e.target.value }))}
+                onChange={(primaryColor) => setOrg((o) => ({ ...(o || {}), primaryColor }))}
               />
             </div>
             <div className="space-y-2">

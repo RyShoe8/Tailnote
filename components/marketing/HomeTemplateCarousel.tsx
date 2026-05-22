@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarketingLiveSignaturePreview } from '@/components/marketing/MarketingLiveSignaturePreview';
@@ -10,13 +10,17 @@ import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePrevie
 import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
 
 const SWIPE_THRESHOLD_PX = 50;
-
-/** Stable preview viewport — tuned for tallest marketing samples with promos. */
-const PREVIEW_VIEWPORT_MIN_H = 'min-h-[440px] md:min-h-[540px]';
+const PREVIEW_VIEWPORT_FALLBACK_PX = 440;
+/** Extra height for desktop card padding (gradient area p-4 sm:p-6). */
+const DESKTOP_CARD_EXTRA_PX = 48;
 
 type Props = {
   presets: CatalogPresetRow[];
 };
+
+function presetPreviewHtml(presetId: TemplatePresetId) {
+  return stripSignaturePreviewLinks(renderMarketingSample(presetId));
+}
 
 function CarouselPrevButton({
   activeIndex,
@@ -32,7 +36,7 @@ function CarouselPrevButton({
       type="button"
       variant="outline"
       size="icon"
-      className={compact ? 'h-8 w-8 shrink-0' : 'shrink-0'}
+      className={compact ? 'h-7 w-7 shrink-0' : 'shrink-0'}
       aria-label="Previous template"
       disabled={activeIndex <= 0}
       onClick={onPrev}
@@ -58,7 +62,7 @@ function CarouselNextButton({
       type="button"
       variant="outline"
       size="icon"
-      className={compact ? 'h-8 w-8 shrink-0' : 'shrink-0'}
+      className={compact ? 'h-7 w-7 shrink-0' : 'shrink-0'}
       aria-label="Next template"
       disabled={activeIndex >= presetsLength - 1}
       onClick={onNext}
@@ -113,6 +117,24 @@ function CarouselSlideMeta({ preset }: { preset: CatalogPresetRow }) {
   );
 }
 
+function TemplateSlidePreview({
+  preset,
+  appearance,
+}: {
+  preset: CatalogPresetRow;
+  appearance: 'card' | 'flat';
+}) {
+  const presetId = preset.presetId as TemplatePresetId;
+  return (
+    <MarketingLiveSignaturePreview
+      presetId={presetId}
+      html={presetPreviewHtml(presetId)}
+      appearance={appearance}
+      className="signature-email-preview--static"
+    />
+  );
+}
+
 function TemplateSlide({
   preset,
   isActive,
@@ -122,24 +144,18 @@ function TemplateSlide({
   isActive: boolean;
   layout: 'mobile' | 'desktop';
 }) {
-  const presetId = preset.presetId as TemplatePresetId;
-  const preview = (
-    <MarketingLiveSignaturePreview
-      presetId={presetId}
-      html={stripSignaturePreviewLinks(renderMarketingSample(presetId))}
-      appearance={layout === 'mobile' ? 'flat' : 'card'}
-      className="signature-email-preview--static"
-    />
-  );
-
   if (layout === 'mobile') {
     return (
       <article
-        className={isActive ? 'block w-full' : 'hidden'}
+        className={
+          isActive
+            ? 'absolute inset-x-0 top-0 block w-full'
+            : 'pointer-events-none invisible absolute inset-x-0 top-0 w-full'
+        }
         aria-roledescription="slide"
         aria-hidden={!isActive}
       >
-        {preview}
+        <TemplateSlidePreview preset={preset} appearance="flat" />
       </article>
     );
   }
@@ -151,7 +167,9 @@ function TemplateSlide({
       aria-hidden={!isActive}
     >
       <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card">
-        <div className="bg-gradient-to-b from-slate-50/50 to-white p-4 sm:p-6">{preview}</div>
+        <div className="bg-gradient-to-b from-slate-50/50 to-white p-4 sm:p-6">
+          <TemplateSlidePreview preset={preset} appearance="card" />
+        </div>
       </div>
     </article>
   );
@@ -159,7 +177,9 @@ function TemplateSlide({
 
 export function HomeTemplateCarousel({ presets }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [previewViewportHeight, setPreviewViewportHeight] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
+  const measureRef = useRef<HTMLDivElement | null>(null);
 
   const goToIndex = useCallback(
     (index: number) => {
@@ -168,6 +188,39 @@ export function HomeTemplateCarousel({ presets }: Props) {
     },
     [presets.length]
   );
+
+  useLayoutEffect(() => {
+    const root = measureRef.current;
+    if (!root) return;
+
+    const measure = () => {
+      const nodes = root.querySelectorAll<HTMLElement>('[data-carousel-measure]');
+      let max = 0;
+      nodes.forEach((node) => {
+        max = Math.max(max, node.getBoundingClientRect().height);
+      });
+      if (max > 0) {
+        setPreviewViewportHeight(Math.ceil(max));
+      }
+    };
+
+    measure();
+
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(root);
+    window.addEventListener('resize', measure);
+
+    const imgs = root.querySelectorAll('img');
+    const onImgLoad = () => measure();
+    imgs.forEach((img) => {
+      if (!img.complete) img.addEventListener('load', onImgLoad, { once: true });
+    });
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [presets]);
 
   function scrollBySlide(delta: number) {
     goToIndex(activeIndex + delta);
@@ -200,6 +253,8 @@ export function HomeTemplateCarousel({ presets }: Props) {
   const activePreset = presets[activeIndex];
   const onPrev = () => scrollBySlide(-1);
   const onNext = () => scrollBySlide(1);
+  const viewportMinHeight = previewViewportHeight ?? PREVIEW_VIEWPORT_FALLBACK_PX;
+  const desktopViewportMinHeight = viewportMinHeight + DESKTOP_CARD_EXTRA_PX;
 
   return (
     <div
@@ -220,13 +275,25 @@ export function HomeTemplateCarousel({ presets }: Props) {
 
       <CarouselSlideMeta preset={activePreset} />
 
-      <div className={`flex items-start gap-1 md:hidden ${PREVIEW_VIEWPORT_MIN_H}`}>
+      <div className="flex max-md:-mx-3 items-stretch gap-0 md:hidden">
         <CarouselPrevButton activeIndex={activeIndex} onPrev={onPrev} compact />
         <div
-          className="flex min-w-0 flex-1 touch-pan-y"
+          ref={measureRef}
+          className="relative min-w-0 flex-1 touch-pan-y"
+          style={{ minHeight: viewportMinHeight }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 -z-10 opacity-0"
+            aria-hidden
+          >
+            {presets.map((preset) => (
+              <div key={`measure-${preset.presetId}`} data-carousel-measure className="w-full">
+                <TemplateSlidePreview preset={preset} appearance="flat" />
+              </div>
+            ))}
+          </div>
           {presets.map((preset, index) => (
             <TemplateSlide
               key={preset.presetId}
@@ -244,7 +311,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
         />
       </div>
 
-      <div className={`hidden md:block ${PREVIEW_VIEWPORT_MIN_H}`}>
+      <div className="hidden md:block" style={{ minHeight: desktopViewportMinHeight }}>
         {presets.map((preset, index) => (
           <TemplateSlide
             key={preset.presetId}
