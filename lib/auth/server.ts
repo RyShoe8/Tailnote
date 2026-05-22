@@ -8,6 +8,11 @@ import { syncUserToBrevoList } from '@/lib/email/brevoContacts';
 
 let authInstance: ReturnType<typeof betterAuth> | undefined;
 
+function normalizeUserEmail(email: string | undefined | null): string | undefined {
+  const normalized = email?.trim().toLowerCase();
+  return normalized || undefined;
+}
+
 export async function getAuth() {
   if (authInstance) return authInstance;
   const { connectMongoose, getMongoDb, getMongoClient } = await import('@/lib/mongoose');
@@ -28,18 +33,30 @@ export async function getAuth() {
       updateAge: 60 * 60 * 24,
     },
     database: mongodbAdapter(db as never, { client: client as never }),
+    onAPIError: {
+      errorURL: '/login',
+    },
     account: {
       accountLinking: {
         enabled: true,
-        trustedProviders: ['google'],
+        trustedProviders: ['google', 'credential', 'email-password'],
+        linkingPolicy: 'trusted_providers_only',
+        allowDifferentEmails: false,
       },
     },
     databaseHooks: {
       user: {
         create: {
           before: async (user) => {
-            if (user.email) {
-              return { data: { ...user, email: user.email.trim().toLowerCase() } };
+            const email = normalizeUserEmail(user.email);
+            if (email) {
+              return {
+                data: {
+                  ...user,
+                  email,
+                  emailVerified: true,
+                },
+              };
             }
             return { data: user };
           },
@@ -50,6 +67,15 @@ export async function getAuth() {
             }).catch((err) => {
               console.error('[Tailnote] Brevo contact sync failed', user.email, err);
             });
+          },
+        },
+        update: {
+          before: async (user) => {
+            const email = normalizeUserEmail(user.email);
+            if (email) {
+              return { data: { ...user, email } };
+            }
+            return { data: user };
           },
         },
       },

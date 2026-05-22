@@ -19,3 +19,19 @@ export function formatLoginError(message: string): string {
   }
   return message;
 }
+
+/** OAuth callback errors (e.g. ?error=account_not_linked on /login). */
+export function formatOAuthCallbackError(code: string): string {
+  const key = code.trim().toLowerCase();
+  if (key === 'account_not_linked') {
+    return (
+      'We could not link your Google account automatically. Sign in with email and password using the same email as your Google account, ' +
+      'then open Dashboard → Billing → Sign-in methods and click Connect Google. ' +
+      'If you originally signed up with Google only, use Forgot password to add a password for that email.'
+    );
+  }
+  if (key === 'banned') {
+    return 'This account cannot sign in. Contact support if you need help.';
+  }
+  return 'Google sign-in did not complete. Try again, or sign in with email and password.';
+}

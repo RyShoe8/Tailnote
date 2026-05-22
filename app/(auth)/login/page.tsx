@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authClient } from '@/lib/auth/client';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
-import { formatLoginError } from '@/lib/auth/formatAuthError';
+import { formatLoginError, formatOAuthCallbackError } from '@/lib/auth/formatAuthError';
 
 function LoginForm() {
   const router = useRouter();
@@ -23,8 +23,19 @@ function LoginForm() {
       : searchParams.get('next') || '/dashboard';
   const [email, setEmail] = useState(inviteEmail || '');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const oauthError = searchParams.get('error');
+  const [error, setError] = useState<string | null>(
+    oauthError ? formatOAuthCallbackError(oauthError) : null
+  );
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!oauthError) return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete('error');
+    const next = url.searchParams.toString();
+    window.history.replaceState({}, '', next ? `${url.pathname}?${next}` : url.pathname);
+  }, [oauthError]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -56,6 +67,7 @@ function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
         <GoogleSignInButton callbackURL={next} />
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -89,7 +101,6 @@ function LoginForm() {
               required
             />
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Signing in…' : 'Continue'}
           </Button>
@@ -113,7 +124,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <>
-      <AuthBrandHeader />
+      <AuthBrandHeader heightClass="h-14 sm:h-16" />
       <Suspense fallback={<div className="text-sm text-muted-foreground">Loading…</div>}>
         <LoginForm />
       </Suspense>
