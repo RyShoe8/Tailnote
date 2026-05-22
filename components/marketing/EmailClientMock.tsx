@@ -1,3 +1,5 @@
+import { HeroSignaturePreview } from '@/components/marketing/HeroSignaturePreview';
+
 type Props = {
   signatureHtml: string;
 };
@@ -9,10 +11,10 @@ type Props = {
  */
 export function EmailClientMock({ signatureHtml }: Props) {
   return (
-    <div className="relative w-full min-w-0">
+    <div className="relative mx-auto w-full min-w-0 max-w-[22rem] sm:mx-0 sm:max-w-none">
       <div
         aria-hidden
-        className="pointer-events-none absolute -inset-8 -z-10 rounded-[2.5rem] bg-gradient-to-br from-[#0065c9]/15 via-[#0c8fa3]/10 to-[#4fd6b2]/20 blur-3xl"
+        className="pointer-events-none absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-to-br from-[#0065c9]/10 via-[#0c8fa3]/8 to-[#4fd6b2]/15 blur-2xl sm:-inset-8 sm:rounded-[2.5rem] sm:from-[#0065c9]/15 sm:via-[#0c8fa3]/10 sm:to-[#4fd6b2]/20 sm:blur-3xl"
       />
       <div
         aria-hidden
@@ -25,7 +27,7 @@ export function EmailClientMock({ signatureHtml }: Props) {
       />
 
       <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-ring ring-1 ring-slate-900/5 sm:rounded-3xl">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/80 px-4 py-3 sm:px-5">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/80 px-3 py-2.5 sm:px-5 sm:py-3">
           <div className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-rose-400" aria-hidden />
             <span className="h-2.5 w-2.5 rounded-full bg-amber-400" aria-hidden />
@@ -35,7 +37,7 @@ export function EmailClientMock({ signatureHtml }: Props) {
           <span className="w-12" aria-hidden />
         </div>
 
-        <div className="space-y-3 border-b border-slate-100 px-4 py-3 text-xs text-slate-500 sm:px-5">
+        <div className="space-y-2 border-b border-slate-100 px-3 py-2.5 text-xs text-slate-500 sm:space-y-3 sm:px-5 sm:py-3">
           <div className="flex items-center gap-3">
             <span className="w-12 shrink-0 font-medium text-slate-400">To</span>
             <span className="truncate text-slate-700">jordan@northwind.co</span>
@@ -46,16 +48,14 @@ export function EmailClientMock({ signatureHtml }: Props) {
           </div>
         </div>
 
-        <div className="space-y-4 px-4 py-5 text-sm text-slate-700 sm:px-6 sm:py-6">
+        <div className="space-y-3 px-3 py-4 text-xs text-slate-700 sm:space-y-4 sm:px-6 sm:py-6 sm:text-sm">
           <p>Hi Jordan,</p>
           <p>
             Great chatting earlier — sharing a couple of useful links below. Happy to set up a quick
             call this week if you&apos;d like to dig into the numbers.
           </p>
           <p>Cheers,</p>
-          <div className="signature-email-preview signature-email-preview--static min-w-0 overflow-x-auto rounded-lg border border-slate-100 bg-white p-4 text-left [&_a]:pointer-events-none [&_a]:cursor-default">
-            <div className="min-w-0" dangerouslySetInnerHTML={{ __html: signatureHtml }} />
-          </div>
+          <HeroSignaturePreview html={signatureHtml} />
         </div>
       </div>
     </div>

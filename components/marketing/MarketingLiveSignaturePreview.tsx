@@ -36,8 +36,8 @@ export function MarketingLiveSignaturePreview({
     <div
       className={
         className
-          ? `${className} mx-auto flex w-full min-w-0 max-w-none justify-center`
-          : 'mx-auto flex w-full min-w-0 max-w-none justify-center'
+          ? `${className} mx-auto flex min-h-0 w-full min-w-0 max-w-none justify-center`
+          : 'mx-auto flex min-h-0 w-full min-w-0 max-w-none justify-center'
       }
     >
       <SignaturePreviewFrame

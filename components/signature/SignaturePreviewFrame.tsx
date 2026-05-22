@@ -174,7 +174,7 @@ function MobileSignaturePreviewFrame({
       style={{
         width: isMarketing ? '100%' : mobileFrameWidth,
         maxWidth: mobileFrameWidth,
-        minHeight: 200,
+        minHeight: fitContained && isMarketing ? 0 : 200,
         overflowX: frameOverflowX,
         overflowY: frameOverflowY,
       }}

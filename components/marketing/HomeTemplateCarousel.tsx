@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarketingLiveSignaturePreview } from '@/components/marketing/MarketingLiveSignaturePreview';
@@ -159,8 +159,10 @@ function TemplateSlidePreview({ preset }: { preset: CatalogPresetRow }) {
 
 function SlideCardShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-float ring-1 ring-black/5 transition-transform duration-500 hover:-translate-y-1">
-      <div className="bg-gradient-to-b from-slate-50/60 to-white p-4 sm:p-6">{children}</div>
+    <div className="group overflow-visible pb-2">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-float ring-1 ring-black/5 transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-ring">
+        <div className="bg-gradient-to-b from-slate-50/60 to-white p-4 sm:p-6">{children}</div>
+      </div>
     </div>
   );
 }
@@ -168,8 +170,10 @@ function SlideCardShell({ children }: { children: React.ReactNode }) {
 export function HomeTemplateCarousel({ presets }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [hasSwiped, setHasSwiped] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
+  const activeSlideRef = useRef<HTMLElement | null>(null);
 
   const goToIndex = useCallback(
     (index: number) => {
@@ -178,6 +182,30 @@ export function HomeTemplateCarousel({ presets }: Props) {
     },
     [presets.length]
   );
+
+  useLayoutEffect(() => {
+    const el = activeSlideRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      const height = Math.ceil(el.getBoundingClientRect().height);
+      if (height > 0) setViewportHeight(height);
+    };
+
+    measure();
+
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(el);
+
+    const onImgLoad = () => measure();
+    el.querySelectorAll('img').forEach((img) => {
+      if (!img.complete) img.addEventListener('load', onImgLoad, { once: true });
+    });
+
+    return () => {
+      ro.disconnect();
+    };
+  }, [activeIndex, presets]);
 
   function scrollBySlide(delta: number) {
     goToIndex(activeIndex + delta);
@@ -242,12 +270,15 @@ export function HomeTemplateCarousel({ presets }: Props) {
 
       <div
         ref={viewportRef}
-        className="relative w-full min-w-0 overflow-hidden"
+        className={`relative w-full min-w-0 overflow-hidden transition-[height] duration-300 ease-out motion-reduce:transition-none ${
+          viewportHeight == null ? 'min-h-[200px]' : ''
+        }`}
+        style={viewportHeight != null ? { height: viewportHeight } : undefined}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
         <div
-          className="flex transition-transform duration-300 ease-out motion-reduce:transition-none"
+          className="flex items-start transition-transform duration-300 ease-out motion-reduce:transition-none"
           style={{
             width: `${presets.length * 100}%`,
             transform: `translateX(-${trackOffsetPercent}%)`,
@@ -256,6 +287,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
           {presets.map((preset, index) => (
             <article
               key={preset.presetId}
+              ref={index === activeIndex ? activeSlideRef : undefined}
               className="shrink-0 grow-0"
               style={{ width: `${slideSharePercent}%` }}
               aria-roledescription="slide"
