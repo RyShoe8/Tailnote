@@ -43,6 +43,10 @@ const OrganizationSchema = new Schema(
     signatureClickTrackingEnabled: { type: Boolean, default: true },
     /** UTM tracking appended to http/https links in rendered signatures (default on). */
     utmEnabled: { type: Boolean, default: true },
+    /** When true, invited employees may edit organization brand fields in the dashboard. */
+    employeesCanEditBrand: { type: Boolean, default: false },
+    /** When true, invited employees may edit their promotional blocks; when false, owner blocks apply org-wide. */
+    employeesCanEditPromoBlocks: { type: Boolean, default: false },
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } }
 );

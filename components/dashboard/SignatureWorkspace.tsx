@@ -54,6 +54,13 @@ type OrgResponse = {
   plan?: string;
   subscriptionStatus?: string;
   signatureClickTrackingEnabled?: boolean;
+  employeesCanEditBrand?: boolean;
+  employeesCanEditPromoBlocks?: boolean;
+};
+
+type OrgPermissions = {
+  employeesCanEditBrand: boolean;
+  employeesCanEditPromoBlocks: boolean;
 };
 
 type TemplateRow = {
@@ -105,6 +112,13 @@ export function SignatureWorkspace() {
   const [orgName, setOrgName] = useState('');
   const [contentBlocks, setContentBlocks] = useState<ContentBlockData[]>([]);
   const [activeTab, setActiveTab] = useState<'brand' | 'blocks' | 'details' | 'install'>('brand');
+  const [viewerRole, setViewerRole] = useState<string>('owner');
+  const [permissions, setPermissions] = useState<OrgPermissions>({
+    employeesCanEditBrand: false,
+    employeesCanEditPromoBlocks: false,
+  });
+  const [promoBlocksEditable, setPromoBlocksEditable] = useState(true);
+  const [permissionSaving, setPermissionSaving] = useState(false);
   const [templates, setTemplates] = useState<TemplateRow[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [profile, setProfile] = useState<SignatureProfile>(defaultProfile);
@@ -137,10 +151,29 @@ export function SignatureWorkspace() {
       const tJson = await tRes.json();
       const gJson = await gRes.json().catch(() => ({}));
       const pJson = await pRes.json().catch(() => ({}));
+      if (typeof oJson.viewer?.role === 'string') {
+        setViewerRole(oJson.viewer.role);
+      }
+      if (oJson.permissions && typeof oJson.permissions === 'object') {
+        const p = oJson.permissions as OrgPermissions;
+        setPermissions({
+          employeesCanEditBrand: Boolean(p.employeesCanEditBrand),
+          employeesCanEditPromoBlocks: Boolean(p.employeesCanEditPromoBlocks),
+        });
+      } else if (oJson.organization) {
+        const o = oJson.organization as OrgResponse;
+        setPermissions({
+          employeesCanEditBrand: o.employeesCanEditBrand === true,
+          employeesCanEditPromoBlocks: o.employeesCanEditPromoBlocks === true,
+        });
+      }
       if (oJson.organization) {
         const o = oJson.organization as OrgResponse;
         setOrg(o);
         setOrgName(String(o.name || ''));
+      }
+      if (typeof pJson.promoBlocksEditable === 'boolean') {
+        setPromoBlocksEditable(pJson.promoBlocksEditable);
       }
       const list: TemplateRow[] = tJson.templates || [];
       setTemplates(list);
@@ -188,6 +221,20 @@ export function SignatureWorkspace() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const isOwner = viewerRole === 'owner';
+  const isMember = viewerRole === 'member';
+  const canSeeBrandTab = !isMember || permissions.employeesCanEditBrand;
+  const canSeeBlocksTab = !isMember || permissions.employeesCanEditPromoBlocks;
+
+  useEffect(() => {
+    if (loading) return;
+    if (isMember) {
+      if (activeTab === 'brand' && !canSeeBrandTab) setActiveTab('details');
+      if (activeTab === 'blocks' && !canSeeBlocksTab) setActiveTab('details');
+      if (!canSeeBrandTab && !canSeeBlocksTab && activeTab !== 'install') setActiveTab('details');
+    }
+  }, [loading, isMember, canSeeBrandTab, canSeeBlocksTab, activeTab]);
 
   useLayoutEffect(() => {
     setAssetOriginNonce(1);
@@ -373,22 +420,85 @@ export function SignatureWorkspace() {
     ) &&
     Boolean(profile.firstName.trim() && profile.lastName.trim() && profile.email.trim() && engineTemplate);
 
-  const patchSignatureProfile = async () => {
+  const patchSignatureProfile = async (opts?: { includeBlocks?: boolean; includeTemplate?: boolean }) => {
+    const includeBlocks = opts?.includeBlocks === true;
+    const includeTemplate = opts?.includeTemplate === true;
+    const body: Record<string, unknown> = {
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      title: profile.title,
+      email: profile.email,
+      officePhone: profile.officePhone ?? '',
+      mobilePhone: profile.mobilePhone ?? '',
+    };
+    if (includeBlocks && promoBlocksEditable) {
+      body.contentBlocks = contentBlocks;
+    }
+    if (includeTemplate && promoBlocksEditable && selectedTemplateId) {
+      body.templateId = selectedTemplateId;
+    }
     return fetch('/api/dashboard/me/signature-profile', {
       method: 'PATCH',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        title: profile.title,
-        email: profile.email,
-        officePhone: profile.officePhone ?? '',
-        mobilePhone: profile.mobilePhone ?? '',
-        contentBlocks,
-        ...(selectedTemplateId ? { templateId: selectedTemplateId } : {}),
-      }),
+      body: JSON.stringify(body),
     });
+  };
+
+  const saveEmployeePermission = async (
+    field: 'employeesCanEditBrand' | 'employeesCanEditPromoBlocks',
+    value: boolean
+  ) => {
+    if (!org || !isOwner) return;
+    setPermissionSaving(true);
+    setMessage(null);
+    try {
+      const res = await fetch('/api/dashboard/organization', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMessage(typeof j.error === 'string' ? j.error : 'Could not update employee permissions');
+        return;
+      }
+      if (j.permissions) {
+        setPermissions(j.permissions as OrgPermissions);
+      }
+      if (j.organization) {
+        setOrg(j.organization as OrgResponse);
+      }
+    } finally {
+      setPermissionSaving(false);
+    }
+  };
+
+  const handleSaveBlocks = async () => {
+    if (!profile.firstName.trim() || !profile.lastName.trim() || !profile.email.trim()) {
+      setProfileMessage('Save My Details (name and email) before saving blocks.');
+      return;
+    }
+    setSavingProfile(true);
+    setProfileMessage(null);
+    try {
+      const res = await patchSignatureProfile({ includeBlocks: true, includeTemplate: true });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setProfileMessage(typeof j.error === 'string' ? j.error : 'Could not save blocks');
+        return;
+      }
+      if (j.profile && typeof j.profile === 'object' && Array.isArray((j.profile as { contentBlocks?: unknown }).contentBlocks)) {
+        setContentBlocks((j.profile as { contentBlocks: ContentBlockData[] }).contentBlocks);
+      }
+      if (typeof j.promoBlocksEditable === 'boolean') {
+        setPromoBlocksEditable(j.promoBlocksEditable);
+      }
+      setProfileMessage('Promotional blocks saved.');
+    } finally {
+      setSavingProfile(false);
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -399,14 +509,14 @@ export function SignatureWorkspace() {
     setSavingProfile(true);
     setProfileMessage(null);
     try {
-      const res = await patchSignatureProfile();
+      const res = await patchSignatureProfile({ includeBlocks: false, includeTemplate: false });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
         setProfileMessage(typeof j.error === 'string' ? j.error : 'Could not save your details');
         return;
       }
       if (j.profile && typeof j.profile === 'object') {
-        const sp = j.profile as Partial<SignatureProfile>;
+        const sp = j.profile as Partial<SignatureProfile> & { contentBlocks?: ContentBlockData[] };
         setProfile({
           ...defaultProfile,
           firstName: typeof sp.firstName === 'string' ? sp.firstName : '',
@@ -416,6 +526,12 @@ export function SignatureWorkspace() {
           officePhone: typeof sp.officePhone === 'string' ? sp.officePhone : '',
           mobilePhone: typeof sp.mobilePhone === 'string' ? sp.mobilePhone : '',
         });
+        if (Array.isArray(sp.contentBlocks)) {
+          setContentBlocks(sp.contentBlocks);
+        }
+      }
+      if (typeof j.promoBlocksEditable === 'boolean') {
+        setPromoBlocksEditable(j.promoBlocksEditable);
       }
       setProfileMessage('Saved. We will pre-fill these fields next time you open Signature.');
     } finally {
@@ -458,7 +574,7 @@ export function SignatureWorkspace() {
       if (j.organization) setOrg(j.organization as OrgResponse);
 
       if (profile.firstName.trim() && profile.lastName.trim() && profile.email.trim()) {
-        const pRes = await patchSignatureProfile();
+        const pRes = await patchSignatureProfile({ includeBlocks: promoBlocksEditable, includeTemplate: promoBlocksEditable });
         if (!pRes.ok) {
           const pj = await pRes.json().catch(() => ({}));
           setMessage(
@@ -561,8 +677,12 @@ export function SignatureWorkspace() {
     <div className="grid lg:grid-cols-12 gap-8 items-start max-w-full min-w-0 pb-20">
       <div className="lg:col-span-5 xl:col-span-4 space-y-6">
         <div className="flex gap-2 pb-2 overflow-x-auto border-b hide-scrollbar">
-          <button onClick={() => setActiveTab('brand')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'brand' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Brand</button>
-          <button onClick={() => setActiveTab('blocks')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'blocks' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Blocks</button>
+          {canSeeBrandTab ? (
+            <button onClick={() => setActiveTab('brand')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'brand' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Brand</button>
+          ) : null}
+          {canSeeBlocksTab ? (
+            <button onClick={() => setActiveTab('blocks')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'blocks' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Blocks</button>
+          ) : null}
           <button onClick={() => setActiveTab('details')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'details' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>My Details</button>
           <button onClick={() => setActiveTab('install')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'install' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Install</button>
         </div>
@@ -753,6 +873,18 @@ export function SignatureWorkspace() {
               </select>
             </div>
             {message && <p className="text-sm text-muted-foreground">{message}</p>}
+            {isOwner ? (
+              <label className="flex items-start gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={permissions.employeesCanEditBrand}
+                  disabled={permissionSaving}
+                  onChange={(e) => void saveEmployeePermission('employeesCanEditBrand', e.target.checked)}
+                />
+                <span>Allow employees to edit brand</span>
+              </label>
+            ) : null}
             <Button onClick={handleSave} disabled={saving}>
               {saving ? 'Saving…' : 'Save'}
             </Button>
@@ -768,8 +900,26 @@ export function SignatureWorkspace() {
                 </p>
               </div>
               <ContentBlocksEditor value={contentBlocks} onChange={setContentBlocks} />
+              {isOwner ? (
+                <label className="flex items-start gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="mt-1"
+                    checked={permissions.employeesCanEditPromoBlocks}
+                    disabled={permissionSaving}
+                    onChange={(e) =>
+                      void saveEmployeePermission('employeesCanEditPromoBlocks', e.target.checked)
+                    }
+                  />
+                  <span>Allow employees to edit promotional blocks</span>
+                </label>
+              ) : null}
               <div className="flex flex-wrap items-center gap-3 pt-4">
-                <Button type="button" onClick={() => void handleSaveProfile()} disabled={savingProfile}>
+                <Button
+                  type="button"
+                  onClick={() => void handleSaveBlocks()}
+                  disabled={savingProfile}
+                >
                   {savingProfile ? 'Saving...' : 'Save Blocks'}
                 </Button>
                 {profileMessage && <p className="text-sm text-muted-foreground">{profileMessage}</p>}

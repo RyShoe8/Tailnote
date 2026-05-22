@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { formatSignupError } from '@/lib/auth/formatAuthError';
 
 function buildPostSignupPath(searchParams: URLSearchParams, inviteToken: string | null): string {
   if (inviteToken) {
@@ -47,7 +48,7 @@ function SignupForm() {
         name,
       });
       if (err) {
-        setError(err.message || 'Sign up failed');
+        setError(formatSignupError(err.message || 'Sign up failed'));
         return;
       }
       if (inviteToken) {

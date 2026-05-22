@@ -7,6 +7,11 @@ import {
   isAllowedOrgLogoUrl,
   orgLogoUrlValidationMessage,
 } from '@/lib/org/validateOrgLogoUrl';
+import {
+  isOrgAdminRole,
+  memberCanEditOrgBrand,
+  orgPermissionFlags,
+} from '@/lib/org/permissions';
 
 type SessionUser = {
   id?: string;
@@ -33,10 +38,38 @@ const PATCHABLE_FIELDS = [
   'utmEnabled',
 ] as const;
 
+const OWNER_ONLY_FIELDS = ['employeesCanEditBrand', 'employeesCanEditPromoBlocks'] as const;
+
+const MEMBER_BRAND_FIELDS = [
+  'name',
+  'logoUrl',
+  'logoShape',
+  'primaryColor',
+  'secondaryColor',
+  'website',
+  'companyName',
+  'fontFamily',
+  'logoLink',
+  'socialLinks',
+  'address',
+  'state',
+  'zip',
+  'animation',
+] as const;
+
 type PatchableField = (typeof PATCHABLE_FIELDS)[number];
+type OwnerOnlyField = (typeof OWNER_ONLY_FIELDS)[number];
 
 function isPatchableField(key: string): key is PatchableField {
   return (PATCHABLE_FIELDS as readonly string[]).includes(key);
+}
+
+function isOwnerOnlyField(key: string): key is OwnerOnlyField {
+  return (OWNER_ONLY_FIELDS as readonly string[]).includes(key);
+}
+
+function isMemberBrandField(key: string): boolean {
+  return (MEMBER_BRAND_FIELDS as readonly string[]).includes(key);
 }
 
 export async function GET() {
@@ -51,9 +84,11 @@ export async function GET() {
   await connectMongoose();
   await unsetLegacyOrgAddressFields(user.organizationId);
   const organization = await OrganizationModel.findById(user.organizationId).lean();
+  const permissions = organization ? orgPermissionFlags(organization as Record<string, unknown>) : null;
   return NextResponse.json({
     organization,
     viewer: { role: user.role ?? 'member' },
+    permissions,
   });
 }
 
@@ -71,7 +106,12 @@ export async function PATCH(request: Request) {
   if (!org) {
     return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
   }
-  if (user.role !== 'owner' && user.role !== 'admin') {
+
+  const role = user.role ?? 'member';
+  const flags = orgPermissionFlags(org);
+  const canEditBrand = memberCanEditOrgBrand(role, flags);
+
+  if (!canEditBrand) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -82,13 +122,38 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
+  const isOwner = role === 'owner';
+  const isAdmin = isOrgAdminRole(role);
+
   const $set: Record<string, unknown> = {};
   for (const key of Object.keys(body)) {
+    if (isOwnerOnlyField(key)) {
+      if (!isOwner) continue;
+      const value = body[key];
+      if (typeof value === 'boolean') {
+        $set[key] = value;
+      }
+      continue;
+    }
+
     if (!isPatchableField(key)) continue;
+
+    if (role === 'member' && !isMemberBrandField(key)) {
+      continue;
+    }
+
     const value = body[key];
     if (value !== undefined) {
       $set[key] = value;
     }
+  }
+
+  if (role === 'member' && Object.keys($set).some((k) => isOwnerOnlyField(k))) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  if (!isAdmin && !isOwner && Object.keys($set).length === 0) {
+    return NextResponse.json({ error: 'No allowed fields to update' }, { status: 400 });
   }
 
   await unsetLegacyOrgAddressFields(user.organizationId);
@@ -111,12 +176,18 @@ export async function PATCH(request: Request) {
 
   if (Object.keys($set).length === 0) {
     const current = await OrganizationModel.findById(user.organizationId).lean();
-    return NextResponse.json({ organization: current });
+    return NextResponse.json({
+      organization: current,
+      permissions: current ? orgPermissionFlags(current as Record<string, unknown>) : null,
+    });
   }
 
   const updated = await OrganizationModel.findByIdAndUpdate(user.organizationId, { $set }, { new: true }).lean();
   if (!updated) {
     return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
   }
-  return NextResponse.json({ organization: updated });
+  return NextResponse.json({
+    organization: updated,
+    permissions: orgPermissionFlags(updated as Record<string, unknown>),
+  });
 }

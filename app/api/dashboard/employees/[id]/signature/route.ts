@@ -5,7 +5,7 @@ import { OrganizationModel } from '@/models/Organization';
 import { EmployeeModel } from '@/models/Employee';
 import { SignatureTemplateModel } from '@/models/SignatureTemplate';
 import { assertOrganizationSubscriptionPaid } from '@/lib/dashboard/subscriptionRequired';
-import { renderSignatureForEmployee } from '@/lib/renderEmployeeSignature';
+import { renderSignatureForEmployeeResolved } from '@/lib/renderEmployeeSignature';
 
 type SessionUser = { organizationId?: string };
 
@@ -44,7 +44,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     return NextResponse.json({ error: 'Template missing' }, { status: 400 });
   }
 
-  const html = renderSignatureForEmployee(org, employee, tmpl, {
+  const html = await renderSignatureForEmployeeResolved(org, employee, tmpl, {
     publicSiteOrigin: new URL(request.url).origin,
   });
   return NextResponse.json({ html });

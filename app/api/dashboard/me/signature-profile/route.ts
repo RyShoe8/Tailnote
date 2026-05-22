@@ -1,10 +1,20 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import type { ContentBlockData } from 'emailsignature-engine';
 import { connectMongoose } from '@/lib/mongoose';
 import { getServerSession } from '@/lib/auth/session';
 import { UserSignatureProfileModel } from '@/models/UserSignatureProfile';
+import { OrganizationModel } from '@/models/Organization';
+import { EmployeeModel } from '@/models/Employee';
 import { findOrgTemplateWithAvailablePreset } from '@/lib/templates/validateOrgTemplate';
 import { syncOwnerEmployeeFromProfile } from '@/lib/employees/syncOwnerEmployeeFromProfile';
+import { syncPromoBlocksToLockedMembers } from '@/lib/employees/syncPromoBlocksToLockedMembers';
+import {
+  isOrgAdminRole,
+  memberCanEditPromoBlocks,
+  orgPermissionFlags,
+} from '@/lib/org/permissions';
+import { resolveEmployeeContentBlocks } from '@/lib/org/resolveEmployeeContentBlocks';
 
 const ProfileSchema = z.object({
   firstName: z.string().trim().max(120),
@@ -20,6 +30,9 @@ const ProfileSchema = z.object({
 type SessionUser = {
   id?: string;
   organizationId?: string;
+  role?: string;
+  email?: string;
+  name?: string | null;
 };
 
 function docToProfile(doc: {
@@ -30,6 +43,7 @@ function docToProfile(doc: {
   officePhone?: string;
   mobilePhone?: string;
   templateId?: unknown;
+  contentBlocks?: unknown[];
 }) {
   const templateId =
     doc.templateId != null && String(doc.templateId).length > 0
@@ -42,7 +56,7 @@ function docToProfile(doc: {
     email: doc.email,
     officePhone: doc.officePhone ?? '',
     mobilePhone: doc.mobilePhone ?? '',
-    contentBlocks: (doc as { contentBlocks?: unknown[] }).contentBlocks ?? [],
+    contentBlocks: doc.contentBlocks ?? [],
     ...(templateId ? { templateId } : {}),
   };
 }
@@ -53,13 +67,52 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const user = session.user as SessionUser;
-
-  await connectMongoose();
-  const row = await UserSignatureProfileModel.findOne({ userId: user.id }).lean();
-  if (!row) {
+  if (!user.organizationId) {
     return NextResponse.json({ profile: null });
   }
-  return NextResponse.json({ profile: docToProfile(row) });
+
+  await connectMongoose();
+  const org = await OrganizationModel.findById(user.organizationId).lean();
+  if (!org) {
+    return NextResponse.json({ profile: null });
+  }
+
+  const row = await UserSignatureProfileModel.findOne({ userId: user.id }).lean();
+  const orgLean = org as unknown as import('@/models/Organization').OrganizationDoc;
+  const flags = orgPermissionFlags(orgLean);
+  const canEditPromo = memberCanEditPromoBlocks(user.role, flags);
+
+  let contentBlocks: ContentBlockData[] = (row as { contentBlocks?: unknown[] } | null)?.contentBlocks as ContentBlockData[] ?? [];
+
+  if (!isOrgAdminRole(user.role)) {
+    const emp = await EmployeeModel.findOne({
+      organizationId: orgLean._id,
+      userId: user.id,
+    }).lean();
+    if (emp) {
+      contentBlocks = await resolveEmployeeContentBlocks(orgLean, emp as unknown as import('@/models/Employee').EmployeeDoc);
+    } else if (!canEditPromo) {
+      const { getOrgOwnerPromoBlocks } = await import('@/lib/org/getOrgOwnerPromoBlocks');
+      contentBlocks = await getOrgOwnerPromoBlocks(orgLean._id);
+    }
+  }
+
+  if (!row) {
+    return NextResponse.json({
+      profile: null,
+      permissions: flags,
+      promoBlocksEditable: canEditPromo,
+    });
+  }
+
+  return NextResponse.json({
+    profile: {
+      ...docToProfile(row as never),
+      contentBlocks,
+    },
+    permissions: flags,
+    promoBlocksEditable: canEditPromo,
+  });
 }
 
 export async function PATCH(request: Request) {
@@ -86,6 +139,25 @@ export async function PATCH(request: Request) {
   const p = parsed.data;
   await connectMongoose();
 
+  const org = await OrganizationModel.findById(user.organizationId);
+  if (!org) {
+    return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
+  }
+
+  const orgLean = org as unknown as import('@/models/Organization').OrganizationDoc;
+  const flags = orgPermissionFlags(orgLean);
+  const canEditPromo = memberCanEditPromoBlocks(user.role, flags);
+  const body = json as Record<string, unknown>;
+  const sendsBlocks = Object.prototype.hasOwnProperty.call(body, 'contentBlocks');
+  const sendsTemplate = Object.prototype.hasOwnProperty.call(body, 'templateId');
+
+  if (!canEditPromo && (sendsBlocks || sendsTemplate)) {
+    return NextResponse.json(
+      { error: 'Your organization owner has locked promotional blocks and templates' },
+      { status: 403 }
+    );
+  }
+
   let templateObjectId: import('mongoose').Types.ObjectId | undefined;
   if (p.templateId) {
     const tmpl = await findOrgTemplateWithAvailablePreset(p.templateId, user.organizationId);
@@ -95,6 +167,12 @@ export async function PATCH(request: Request) {
     templateObjectId = tmpl._id;
   }
 
+  const existingProfile = await UserSignatureProfileModel.findOne({ userId: user.id }).lean();
+  const contentBlocksForUpdate =
+    sendsBlocks && canEditPromo
+      ? (p.contentBlocks ?? [])
+      : ((existingProfile as { contentBlocks?: unknown[] } | null)?.contentBlocks ?? []);
+
   const update: Record<string, unknown> = {
     userId: user.id,
     firstName: p.firstName,
@@ -103,9 +181,9 @@ export async function PATCH(request: Request) {
     email: p.email,
     officePhone: p.officePhone ?? '',
     mobilePhone: p.mobilePhone ?? '',
-    contentBlocks: p.contentBlocks ?? [],
+    contentBlocks: contentBlocksForUpdate,
   };
-  if (templateObjectId) {
+  if (templateObjectId && canEditPromo) {
     update.templateId = templateObjectId;
   }
 
@@ -119,23 +197,54 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Save failed' }, { status: 500 });
   }
 
-  const owner = session.user as { id?: string; email?: string; name?: string | null };
-  if (owner.id && owner.email) {
-    await syncOwnerEmployeeFromProfile(user.organizationId, {
-      id: owner.id,
-      email: owner.email,
-      name: owner.name,
-    }, {
-      firstName: p.firstName,
-      lastName: p.lastName,
-      title: p.title,
-      email: p.email,
-      officePhone: p.officePhone,
-      mobilePhone: p.mobilePhone,
-      contentBlocks: p.contentBlocks as import('emailsignature-engine').ContentBlockData[] | undefined,
-      templateId: templateObjectId ? String(templateObjectId) : p.templateId,
-    });
+  const isOwner = user.role === 'owner';
+  const blocksPayload = sendsBlocks && canEditPromo
+    ? (p.contentBlocks as ContentBlockData[] | undefined)
+    : undefined;
+
+  if (user.id && user.email) {
+    await syncOwnerEmployeeFromProfile(
+      user.organizationId,
+      {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+      {
+        firstName: p.firstName,
+        lastName: p.lastName,
+        title: p.title,
+        email: p.email,
+        officePhone: p.officePhone,
+        mobilePhone: p.mobilePhone,
+        contentBlocks: blocksPayload,
+        templateId: templateObjectId && canEditPromo ? String(templateObjectId) : p.templateId,
+      }
+    );
   }
 
-  return NextResponse.json({ profile: docToProfile(row) });
+  if (user.role === 'member' && sendsBlocks && canEditPromo) {
+    await EmployeeModel.updateOne(
+      { organizationId: orgLean._id, userId: user.id },
+      { $set: { promoBlocksCustomized: true } }
+    );
+  }
+
+  if (isOwner && sendsBlocks && blocksPayload && !flags.employeesCanEditPromoBlocks) {
+    await syncPromoBlocksToLockedMembers(orgLean._id, blocksPayload);
+  }
+
+  const emp = await EmployeeModel.findOne({ organizationId: orgLean._id, userId: user.id }).lean();
+  const resolvedBlocks = emp
+    ? await resolveEmployeeContentBlocks(orgLean, emp as unknown as import('@/models/Employee').EmployeeDoc)
+    : ((row as { contentBlocks?: unknown[] }).contentBlocks as ContentBlockData[]);
+
+  return NextResponse.json({
+    profile: {
+      ...docToProfile(row as never),
+      contentBlocks: resolvedBlocks,
+    },
+    permissions: flags,
+    promoBlocksEditable: canEditPromo,
+  });
 }

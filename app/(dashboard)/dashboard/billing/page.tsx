@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AccountSecurityCard } from '@/components/dashboard/AccountSecurityCard';
 
 export default function BillingPage() {
   const [org, setOrg] = useState<Record<string, unknown> | null>(null);
@@ -79,6 +80,7 @@ export default function BillingPage() {
           {checkoutError}
         </p>
       ) : null}
+      <AccountSecurityCard />
       <Card>
         <CardHeader>
           <CardTitle>Status</CardTitle>

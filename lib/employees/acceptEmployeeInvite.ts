@@ -2,7 +2,10 @@ import { headers } from 'next/headers';
 import { connectMongoose } from '@/lib/mongoose';
 import { getAuth } from '@/lib/auth/server';
 import { EmployeeModel } from '@/models/Employee';
+import { OrganizationModel } from '@/models/Organization';
 import { isInviteExpired } from '@/lib/employees/inviteToken';
+import { orgPermissionFlags } from '@/lib/org/permissions';
+import { getOrgOwnerPromoBlocks } from '@/lib/org/getOrgOwnerPromoBlocks';
 
 export type AcceptInviteResult =
   | { ok: true; redirect: string }
@@ -61,6 +64,14 @@ export async function acceptEmployeeInvite(
     } as never,
     headers: await headers(),
   });
+
+  const org = await OrganizationModel.findById(employee.organizationId).lean();
+  const flags = org ? orgPermissionFlags(org as Record<string, unknown>) : null;
+  if (flags && !flags.employeesCanEditPromoBlocks) {
+    const ownerBlocks = await getOrgOwnerPromoBlocks(employee.organizationId);
+    employee.contentBlocks = ownerBlocks as never;
+    employee.promoBlocksCustomized = false;
+  }
 
   employee.inviteAcceptedAt = new Date();
   employee.userId = sessionUser.id;

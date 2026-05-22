@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { formatLoginError } from '@/lib/auth/formatAuthError';
 
 function LoginForm() {
   const router = useRouter();
@@ -32,7 +33,7 @@ function LoginForm() {
     try {
       const { error: err } = await authClient.signIn.email({ email, password });
       if (err) {
-        setError(err.message || 'Sign in failed');
+        setError(formatLoginError(err.message || 'Sign in failed'));
         return;
       }
       router.push(next);

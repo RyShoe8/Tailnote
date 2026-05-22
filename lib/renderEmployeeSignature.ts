@@ -87,7 +87,7 @@ export function renderSignatureForEmployee(
   org: OrganizationDoc,
   emp: EmployeeDoc,
   tmpl: SignatureTemplateDoc,
-  options?: { publicSiteOrigin?: string }
+  options?: { publicSiteOrigin?: string; contentBlocks?: ContentBlockData[] }
 ): string {
   if (!isOrganizationPaid(org)) {
     return INACTIVE_SUBSCRIPTION_HTML;
@@ -102,7 +102,7 @@ export function renderSignatureForEmployee(
     includeAnimationSlot: includeAnimation,
   });
   const publicSiteOrigin = options?.publicSiteOrigin?.trim() || getSignatureAssetOrigin();
-  const contentBlocks = employeeContentBlocks(emp);
+  const contentBlocks = options?.contentBlocks ?? employeeContentBlocks(emp);
   const utmEnabled = (org as unknown as { utmEnabled?: boolean }).utmEnabled !== false;
   const vcardUrl = emp.previewToken
     ? vcardDownloadUrl(publicSiteOrigin, String(emp.previewToken))
@@ -128,4 +128,16 @@ export function renderSignatureForEmployee(
     baseUrl: publicSiteOrigin,
   });
   return html;
+}
+
+/** Server render with org permission-aware promotional blocks. */
+export async function renderSignatureForEmployeeResolved(
+  org: OrganizationDoc,
+  emp: EmployeeDoc,
+  tmpl: SignatureTemplateDoc,
+  options?: { publicSiteOrigin?: string }
+): Promise<string> {
+  const { resolveEmployeeContentBlocks } = await import('@/lib/org/resolveEmployeeContentBlocks');
+  const contentBlocks = await resolveEmployeeContentBlocks(org, emp);
+  return renderSignatureForEmployee(org, emp, tmpl, { ...options, contentBlocks });
 }

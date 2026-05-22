@@ -9,7 +9,12 @@ import { SignatureTemplateModel } from '@/models/SignatureTemplate';
 import { UserSignatureProfileModel } from '@/models/UserSignatureProfile';
 import { buildRenderInput, type EmployeeProfileInput } from '@/lib/email/toRenderInput';
 import { EmployeeModel } from '@/models/Employee';
-import { employeeToProfile, mergeEmployeeSocialIntoOrgBrand, orgToBrandInput } from '@/lib/renderEmployeeSignature';
+import {
+  employeeToProfile,
+  mergeEmployeeSocialIntoOrgBrand,
+  orgToBrandInput,
+} from '@/lib/renderEmployeeSignature';
+import { resolveEmployeeContentBlocks } from '@/lib/org/resolveEmployeeContentBlocks';
 import { engineTemplateFromStoredConfig, type TemplatePresetId } from '@/lib/email/templatePresets';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
 import { assertOrganizationSubscriptionPaid } from '@/lib/dashboard/subscriptionRequired';
@@ -73,7 +78,7 @@ const BodySchema = z.object({
   brandOverride: BrandOverrideSchema.optional(),
 });
 
-type SessionUser = { id?: string; organizationId?: string };
+type SessionUser = { id?: string; organizationId?: string; role?: string };
 
 export async function POST(request: Request) {
   const session = await getServerSession();
@@ -128,8 +133,7 @@ export async function POST(request: Request) {
     employeeIdForTracking = String(empDoc._id);
     previewTokenForVcard = String(empDoc.previewToken ?? '').trim() || undefined;
     const li = parsed.data.linkedin ?? (typeof empDoc.linkedin === 'string' ? empDoc.linkedin : '');
-    orgBrand = mergeEmployeeSocialIntoOrgBrand(org as never, { linkedin: li });
-
+    const resolvedBlocks = await resolveEmployeeContentBlocks(org as never, empDoc as never);
     if (parsed.data.profile) {
       const p = parsed.data.profile;
       employee = {
@@ -140,8 +144,10 @@ export async function POST(request: Request) {
         officePhone: p.officePhone ?? '',
         mobilePhone: p.mobilePhone ?? '',
       };
+      orgBrand = mergeEmployeeSocialIntoOrgBrand(org as never, { linkedin: li }, p.contentBlocks ?? resolvedBlocks);
     } else {
       employee = employeeToProfile(empDoc);
+      orgBrand = mergeEmployeeSocialIntoOrgBrand(org as never, { linkedin: li }, resolvedBlocks);
     }
   } else if (parsed.data.profile) {
     const p = parsed.data.profile;
@@ -169,8 +175,17 @@ export async function POST(request: Request) {
       officePhone: row.officePhone ?? '',
       mobilePhone: row.mobilePhone ?? '',
     };
-    if ((row as any).contentBlocks) {
-      orgBrand.contentBlocks = (row as any).contentBlocks;
+    const selfEmp = await EmployeeModel.findOne({
+      organizationId: org._id,
+      userId: user.id,
+    }).lean();
+    const blocks = selfEmp
+      ? await resolveEmployeeContentBlocks(org as never, selfEmp as never)
+      : ((row as { contentBlocks?: unknown[] }).contentBlocks as import('emailsignature-engine').ContentBlockData[] | undefined);
+    if (blocks?.length) {
+      orgBrand = mergeEmployeeSocialIntoOrgBrand(org as never, { linkedin: '' }, blocks);
+    } else if ((row as { contentBlocks?: unknown[] }).contentBlocks) {
+      orgBrand.contentBlocks = (row as { contentBlocks?: unknown[] }).contentBlocks as never;
     }
   }
 

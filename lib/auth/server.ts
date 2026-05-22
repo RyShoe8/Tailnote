@@ -28,9 +28,21 @@ export async function getAuth() {
       updateAge: 60 * 60 * 24,
     },
     database: mongodbAdapter(db as never, { client: client as never }),
+    account: {
+      accountLinking: {
+        enabled: true,
+        trustedProviders: ['google'],
+      },
+    },
     databaseHooks: {
       user: {
         create: {
+          before: async (user) => {
+            if (user.email) {
+              return { data: { ...user, email: user.email.trim().toLowerCase() } };
+            }
+            return { data: user };
+          },
           after: async (user) => {
             void syncUserToBrevoList({
               email: user.email,

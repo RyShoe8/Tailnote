@@ -21,6 +21,8 @@ const EmployeeSchema = new Schema(
     inviteExpiresAt: { type: Date },
     /** Better Auth user id after invite acceptance */
     userId: { type: String, default: '', index: true },
+    /** When true, this employee has saved their own promo blocks (editable mode only). */
+    promoBlocksCustomized: { type: Boolean, default: false },
     /** Up to 2 promotional content blocks displayed in the corporate template. */
     contentBlocks: [
       {
