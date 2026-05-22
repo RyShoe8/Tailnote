@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectMongoose, getMongoDb } from '@/lib/mongoose';
+import { accountFilterBySessionUserId } from '@/lib/auth/accountQueries';
 import { getServerSession } from '@/lib/auth/session';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +19,7 @@ export async function GET() {
   const db = getMongoDb();
   const accounts = (await db
     .collection('account')
-    .find({ userId: session.user.id })
+    .find(accountFilterBySessionUserId(session.user.id))
     .project({ providerId: 1 })
     .toArray()) as AccountRow[];
 

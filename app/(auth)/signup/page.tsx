@@ -142,7 +142,7 @@ function SignupForm() {
 export default function SignupPage() {
   return (
     <>
-      <AuthBrandHeader heightClass="h-14 sm:h-16" />
+      <AuthBrandHeader heightClass="h-28 sm:h-32" />
       <Suspense fallback={<div className="text-sm text-muted-foreground">Loading…</div>}>
         <SignupForm />
       </Suspense>

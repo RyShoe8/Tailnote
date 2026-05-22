@@ -152,6 +152,7 @@ export async function POST(request: Request) {
                   seats: count,
                   startedAt: new Date(),
                   renewsAt,
+                  cancelAtPeriodEnd: sub.cancel_at_period_end === true,
                 },
               },
               { upsert: true }
@@ -233,6 +234,7 @@ export async function POST(request: Request) {
         const orgSubPatch: Record<string, unknown> = {
           status: orgSubStatus,
           stripeCustomerId: String(sub.customer),
+          cancelAtPeriodEnd: isDeleted ? false : sub.cancel_at_period_end === true,
         };
         if (typeof sub.current_period_end === 'number') {
           orgSubPatch.renewsAt = new Date(sub.current_period_end * 1000);

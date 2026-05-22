@@ -23,7 +23,9 @@ export function middleware(request: NextRequest) {
       pathname.startsWith('/api/dashboard') ||
       pathname.startsWith('/api/admin') ||
       pathname.startsWith('/api/stripe/checkout') ||
-      pathname.startsWith('/api/stripe/portal') ||
+      pathname.startsWith('/api/stripe/cancel-subscription') ||
+      pathname.startsWith('/api/stripe/change-plan') ||
+      pathname.startsWith('/api/stripe/reactivate-subscription') ||
       pathname.startsWith('/api/onboarding/') ||
       pathname.startsWith('/api/integrations/gmail'));
 
@@ -54,7 +56,9 @@ export const config = {
     '/api/dashboard/:path*',
     '/api/admin/:path*',
     '/api/stripe/checkout',
-    '/api/stripe/portal',
+    '/api/stripe/cancel-subscription',
+    '/api/stripe/change-plan',
+    '/api/stripe/reactivate-subscription',
     '/api/onboarding/:path*',
     '/api/integrations/gmail/:path*',
   ],

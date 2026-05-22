@@ -1,7 +1,7 @@
 import { connectMongoose } from '@/lib/mongoose';
 import { SubscriptionPlanModel, type SubscriptionPlanDoc } from '@/models/SubscriptionPlan';
 import { ensureDefaultSubscriptionPlans } from '@/lib/billing/ensureDefaultPlans';
-import { getPlanSubscriptionCapUsage } from '@/lib/billing/planSubscriptionCap';
+import { mapPlanDocToPublicPricing } from '@/lib/billing/mapPlanDocToPublicPricing';
 
 /** Serializable plan row for marketing / pricing UI (latest version per slug). */
 export type PublicPricingPlan = {
@@ -39,23 +39,7 @@ export async function getPublicPricingPlans(): Promise<PublicPricingPlan[]> {
     if (!slug || seen.has(slug)) continue;
     seen.add(slug);
 
-    const usage = await getPlanSubscriptionCapUsage(r);
-
-    out.push({
-      id: String(r._id),
-      slug,
-      name: String(r.name ?? ''),
-      description: String(r.description ?? ''),
-      badge: String(r.badge ?? ''),
-      interval: r.interval,
-      basePriceCents: Number(r.basePriceCents ?? 0),
-      additionalUserPriceCents: Number(r.additionalUserPriceCents ?? 0),
-      includedUsers: Math.max(1, Number(r.includedUsers ?? 1)),
-      version: Number(r.version ?? 1),
-      maxSubscriptionSlots: Number(r.maxSubscriptionSlots ?? 0),
-      subscriptionCount: usage.used,
-      soldOut: usage.soldOut,
-    });
+    out.push(await mapPlanDocToPublicPricing(r));
   }
 
   return out;

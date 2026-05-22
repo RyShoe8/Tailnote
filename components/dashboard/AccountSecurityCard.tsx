@@ -1,8 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { authClient } from '@/lib/auth/client';
+import { formatOAuthCallbackError } from '@/lib/auth/formatAuthError';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -13,10 +15,12 @@ type AuthMethods = {
   googleOAuthConfigured?: boolean;
 };
 
-export function AccountSecurityCard() {
+function AccountSecurityCardInner() {
+  const searchParams = useSearchParams();
   const [methods, setMethods] = useState<AuthMethods | null>(null);
   const [loading, setLoading] = useState(true);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [linkSuccess, setLinkSuccess] = useState<string | null>(null);
   const [linking, setLinking] = useState(false);
 
   const load = useCallback(async () => {
@@ -35,13 +39,34 @@ export function AccountSecurityCard() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    const account = searchParams.get('account');
+    const error = searchParams.get('error');
+
+    if (error) {
+      setLinkError(formatOAuthCallbackError(error));
+      setLinkSuccess(null);
+      setLinking(false);
+      return;
+    }
+
+    if (account === 'linked') {
+      setLinkError(null);
+      setLinkSuccess('Google is now connected to your account.');
+      setLinking(false);
+      void load();
+    }
+  }, [searchParams, load]);
+
   async function linkGoogle() {
     setLinkError(null);
+    setLinkSuccess(null);
     setLinking(true);
     try {
       const { error } = await authClient.linkSocial({
         provider: 'google',
         callbackURL: '/dashboard/billing?account=linked',
+        errorCallbackURL: '/dashboard/billing?error=account_not_linked',
       });
       if (error) {
         setLinkError(error.message || 'Could not connect Google');
@@ -81,6 +106,12 @@ export function AccountSecurityCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {linkSuccess ? (
+          <p className="text-sm text-muted-foreground" role="status">
+            {linkSuccess}
+          </p>
+        ) : null}
+
         <ul className="text-sm space-y-2">
           <li>
             <span className="font-medium">Email & password:</span>{' '}
@@ -124,8 +155,26 @@ export function AccountSecurityCard() {
             you can use on the login page.
           </p>
         ) : null}
-
       </CardContent>
     </Card>
+  );
+}
+
+export function AccountSecurityCard() {
+  return (
+    <Suspense
+      fallback={
+        <Card>
+          <CardHeader>
+            <CardTitle>Sign-in methods</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          </CardContent>
+        </Card>
+      }
+    >
+      <AccountSecurityCardInner />
+    </Suspense>
   );
 }

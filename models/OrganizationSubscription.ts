@@ -19,6 +19,8 @@ const OrganizationSubscriptionSchema = new Schema(
     seats: { type: Number, default: 1, min: 1 },
     startedAt: { type: Date },
     renewsAt: { type: Date },
+    /** True when Stripe cancel_at_period_end is set; access continues until renewsAt. */
+    cancelAtPeriodEnd: { type: Boolean, default: false },
     grandfathered: { type: Boolean, default: false },
     trialEndsAt: { type: Date },
   },

@@ -1,6 +1,10 @@
 /**
  * One-time maintenance: lowercase Better Auth user emails and mark credential users verified.
- * Run from repo root: npx tsx scripts/normalize-user-emails.ts
+ * Run from repo root against the target environment (production: set MONGODB_URI first):
+ *   npx tsx scripts/normalize-user-emails.ts
+ *
+ * If Google login or Connect Google still fails after deploy, inspect duplicate `user` rows
+ * with the same email and orphaned `account` rows (provider google on a different userId).
  */
 import mongoose from 'mongoose';
 import { connectMongoose, getMongoDb } from '../lib/mongoose';
