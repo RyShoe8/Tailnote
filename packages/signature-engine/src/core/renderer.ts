@@ -28,6 +28,35 @@ function hasElement(elements: SignatureElement[], type: ElementType): boolean {
   return elements.some((e) => e.type === type);
 }
 
+function logoWidthForLayout(layout: SignatureTemplate['layout'], useCircle: boolean): string {
+  if (useCircle) return '110';
+  switch (layout) {
+    case 'default':
+      return '130';
+    case 'creator':
+      return '100';
+    case 'executive_minimalist':
+      return '90';
+    default:
+      return '110';
+  }
+}
+
+function logoImgBorderRadiusForLayout(
+  layout: SignatureTemplate['layout'],
+  useCircle: boolean
+): string {
+  if (useCircle) return '50%';
+  switch (layout) {
+    case 'professional':
+      return '8px';
+    case 'creator':
+      return '4px';
+    default:
+      return '0';
+  }
+}
+
 /** Fallback when publicSiteOrigin is not passed (local dev). Set NEXT_PUBLIC_SITE_URL in production. */
 const DEFAULT_PUBLIC_SITE_ORIGIN = 'http://localhost:3000';
 
@@ -754,16 +783,27 @@ export function mergeRenderContext(
       ? Math.round(brand.logoHeightPx)
       : 0;
 
+  const useCircleLogo = hasLogo && !useAnimation && brand.logoShape === 'circle';
+  const logoWidthStr = hasLogo ? logoWidthForLayout(template.layout, useCircleLogo) : '110';
+
   let logoDisplayHeightStr = '';
+  let hasLogoSizedHeight = false;
+  let hasLogoAutoHeight = false;
   if (hasLogo) {
-    if (explicitLogoH) {
+    if (useCircleLogo) {
+      logoDisplayHeightStr = logoWidthStr;
+      hasLogoSizedHeight = true;
+    } else if (explicitLogoH) {
       logoDisplayHeightStr = String(logoHeightPxRounded);
+      hasLogoSizedHeight = true;
     } else {
-      logoDisplayHeightStr = '';
+      hasLogoAutoHeight = true;
     }
   }
-  const hasLogoSizedHeight = hasLogo && logoDisplayHeightStr !== '';
-  const hasLogoAutoHeight = hasLogo && logoDisplayHeightStr === '';
+
+  const logoImgBorderRadius = hasLogo
+    ? logoImgBorderRadiusForLayout(template.layout, useCircleLogo)
+    : '0';
 
   const linkedin =
     hasSocial && brand.socialLinks.linkedin?.trim()
@@ -1011,8 +1051,9 @@ export function mergeRenderContext(
     mobilePhoneTelHref: escapeHtml(mobilePhoneTelHref),
     logoUrl: escapeHtml(logoUrl),
     logoLink: escapeHtml(logoLinkForHref),
-    logoWidth: '110',
+    logoWidth: logoWidthStr,
     logoDisplayHeight: logoDisplayHeightStr,
+    logoImgBorderRadius,
     primaryColor: escapeHtml(brand.primaryColor.trim()),
     fontFamily: escapeHtml(brand.fontFamily.trim()),
     companyName: escapeHtml(brand.companyName.trim()),

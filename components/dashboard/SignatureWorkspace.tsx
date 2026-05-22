@@ -39,6 +39,7 @@ type OrgResponse = {
   companyName?: string;
   website?: string;
   logoUrl?: string;
+  logoShape?: 'rectangle' | 'circle';
   logoLink?: string;
   primaryColor?: string;
   fontFamily?: string;
@@ -66,6 +67,7 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
     companyName: (org.companyName || displayName || '').trim(),
     website: (org.website || '').trim(),
     logoUrl: (org.logoUrl || '').trim(),
+    logoShape: org.logoShape === 'circle' ? 'circle' : 'rectangle',
     logoLink: (org.logoLink || '').trim(),
     primaryColor: org.primaryColor?.trim() || '#0a0a0a',
     fontFamily: org.fontFamily?.trim() || 'Arial',
@@ -266,6 +268,7 @@ export function SignatureWorkspace() {
                 fontFamily: brand.fontFamily,
                 primaryColor: brand.primaryColor,
                 logoUrl: brand.logoUrl,
+                logoShape: brand.logoShape,
                 logoLink: brand.logoLink,
                 website: brand.website,
                 companyName: brand.companyName,
@@ -306,6 +309,7 @@ export function SignatureWorkspace() {
     brand.companyName,
     brand.website,
     brand.logoUrl,
+    brand.logoShape,
     brand.logoLink,
     brand.primaryColor,
     brand.fontFamily,
@@ -414,6 +418,7 @@ export function SignatureWorkspace() {
           companyName: orgName,
           website: org.website,
           logoUrl: org.logoUrl,
+          logoShape: org.logoShape === 'circle' ? 'circle' : 'rectangle',
           logoLink: org.logoLink,
           primaryColor: org.primaryColor,
           fontFamily: org.fontFamily,
@@ -594,6 +599,24 @@ export function SignatureWorkspace() {
             </div>
             <div className="space-y-2">
               <Label>Logo</Label>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant={org.logoShape !== 'circle' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setOrg((o) => ({ ...(o || {}), logoShape: 'rectangle' }))}
+                >
+                  Rectangle
+                </Button>
+                <Button
+                  type="button"
+                  variant={org.logoShape === 'circle' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setOrg((o) => ({ ...(o || {}), logoShape: 'circle' }))}
+                >
+                  Circle
+                </Button>
+              </div>
               <div className="flex min-w-0 flex-wrap items-center gap-3">
                 <Input
                   type="file"
@@ -605,7 +628,15 @@ export function SignatureWorkspace() {
                 {uploadingLogo ? <span className="text-xs text-muted-foreground">Uploading…</span> : null}
                 {org.logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={org.logoUrl} alt="" className="h-12 w-auto max-w-[120px] object-contain border rounded bg-white p-1" />
+                  <img
+                    src={org.logoUrl}
+                    alt=""
+                    className={
+                      org.logoShape === 'circle'
+                        ? 'h-12 w-12 shrink-0 object-cover border bg-white p-0.5 rounded-full'
+                        : 'h-12 w-auto max-w-[120px] object-contain border rounded bg-white p-1'
+                    }
+                  />
                 ) : null}
                 <Button
                   type="button"
@@ -617,15 +648,10 @@ export function SignatureWorkspace() {
                   Clear logo
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">PNG, JPEG, WebP, or GIF up to 4 MB. Or paste a hosted image URL.</p>
-            </div>
-            <div className="space-y-2">
-              <Label>Logo image URL (optional)</Label>
-              <Input
-                value={org.logoUrl ?? ''}
-                onChange={(e) => setOrg((o) => ({ ...(o || {}), logoUrl: e.target.value }))}
-                placeholder="https://…"
-              />
+              <p className="text-xs text-muted-foreground">
+                Upload PNG, JPEG, WebP, or GIF up to 4 MB. Circular logos work best with a square
+                headshot; some Outlook versions may show a square crop.
+              </p>
             </div>
             <div className="space-y-2">
               <Label>Logo link (optional)</Label>

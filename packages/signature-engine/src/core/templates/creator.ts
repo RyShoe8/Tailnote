@@ -9,7 +9,12 @@ export const CREATOR_SIGNATURE_TEMPLATE = `<table class="sig-creator-root" cellp
           <td width="120" valign="top" style="text-align: center; padding-right: 20px; border-right: 1px solid #3f4147;">
             {{#if hasLogo}}
             <a href="{{logoLink}}" style="text-decoration: none; border: 0; outline: none; display: inline-block;">
-              <img src="{{logoUrl}}" alt="{{companyName}}" width="100" style="display: inline-block; max-width: 100px; height: auto; margin-bottom: 15px; border-radius: 4px; border: 0;" />
+              {{#if hasLogoSizedHeight}}
+              <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" style="display:inline-block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;margin-bottom:15px;border:0;border-radius:{{logoImgBorderRadius}};" />
+              {{/if}}
+              {{#if hasLogoAutoHeight}}
+              <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" style="display:inline-block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:auto;margin-bottom:15px;border:0;border-radius:{{logoImgBorderRadius}};" />
+              {{/if}}
             </a>
             <br>
             {{/if}}

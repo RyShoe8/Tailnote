@@ -14,6 +14,10 @@ import { engineTemplateFromStoredConfig, type TemplatePresetId } from '@/lib/ema
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
 import { assertOrganizationSubscriptionPaid } from '@/lib/dashboard/subscriptionRequired';
 import { appendSignatureClickTrackingIfEnabled } from '@/lib/signatureTrackingHtml';
+import {
+  isAllowedOrgLogoUrl,
+  orgLogoUrlValidationMessage,
+} from '@/lib/org/validateOrgLogoUrl';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +26,7 @@ const BrandOverrideSchema = z
     fontFamily: z.string().max(200).optional(),
     primaryColor: z.string().max(40).optional(),
     logoUrl: z.string().max(2000).optional(),
+    logoShape: z.enum(['rectangle', 'circle']).optional(),
     logoLink: z.string().max(2000).optional(),
     website: z.string().max(2000).optional(),
     companyName: z.string().max(200).optional(),
@@ -172,6 +177,7 @@ export async function POST(request: Request) {
       ...(override.fontFamily !== undefined ? { fontFamily: override.fontFamily } : {}),
       ...(override.primaryColor !== undefined ? { primaryColor: override.primaryColor } : {}),
       ...(override.logoUrl !== undefined ? { logoUrl: override.logoUrl } : {}),
+      ...(override.logoShape !== undefined ? { logoShape: override.logoShape } : {}),
       ...(override.logoLink !== undefined ? { logoLink: override.logoLink } : {}),
       ...(override.website !== undefined ? { website: override.website } : {}),
       ...(override.companyName !== undefined ? { companyName: override.companyName } : {}),
@@ -188,6 +194,14 @@ export async function POST(request: Request) {
           }
         : {}),
     };
+  }
+
+  const mergedLogoUrl = orgBrand.logoUrl.trim();
+  if (mergedLogoUrl && !isAllowedOrgLogoUrl(mergedLogoUrl, user.organizationId)) {
+    const savedLogo = String(org.logoUrl ?? '').trim();
+    if (mergedLogoUrl !== savedLogo) {
+      return NextResponse.json({ error: orgLogoUrlValidationMessage() }, { status: 400 });
+    }
   }
 
   const presetId = tmpl.presetId as TemplatePresetId;

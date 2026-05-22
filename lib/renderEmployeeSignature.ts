@@ -22,6 +22,7 @@ export function orgToBrandInput(org: OrganizationDoc, contentBlocks?: ContentBlo
     companyName: (org.companyName || org.name || '').trim(),
     website: (org.website || '').trim(),
     logoUrl: (org.logoUrl || '').trim(),
+    logoShape: org.logoShape === 'circle' ? 'circle' : 'rectangle',
     logoLink: (org.logoLink || '').trim(),
     primaryColor: org.primaryColor || '#0a0a0a',
     fontFamily: org.fontFamily || 'Arial',

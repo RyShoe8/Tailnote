@@ -10,7 +10,12 @@ export const DEFAULT_SIGNATURE_TEMPLATE = `<table class="sig-default-layout-tabl
         <tr>
           <td valign="top" style="line-height: 0; font-size: 0;">
             <a href="{{logoLink}}" style="text-decoration: none; border: 0; outline: none; display: inline-block;">
-              <img src="{{logoUrl}}" alt="{{companyName}}" width="130" style="display: block; max-width: 130px; height: auto; border: 0;" />
+              {{#if hasLogoSizedHeight}}
+              <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;border:0;border-radius:{{logoImgBorderRadius}};" />
+              {{/if}}
+              {{#if hasLogoAutoHeight}}
+              <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:auto;border:0;border-radius:{{logoImgBorderRadius}};" />
+              {{/if}}
             </a>
           </td>
         </tr>

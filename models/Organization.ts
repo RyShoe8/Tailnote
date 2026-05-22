@@ -4,6 +4,11 @@ const OrganizationSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
     logoUrl: { type: String, default: '' },
+    logoShape: {
+      type: String,
+      enum: ['rectangle', 'circle'],
+      default: 'rectangle',
+    },
     primaryColor: { type: String, default: '#0a0a0a' },
     website: { type: String, default: '' },
     /** Legacy slug mirror of pinned SubscriptionPlan; use OrganizationSubscription for canonical plan. */

@@ -3,6 +3,10 @@ import { connectMongoose } from '@/lib/mongoose';
 import { getServerSession } from '@/lib/auth/session';
 import { OrganizationModel } from '@/models/Organization';
 import { unsetLegacyOrgAddressFields } from '@/lib/org/unsetLegacyOrgAddressFields';
+import {
+  isAllowedOrgLogoUrl,
+  orgLogoUrlValidationMessage,
+} from '@/lib/org/validateOrgLogoUrl';
 
 type SessionUser = {
   id?: string;
@@ -13,6 +17,7 @@ type SessionUser = {
 const PATCHABLE_FIELDS = [
   'name',
   'logoUrl',
+  'logoShape',
   'primaryColor',
   'website',
   'companyName',
@@ -86,6 +91,22 @@ export async function PATCH(request: Request) {
   }
 
   await unsetLegacyOrgAddressFields(user.organizationId);
+
+  if ($set.logoUrl !== undefined) {
+    const nextLogoUrl = String($set.logoUrl ?? '').trim();
+    if (nextLogoUrl && !isAllowedOrgLogoUrl(nextLogoUrl, user.organizationId)) {
+      return NextResponse.json({ error: orgLogoUrlValidationMessage() }, { status: 400 });
+    }
+    $set.logoUrl = nextLogoUrl;
+  }
+
+  if ($set.logoShape !== undefined) {
+    const shape = String($set.logoShape);
+    if (shape !== 'rectangle' && shape !== 'circle') {
+      return NextResponse.json({ error: 'logoShape must be rectangle or circle' }, { status: 400 });
+    }
+    $set.logoShape = shape;
+  }
 
   if (Object.keys($set).length === 0) {
     const current = await OrganizationModel.findById(user.organizationId).lean();

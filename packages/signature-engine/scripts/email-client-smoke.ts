@@ -101,6 +101,23 @@ const htmlExplicit = renderSignature({
 });
 assert.match(htmlExplicit, /height="72"/, 'standard: explicit logoHeightPx in img attributes');
 
+const htmlCircleLogo = renderSignature({
+  profile,
+  brand: { ...mockSignatureBrand, logoShape: 'circle' },
+  template: mockSignatureTemplate('standard'),
+  publicSiteOrigin: origin,
+});
+assert.match(
+  htmlCircleLogo,
+  /width="110"[^>]*height="110"/,
+  'circle: logo uses square width and height'
+);
+assert.match(
+  htmlCircleLogo,
+  /border-radius:50%/,
+  'circle: logo img uses 50% border radius'
+);
+
 const htmlStacked = renderSignature({
   profile,
   brand: mockSignatureBrand,

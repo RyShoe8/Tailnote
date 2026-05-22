@@ -50,6 +50,8 @@ export type SignatureBrand = {
   logoUrl: string;
   /** Display height in px at fixed 110px width (Outlook); omit for default aspect. */
   logoHeightPx?: number;
+  /** Org-wide logo crop: rectangle (default) or circle (square + border-radius). */
+  logoShape?: 'rectangle' | 'circle';
   logoLink: string;
   primaryColor: string;
   fontFamily: string;
