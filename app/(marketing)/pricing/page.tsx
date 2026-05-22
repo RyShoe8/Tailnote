@@ -88,7 +88,7 @@ function SubscriptionAvailabilityCallout({ plan }: { plan: PublicPricingPlan }) 
       <p className="text-xs font-semibold uppercase tracking-wide text-primary">Limited availability</p>
       <p className="mt-1 text-3xl font-bold tabular-nums text-foreground">{cap.remaining}</p>
       <p className="text-sm text-muted-foreground">
-        of {cap.max} subscription{cap.max === 1 ? '' : 's'} still available — claim yours before
+        of {cap.max} subscription{cap.max === 1 ? '' : 's'} still available. Claim yours before
         they&apos;re gone
       </p>
     </div>
