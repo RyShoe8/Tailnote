@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarketingLiveSignaturePreview } from '@/components/marketing/MarketingLiveSignaturePreview';
@@ -10,9 +10,6 @@ import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePrevie
 import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
 
 const SWIPE_THRESHOLD_PX = 50;
-const PREVIEW_VIEWPORT_FALLBACK_PX = 440;
-/** Extra height for the card shell gradient padding (p-4). */
-const CARD_SHELL_EXTRA_PX = 32;
 
 type Props = {
   presets: CatalogPresetRow[];
@@ -162,42 +159,17 @@ function TemplateSlidePreview({ preset }: { preset: CatalogPresetRow }) {
 
 function SlideCardShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="overflow-x-hidden overflow-y-visible rounded-2xl border border-slate-200/70 bg-white shadow-float ring-1 ring-black/5 transition-transform duration-500 hover:-translate-y-1">
+    <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-float ring-1 ring-black/5 transition-transform duration-500 hover:-translate-y-1">
       <div className="bg-gradient-to-b from-slate-50/60 to-white p-4 sm:p-6">{children}</div>
     </div>
   );
 }
 
-function TemplateSlide({
-  preset,
-  isActive,
-}: {
-  preset: CatalogPresetRow;
-  isActive: boolean;
-}) {
-  return (
-    <article
-      className={
-        isActive
-          ? 'absolute inset-x-0 top-0 block w-full'
-          : 'pointer-events-none invisible absolute inset-x-0 top-0 w-full'
-      }
-      aria-roledescription="slide"
-      aria-hidden={!isActive}
-    >
-      <SlideCardShell>
-        <TemplateSlidePreview preset={preset} />
-      </SlideCardShell>
-    </article>
-  );
-}
-
 export function HomeTemplateCarousel({ presets }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [previewViewportHeight, setPreviewViewportHeight] = useState<number | null>(null);
   const [hasSwiped, setHasSwiped] = useState(false);
   const touchStartX = useRef<number | null>(null);
-  const measureRef = useRef<HTMLDivElement | null>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
 
   const goToIndex = useCallback(
     (index: number) => {
@@ -206,39 +178,6 @@ export function HomeTemplateCarousel({ presets }: Props) {
     },
     [presets.length]
   );
-
-  useLayoutEffect(() => {
-    const root = measureRef.current;
-    if (!root) return;
-
-    const measure = () => {
-      const nodes = root.querySelectorAll<HTMLElement>('[data-carousel-measure]');
-      let max = 0;
-      nodes.forEach((node) => {
-        max = Math.max(max, node.getBoundingClientRect().height);
-      });
-      if (max > 0) {
-        setPreviewViewportHeight(Math.ceil(max));
-      }
-    };
-
-    measure();
-
-    const ro = new ResizeObserver(() => measure());
-    ro.observe(root);
-    window.addEventListener('resize', measure);
-
-    const imgs = root.querySelectorAll('img');
-    const onImgLoad = () => measure();
-    imgs.forEach((img) => {
-      if (!img.complete) img.addEventListener('load', onImgLoad, { once: true });
-    });
-
-    return () => {
-      ro.disconnect();
-      window.removeEventListener('resize', measure);
-    };
-  }, [presets]);
 
   function scrollBySlide(delta: number) {
     goToIndex(activeIndex + delta);
@@ -272,8 +211,8 @@ export function HomeTemplateCarousel({ presets }: Props) {
   const activePreset = presets[activeIndex];
   const onPrev = () => scrollBySlide(-1);
   const onNext = () => scrollBySlide(1);
-  const viewportMinHeight = previewViewportHeight ?? PREVIEW_VIEWPORT_FALLBACK_PX;
-  const slideViewportMinHeight = viewportMinHeight + CARD_SHELL_EXTRA_PX;
+  const slideSharePercent = presets.length > 0 ? 100 / presets.length : 100;
+  const trackOffsetPercent = activeIndex * slideSharePercent;
 
   return (
     <div
@@ -302,31 +241,32 @@ export function HomeTemplateCarousel({ presets }: Props) {
       />
 
       <div
-        ref={measureRef}
-        className="relative w-full min-w-0 touch-pan-y overflow-x-hidden"
-        style={{ minHeight: slideViewportMinHeight }}
+        ref={viewportRef}
+        className="relative w-full min-w-0 overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 opacity-0"
-          aria-hidden
+          className="flex transition-transform duration-300 ease-out motion-reduce:transition-none"
+          style={{
+            width: `${presets.length * 100}%`,
+            transform: `translateX(-${trackOffsetPercent}%)`,
+          }}
         >
-          {presets.map((preset) => (
-            <div key={`measure-${preset.presetId}`} data-carousel-measure className="w-full">
+          {presets.map((preset, index) => (
+            <article
+              key={preset.presetId}
+              className="shrink-0 grow-0"
+              style={{ width: `${slideSharePercent}%` }}
+              aria-roledescription="slide"
+              aria-hidden={index !== activeIndex}
+            >
               <SlideCardShell>
                 <TemplateSlidePreview preset={preset} />
               </SlideCardShell>
-            </div>
+            </article>
           ))}
         </div>
-        {presets.map((preset, index) => (
-          <TemplateSlide
-            key={preset.presetId}
-            preset={preset}
-            isActive={index === activeIndex}
-          />
-        ))}
       </div>
 
       <div className="mt-5 md:hidden">
