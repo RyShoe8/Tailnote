@@ -5,7 +5,7 @@ export type TemplatePresetId =
   | 'creator'
   | 'executive_minimalist'
   | 'minimal'
-  | 'modern'
+  | 'stacked'
   | 'corporate'
   | 'professional';
 
@@ -40,7 +40,7 @@ export const TEMPLATE_PRESET_META: TemplatePresetMeta[] = [
     description: 'Logo, name, title, contact, and optional social icons when links are set—compact.',
   },
   {
-    id: 'modern',
+    id: 'stacked',
     name: 'Stacked',
     description: 'Stacked layout with optional social and divider.',
   },
@@ -69,7 +69,7 @@ function elementsMinimal(): SignatureElement[] {
   ];
 }
 
-function elementsModern(): SignatureElement[] {
+function elementsStacked(): SignatureElement[] {
   return [
     { type: 'logo' },
     { type: 'name' },
@@ -157,12 +157,12 @@ export function presetToEngineTemplate(
         layout: 'standard',
         elements: elementsMinimal(),
       };
-    case 'modern':
+    case 'stacked':
       return {
         id: templateDocId,
         name: displayName ?? 'Stacked',
         layout: 'stacked',
-        elements: elementsModern(),
+        elements: elementsStacked(),
       };
     case 'corporate':
       return {

@@ -112,7 +112,7 @@ function marketingContentBlocks(
           ],
         },
       ];
-    case 'modern':
+    case 'stacked':
       return [
         {
           type: 'book_a_call',

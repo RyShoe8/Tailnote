@@ -4,10 +4,10 @@ const SignatureTemplateSchema = new Schema(
   {
     organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
     name: { type: String, required: true, trim: true },
-    /** default | creator | executive_minimalist | minimal | modern | corporate | professional */
+    /** default | creator | executive_minimalist | minimal | stacked | corporate | professional */
     presetId: {
       type: String,
-      enum: ['default', 'creator', 'executive_minimalist', 'minimal', 'modern', 'corporate', 'professional'],
+      enum: ['default', 'creator', 'executive_minimalist', 'minimal', 'stacked', 'corporate', 'professional'],
       required: true,
     },
     /** Pro-only: allow animation element in engine template */

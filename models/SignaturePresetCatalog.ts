@@ -5,7 +5,7 @@ const PRESET_IDS = [
   'creator',
   'executive_minimalist',
   'minimal',
-  'modern',
+  'stacked',
   'corporate',
   'professional',
 ] as const;

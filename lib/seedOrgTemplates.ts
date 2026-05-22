@@ -7,7 +7,7 @@ export const ORG_TEMPLATE_PRESETS = [
   'creator',
   'executive_minimalist',
   'minimal',
-  'modern',
+  'stacked',
   'corporate',
   'professional',
 ] as const;

@@ -1,10 +1,8 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { MarketingLiveSignaturePreview } from '@/components/marketing/MarketingLiveSignaturePreview';
-import type { TemplatePresetId } from '@/lib/email/templatePresets';
-import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
-import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
+import { HomeTemplateCarousel } from '@/components/marketing/HomeTemplateCarousel';
+import { sortPresetsForHomeShowcase } from '@/lib/marketing/homeTemplateShowcaseOrder';
 import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
 
 type Props = {
@@ -12,7 +10,8 @@ type Props = {
 };
 
 export function HomeTemplateShowcase({ presets }: Props) {
-  if (presets.length === 0) return null;
+  const ordered = sortPresetsForHomeShowcase(presets);
+  if (ordered.length === 0) return null;
 
   return (
     <section className="container py-16 sm:py-20 lg:py-24">
@@ -34,33 +33,7 @@ export function HomeTemplateShowcase({ presets }: Props) {
           </Link>
         </Button>
       </div>
-      <div className="mt-10 grid gap-6 sm:grid-cols-2">
-        {presets.map((preset) => {
-          const presetId = preset.presetId as TemplatePresetId;
-          return (
-            <article
-              key={preset.presetId}
-              className="group min-w-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ring"
-            >
-              <div className="border-b border-slate-100 px-6 py-5">
-                <h3 className="text-lg font-semibold tracking-tight text-foreground">{preset.name}</h3>
-                {preset.description ? (
-                  <p className="mt-1 text-sm text-muted-foreground">{preset.description}</p>
-                ) : null}
-              </div>
-              <div className="bg-gradient-to-b from-slate-50/50 to-white p-6">
-                <div className="overflow-x-visible overflow-y-visible rounded-lg transition-transform duration-500 group-hover:scale-[1.01]">
-                  <MarketingLiveSignaturePreview
-                    presetId={presetId}
-                    html={stripSignaturePreviewLinks(renderMarketingSample(presetId))}
-                    className="signature-email-preview--static"
-                  />
-                </div>
-              </div>
-            </article>
-          );
-        })}
-      </div>
+      <HomeTemplateCarousel presets={ordered} />
     </section>
   );
 }
