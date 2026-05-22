@@ -27,8 +27,8 @@ export const ECARD_SIGNATURE_TEMPLATE = `<table class="sig-ecard-root" cellpaddi
             {{/if}}
           </td>
           {{#if hasLogo}}
-          <td width="110" valign="top" align="right" style="width:110px;">
-            <div style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:16px;padding:12px;width:85px;text-align:center;">
+          <td width="120" valign="top" align="right" style="width:120px;">
+            <div style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:16px;padding:12px;width:{{ecardLogoFrameWidth}}px;box-sizing:border-box;overflow:hidden;text-align:center;">
               <a href="{{logoLink}}" style="text-decoration:none;border:0;outline:none;display:inline-block;">
                 {{#if hasLogoSizedHeight}}
                 <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;border:0;border-radius:{{logoImgBorderRadius}};" />

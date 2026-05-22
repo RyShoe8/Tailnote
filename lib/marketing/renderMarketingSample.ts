@@ -6,6 +6,7 @@ import {
 } from 'emailsignature-engine';
 import { presetToEngineTemplate, type TemplatePresetId } from '@/lib/email/templatePresets';
 import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
+import { vcardDownloadUrl } from '@/lib/vcard/vcardDownloadUrl';
 
 const MARKETING_UTM = { source: 'Tailnote', medium: 'Email', campaign: 'Footer' } as const;
 
@@ -255,7 +256,7 @@ function demoBrand(origin: string, presetId: TemplatePresetId): SignatureBrand {
     logoLink: 'https://www.acmecorp.com',
     primaryColor: isPortfolio ? '#1A3A34' : isEcard ? '#4F46E5' : '#2563eb',
     secondaryColor: isPortfolio ? '#E29578' : '',
-    logoShape: isPortfolio ? 'circle' : 'rectangle',
+    logoShape: 'rectangle',
     fontFamily: 'Arial',
     socialLinks: isEcard
       ? {
@@ -278,11 +279,14 @@ function demoBrand(origin: string, presetId: TemplatePresetId): SignatureBrand {
 /** Renders a live signature HTML sample for marketing pages (server-only). */
 export function renderMarketingSample(presetId: TemplatePresetId): string {
   const origin = getSignatureAssetOrigin();
+  const vcardUrl =
+    presetId === 'ecard' ? vcardDownloadUrl(origin, 'marketing-demo') : undefined;
   return renderSignature({
     profile: DEMO_PROFILE,
     brand: demoBrand(origin, presetId),
     template: presetToEngineTemplate(presetId, `marketing-${presetId}`),
     publicSiteOrigin: origin,
     utm: MARKETING_UTM,
+    ...(vcardUrl ? { vcardDownloadUrl: vcardUrl } : {}),
   });
 }

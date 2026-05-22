@@ -820,8 +820,8 @@ export function SignatureWorkspace() {
                       : '. Direct links are used (enable click analytics on Overview to track Gmail link clicks).'}
               </p>
               <p className="text-xs text-muted-foreground">
-                Gmail uses a stacked layout for promotional blocks (same as the mobile preview). Desktop
-                side-by-side layout applies in the dashboard preview and when copying HTML.
+                Gmail uses a stacked layout for promotional blocks, matching this preview. Copied HTML
+                uses the full template layout for each mail client.
               </p>
               {gmailMessage ? <p className="text-xs text-muted-foreground">{gmailMessage}</p> : null}
               {gmailConnected ? (
@@ -881,22 +881,15 @@ export function SignatureWorkspace() {
         <Card className="shadow-xl border-primary/10">
         <CardHeader>
           <CardTitle>Live preview</CardTitle>
-          <CardDescription>See your changes in real-time across Desktop and Mobile.</CardDescription>
+          <CardDescription>See your changes in real time.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 max-w-full min-w-0 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain">
-          <div className="grid grid-cols-1 gap-10 min-w-0">
-            <div className="min-w-0 space-y-2">
-              <p className="text-xs text-muted-foreground font-medium">Desktop</p>
-              <SignaturePreviewFrame html={previewHtml} variant="desktop" />
-            </div>
-            <div className="min-w-0 space-y-2">
-              <p className="text-xs text-muted-foreground font-medium">Mobile</p>
-              <SignaturePreviewFrame
-                html={previewHtml}
-                variant="mobile"
-                mobileFrameWidth={mobileFrameWidthForLayout(engineTemplate?.layout)}
-              />
-            </div>
+          <div className="min-w-0">
+            <SignaturePreviewFrame
+              html={previewHtml}
+              variant="mobile"
+              mobileFrameWidth={mobileFrameWidthForLayout(engineTemplate?.layout)}
+            />
           </div>
           <div className="flex flex-wrap gap-2">
             <CopySignatureButton html={previewHtml} disabled={!canCopy} />

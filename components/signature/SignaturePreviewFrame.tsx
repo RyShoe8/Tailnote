@@ -13,6 +13,8 @@ type Props = {
   previewContext?: 'dashboard' | 'marketing';
   /** Marketing flat: no inner card border/padding (homepage carousel mobile). */
   appearance?: 'card' | 'flat';
+  /** Marketing: scale to fit without scrollbars. */
+  fitContained?: boolean;
 };
 
 export const DEFAULT_MOBILE_FRAME_WIDTH = 480;
@@ -48,6 +50,7 @@ export function SignaturePreviewFrame({
   mobileFrameWidth = DEFAULT_MOBILE_FRAME_WIDTH,
   previewContext = 'dashboard',
   appearance = 'card',
+  fitContained = false,
 }: Props) {
   if (variant === 'mobile') {
     return (
@@ -57,6 +60,7 @@ export function SignaturePreviewFrame({
         mobileFrameWidth={mobileFrameWidth}
         previewContext={previewContext}
         appearance={appearance}
+        fitContained={fitContained}
       />
     );
   }
@@ -80,12 +84,14 @@ function MobileSignaturePreviewFrame({
   mobileFrameWidth,
   previewContext,
   appearance,
+  fitContained,
 }: {
   html: string;
   animationKey: string | number;
   mobileFrameWidth: number;
   previewContext: 'dashboard' | 'marketing';
   appearance: 'card' | 'flat';
+  fitContained: boolean;
 }) {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -138,18 +144,22 @@ function MobileSignaturePreviewFrame({
       ro.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [html, animationKey, mobileFrameWidth, previewContext, isMarketing, isFlat]);
+  }, [html, animationKey, mobileFrameWidth, previewContext, isMarketing, isFlat, fitContained]);
 
   const hasProfCardShell = html.includes('sig-prof-card-shell');
   const hasExecutiveRoot = html.includes('sig-executive-root');
   const hasCreatorRoot = html.includes('sig-creator-root');
   const useWideMarketingLayout = hasExecutiveRoot || hasCreatorRoot;
-  const useVisibleOverflow = hasProfCardShell || (isMarketing && !useWideMarketingLayout);
+  const useVisibleOverflow =
+    fitContained && isMarketing
+      ? false
+      : hasProfCardShell || (isMarketing && !useWideMarketingLayout);
   const borderBleed = hasProfCardShell ? PROF_CARD_SHELL_BLEED_PX : 0;
   const clipPad = hasProfCardShell ? CLIP_PADDING_PX : 0;
   const scaledW = Math.ceil(naturalW * scale) + borderBleed + clipPad * 2;
   const scaledH = Math.ceil(naturalH * scale) + borderBleed + clipPad * 2;
-  const frameOverflowX = useVisibleOverflow ? 'auto' : 'hidden';
+  const frameOverflowX = fitContained && isMarketing ? 'hidden' : useVisibleOverflow ? 'auto' : 'hidden';
+  const frameOverflowY = fitContained && isMarketing ? 'hidden' : 'visible';
 
   const frameClassName = isFlat
     ? 'signature-email-preview signature-email-preview--mobile signature-email-preview--marketing sig-mobile-preview-container w-full p-0 text-left'
@@ -166,7 +176,7 @@ function MobileSignaturePreviewFrame({
         maxWidth: mobileFrameWidth,
         minHeight: 200,
         overflowX: frameOverflowX,
-        overflowY: 'visible',
+        overflowY: frameOverflowY,
       }}
     >
       <div

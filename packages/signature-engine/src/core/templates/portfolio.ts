@@ -12,7 +12,7 @@ export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" c
         <tr>
           <td align="center" style="line-height:0;font-size:0;">
             <a href="{{logoLink}}" style="text-decoration:none;border:0;outline:none;display:inline-block;">
-              <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" style="display:block;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;max-width:{{logoWidth}}px;border-radius:50%;border:3px solid {{secondaryColor}};background-color:#ffffff;" />
+              <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" style="display:block;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;max-width:{{logoWidth}}px;border-radius:{{logoImgBorderRadius}};border:3px solid {{secondaryColor}};background-color:#ffffff;" />
             </a>
           </td>
         </tr>

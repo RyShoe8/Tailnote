@@ -11,10 +11,8 @@ import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
 
 const SWIPE_THRESHOLD_PX = 50;
 const PREVIEW_VIEWPORT_FALLBACK_PX = 440;
-/** Extra height for desktop card padding (gradient area p-4 sm:p-6). */
-const DESKTOP_CARD_EXTRA_PX = 48;
-/** Extra height for the mobile card shell (gradient padding p-4). */
-const MOBILE_CARD_EXTRA_PX = 32;
+/** Extra height for the card shell gradient padding (p-4). */
+const CARD_SHELL_EXTRA_PX = 32;
 
 type Props = {
   presets: CatalogPresetRow[];
@@ -74,14 +72,16 @@ function CarouselDots({
   activeIndex,
   presets,
   onGoToIndex,
+  className,
 }: {
   activeIndex: number;
   presets: CatalogPresetRow[];
   onGoToIndex: (index: number) => void;
+  className?: string;
 }) {
   return (
     <div
-      className="flex flex-wrap items-center justify-center gap-2"
+      className={className ?? 'flex flex-wrap items-center justify-center gap-2'}
       role="tablist"
       aria-label="Template slides"
     >
@@ -102,15 +102,31 @@ function CarouselDots({
   );
 }
 
-function MobileSwipeHint({ hidden }: { hidden: boolean }) {
+function MobileSwipeHint({
+  hidden,
+  activeIndex,
+  presets,
+  onGoToIndex,
+}: {
+  hidden: boolean;
+  activeIndex: number;
+  presets: CatalogPresetRow[];
+  onGoToIndex: (index: number) => void;
+}) {
   return (
     <div
-      className={`mb-3 flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground transition-opacity duration-300 md:hidden ${
+      className={`mb-3 flex flex-col items-center gap-2 transition-opacity duration-300 md:hidden ${
         hidden ? 'pointer-events-none opacity-0' : 'opacity-100'
       }`}
       aria-hidden={hidden}
     >
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/70 px-3 py-1 shadow-sm backdrop-blur">
+      <CarouselDots
+        activeIndex={activeIndex}
+        presets={presets}
+        onGoToIndex={onGoToIndex}
+        className="flex flex-wrap items-center justify-center gap-2"
+      />
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-white px-3 py-1 text-xs font-medium text-foreground shadow-sm">
         Swipe to explore
         <ChevronRight className="tn-swipe-hint h-3.5 w-3.5 text-primary" aria-hidden />
       </span>
@@ -131,19 +147,14 @@ function CarouselSlideMeta({ preset }: { preset: CatalogPresetRow }) {
   );
 }
 
-function TemplateSlidePreview({
-  preset,
-  appearance,
-}: {
-  preset: CatalogPresetRow;
-  appearance: 'card' | 'flat';
-}) {
+function TemplateSlidePreview({ preset }: { preset: CatalogPresetRow }) {
   const presetId = preset.presetId as TemplatePresetId;
   return (
     <MarketingLiveSignaturePreview
       presetId={presetId}
       html={presetPreviewHtml(presetId)}
-      appearance={appearance}
+      appearance="flat"
+      fitContained
       className="signature-email-preview--static"
     />
   );
@@ -151,7 +162,7 @@ function TemplateSlidePreview({
 
 function SlideCardShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-float ring-1 ring-black/5 transition-transform duration-500 hover:-translate-y-1">
+    <div className="overflow-x-hidden overflow-y-visible rounded-2xl border border-slate-200/70 bg-white shadow-float ring-1 ring-black/5 transition-transform duration-500 hover:-translate-y-1">
       <div className="bg-gradient-to-b from-slate-50/60 to-white p-4 sm:p-6">{children}</div>
     </div>
   );
@@ -160,38 +171,22 @@ function SlideCardShell({ children }: { children: React.ReactNode }) {
 function TemplateSlide({
   preset,
   isActive,
-  layout,
 }: {
   preset: CatalogPresetRow;
   isActive: boolean;
-  layout: 'mobile' | 'desktop';
 }) {
-  if (layout === 'mobile') {
-    return (
-      <article
-        className={
-          isActive
-            ? 'absolute inset-x-0 top-0 block w-full'
-            : 'pointer-events-none invisible absolute inset-x-0 top-0 w-full'
-        }
-        aria-roledescription="slide"
-        aria-hidden={!isActive}
-      >
-        <SlideCardShell>
-          <TemplateSlidePreview preset={preset} appearance="flat" />
-        </SlideCardShell>
-      </article>
-    );
-  }
-
   return (
     <article
-      className={isActive ? 'block' : 'hidden'}
+      className={
+        isActive
+          ? 'absolute inset-x-0 top-0 block w-full'
+          : 'pointer-events-none invisible absolute inset-x-0 top-0 w-full'
+      }
       aria-roledescription="slide"
       aria-hidden={!isActive}
     >
       <SlideCardShell>
-        <TemplateSlidePreview preset={preset} appearance="card" />
+        <TemplateSlidePreview preset={preset} />
       </SlideCardShell>
     </article>
   );
@@ -278,8 +273,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
   const onPrev = () => scrollBySlide(-1);
   const onNext = () => scrollBySlide(1);
   const viewportMinHeight = previewViewportHeight ?? PREVIEW_VIEWPORT_FALLBACK_PX;
-  const desktopViewportMinHeight = viewportMinHeight + DESKTOP_CARD_EXTRA_PX;
-  const mobileViewportMinHeight = viewportMinHeight + MOBILE_CARD_EXTRA_PX;
+  const slideViewportMinHeight = viewportMinHeight + CARD_SHELL_EXTRA_PX;
 
   return (
     <div
@@ -288,7 +282,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
       aria-roledescription="carousel"
       aria-label="Signature template previews"
     >
-      <div className="mb-4 hidden items-center justify-center gap-3 md:flex">
+      <div className="mb-4 flex items-center justify-center gap-3">
         <CarouselPrevButton activeIndex={activeIndex} onPrev={onPrev} />
         <CarouselDots activeIndex={activeIndex} presets={presets} onGoToIndex={goToIndex} />
         <CarouselNextButton
@@ -300,51 +294,43 @@ export function HomeTemplateCarousel({ presets }: Props) {
 
       <CarouselSlideMeta preset={activePreset} />
 
-      <MobileSwipeHint hidden={hasSwiped} />
+      <MobileSwipeHint
+        hidden={hasSwiped}
+        activeIndex={activeIndex}
+        presets={presets}
+        onGoToIndex={goToIndex}
+      />
 
-      <div className="md:hidden">
+      <div
+        ref={measureRef}
+        className="relative w-full min-w-0 touch-pan-y overflow-x-hidden"
+        style={{ minHeight: slideViewportMinHeight }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <div
-          ref={measureRef}
-          className="relative w-full min-w-0 touch-pan-y"
-          style={{ minHeight: mobileViewportMinHeight }}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 opacity-0"
+          aria-hidden
         >
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0 -z-10 opacity-0"
-            aria-hidden
-          >
-            {presets.map((preset) => (
-              <div key={`measure-${preset.presetId}`} data-carousel-measure className="w-full">
-                <SlideCardShell>
-                  <TemplateSlidePreview preset={preset} appearance="flat" />
-                </SlideCardShell>
-              </div>
-            ))}
-          </div>
-          {presets.map((preset, index) => (
-            <TemplateSlide
-              key={preset.presetId}
-              preset={preset}
-              isActive={index === activeIndex}
-              layout="mobile"
-            />
+          {presets.map((preset) => (
+            <div key={`measure-${preset.presetId}`} data-carousel-measure className="w-full">
+              <SlideCardShell>
+                <TemplateSlidePreview preset={preset} />
+              </SlideCardShell>
+            </div>
           ))}
         </div>
-        <div className="mt-5">
-          <CarouselDots activeIndex={activeIndex} presets={presets} onGoToIndex={goToIndex} />
-        </div>
-      </div>
-
-      <div className="hidden md:block" style={{ minHeight: desktopViewportMinHeight }}>
         {presets.map((preset, index) => (
           <TemplateSlide
             key={preset.presetId}
             preset={preset}
             isActive={index === activeIndex}
-            layout="desktop"
           />
         ))}
+      </div>
+
+      <div className="mt-5 md:hidden">
+        <CarouselDots activeIndex={activeIndex} presets={presets} onGoToIndex={goToIndex} />
       </div>
     </div>
   );

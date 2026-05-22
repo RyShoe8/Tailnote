@@ -18,6 +18,8 @@ type Props = {
   html: string;
   className?: string;
   appearance?: 'card' | 'flat';
+  /** Scale signature to fit frame without scrollbars (homepage carousel). */
+  fitContained?: boolean;
 };
 
 /** Live marketing signature in a phone-width frame so @media mobile rules apply. */
@@ -26,6 +28,7 @@ export function MarketingLiveSignaturePreview({
   html,
   className,
   appearance = 'card',
+  fitContained = false,
 }: Props) {
   const layout = presetToEngineTemplate(presetId, `marketing-preview-${presetId}`).layout;
 
@@ -43,6 +46,7 @@ export function MarketingLiveSignaturePreview({
         previewContext="marketing"
         mobileFrameWidth={marketingMobileFrameWidthForLayout(layout)}
         appearance={appearance}
+        fitContained={fitContained}
       />
     </div>
   );

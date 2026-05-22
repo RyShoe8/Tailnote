@@ -491,6 +491,8 @@ function buildCreatorTagline(title: string, companyName: string): string {
   return `&gt; @ ${escapeHtml(companySlugForTagline(co))}`;
 }
 
+const CREATOR_CARD_BACKGROUND = '#1e1f22';
+
 function buildCreatorContactTableHtml(
   officePhone: string,
   mobilePhone: string,
@@ -498,7 +500,8 @@ function buildCreatorContactTableHtml(
   mobilePhoneTelHref: string,
   email: string,
   website: string,
-  websiteDisplay: string
+  websiteDisplay: string,
+  websiteLinkColor: string
 ): string {
   const rows: string[] = [];
   const phone = officePhone || mobilePhone;
@@ -516,9 +519,10 @@ function buildCreatorContactTableHtml(
               </tr>`);
   }
   if (website) {
+    const linkColor = escapeHtml(websiteLinkColor);
     rows.push(`<tr>
                 <td style="padding-bottom: 4px; padding-right: 10px; font-family: 'Courier New', Courier, monospace; color: #80848e;">web:</td>
-                <td style="padding-bottom: 4px;"><a href="${escapeHtml(website)}" style="color: #00b0f4; text-decoration: none;">${escapeHtml(websiteDisplay)}</a></td>
+                <td style="padding-bottom: 4px;"><a href="${escapeHtml(website)}" style="color: ${linkColor}; text-decoration: none;">${escapeHtml(websiteDisplay)}</a></td>
               </tr>`);
   }
   return rows.join('');
@@ -793,7 +797,7 @@ function buildEcardContactTableHtml(
   }
   if (website) {
     rows.push(
-      `<tr><td style="padding-bottom:14px;font-weight:bold;color:#111827;">W:</td><td style="padding-bottom:14px;"><a href="${escapeHtml(website)}" style="color:${accent};text-decoration:none;font-weight:600;">${escapeHtml(websiteDisplay)}</a></td></tr>`
+      `<tr><td style="padding-bottom:14px;font-weight:bold;color:#111827;">W:&nbsp;</td><td style="padding-bottom:14px;"><a href="${escapeHtml(website)}" style="color:${accent};text-decoration:none;font-weight:600;">${escapeHtml(websiteDisplay)}</a></td></tr>`
     );
   } else if (rows.length > 0) {
     rows[rows.length - 1] = rows[rows.length - 1].replace('padding-bottom:6px', 'padding-bottom:14px');
@@ -959,8 +963,7 @@ export function mergeRenderContext(
 
   const isPortfolioLayout = template.layout === 'portfolio';
   const isEcardLayout = template.layout === 'ecard';
-  const useCircleLogo =
-    hasLogo && !useAnimation && (brand.logoShape === 'circle' || isPortfolioLayout);
+  const useCircleLogo = hasLogo && !useAnimation && brand.logoShape === 'circle';
   const logoWidthStr = hasLogo ? logoWidthForLayout(template.layout, useCircleLogo) : '110';
 
   let logoDisplayHeightStr = '';
@@ -972,6 +975,9 @@ export function mergeRenderContext(
       hasLogoSizedHeight = true;
     } else if (explicitLogoH) {
       logoDisplayHeightStr = String(logoHeightPxRounded);
+      hasLogoSizedHeight = true;
+    } else if (isPortfolioLayout) {
+      logoDisplayHeightStr = logoWidthStr;
       hasLogoSizedHeight = true;
     } else {
       hasLogoAutoHeight = true;
@@ -1078,7 +1084,10 @@ export function mergeRenderContext(
   const portfolioBorderColor = isPortfolioLayout
     ? adjustHexLightness(brandPrimaryColor, 0.18)
     : '';
-  const creatorPanelColor = isCreatorLayout ? adjustHexLightness(brandPrimaryColor, 0.08) : '';
+  const creatorCardBackground = isCreatorLayout ? CREATOR_CARD_BACKGROUND : '';
+  const creatorPanelColor = isCreatorLayout
+    ? adjustHexLightness(CREATOR_CARD_BACKGROUND, 0.08)
+    : '';
   const creatorAccentColor = isCreatorLayout
     ? brand.secondaryColor?.trim()
       ? brand.secondaryColor.trim()
@@ -1156,7 +1165,8 @@ export function mergeRenderContext(
           mobilePhoneTelHref,
           profile.email.trim(),
           website,
-          websiteDisplay
+          websiteDisplay,
+          creatorAccentColor
         )
       : '';
   const hasCreatorContactTable = Boolean(creatorContactTableHtml);
@@ -1256,6 +1266,8 @@ export function mergeRenderContext(
   const hasEcardPortfolioSection = Boolean(ecardPortfolio.linksHtml);
   const ecardPortfolioTitle = escapeHtml(ecardPortfolio.title);
   const ecardPortfolioLinksHtml = ecardPortfolio.linksHtml;
+  const ecardLogoFrameWidth =
+    isEcardLayout && hasLogo ? String(parseInt(logoWidthStr, 10) + 24) : '';
   const ecardVcardUrlTrimmed = (vcardDownloadUrl ?? '').trim();
   const hasEcardVcardUrl = isEcardLayout && Boolean(ecardVcardUrlTrimmed);
   const hasEcardFooter = isEcardLayout && (hasEcardPortfolioSection || showSocialBlock);
@@ -1329,6 +1341,7 @@ export function mergeRenderContext(
     secondaryColor: escapeHtml(brandSecondaryColor),
     portfolioPanelColor: escapeHtml(portfolioPanelColor),
     portfolioBorderColor: escapeHtml(portfolioBorderColor),
+    creatorCardBackground: escapeHtml(creatorCardBackground),
     creatorPanelColor: escapeHtml(creatorPanelColor),
     creatorAccentColor: escapeHtml(creatorAccentColor),
     fontFamily: escapeHtml(brand.fontFamily.trim()),
@@ -1385,6 +1398,7 @@ export function mergeRenderContext(
     ecardContactTableHtml,
     ecardPortfolioTitle,
     ecardPortfolioLinksHtml,
+    ecardLogoFrameWidth,
     ecardVcardUrl: escapeHtml(ecardVcardUrlTrimmed),
     ecardSocialTdLiStyle: ecardSocial.li,
     ecardSocialTdFbStyle: ecardSocial.fb,

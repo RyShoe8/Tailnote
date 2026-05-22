@@ -860,10 +860,14 @@ const htmlCreator = renderSignature({
   publicSiteOrigin: origin,
 });
 assert.ok(
-  htmlCreator.includes('background-color: #ff4655'),
-  'creator: card background uses primaryColor'
+  htmlCreator.includes('background-color: #1e1f22'),
+  'creator: card background uses fixed dark shell regardless of primaryColor'
 );
-assert.doesNotMatch(htmlCreator, /background-color:\s*#1e1f22/i, 'creator: no hardcoded dark shell');
+assert.doesNotMatch(
+  htmlCreator,
+  /background-color:\s*#ff4655/i,
+  'creator: card shell does not use brand primaryColor as fill'
+);
 assert.ok(htmlCreator.includes('border-collapse: collapse'), 'creator: nested tables');
 assert.ok(htmlCreator.includes(`${iconBase}icon-linkedin.png?v=6`), 'creator: hosted LinkedIn icon');
 assert.doesNotMatch(htmlCreator, /flaticon\.com/i, 'creator: no external flaticon CDN');
@@ -899,11 +903,21 @@ const htmlCreatorSecondaryStripe = renderSignature({
 });
 assert.ok(
   htmlCreatorSecondaryStripe.includes('background-color: #1e1f22'),
-  'creator: card background follows primaryColor'
+  'creator: card background uses fixed dark shell'
 );
 assert.ok(
   htmlCreatorSecondaryStripe.includes('border-left: 4px solid #ff5500'),
   'creator: left accent stripe uses secondaryColor when set'
+);
+assert.match(
+  htmlCreatorSecondaryStripe,
+  /web:[\s\S]*?color:\s*#ff5500/i,
+  'creator: website link uses secondaryColor'
+);
+assert.doesNotMatch(
+  htmlCreatorSecondaryStripe,
+  /color:\s*#00b0f4/i,
+  'creator: website link does not use legacy hardcoded blue'
 );
 
 // Executive Minimalist layout
@@ -975,7 +989,8 @@ assert.ok(htmlPortfolio.includes('Nucleas') && htmlPortfolio.includes('Tailnote'
 assert.ok(htmlPortfolio.includes('Network Portfolio'), 'portfolio: network section label');
 assert.ok(htmlPortfolio.includes(`${iconBase}icon-linkedin.png?v=6`), 'portfolio: hosted LinkedIn icon');
 assert.doesNotMatch(htmlPortfolio, /flaticon\.com/i, 'portfolio: no external flaticon CDN');
-assert.match(htmlPortfolio, /width="85"[^>]*height="85"/, 'portfolio: 85×85 circular logo');
+assert.match(htmlPortfolio, /width="85"[^>]*height="85"/, 'portfolio: 85×85 logo');
+assert.doesNotMatch(htmlPortfolio, /border-radius:50%/, 'portfolio: rectangle logoShape avoids circular crop');
 assert.ok(htmlPortfolio.includes('#E29578'), 'portfolio: secondary color on accents');
 assert.ok(htmlPortfolio.includes('Founder @ The Media Shop'), 'portfolio: role line with @ separator');
 
@@ -1058,6 +1073,8 @@ assert.ok(htmlEcard.includes('Nucleas') && htmlEcard.includes('&bull;'), 'ecard:
 assert.ok(htmlEcard.includes(`${iconBase}icon-linkedin.png?v=6`), 'ecard: hosted LinkedIn icon');
 assert.doesNotMatch(htmlEcard, /flaticon\.com/i, 'ecard: no external flaticon CDN');
 assert.match(htmlEcard, /width="80"/, 'ecard: 80px logo in framed box');
+assert.ok(htmlEcard.includes('width:104px'), 'ecard: logo frame width fits 80px logo plus padding');
+assert.ok(htmlEcard.includes('W:&nbsp;'), 'ecard: space after W: label');
 
 // Address placement across layouts (mockSignatureBrand includes street/state/zip)
 assert.ok(htmlDefault.includes('123 Main St'), 'default: address renders');
