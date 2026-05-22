@@ -14,7 +14,7 @@ export function HomeTemplateShowcase({ presets }: Props) {
   if (ordered.length === 0) return null;
 
   return (
-    <section className="container py-16 sm:py-20 lg:py-24">
+    <section className="container py-16 sm:py-20 lg:pt-24 lg:pb-8">
       <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0 max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-wider text-primary">Templates</p>
@@ -22,8 +22,8 @@ export function HomeTemplateShowcase({ presets }: Props) {
             Layouts built for signatures <span className="tn-grad-text">and</span> promos
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Real customer-style examples with promotional blocks — so you can see how Tailnote turns
-            email into a marketing channel.
+            Take a look at our templates so you can see how Tailnote turns email into a marketing
+            channel.
           </p>
         </div>
         <Button asChild variant="outline" className="shrink-0 self-start gap-2 sm:self-auto">

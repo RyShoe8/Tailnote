@@ -94,7 +94,7 @@ const BLOCKS = [
     icon: CalendarClock,
     title: 'Book a call',
     description:
-      'Embed a one-click scheduler. Every email becomes an invitation to talk — no copy/paste, no missed leads.',
+      'Embed a one-click scheduler. Every email becomes an invitation to talk. No copy and pasting, and no missed leads.',
     Demo: BookACallDemo,
   },
   {
@@ -115,7 +115,7 @@ const BLOCKS = [
     icon: ImageIcon,
     title: 'Promo banners',
     description:
-      'Drop in a campaign image or seasonal banner. Replace it organization-wide in a single edit — every employee email updates.',
+      'Drop in a campaign image or seasonal banner. Replace it organization wide in a single edit so every employee email updates.',
     Demo: ImageDemo,
   },
 ] as const;
@@ -128,7 +128,7 @@ export function HomePromoBlocksShowcase() {
           Promotional blocks
         </p>
         <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-          Beyond a signature &mdash; <span className="tn-grad-text">promote what matters</span>
+          Beyond a signature. <span className="tn-grad-text">A promotional tool</span>
         </h2>
         <p className="mt-4 text-pretty text-muted-foreground">
           Each Tailnote template can carry one or more promotional blocks beside the signature. Mix

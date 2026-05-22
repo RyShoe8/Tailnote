@@ -6,7 +6,7 @@ const FEATURES = [
     icon: Megaphone,
     title: 'Promotional content blocks',
     description:
-      'Book-a-call buttons, offer lists, blog feeds, and image banners live next to every signature — turning routine emails into mini campaigns.',
+      'Book-a-call buttons, offer lists, blog feeds, and image banners live next to every signature. Tailnote turns routine emails into mini campaigns.',
   },
   {
     icon: Link2,
@@ -18,7 +18,7 @@ const FEATURES = [
     icon: LayoutTemplate,
     title: 'Curated templates',
     description:
-      'Default, Creator, Executive, Minimal, Stacked, Corporate, and Professional layouts designed for real inboxes — no broken HTML.',
+      'We feature varying, high quality templates designed for real inboxes with no broken HTML.',
   },
   {
     icon: BarChart3,

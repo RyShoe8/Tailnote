@@ -102,7 +102,7 @@ function CarouselDots({
 function MobileSwipeHint({ hidden }: { hidden: boolean }) {
   return (
     <div
-      className={`mb-3 flex justify-center transition-opacity duration-300 md:hidden ${
+      className={`mb-2 flex justify-center transition-opacity duration-300 md:mb-3 md:hidden ${
         hidden ? 'pointer-events-none opacity-0' : 'opacity-100'
       }`}
       aria-hidden={hidden}
@@ -117,11 +117,11 @@ function MobileSwipeHint({ hidden }: { hidden: boolean }) {
 
 function CarouselSlideMeta({ preset }: { preset: CatalogPresetRow }) {
   return (
-    <div className="mb-4 min-h-[5.5rem]">
+    <div className="mb-2 md:mb-4 md:min-h-[5.5rem]">
       <h3 className="text-lg font-semibold tracking-tight text-foreground" aria-live="polite">
         {preset.name}
       </h3>
-      <p className="mt-1 min-h-[2.75rem] line-clamp-2 text-sm text-muted-foreground">
+      <p className="mt-1 text-sm text-muted-foreground md:line-clamp-2 md:min-h-[2.75rem]">
         {preset.description?.trim() ? preset.description : '\u00a0'}
       </p>
     </div>
@@ -145,7 +145,7 @@ function SlideCardShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="group overflow-visible pb-2">
       <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-float ring-1 ring-black/5 transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-ring">
-        <div className="bg-gradient-to-b from-slate-50/60 to-white p-4 sm:p-6">{children}</div>
+        <div className="bg-gradient-to-b from-slate-50/60 to-white p-4 sm:p-6 md:bg-white">{children}</div>
       </div>
     </div>
   );
@@ -235,7 +235,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
 
   return (
     <div
-      className="relative mt-10"
+      className="relative mt-8 md:mt-10"
       role="region"
       aria-roledescription="carousel"
       aria-label="Signature template previews"
@@ -255,7 +255,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
       <MobileSwipeHint hidden={hasSwiped} />
 
       <div
-        className="relative px-4 pb-6 pt-1 sm:px-6 sm:pb-8"
+        className="relative px-4 pb-6 pt-0 sm:px-6 sm:pb-8 md:pt-1"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >

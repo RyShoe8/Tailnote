@@ -39,7 +39,8 @@ export const TEMPLATE_PRESET_META: TemplatePresetMeta[] = [
   {
     id: 'minimal',
     name: 'Minimal',
-    description: 'Logo, name, title, contact, and optional social icons when links are set—compact.',
+    description:
+      'Logo, name, title, contact, and optional social icons when links are set. Pure simplicity',
   },
   {
     id: 'stacked',
@@ -55,19 +56,19 @@ export const TEMPLATE_PRESET_META: TemplatePresetMeta[] = [
     id: 'professional',
     name: 'Professional',
     description:
-      'Card-style layout with the same structure as Corporate — curved frame, hero name band, tighter spacing, and richer brand color.',
+      'Card-style layout with the same structure as Corporate. A curved frame, hero name band, tighter spacing, and richer brand color.',
   },
   {
     id: 'portfolio',
     name: 'Portfolio',
     description:
-      'Dark card with circular logo, pill contact buttons, and network portfolio tags. Primary color sets the card background; secondary color drives accents.',
+      'Dark card with circular logo, pill contact buttons, network portfolio tags from list blocks, and social icons. An ideal template for founders and high powered personal brands.',
   },
   {
     id: 'ecard',
     name: 'eCard',
     description:
-      'Light card with primary top bar, contact rows, save-contact button, framed logo, and portfolio links with social icons in the footer.',
+      'Light card with primary top bar, contact rows, save contact button, framed logo, and portfolio links with social icons in the footer.',
   },
 ];
 

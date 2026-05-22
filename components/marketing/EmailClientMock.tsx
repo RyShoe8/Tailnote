@@ -51,7 +51,7 @@ export function EmailClientMock({ signatureHtml }: Props) {
         <div className="space-y-3 px-3 py-4 text-xs text-slate-700 sm:space-y-4 sm:px-6 sm:py-6 sm:text-sm">
           <p>Hi Jordan,</p>
           <p>
-            Great chatting earlier — sharing a couple of useful links below. Happy to set up a quick
+            Great chatting earlier, sharing a couple of useful links below. Happy to set up a quick
             call this week if you&apos;d like to dig into the numbers.
           </p>
           <p>Cheers,</p>
