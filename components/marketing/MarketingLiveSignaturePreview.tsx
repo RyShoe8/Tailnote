@@ -17,10 +17,16 @@ type Props = {
   presetId: TemplatePresetId;
   html: string;
   className?: string;
+  appearance?: 'card' | 'flat';
 };
 
 /** Live marketing signature in a phone-width frame so @media mobile rules apply. */
-export function MarketingLiveSignaturePreview({ presetId, html, className }: Props) {
+export function MarketingLiveSignaturePreview({
+  presetId,
+  html,
+  className,
+  appearance = 'card',
+}: Props) {
   const layout = presetToEngineTemplate(presetId, `marketing-preview-${presetId}`).layout;
 
   return (
@@ -36,6 +42,7 @@ export function MarketingLiveSignaturePreview({ presetId, html, className }: Pro
         variant="mobile"
         previewContext="marketing"
         mobileFrameWidth={marketingMobileFrameWidthForLayout(layout)}
+        appearance={appearance}
       />
     </div>
   );

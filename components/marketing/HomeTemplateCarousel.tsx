@@ -11,6 +11,9 @@ import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
 
 const SWIPE_THRESHOLD_PX = 50;
 
+/** Stable preview viewport — tuned for tallest marketing samples with promos. */
+const PREVIEW_VIEWPORT_MIN_H = 'min-h-[440px] md:min-h-[540px]';
+
 type Props = {
   presets: CatalogPresetRow[];
 };
@@ -18,16 +21,18 @@ type Props = {
 function CarouselPrevButton({
   activeIndex,
   onPrev,
+  compact,
 }: {
   activeIndex: number;
   onPrev: () => void;
+  compact?: boolean;
 }) {
   return (
     <Button
       type="button"
       variant="outline"
       size="icon"
-      className="shrink-0"
+      className={compact ? 'h-8 w-8 shrink-0' : 'shrink-0'}
       aria-label="Previous template"
       disabled={activeIndex <= 0}
       onClick={onPrev}
@@ -41,17 +46,19 @@ function CarouselNextButton({
   activeIndex,
   presetsLength,
   onNext,
+  compact,
 }: {
   activeIndex: number;
   presetsLength: number;
   onNext: () => void;
+  compact?: boolean;
 }) {
   return (
     <Button
       type="button"
       variant="outline"
       size="icon"
-      className="shrink-0"
+      className={compact ? 'h-8 w-8 shrink-0' : 'shrink-0'}
       aria-label="Next template"
       disabled={activeIndex >= presetsLength - 1}
       onClick={onNext}
@@ -93,14 +100,49 @@ function CarouselDots({
   );
 }
 
+function CarouselSlideMeta({ preset }: { preset: CatalogPresetRow }) {
+  return (
+    <div className="mb-4 min-h-[5.5rem]">
+      <h3 className="text-lg font-semibold tracking-tight text-foreground" aria-live="polite">
+        {preset.name}
+      </h3>
+      <p className="mt-1 min-h-[2.75rem] line-clamp-2 text-sm text-muted-foreground">
+        {preset.description?.trim() ? preset.description : '\u00a0'}
+      </p>
+    </div>
+  );
+}
+
 function TemplateSlide({
   preset,
   isActive,
+  layout,
 }: {
   preset: CatalogPresetRow;
   isActive: boolean;
+  layout: 'mobile' | 'desktop';
 }) {
   const presetId = preset.presetId as TemplatePresetId;
+  const preview = (
+    <MarketingLiveSignaturePreview
+      presetId={presetId}
+      html={stripSignaturePreviewLinks(renderMarketingSample(presetId))}
+      appearance={layout === 'mobile' ? 'flat' : 'card'}
+      className="signature-email-preview--static"
+    />
+  );
+
+  if (layout === 'mobile') {
+    return (
+      <article
+        className={isActive ? 'block w-full' : 'hidden'}
+        aria-roledescription="slide"
+        aria-hidden={!isActive}
+      >
+        {preview}
+      </article>
+    );
+  }
 
   return (
     <article
@@ -109,24 +151,7 @@ function TemplateSlide({
       aria-hidden={!isActive}
     >
       <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card">
-        <div className="border-b border-slate-100 px-6 py-5">
-          <h3
-            className="text-lg font-semibold tracking-tight text-foreground"
-            {...(isActive ? { 'aria-live': 'polite' as const } : {})}
-          >
-            {preset.name}
-          </h3>
-          {preset.description ? (
-            <p className="mt-1 text-sm text-muted-foreground">{preset.description}</p>
-          ) : null}
-        </div>
-        <div className="bg-gradient-to-b from-slate-50/50 to-white p-6">
-          <MarketingLiveSignaturePreview
-            presetId={presetId}
-            html={stripSignaturePreviewLinks(renderMarketingSample(presetId))}
-            className="signature-email-preview--static"
-          />
-        </div>
+        <div className="bg-gradient-to-b from-slate-50/50 to-white p-4 sm:p-6">{preview}</div>
       </div>
     </article>
   );
@@ -172,6 +197,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
 
   if (presets.length === 0) return null;
 
+  const activePreset = presets[activeIndex];
   const onPrev = () => scrollBySlide(-1);
   const onNext = () => scrollBySlide(1);
 
@@ -182,7 +208,6 @@ export function HomeTemplateCarousel({ presets }: Props) {
       aria-roledescription="carousel"
       aria-label="Signature template previews"
     >
-      {/* Desktop: fixed controls above the card */}
       <div className="mb-4 hidden items-center justify-center gap-3 md:flex">
         <CarouselPrevButton activeIndex={activeIndex} onPrev={onPrev} />
         <CarouselDots activeIndex={activeIndex} presets={presets} onGoToIndex={goToIndex} />
@@ -193,29 +218,40 @@ export function HomeTemplateCarousel({ presets }: Props) {
         />
       </div>
 
-      {/* Mobile: arrows flanking the preview */}
-      <div className="flex items-center gap-2 md:hidden">
-        <CarouselPrevButton activeIndex={activeIndex} onPrev={onPrev} />
+      <CarouselSlideMeta preset={activePreset} />
+
+      <div className={`flex items-start gap-1 md:hidden ${PREVIEW_VIEWPORT_MIN_H}`}>
+        <CarouselPrevButton activeIndex={activeIndex} onPrev={onPrev} compact />
         <div
-          className="min-w-0 flex-1 touch-pan-y"
+          className="flex min-w-0 flex-1 touch-pan-y"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
           {presets.map((preset, index) => (
-            <TemplateSlide key={preset.presetId} preset={preset} isActive={index === activeIndex} />
+            <TemplateSlide
+              key={preset.presetId}
+              preset={preset}
+              isActive={index === activeIndex}
+              layout="mobile"
+            />
           ))}
         </div>
         <CarouselNextButton
           activeIndex={activeIndex}
           presetsLength={presets.length}
           onNext={onNext}
+          compact
         />
       </div>
 
-      {/* Desktop: card only */}
-      <div className="hidden md:block">
+      <div className={`hidden md:block ${PREVIEW_VIEWPORT_MIN_H}`}>
         {presets.map((preset, index) => (
-          <TemplateSlide key={preset.presetId} preset={preset} isActive={index === activeIndex} />
+          <TemplateSlide
+            key={preset.presetId}
+            preset={preset}
+            isActive={index === activeIndex}
+            layout="desktop"
+          />
         ))}
       </div>
     </div>

@@ -11,6 +11,8 @@ type Props = {
   mobileFrameWidth?: number;
   /** Marketing cards fill the template column up to `mobileFrameWidth` and use fill-width measurement. */
   previewContext?: 'dashboard' | 'marketing';
+  /** Marketing flat: no inner card border/padding (homepage carousel mobile). */
+  appearance?: 'card' | 'flat';
 };
 
 export const DEFAULT_MOBILE_FRAME_WIDTH = 480;
@@ -45,6 +47,7 @@ export function SignaturePreviewFrame({
   variant = 'desktop',
   mobileFrameWidth = DEFAULT_MOBILE_FRAME_WIDTH,
   previewContext = 'dashboard',
+  appearance = 'card',
 }: Props) {
   if (variant === 'mobile') {
     return (
@@ -53,6 +56,7 @@ export function SignaturePreviewFrame({
         animationKey={animationKey}
         mobileFrameWidth={mobileFrameWidth}
         previewContext={previewContext}
+        appearance={appearance}
       />
     );
   }
@@ -75,11 +79,13 @@ function MobileSignaturePreviewFrame({
   animationKey,
   mobileFrameWidth,
   previewContext,
+  appearance,
 }: {
   html: string;
   animationKey: string | number;
   mobileFrameWidth: number;
   previewContext: 'dashboard' | 'marketing';
+  appearance: 'card' | 'flat';
 }) {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -88,6 +94,7 @@ function MobileSignaturePreviewFrame({
   const [naturalH, setNaturalH] = useState(1);
   const [scale, setScale] = useState(1);
   const isMarketing = previewContext === 'marketing';
+  const isFlat = appearance === 'flat';
 
   useLayoutEffect(() => {
     const frame = frameRef.current;
@@ -97,7 +104,8 @@ function MobileSignaturePreviewFrame({
     const measure = () => {
       if (!frameRef.current || !contentRef.current) return;
       const frameW = frameRef.current.clientWidth || mobileFrameWidth;
-      const scaleFrameW = isMarketing ? Math.max(1, frameW - 8) : frameW;
+      const marketingInset = isFlat ? 0 : 8;
+      const scaleFrameW = isMarketing ? Math.max(1, frameW - marketingInset) : frameW;
 
       const transformEl = transformRef.current;
       if (transformEl) transformEl.style.width = '';
@@ -130,7 +138,7 @@ function MobileSignaturePreviewFrame({
       ro.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [html, animationKey, mobileFrameWidth, previewContext, isMarketing]);
+  }, [html, animationKey, mobileFrameWidth, previewContext, isMarketing, isFlat]);
 
   const hasProfCardShell = html.includes('sig-prof-card-shell');
   const hasExecutiveRoot = html.includes('sig-executive-root');
@@ -143,14 +151,16 @@ function MobileSignaturePreviewFrame({
   const scaledH = Math.ceil(naturalH * scale) + borderBleed + clipPad * 2;
   const frameOverflowX = useVisibleOverflow ? 'auto' : 'hidden';
 
+  const frameClassName = isFlat
+    ? 'signature-email-preview signature-email-preview--mobile signature-email-preview--marketing sig-mobile-preview-container w-full p-0 text-left'
+    : isMarketing
+      ? 'signature-email-preview signature-email-preview--mobile signature-email-preview--marketing sig-mobile-preview-container w-full rounded-md border bg-white p-4 text-left'
+      : 'signature-email-preview signature-email-preview--mobile sig-mobile-preview-container w-full rounded-md border bg-white p-4 text-left';
+
   return (
     <div
       ref={frameRef}
-      className={
-        isMarketing
-          ? 'signature-email-preview signature-email-preview--mobile signature-email-preview--marketing sig-mobile-preview-container w-full rounded-md border bg-white p-4 text-left'
-          : 'signature-email-preview signature-email-preview--mobile sig-mobile-preview-container w-full rounded-md border bg-white p-4 text-left'
-      }
+      className={frameClassName}
       style={{
         width: isMarketing ? '100%' : mobileFrameWidth,
         maxWidth: mobileFrameWidth,
