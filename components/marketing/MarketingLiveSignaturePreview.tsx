@@ -5,8 +5,8 @@ import { presetToEngineTemplate, type TemplatePresetId } from '@/lib/email/templ
 import type { SignatureLayout } from 'emailsignature-engine';
 
 /** Wider than dashboard mobile preview; fills marketing card column up to cap. */
-const MARKETING_MOBILE_FRAME_WIDTH = 680;
-const MARKETING_STACKED_MOBILE_FRAME_WIDTH = 700;
+const MARKETING_MOBILE_FRAME_WIDTH = 760;
+const MARKETING_STACKED_MOBILE_FRAME_WIDTH = 760;
 
 function marketingMobileFrameWidthForLayout(layout?: SignatureLayout): number {
   if (layout === 'stacked') return MARKETING_STACKED_MOBILE_FRAME_WIDTH;

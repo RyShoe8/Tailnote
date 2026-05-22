@@ -8,12 +8,16 @@ export function HomeFinalCta() {
       <div className="tn-grad-bg-dark relative isolate overflow-hidden rounded-3xl px-6 py-14 text-center text-white shadow-ring sm:px-12 sm:py-20">
         <div
           aria-hidden
-          className="pointer-events-none absolute -left-16 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/10 blur-3xl"
-        />
+          className="pointer-events-none absolute -left-16 top-1/2 h-64 w-64 -translate-y-1/2"
+        >
+          <div className="tn-float-slow h-full w-full rounded-full bg-white/10 blur-3xl" />
+        </div>
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-10 -bottom-10 h-72 w-72 rounded-full bg-[#4fd6b2]/30 blur-3xl"
-        />
+          className="pointer-events-none absolute -right-10 -bottom-10 h-72 w-72"
+        >
+          <div className="tn-drift tn-float-delay-2 h-full w-full rounded-full bg-[#4fd6b2]/30 blur-3xl" />
+        </div>
         <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
           Ready to market in every email your team sends?
         </h2>

@@ -1,4 +1,5 @@
 import { BarChart3, LayoutTemplate, Link2, Mail, Megaphone, Users } from 'lucide-react';
+import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
 
 const FEATURES = [
   {
@@ -51,21 +52,20 @@ export function HomeFeatures() {
         </p>
       </div>
       <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-        {FEATURES.map(({ icon: Icon, title, description }) => (
-          <div
-            key={title}
-            className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ring"
-          >
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-            />
-            <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl tn-grad-bg text-white shadow-sm">
-              <Icon className="h-5 w-5" aria-hidden />
+        {FEATURES.map(({ icon: Icon, title, description }, index) => (
+          <RevealOnScroll key={title} delayMs={index * 60}>
+            <div className="group relative h-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ring">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              />
+              <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl tn-grad-bg text-white shadow-sm">
+                <Icon className="h-5 w-5" aria-hidden />
+              </div>
+              <h3 className="font-semibold tracking-tight text-foreground">{title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>
             </div>
-            <h3 className="font-semibold tracking-tight text-foreground">{title}</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>
-          </div>
+          </RevealOnScroll>
         ))}
       </div>
     </section>

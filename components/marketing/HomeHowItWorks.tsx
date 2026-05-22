@@ -1,3 +1,5 @@
+import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
+
 const STEPS = [
   {
     title: 'Set your brand',
@@ -27,18 +29,17 @@ export function HomeHowItWorks() {
       </div>
       <ol className="mt-12 grid gap-6 md:grid-cols-3">
         {STEPS.map((step, idx) => (
-          <li
-            key={step.title}
-            className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-card"
-          >
-            <div className="flex items-center gap-3">
-              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full tn-grad-bg text-sm font-semibold text-white shadow-sm">
-                {idx + 1}
-              </span>
-              <h3 className="font-semibold tracking-tight text-foreground">{step.title}</h3>
+          <RevealOnScroll key={step.title} as="li" delayMs={idx * 80}>
+            <div className="relative h-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-card transition-shadow duration-300 hover:shadow-ring">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full tn-grad-bg text-sm font-semibold text-white shadow-sm">
+                  {idx + 1}
+                </span>
+                <h3 className="font-semibold tracking-tight text-foreground">{step.title}</h3>
+              </div>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{step.description}</p>
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{step.description}</p>
-          </li>
+          </RevealOnScroll>
         ))}
       </ol>
     </section>

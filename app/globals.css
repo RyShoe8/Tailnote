@@ -127,6 +127,85 @@
   .tn-float {
     animation: tnFloat 7s ease-in-out infinite;
   }
+  @keyframes tnFloatSlow {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  .tn-float-slow {
+    animation: tnFloatSlow 10s ease-in-out infinite;
+  }
+  .tn-float-delay-1 {
+    animation-delay: 1.2s;
+  }
+  .tn-float-delay-2 {
+    animation-delay: 2.4s;
+  }
+  .tn-float-delay-3 {
+    animation-delay: 3.6s;
+  }
+  @keyframes tnDrift {
+    0%, 100% {
+      transform: translate3d(0, 0, 0);
+    }
+    33% {
+      transform: translate3d(6px, -4px, 0);
+    }
+    66% {
+      transform: translate3d(-4px, 6px, 0);
+    }
+  }
+  .tn-drift {
+    animation: tnDrift 14s ease-in-out infinite;
+  }
+  @keyframes tnSwipeHint {
+    0%, 100% {
+      transform: translateX(0);
+      opacity: 0.85;
+    }
+    50% {
+      transform: translateX(6px);
+      opacity: 1;
+    }
+  }
+  .tn-swipe-hint {
+    animation: tnSwipeHint 1.6s ease-in-out infinite;
+  }
+  @keyframes tnReveal {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .tn-reveal {
+    animation: tnReveal 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: transform, opacity;
+  }
+  .tn-reveal-init {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tn-rise,
+    .tn-float,
+    .tn-float-slow,
+    .tn-drift,
+    .tn-swipe-hint,
+    .tn-reveal {
+      animation: none !important;
+    }
+    .tn-reveal-init {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
 }
 
 /* Preview-only: undo Tailwind Preflight on injected email HTML so table layout + 16px icons size correctly. */

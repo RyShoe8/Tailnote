@@ -3,6 +3,8 @@ import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { JsonLd } from '@/components/seo/JsonLd';
+import { FloatingOrbs } from '@/components/marketing/FloatingOrbs';
+import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
 import { getPublicPricingPlans, type PublicPricingPlan } from '@/lib/billing/getPublicPricingPlans';
 import { CORE_PRODUCT_FEATURE_BULLETS } from '@/lib/marketing/productFeatures';
 import { softwareApplicationJsonLd, webPageJsonLd } from '@/lib/seo/jsonLd';
@@ -112,8 +114,9 @@ export default async function PricingPage() {
         aria-hidden
         className="tn-grad-bg-soft pointer-events-none absolute inset-x-0 -top-20 -z-10 h-[28rem]"
       />
-      <div className="container py-14 sm:py-20">
-        <div className="mx-auto max-w-3xl text-center">
+      <FloatingOrbs />
+      <div className="container relative py-14 sm:py-20">
+        <div className="tn-rise mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-wider text-primary">Pricing</p>
           <h1 className="mt-3 text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
             Simple plans, <span className="tn-grad-text">measurable email impact</span>
@@ -130,16 +133,16 @@ export default async function PricingPage() {
           </p>
         ) : (
           <div className="mx-auto mt-12 grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
-            {plans.map((plan) => {
+            {plans.map((plan, index) => {
               const description = plan.description.trim();
               const features = planFeatureBullets(plan);
               const hasCap = subscriptionCap(plan) !== null;
               const recommended = plan.badge.trim().toLowerCase() === 'popular';
 
               return (
+                <RevealOnScroll key={plan.slug} delayMs={index * 80} className="flex">
                 <Card
-                  key={plan.slug}
-                  className={`relative flex flex-col overflow-hidden border-slate-200/80 bg-white shadow-card transition-shadow hover:shadow-ring ${
+                  className={`relative flex w-full flex-col overflow-hidden border-slate-200/80 bg-white shadow-float ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-ring ${
                     recommended ? 'ring-2 ring-primary/40' : ''
                   }`}
                 >
@@ -202,6 +205,7 @@ export default async function PricingPage() {
                     )}
                   </CardFooter>
                 </Card>
+                </RevealOnScroll>
               );
             })}
           </div>

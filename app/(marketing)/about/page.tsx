@@ -1,3 +1,4 @@
+import { FloatingOrbs } from '@/components/marketing/FloatingOrbs';
 import { MarketingDocPage } from '@/components/marketing/MarketingDocPage';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { aboutContent, LEGAL_LAST_UPDATED } from '@/lib/marketing/legalContent';
@@ -23,12 +24,27 @@ export default function AboutPage() {
           description: aboutPage.description,
         })}
       />
-      <MarketingDocPage
-      title={aboutContent.title}
-      lastUpdated={LEGAL_LAST_UPDATED}
-      intro={aboutContent.intro}
-      sections={aboutContent.sections}
-    />
+      <div className="relative isolate overflow-hidden">
+        <FloatingOrbs
+          orbs={[
+            {
+              size: 280,
+              position: 'left-[-5rem] top-[-2rem]',
+              background:
+                'radial-gradient(circle at 30% 30%, rgba(12,143,163,0.22), rgba(12,143,163,0) 70%)',
+              blur: 18,
+              animationClass: 'tn-float-slow',
+              opacity: 0.85,
+            },
+          ]}
+        />
+        <MarketingDocPage
+          title={aboutContent.title}
+          lastUpdated={LEGAL_LAST_UPDATED}
+          intro={aboutContent.intro}
+          sections={aboutContent.sections}
+        />
+      </div>
     </>
   );
 }

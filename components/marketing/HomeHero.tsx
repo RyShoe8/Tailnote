@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmailClientMock } from '@/components/marketing/EmailClientMock';
+import { FloatingOrbs } from '@/components/marketing/FloatingOrbs';
 import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
 import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
 
@@ -14,6 +15,7 @@ export function HomeHero() {
         aria-hidden
         className="tn-grad-bg-soft pointer-events-none absolute inset-x-0 -top-32 -z-10 h-[40rem]"
       />
+      <FloatingOrbs />
       <div className="container relative pb-16 pt-12 sm:pb-20 sm:pt-16 lg:pb-28 lg:pt-20">
         <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-16">
           <div className="tn-rise mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">

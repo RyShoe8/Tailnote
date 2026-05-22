@@ -1,4 +1,5 @@
 import { ContactForm } from '@/components/marketing/ContactForm';
+import { FloatingOrbs } from '@/components/marketing/FloatingOrbs';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { contactPageJsonLd } from '@/lib/seo/jsonLd';
 import { createPageMetadata } from '@/lib/seo/metadata';
@@ -26,8 +27,31 @@ export default function ContactPage() {
         aria-hidden
         className="tn-grad-bg-soft pointer-events-none absolute inset-x-0 -top-20 -z-10 h-[24rem]"
       />
-      <div className="container py-14 sm:py-20">
-        <div className="mx-auto max-w-3xl text-center">
+      <FloatingOrbs
+        orbs={[
+          {
+            size: 280,
+            position: 'left-[-5rem] top-[-3rem]',
+            background:
+              'radial-gradient(circle at 30% 30%, rgba(12,143,163,0.28), rgba(12,143,163,0) 70%)',
+            blur: 14,
+            animationClass: 'tn-float-slow',
+            opacity: 0.85,
+          },
+          {
+            size: 220,
+            position: 'right-[-3rem] top-[5rem]',
+            background:
+              'radial-gradient(circle at 70% 30%, rgba(79,214,178,0.30), rgba(79,214,178,0) 70%)',
+            blur: 16,
+            animationClass: 'tn-drift',
+            delayClass: 'tn-float-delay-1',
+            opacity: 0.85,
+          },
+        ]}
+      />
+      <div className="container relative py-14 sm:py-20">
+        <div className="tn-rise mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-wider text-primary">Contact</p>
           <h1 className="mt-3 text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
             We&apos;d love to <span className="tn-grad-text">hear from you</span>
@@ -37,7 +61,7 @@ export default function ContactPage() {
             reply at the email you provide &mdash; usually within one business day.
           </p>
         </div>
-        <div className="mx-auto mt-10 max-w-xl rounded-2xl border border-slate-200/80 bg-white p-6 shadow-card sm:p-8">
+        <div className="tn-rise mx-auto mt-10 max-w-xl rounded-2xl border border-slate-200/70 bg-white p-6 shadow-float ring-1 ring-black/5 sm:p-8">
           <ContactForm />
         </div>
       </div>

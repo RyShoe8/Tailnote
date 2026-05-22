@@ -13,6 +13,8 @@ const SWIPE_THRESHOLD_PX = 50;
 const PREVIEW_VIEWPORT_FALLBACK_PX = 440;
 /** Extra height for desktop card padding (gradient area p-4 sm:p-6). */
 const DESKTOP_CARD_EXTRA_PX = 48;
+/** Extra height for the mobile card shell (gradient padding p-4). */
+const MOBILE_CARD_EXTRA_PX = 32;
 
 type Props = {
   presets: CatalogPresetRow[];
@@ -25,18 +27,16 @@ function presetPreviewHtml(presetId: TemplatePresetId) {
 function CarouselPrevButton({
   activeIndex,
   onPrev,
-  compact,
 }: {
   activeIndex: number;
   onPrev: () => void;
-  compact?: boolean;
 }) {
   return (
     <Button
       type="button"
       variant="outline"
       size="icon"
-      className={compact ? 'h-7 w-7 shrink-0' : 'shrink-0'}
+      className="shrink-0"
       aria-label="Previous template"
       disabled={activeIndex <= 0}
       onClick={onPrev}
@@ -50,19 +50,17 @@ function CarouselNextButton({
   activeIndex,
   presetsLength,
   onNext,
-  compact,
 }: {
   activeIndex: number;
   presetsLength: number;
   onNext: () => void;
-  compact?: boolean;
 }) {
   return (
     <Button
       type="button"
       variant="outline"
       size="icon"
-      className={compact ? 'h-7 w-7 shrink-0' : 'shrink-0'}
+      className="shrink-0"
       aria-label="Next template"
       disabled={activeIndex >= presetsLength - 1}
       onClick={onNext}
@@ -104,6 +102,22 @@ function CarouselDots({
   );
 }
 
+function MobileSwipeHint({ hidden }: { hidden: boolean }) {
+  return (
+    <div
+      className={`mb-3 flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground transition-opacity duration-300 md:hidden ${
+        hidden ? 'pointer-events-none opacity-0' : 'opacity-100'
+      }`}
+      aria-hidden={hidden}
+    >
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/70 px-3 py-1 shadow-sm backdrop-blur">
+        Swipe to explore
+        <ChevronRight className="tn-swipe-hint h-3.5 w-3.5 text-primary" aria-hidden />
+      </span>
+    </div>
+  );
+}
+
 function CarouselSlideMeta({ preset }: { preset: CatalogPresetRow }) {
   return (
     <div className="mb-4 min-h-[5.5rem]">
@@ -135,6 +149,14 @@ function TemplateSlidePreview({
   );
 }
 
+function SlideCardShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-float ring-1 ring-black/5 transition-transform duration-500 hover:-translate-y-1">
+      <div className="bg-gradient-to-b from-slate-50/60 to-white p-4 sm:p-6">{children}</div>
+    </div>
+  );
+}
+
 function TemplateSlide({
   preset,
   isActive,
@@ -155,7 +177,9 @@ function TemplateSlide({
         aria-roledescription="slide"
         aria-hidden={!isActive}
       >
-        <TemplateSlidePreview preset={preset} appearance="flat" />
+        <SlideCardShell>
+          <TemplateSlidePreview preset={preset} appearance="flat" />
+        </SlideCardShell>
       </article>
     );
   }
@@ -166,11 +190,9 @@ function TemplateSlide({
       aria-roledescription="slide"
       aria-hidden={!isActive}
     >
-      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card">
-        <div className="bg-gradient-to-b from-slate-50/50 to-white p-4 sm:p-6">
-          <TemplateSlidePreview preset={preset} appearance="card" />
-        </div>
-      </div>
+      <SlideCardShell>
+        <TemplateSlidePreview preset={preset} appearance="card" />
+      </SlideCardShell>
     </article>
   );
 }
@@ -178,6 +200,7 @@ function TemplateSlide({
 export function HomeTemplateCarousel({ presets }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [previewViewportHeight, setPreviewViewportHeight] = useState<number | null>(null);
+  const [hasSwiped, setHasSwiped] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const measureRef = useRef<HTMLDivElement | null>(null);
 
@@ -241,6 +264,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
     const deltaX = endX - startX;
     if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX) return;
 
+    setHasSwiped(true);
     if (deltaX < 0) {
       scrollBySlide(1);
     } else {
@@ -255,6 +279,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
   const onNext = () => scrollBySlide(1);
   const viewportMinHeight = previewViewportHeight ?? PREVIEW_VIEWPORT_FALLBACK_PX;
   const desktopViewportMinHeight = viewportMinHeight + DESKTOP_CARD_EXTRA_PX;
+  const mobileViewportMinHeight = viewportMinHeight + MOBILE_CARD_EXTRA_PX;
 
   return (
     <div
@@ -275,12 +300,13 @@ export function HomeTemplateCarousel({ presets }: Props) {
 
       <CarouselSlideMeta preset={activePreset} />
 
-      <div className="flex max-md:-mx-3 items-stretch gap-0 md:hidden">
-        <CarouselPrevButton activeIndex={activeIndex} onPrev={onPrev} compact />
+      <MobileSwipeHint hidden={hasSwiped} />
+
+      <div className="md:hidden">
         <div
           ref={measureRef}
-          className="relative min-w-0 flex-1 touch-pan-y"
-          style={{ minHeight: viewportMinHeight }}
+          className="relative w-full min-w-0 touch-pan-y"
+          style={{ minHeight: mobileViewportMinHeight }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -290,7 +316,9 @@ export function HomeTemplateCarousel({ presets }: Props) {
           >
             {presets.map((preset) => (
               <div key={`measure-${preset.presetId}`} data-carousel-measure className="w-full">
-                <TemplateSlidePreview preset={preset} appearance="flat" />
+                <SlideCardShell>
+                  <TemplateSlidePreview preset={preset} appearance="flat" />
+                </SlideCardShell>
               </div>
             ))}
           </div>
@@ -303,12 +331,9 @@ export function HomeTemplateCarousel({ presets }: Props) {
             />
           ))}
         </div>
-        <CarouselNextButton
-          activeIndex={activeIndex}
-          presetsLength={presets.length}
-          onNext={onNext}
-          compact
-        />
+        <div className="mt-5">
+          <CarouselDots activeIndex={activeIndex} presets={presets} onGoToIndex={goToIndex} />
+        </div>
       </div>
 
       <div className="hidden md:block" style={{ minHeight: desktopViewportMinHeight }}>
