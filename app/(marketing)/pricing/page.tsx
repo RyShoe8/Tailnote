@@ -122,9 +122,10 @@ export default async function PricingPage() {
             Simple plans, <span className="tn-grad-text">measurable email impact</span>
           </h1>
           <p className="mt-4 text-pretty text-base text-muted-foreground sm:text-lg">
-            Billed per subscription. Each plan includes a set number of users for your organization
-            — signatures, promotional blocks, UTM tracking, and analytics included. Pick a plan, sign
-            up, and complete checkout to activate your workspace.
+            Billed per subscription. Each plan includes a set number of users for your organization.
+            All plans include all features: signatures, promotional blocks, UTM tracking, and
+            analytics included. Pick a plan, sign up, and complete checkout to activate your
+            workspace.
           </p>
         </div>
         {plans.length === 0 ? (

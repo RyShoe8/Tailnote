@@ -55,7 +55,7 @@ export default async function TemplatesMarketingPage() {
             Signature + promo <span className="tn-grad-text">templates</span>
           </h1>
           <p className="mt-4 text-pretty text-base text-muted-foreground sm:text-lg">
-            Curated layouts with promotional content blocks built in — book-a-call buttons, offer
+            Curated layouts with promotional content blocks built in; book-a-call buttons, offer
             lists, blog feeds, and image banners beside every signature. No drag-and-drop chaos; HTML
             that works in real inboxes.
           </p>
