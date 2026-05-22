@@ -121,7 +121,7 @@ export default async function PricingPage() {
           <p className="mt-4 text-pretty text-base text-muted-foreground sm:text-lg">
             Billed per subscription. Each plan includes a set number of users for your organization
             — signatures, promotional blocks, UTM tracking, and analytics included. Pick a plan, sign
-            up, and subscribe from your dashboard.
+            up, and complete checkout to activate your workspace.
           </p>
         </div>
         {plans.length === 0 ? (
@@ -195,7 +195,9 @@ export default async function PricingPage() {
                       </Button>
                     ) : (
                       <Button asChild className="w-full shadow-card">
-                        <Link href="/signup">Get started — {plan.name}</Link>
+                        <Link href={`/signup?subscriptionPlanId=${encodeURIComponent(plan.id)}`}>
+                          Get started — {plan.name}
+                        </Link>
                       </Button>
                     )}
                   </CardFooter>

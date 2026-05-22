@@ -33,7 +33,7 @@ export function HomeHero() {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <Button asChild size="lg" className="gap-2 shadow-card">
                 <Link href="/signup">
-                  Get started free
+                  Get started
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </Link>
               </Button>

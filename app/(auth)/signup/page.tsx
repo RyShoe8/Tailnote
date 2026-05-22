@@ -11,14 +11,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 
+function buildPostSignupPath(searchParams: URLSearchParams, inviteToken: string | null): string {
+  if (inviteToken) {
+    return `/invite/${encodeURIComponent(inviteToken)}?accept=1`;
+  }
+  const qs = new URLSearchParams();
+  const subscriptionPlanId = searchParams.get('subscriptionPlanId');
+  const plan = searchParams.get('plan');
+  if (subscriptionPlanId) qs.set('subscriptionPlanId', subscriptionPlanId);
+  if (plan) qs.set('plan', plan);
+  const query = qs.toString();
+  return query ? `/onboarding?${query}` : '/onboarding';
+}
+
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get('invite');
   const inviteEmail = searchParams.get('email');
-  const googleCallback = inviteToken
-    ? `/invite/${encodeURIComponent(inviteToken)}?accept=1`
-    : '/onboarding';
+  const googleCallback = buildPostSignupPath(searchParams, inviteToken);
   const [name, setName] = useState('');
   const [email, setEmail] = useState(inviteEmail || '');
   const [password, setPassword] = useState('');
@@ -43,7 +54,7 @@ function SignupForm() {
         window.location.href = `/invite/${encodeURIComponent(inviteToken)}?accept=1`;
         return;
       }
-      router.push('/onboarding');
+      router.push(buildPostSignupPath(searchParams, inviteToken));
       router.refresh();
     } catch {
       setError('Sign up failed');

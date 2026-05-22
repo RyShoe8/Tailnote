@@ -24,7 +24,7 @@ export function middleware(request: NextRequest) {
       pathname.startsWith('/api/admin') ||
       pathname.startsWith('/api/stripe/checkout') ||
       pathname.startsWith('/api/stripe/portal') ||
-      pathname.startsWith('/api/onboarding') ||
+      pathname.startsWith('/api/onboarding/') ||
       pathname.startsWith('/api/integrations/gmail'));
 
   // Gmail OAuth callback must accept unauthenticated requests: Google redirects here with ?code=&state=;

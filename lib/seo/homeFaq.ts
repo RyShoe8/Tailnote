@@ -17,7 +17,7 @@ export const HOME_FAQS = [
   },
   {
     q: 'Is there a free tier?',
-    a: 'You can sign up free and explore the editor and templates. Active marketing features, team seats, and signature installs require a paid plan — see Pricing for details.',
+    a: 'Tailnote is a paid product. When you sign up you choose a subscription plan and complete checkout before using the workspace. See Pricing for current plans.',
   },
   {
     q: 'How does Tailnote handle our data?',
