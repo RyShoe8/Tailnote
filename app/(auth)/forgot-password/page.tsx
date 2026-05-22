@@ -6,6 +6,7 @@ import { authClient } from '@/lib/auth/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function ForgotPasswordPage() {
@@ -38,7 +39,9 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <Card className="shadow-card">
+    <>
+      <AuthBrandHeader />
+      <Card className="shadow-card">
       <CardHeader>
         <CardTitle>Forgot password</CardTitle>
         <CardDescription>We will email you a reset link when configured.</CardDescription>
@@ -68,5 +71,6 @@ export default function ForgotPasswordPage() {
         </p>
       </CardContent>
     </Card>
+    </>
   );
 }

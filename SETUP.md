@@ -74,6 +74,15 @@ In the [Stripe Dashboard](https://dashboard.stripe.com/webhooks), create an endp
 
 Copy the endpoint **Signing secret** into `STRIPE_WEBHOOK_SECRET` in **Vercel** **Environment Variables** (**Production**), then **Redeploy**.
 
+Enable **Customer Portal** cancellation so `customer.subscription.updated` / `customer.subscription.deleted` fire when users cancel.
+
+### Subscription lifecycle (app behavior)
+
+- **Paid access** requires `Organization.subscriptionStatus` of `active` or `trialing` (see `lib/billing/subscriptionAccess.ts`). `past_due`, `canceled`, and `incomplete` lock out paid features immediately.
+- **Webhooks** sync Stripe → MongoDB (`Organization` + `OrganizationSubscription`). `invoice.paid` restores access; `invoice.payment_failed` sets `past_due` and emails the org owner; subscription end/cancel emails the owner (one email per Stripe event id).
+- **Signature serving (Tailnote-controlled):** public preview `/p/[token]`, tracked links `/api/track/signature`, and dashboard HTML export / Gmail apply are blocked when unpaid. Copy/Gmail buttons in the dashboard are disabled when unpaid.
+- **Limitation:** HTML already pasted into Gmail or Outlook cannot be removed remotely. Direct image URLs (e.g. Vercel Blob) in old signatures may still load. Tracked links are the main enforcement lever for links in deployed signatures.
+
 ### Subscription plans (source of truth)
 
 Pricing lives in MongoDB (`subscription_plans`), not only in Stripe env vars.
@@ -90,6 +99,23 @@ Pricing lives in MongoDB (`subscription_plans`), not only in Stripe env vars.
 All paid plans include the same product features (templates, animation slots, etc.).
 
 Optional add-ons: **`/admin/addons`** with the same sync pattern.
+
+## Pre-launch verification (security and billing)
+
+Run these checks before treating production as ready:
+
+1. **Vercel env (Production):** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `MONGODB_URI`, `BETTER_AUTH_SECRET` set. Without `STRIPE_SECRET_KEY`, the app treats all orgs as paid (dev-only behavior).
+2. **Stripe webhook:** Endpoint `https://<your-domain>/api/webhooks/stripe` with events `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`, `invoice.payment_failed`. Test delivery shows **200**; unsigned POSTs must get **400**.
+3. **Client bundle:** After deploy, search built JS (View Source or `/_next/static/...`) for `sk_`, `AIza`, `mongodb+srv`, `xkeysib-`. None should appear.
+4. **API auth:** Without a session cookie, `GET /api/dashboard/organization` and `POST /api/dashboard/me/signature-html` must return **401** JSON (not organization data).
+5. **Test checkout:** Stripe test mode, card `4242 4242 4242 4242`. Confirm webhook success, **`/dashboard/billing`** shows `subscriptionStatus` `active` or `trialing`, and copy/export signatures works. Send test `invoice.payment_failed` and confirm access locks and owner email (if Brevo is configured).
+
+Local bundle scan after `npm run build`:
+
+```bash
+# PowerShell — should print nothing
+Select-String -Path ".next\static\**\*.js" -Pattern "sk_live|sk_test|AIza|mongodb\+srv|xkeysib-" -SimpleMatch
+```
 
 ## Build on Vercel
 

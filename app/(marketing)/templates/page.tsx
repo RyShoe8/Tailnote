@@ -2,22 +2,45 @@ import { connectMongoose } from '@/lib/mongoose';
 import { getActiveCatalogPresets } from '@/lib/templates/getEnabledPresets';
 import { HomePromoBlocksShowcase } from '@/components/marketing/HomePromoBlocksShowcase';
 import { MarketingLiveSignaturePreview } from '@/components/marketing/MarketingLiveSignaturePreview';
+import { JsonLd } from '@/components/seo/JsonLd';
 import type { TemplatePresetId } from '@/lib/email/templatePresets';
 import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
 import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
+import { itemListJsonLd, webPageJsonLd } from '@/lib/seo/jsonLd';
+import { createPageMetadata } from '@/lib/seo/metadata';
+import { marketingPageByKey } from '@/lib/seo/marketingPages';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Templates — Tailnote',
-};
+const templatesPage = marketingPageByKey('templates');
+
+export const metadata = createPageMetadata({
+  title: templatesPage.title,
+  description: templatesPage.description,
+  path: templatesPage.path,
+});
 
 export default async function TemplatesMarketingPage() {
   await connectMongoose();
   const presets = await getActiveCatalogPresets();
 
+  const listItems = presets.map((t) => ({
+    name: t.name,
+    description: t.description?.trim() || undefined,
+  }));
+
   return (
     <div className="relative isolate">
+      <JsonLd
+        data={[
+          webPageJsonLd({
+            path: templatesPage.path,
+            name: templatesPage.title,
+            description: templatesPage.description,
+          }),
+          ...(listItems.length > 0 ? [itemListJsonLd(listItems)] : []),
+        ]}
+      />
       <div
         aria-hidden
         className="tn-grad-bg-soft pointer-events-none absolute inset-x-0 -top-20 -z-10 h-[24rem]"

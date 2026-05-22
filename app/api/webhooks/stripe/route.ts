@@ -15,42 +15,13 @@ import { EmployeeModel } from '@/models/Employee';
 import { isValidObjectIdString } from '@/lib/admin/data';
 import { persistOrganizationSubscriptionStripeItems } from '@/lib/stripe/subscriptionItemSync';
 import { syncStripeSubscriptionSeatsForOrganization } from '@/lib/stripe/syncSubscriptionSeats';
-
-function mapSubscriptionStatus(
-  status: Stripe.Subscription.Status
-): 'none' | 'active' | 'trialing' | 'past_due' | 'canceled' | 'incomplete' {
-  switch (status) {
-    case 'active':
-      return 'active';
-    case 'trialing':
-      return 'trialing';
-    case 'past_due':
-      return 'past_due';
-    case 'canceled':
-    case 'unpaid':
-      return 'canceled';
-    default:
-      return 'incomplete';
-  }
-}
-
-function mapOrgSubStatus(
-  status: Stripe.Subscription.Status
-): 'trialing' | 'active' | 'past_due' | 'canceled' | 'incomplete' {
-  switch (status) {
-    case 'active':
-      return 'active';
-    case 'trialing':
-      return 'trialing';
-    case 'past_due':
-      return 'past_due';
-    case 'canceled':
-    case 'unpaid':
-      return 'canceled';
-    default:
-      return 'incomplete';
-  }
-}
+import {
+  isActiveSubscriptionStatus,
+  mapOrgSubStatus,
+  mapSubscriptionStatus,
+  organizationPlanForStripeStatus,
+} from '@/lib/billing/subscriptionAccess';
+import { notifyOrganizationBilling } from '@/lib/billing/notifyOrganizationBilling';
 
 async function resolveSubscriptionPlanMongoId(
   stripe: Stripe,
@@ -83,11 +54,25 @@ async function resolveSubscriptionPlanMongoId(
   return null;
 }
 
-function organizationPlanForStripeStatus(
-  status: Stripe.Subscription.Status
-): 'pro' | 'none' {
-  if (status === 'active' || status === 'trialing' || status === 'past_due') return 'pro';
-  return 'none';
+async function resolvePlanSlugForSubscription(
+  stripeSubscriptionId: string
+): Promise<string> {
+  const orgSub = await OrganizationSubscriptionModel.findOne({ stripeSubscriptionId })
+    .populate<{ subscriptionPlanId: SubscriptionPlanDoc | null }>('subscriptionPlanId')
+    .lean();
+  const slug = orgSub?.subscriptionPlanId?.slug;
+  if (slug && slug !== 'none') return String(slug);
+  return 'pro';
+}
+
+async function syncActiveSubscriptionItems(
+  orgObjId: mongoose.Types.ObjectId,
+  sub: Stripe.Subscription,
+  planDoc: SubscriptionPlanDoc
+): Promise<void> {
+  if (!isActiveSubscriptionStatus(mapOrgSubStatus(sub.status))) return;
+  await persistOrganizationSubscriptionStripeItems(orgObjId, sub, planDoc);
+  await syncStripeSubscriptionSeatsForOrganization(orgObjId);
 }
 
 export async function POST(request: Request) {
@@ -122,24 +107,32 @@ export async function POST(request: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
         const orgId = session.metadata?.organizationId;
         if (!orgId || !session.customer || !isValidObjectIdString(orgId)) break;
+        if (session.payment_status !== 'paid') break;
 
         const customerId = String(session.customer);
         const planDocId = await resolveSubscriptionPlanMongoId(stripe, session);
 
         if (session.mode === 'subscription' && session.subscription) {
           const subId = String(session.subscription);
+          const sub = await stripe.subscriptions.retrieve(subId, { expand: ['items.data.price'] });
+          const subscriptionStatus = mapSubscriptionStatus(sub.status);
+          const planSlug = planDocId
+            ? (
+                await SubscriptionPlanModel.findById(planDocId).select('slug').lean<{ slug?: string }>()
+              )?.slug ?? 'pro'
+            : organizationPlanForStripeStatus(sub.status);
+
           await OrganizationModel.findByIdAndUpdate(orgId, {
             stripeCustomerId: customerId,
             stripeSubscriptionId: subId,
-            subscriptionStatus: 'active',
-            plan: 'pro',
+            subscriptionStatus,
+            plan: planSlug,
           });
 
           if (planDocId) {
             const orgObjId = new mongoose.Types.ObjectId(orgId);
             const planObjId = new mongoose.Types.ObjectId(planDocId);
             const plan = await SubscriptionPlanModel.findById(planObjId).lean();
-            const sub = await stripe.subscriptions.retrieve(subId, { expand: ['items.data.price'] });
             const count = getEffectiveSeatCount(
               await EmployeeModel.countDocuments({ organizationId: orgObjId })
             );
@@ -155,7 +148,7 @@ export async function POST(request: Request) {
                   subscriptionPlanId: planObjId,
                   stripeCustomerId: customerId,
                   stripeSubscriptionId: subId,
-                  status: 'active',
+                  status: mapOrgSubStatus(sub.status),
                   seats: count,
                   startedAt: new Date(),
                   renewsAt,
@@ -164,16 +157,21 @@ export async function POST(request: Request) {
               { upsert: true }
             );
             if (plan) {
-              await persistOrganizationSubscriptionStripeItems(orgObjId, sub, plan);
-              await syncStripeSubscriptionSeatsForOrganization(orgObjId);
+              await syncActiveSubscriptionItems(orgObjId, sub, plan);
             }
           }
         } else if (session.mode === 'payment') {
+          const planSlug = planDocId
+            ? (
+                await SubscriptionPlanModel.findById(planDocId).select('slug').lean<{ slug?: string }>()
+              )?.slug ?? 'pro'
+            : 'pro';
+
           await OrganizationModel.findByIdAndUpdate(orgId, {
             stripeCustomerId: customerId,
             stripeSubscriptionId: '',
             subscriptionStatus: 'active',
-            plan: 'pro',
+            plan: planSlug,
           });
           if (planDocId) {
             const orgObjId = new mongoose.Types.ObjectId(orgId);
@@ -205,28 +203,33 @@ export async function POST(request: Request) {
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription;
         const orgId = sub.metadata?.organizationId;
-        const status =
-          event.type === 'customer.subscription.deleted'
-            ? 'canceled'
-            : mapSubscriptionStatus(sub.status);
+        const isDeleted = event.type === 'customer.subscription.deleted';
+        const subscriptionStatus = isDeleted ? 'canceled' : mapSubscriptionStatus(sub.status);
+        const planSlug = isDeleted ? 'none' : organizationPlanForStripeStatus(sub.status);
 
         const patch: Record<string, unknown> = {
-          stripeSubscriptionId: sub.id,
+          stripeSubscriptionId: isDeleted ? '' : sub.id,
           stripeCustomerId: String(sub.customer),
-          subscriptionStatus: status,
-          plan: organizationPlanForStripeStatus(sub.status),
+          subscriptionStatus,
+          plan: planSlug,
         };
 
-        if (orgId) {
-          await OrganizationModel.findByIdAndUpdate(orgId, patch);
+        let resolvedOrgId: string | null = orgId && isValidObjectIdString(orgId) ? orgId : null;
+
+        if (resolvedOrgId) {
+          await OrganizationModel.findByIdAndUpdate(resolvedOrgId, patch);
         } else if (sub.customer) {
-          await OrganizationModel.findOneAndUpdate({ stripeCustomerId: String(sub.customer) }, patch);
+          const updated = await OrganizationModel.findOneAndUpdate(
+            { stripeCustomerId: String(sub.customer) },
+            patch,
+            { new: true }
+          )
+            .select('_id')
+            .lean<{ _id: mongoose.Types.ObjectId }>();
+          resolvedOrgId = updated ? String(updated._id) : null;
         }
 
-        const orgSubStatus =
-          event.type === 'customer.subscription.deleted'
-            ? 'canceled'
-            : mapOrgSubStatus(sub.status);
+        const orgSubStatus = isDeleted ? 'canceled' : mapOrgSubStatus(sub.status);
         const orgSubPatch: Record<string, unknown> = {
           status: orgSubStatus,
           stripeCustomerId: String(sub.customer),
@@ -243,13 +246,21 @@ export async function POST(request: Request) {
           .populate<{ subscriptionPlanId: SubscriptionPlanDoc | null }>('subscriptionPlanId')
           .lean();
 
-        if (orgSub) {
+        const orgObjId = orgSub
+          ? new mongoose.Types.ObjectId(String(orgSub.organizationId))
+          : resolvedOrgId
+            ? new mongoose.Types.ObjectId(resolvedOrgId)
+            : null;
+
+        if (orgSub && !isDeleted) {
           const planDoc = orgSub.subscriptionPlanId;
-          const orgObjId = new mongoose.Types.ObjectId(String(orgSub.organizationId));
-          if (planDoc && event.type !== 'customer.subscription.deleted') {
-            await persistOrganizationSubscriptionStripeItems(orgObjId, sub, planDoc);
-            await syncStripeSubscriptionSeatsForOrganization(orgObjId);
+          if (planDoc) {
+            await syncActiveSubscriptionItems(orgObjId!, sub, planDoc);
           }
+        }
+
+        if (orgObjId && (isDeleted || orgSubStatus === 'canceled')) {
+          await notifyOrganizationBilling(orgObjId, 'subscription_canceled', event.id);
         }
         break;
       }
@@ -257,12 +268,16 @@ export async function POST(request: Request) {
         const inv = event.data.object as Stripe.Invoice;
         const customerId = typeof inv.customer === 'string' ? inv.customer : inv.customer?.id;
         if (!customerId) break;
-        await OrganizationModel.findOneAndUpdate(
-          { stripeCustomerId: customerId },
-          { subscriptionStatus: 'active' }
-        );
+
         const subRef = inv.subscription;
         const subId = typeof subRef === 'string' ? subRef : subRef?.id;
+        const planSlug = subId ? await resolvePlanSlugForSubscription(subId) : 'pro';
+
+        await OrganizationModel.findOneAndUpdate(
+          { stripeCustomerId: customerId },
+          { subscriptionStatus: 'active', plan: planSlug }
+        );
+
         if (subId) {
           await OrganizationSubscriptionModel.findOneAndUpdate(
             { stripeSubscriptionId: subId },
@@ -275,10 +290,15 @@ export async function POST(request: Request) {
         const inv = event.data.object as Stripe.Invoice;
         const customerId = typeof inv.customer === 'string' ? inv.customer : inv.customer?.id;
         if (!customerId) break;
-        await OrganizationModel.findOneAndUpdate(
+
+        const org = await OrganizationModel.findOneAndUpdate(
           { stripeCustomerId: customerId },
-          { subscriptionStatus: 'past_due' }
-        );
+          { subscriptionStatus: 'past_due', plan: 'none' },
+          { new: true }
+        )
+          .select('_id')
+          .lean<{ _id: mongoose.Types.ObjectId }>();
+
         const subRef = inv.subscription;
         const subId = typeof subRef === 'string' ? subRef : subRef?.id;
         if (subId) {
@@ -286,6 +306,10 @@ export async function POST(request: Request) {
             { stripeSubscriptionId: subId },
             { $set: { status: 'past_due' } }
           );
+        }
+
+        if (org) {
+          await notifyOrganizationBilling(org._id, 'payment_failed', event.id);
         }
         break;
       }

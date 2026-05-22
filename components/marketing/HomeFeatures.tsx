@@ -46,8 +46,8 @@ export function HomeFeatures() {
           A marketing channel in every send
         </h2>
         <p className="mt-4 text-pretty text-muted-foreground">
-          Tailnote combines on-brand signatures with promotional blocks and measurable links, so
-          every employee email promotes your business without extra tools.
+          Tailnote combines on-brand email signatures with promotional blocks and measurable links,
+          so every employee email promotes your business without extra tools.
         </p>
       </div>
       <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">

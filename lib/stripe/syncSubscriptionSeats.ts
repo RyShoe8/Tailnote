@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { isActiveSubscriptionStatus } from '@/lib/billing/subscriptionAccess';
 import { getEffectiveSeatCount } from '@/lib/billing/employeeLimits';
 import { ensureOwnerEmployeeForOrganization } from '@/lib/employees/ensureOwnerEmployee';
 import { connectMongoose } from '@/lib/mongoose';
@@ -11,6 +12,7 @@ import { persistOrganizationSubscriptionStripeItems } from '@/lib/stripe/subscri
 type OrgSubSeatRow = {
   stripeSubscriptionId: string;
   stripeSeatItemId: string;
+  status?: string;
   subscriptionPlanId: SubscriptionPlanDoc | null;
 };
 
@@ -32,6 +34,7 @@ export async function syncStripeSubscriptionSeatsForOrganization(
     .populate('subscriptionPlanId')
     .lean<OrgSubSeatRow>();
   if (!orgSub?.stripeSubscriptionId) return;
+  if (!isActiveSubscriptionStatus(orgSub.status)) return;
 
   const plan = orgSub.subscriptionPlanId;
   if (!plan?.stripeSeatPriceId || plan.interval === 'lifetime') return;

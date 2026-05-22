@@ -7,6 +7,7 @@ import { authClient } from '@/lib/auth/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 function ResetPasswordForm() {
@@ -131,8 +132,11 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="text-sm text-muted-foreground">Loading…</div>}>
-      <ResetPasswordForm />
-    </Suspense>
+    <>
+      <AuthBrandHeader />
+      <Suspense fallback={<div className="text-sm text-muted-foreground">Loading…</div>}>
+        <ResetPasswordForm />
+      </Suspense>
+    </>
   );
 }

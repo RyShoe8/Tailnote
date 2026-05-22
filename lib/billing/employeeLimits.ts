@@ -4,6 +4,7 @@ import { EmployeeModel } from '@/models/Employee';
 import { OrganizationModel } from '@/models/Organization';
 import { OrganizationSubscriptionModel } from '@/models/OrganizationSubscription';
 import { SubscriptionPlanModel, type SubscriptionPlanDoc } from '@/models/SubscriptionPlan';
+import { isActiveSubscriptionStatus, isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
 import { ensureOwnerEmployeeForOrganization } from '@/lib/employees/ensureOwnerEmployee';
 
 export type EmployeeLimitInfo = {
@@ -59,9 +60,9 @@ export async function resolveOrganizationSubscriptionPlan(
 
   const orgSub = await OrganizationSubscriptionModel.findOne({ organizationId: orgId })
     .populate('subscriptionPlanId')
-    .lean<{ subscriptionPlanId: SubscriptionPlanDoc | null }>();
+    .lean<{ subscriptionPlanId: SubscriptionPlanDoc | null; status?: string }>();
 
-  if (orgSub?.subscriptionPlanId) {
+  if (orgSub?.subscriptionPlanId && isActiveSubscriptionStatus(orgSub.status)) {
     return orgSub.subscriptionPlanId;
   }
 
@@ -99,6 +100,19 @@ export async function getEmployeeLimitsForOrganization(
       includedUsers: null,
       canAddMore: true,
       canAddBeyondIncluded: true,
+    };
+  }
+
+  const org = await OrganizationModel.findById(orgId).select('subscriptionStatus').lean<{
+    subscriptionStatus?: string;
+  }>();
+  if (!isOrganizationPaid(org)) {
+    return {
+      currentCount,
+      maxEmployees: 1,
+      includedUsers: 1,
+      canAddMore: false,
+      canAddBeyondIncluded: false,
     };
   }
 

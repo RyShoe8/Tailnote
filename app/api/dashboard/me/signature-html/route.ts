@@ -12,6 +12,7 @@ import { EmployeeModel } from '@/models/Employee';
 import { employeeToProfile, mergeEmployeeSocialIntoOrgBrand, orgToBrandInput } from '@/lib/renderEmployeeSignature';
 import { engineTemplateFromStoredConfig, type TemplatePresetId } from '@/lib/email/templatePresets';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
+import { assertOrganizationSubscriptionPaid } from '@/lib/dashboard/subscriptionRequired';
 import { appendSignatureClickTrackingIfEnabled } from '@/lib/signatureTrackingHtml';
 
 export const dynamic = 'force-dynamic';
@@ -93,6 +94,8 @@ export async function POST(request: Request) {
   if (!org) {
     return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
   }
+  const subErr = assertOrganizationSubscriptionPaid(org);
+  if (subErr) return subErr;
 
   const tmpl = await SignatureTemplateModel.findOne({
     _id: parsed.data.templateId,

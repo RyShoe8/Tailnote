@@ -9,6 +9,7 @@ import { engineTemplateFromStoredConfig, type TemplatePresetId } from '@/lib/ema
 import { mergeEmployeeSocialIntoOrgBrand } from '@/lib/renderEmployeeSignature';
 import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
+import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -330,6 +331,19 @@ function EmployeeDetailPageContent() {
   if (error && !firstName) return <p className="text-sm text-destructive">{error}</p>;
 
   const canCopy =
+    isOrganizationPaid(
+      org
+        ? {
+            subscriptionStatus: org.subscriptionStatus as
+              | 'none'
+              | 'active'
+              | 'trialing'
+              | 'past_due'
+              | 'canceled'
+              | 'incomplete',
+          }
+        : null
+    ) &&
     Boolean(profile.firstName.trim() && profile.lastName.trim() && profile.email.trim() && previewHtml.trim());
 
   async function handleApplyGmail() {

@@ -1,10 +1,9 @@
 import type { OrganizationDoc } from '@/models/Organization';
 import { getBillingEntitlements } from '@/lib/billing/entitlements';
+import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
 
 export function canUsePaidFeatures(org: OrganizationDoc | null): boolean {
-  if (!org) return false;
-  if (!process.env.STRIPE_SECRET_KEY) return true;
-  return org.subscriptionStatus === 'active' || org.subscriptionStatus === 'trialing';
+  return isOrganizationPaid(org);
 }
 
 export function isProPlan(org: OrganizationDoc | null): boolean {

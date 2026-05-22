@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
+import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
 import { connectMongoose } from '@/lib/mongoose';
+import { OrganizationModel } from '@/models/Organization';
 import { verifySignatureTrackingToken, isAllowedTrackingDestination } from '@/lib/signatureTrackingToken';
 import { getSignatureTrackingSecret } from '@/lib/signatureTrackingSecret';
 import { SignatureClickEventModel } from '@/models/SignatureClickEvent';
@@ -26,8 +28,16 @@ export async function GET(request: Request) {
     return NextResponse.redirect(fallback, 302);
   }
 
+  await connectMongoose();
+  const org = await OrganizationModel.findById(payload.oid)
+    .select('subscriptionStatus')
+    .lean<{ subscriptionStatus?: string }>();
+  if (!isOrganizationPaid(org)) {
+    const billingUrl = new URL('/dashboard/billing', url.origin).toString();
+    return NextResponse.redirect(billingUrl, 302);
+  }
+
   try {
-    await connectMongoose();
     await SignatureClickEventModel.create({
       organizationId: new mongoose.Types.ObjectId(payload.oid),
       employeeId: payload.eid ? new mongoose.Types.ObjectId(payload.eid) : undefined,
@@ -36,7 +46,7 @@ export async function GET(request: Request) {
       referer: request.headers.get('referer')?.slice(0, 500) || '',
     });
   } catch {
-    // Still redirect so recipients are not stranded.
+    // Still redirect so recipients are not stranded when analytics write fails.
   }
 
   return NextResponse.redirect(payload.d, 302);

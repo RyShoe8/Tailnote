@@ -1,14 +1,27 @@
 import { ContactForm } from '@/components/marketing/ContactForm';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { contactPageJsonLd } from '@/lib/seo/jsonLd';
+import { createPageMetadata } from '@/lib/seo/metadata';
+import { marketingPageByKey } from '@/lib/seo/marketingPages';
 
-export const metadata = {
-  title: 'Contact us — Tailnote',
-  description:
-    'Get in touch with the Tailnote team. We reply at the email you provide — usually within one business day.',
-};
+const contactPage = marketingPageByKey('contact');
+
+export const metadata = createPageMetadata({
+  title: contactPage.title,
+  description: contactPage.description,
+  path: contactPage.path,
+});
 
 export default function ContactPage() {
   return (
     <div className="relative isolate">
+      <JsonLd
+        data={contactPageJsonLd({
+          path: contactPage.path,
+          name: contactPage.title,
+          description: contactPage.description,
+        })}
+      />
       <div
         aria-hidden
         className="tn-grad-bg-soft pointer-events-none absolute inset-x-0 -top-20 -z-10 h-[24rem]"

@@ -1,17 +1,35 @@
 import { MarketingDocPage } from '@/components/marketing/MarketingDocPage';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { LEGAL_LAST_UPDATED, termsContent } from '@/lib/marketing/legalContent';
+import { webPageJsonLd } from '@/lib/seo/jsonLd';
+import { createPageMetadata } from '@/lib/seo/metadata';
+import { marketingPageByKey } from '@/lib/seo/marketingPages';
 
-export const metadata = {
-  title: 'Terms and Conditions — Tailnote',
-};
+const termsPage = marketingPageByKey('terms');
+
+export const metadata = createPageMetadata({
+  title: termsPage.title,
+  description: termsPage.description,
+  path: termsPage.path,
+});
 
 export default function TermsPage() {
   return (
-    <MarketingDocPage
+    <>
+      <JsonLd
+        data={webPageJsonLd({
+          path: termsPage.path,
+          name: termsContent.title,
+          description: termsPage.description,
+          dateModified: LEGAL_LAST_UPDATED,
+        })}
+      />
+      <MarketingDocPage
       title={termsContent.title}
       lastUpdated={LEGAL_LAST_UPDATED}
       intro={termsContent.intro}
       sections={termsContent.sections}
     />
+    </>
   );
 }

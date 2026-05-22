@@ -15,4 +15,5 @@ export {
   type CatalogPresetId,
 } from './SignaturePresetCatalog';
 export { StripeWebhookEventModel, type StripeWebhookEventDoc } from './StripeWebhookEvent';
+export { BillingNotificationModel, type BillingNotificationDoc } from './BillingNotification';
 export { FeedbackSubmissionModel, type FeedbackSubmissionDoc } from './FeedbackSubmission';

@@ -1,6 +1,9 @@
 import { redirect } from 'next/navigation';
 import { getServerSession } from '@/lib/auth/session';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
+import { NOINDEX_METADATA } from '@/lib/seo/metadata';
+
+export const metadata = NOINDEX_METADATA;
 
 export const dynamic = 'force-dynamic';
 

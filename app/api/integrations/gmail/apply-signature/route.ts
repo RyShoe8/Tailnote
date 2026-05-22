@@ -4,6 +4,8 @@ import { connectMongoose } from '@/lib/mongoose';
 import { getServerSession } from '@/lib/auth/session';
 import { decryptSecret } from '@/lib/secretCrypto';
 import { patchGmailSignature } from '@/lib/gmailApi';
+import { OrganizationModel } from '@/models/Organization';
+import { assertOrganizationSubscriptionPaid } from '@/lib/dashboard/subscriptionRequired';
 import { GmailIntegrationModel } from '@/models/GmailIntegration';
 
 const BodySchema = z.object({
@@ -13,6 +15,7 @@ const BodySchema = z.object({
 
 type SessionUser = {
   id?: string;
+  organizationId?: string;
 };
 
 export async function POST(request: Request) {
@@ -38,6 +41,13 @@ export async function POST(request: Request) {
   }
 
   await connectMongoose();
+
+  if (user.organizationId) {
+    const org = await OrganizationModel.findById(user.organizationId);
+    const subErr = assertOrganizationSubscriptionPaid(org);
+    if (subErr) return subErr;
+  }
+
   const row = await GmailIntegrationModel.findOne({ userId: user.id }).lean();
   if (!row?.encryptedRefreshToken) {
     return NextResponse.json({ error: 'Gmail is not connected' }, { status: 400 });

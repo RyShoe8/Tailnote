@@ -2,14 +2,22 @@ import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { getPublicPricingPlans, type PublicPricingPlan } from '@/lib/billing/getPublicPricingPlans';
 import { CORE_PRODUCT_FEATURE_BULLETS } from '@/lib/marketing/productFeatures';
+import { softwareApplicationJsonLd, webPageJsonLd } from '@/lib/seo/jsonLd';
+import { createPageMetadata } from '@/lib/seo/metadata';
+import { marketingPageByKey } from '@/lib/seo/marketingPages';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Pricing — Tailnote',
-};
+const pricingPage = marketingPageByKey('pricing');
+
+export const metadata = createPageMetadata({
+  title: pricingPage.title,
+  description: pricingPage.description,
+  path: pricingPage.path,
+});
 
 function formatUsd(cents: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
@@ -90,6 +98,16 @@ export default async function PricingPage() {
 
   return (
     <div className="relative isolate">
+      <JsonLd
+        data={[
+          webPageJsonLd({
+            path: pricingPage.path,
+            name: pricingPage.title,
+            description: pricingPage.description,
+          }),
+          softwareApplicationJsonLd(),
+        ]}
+      />
       <div
         aria-hidden
         className="tn-grad-bg-soft pointer-events-none absolute inset-x-0 -top-20 -z-10 h-[28rem]"

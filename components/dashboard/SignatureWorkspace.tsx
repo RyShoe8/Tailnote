@@ -32,6 +32,7 @@ import {
 } from '@/lib/email/gmailSignatureHtml';
 import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
+import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
 
 type OrgResponse = {
   companyName?: string;
@@ -338,6 +339,19 @@ export function SignatureWorkspace() {
   const gmailPromosBlocked = gmailPromosStripped && hasEnabledPromoBlocks;
 
   const canCopy =
+    isOrganizationPaid(
+      org
+        ? {
+            subscriptionStatus: org.subscriptionStatus as
+              | 'none'
+              | 'active'
+              | 'trialing'
+              | 'past_due'
+              | 'canceled'
+              | 'incomplete',
+          }
+        : null
+    ) &&
     Boolean(profile.firstName.trim() && profile.lastName.trim() && profile.email.trim() && engineTemplate);
 
   const handleSaveProfile = async () => {

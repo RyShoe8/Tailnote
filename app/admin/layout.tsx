@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from '@/lib/auth/session';
 import { isPlatformAdmin } from '@/lib/auth/platformAdmin';
 import { AdminHeaderNav } from '@/components/admin/AdminHeaderNav';
+import { NOINDEX_METADATA } from '@/lib/seo/metadata';
+
+export const metadata = NOINDEX_METADATA;
 
 export const dynamic = 'force-dynamic';
 

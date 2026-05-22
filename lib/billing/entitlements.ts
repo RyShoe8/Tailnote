@@ -1,4 +1,5 @@
 import type { OrganizationDoc } from '@/models/Organization';
+import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
 import { MAX_TEMPLATES_BASIC } from '@/lib/stripe/config';
 
 export type BillingEntitlements = {
@@ -9,18 +10,10 @@ export type BillingEntitlements = {
 
 const FULL_MAX_TEMPLATES = 10;
 
-function hasPaidSubscription(
-  org: Pick<OrganizationDoc, 'subscriptionStatus'> | null | undefined
-): boolean {
-  if (!org) return false;
-  if (!process.env.STRIPE_SECRET_KEY) return true;
-  return org.subscriptionStatus === 'active' || org.subscriptionStatus === 'trialing';
-}
-
 export function getBillingEntitlements(
   org: Pick<OrganizationDoc, 'plan' | 'subscriptionStatus'> | null | undefined
 ): BillingEntitlements {
-  const paid = hasPaidSubscription(org);
+  const paid = isOrganizationPaid(org);
   if (!paid) {
     return {
       isPro: false,

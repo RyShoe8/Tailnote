@@ -1,21 +1,16 @@
 import { Inter } from 'next/font/google';
-import type { Metadata, Viewport } from 'next';
+import type { Viewport } from 'next';
 import Script from 'next/script';
 import './globals.css';
 import Providers from '@/components/Providers';
+import { rootLayoutMetadata } from '@/lib/seo/metadata';
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-geist-sans',
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: 'Tailnote',
-    template: '%s — Tailnote',
-  },
-  description: 'Professional email signatures for modern teams.',
-};
+export const metadata = rootLayoutMetadata();
 
 export const viewport: Viewport = {
   width: 'device-width',

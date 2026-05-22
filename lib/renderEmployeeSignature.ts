@@ -5,11 +5,14 @@ import type { OrganizationDoc } from '@/models/Organization';
 import type { EmployeeDoc } from '@/models/Employee';
 import type { SignatureTemplateDoc } from '@/models/SignatureTemplate';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
+import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
 import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
 import { appendSignatureClickTrackingIfEnabled } from '@/lib/signatureTrackingHtml';
 
 /** Default UTM parameters for Tailnote signatures. */
 const DEFAULT_UTM = { source: 'Tailnote', medium: 'Email', campaign: 'Footer' };
+
+const INACTIVE_SUBSCRIPTION_HTML = `<p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:#666666;">Tailnote subscription inactive.</p>`;
 
 export function orgToBrandInput(org: OrganizationDoc, contentBlocks?: ContentBlockData[]): OrgBrandInput {
   const sl = org.socialLinks as
@@ -83,6 +86,10 @@ export function renderSignatureForEmployee(
   tmpl: SignatureTemplateDoc,
   options?: { publicSiteOrigin?: string }
 ): string {
+  if (!isOrganizationPaid(org)) {
+    return INACTIVE_SUBSCRIPTION_HTML;
+  }
+
   const presetId = tmpl.presetId as TemplatePresetId;
   const includeAnimation = shouldIncludeSignatureAnimation(org, tmpl);
   const template = engineTemplateFromStoredConfig({

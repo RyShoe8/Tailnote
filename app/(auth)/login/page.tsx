@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 
 function LoginForm() {
@@ -110,8 +111,11 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="text-sm text-muted-foreground">Loading…</div>}>
-      <LoginForm />
-    </Suspense>
+    <>
+      <AuthBrandHeader />
+      <Suspense fallback={<div className="text-sm text-muted-foreground">Loading…</div>}>
+        <LoginForm />
+      </Suspense>
+    </>
   );
 }
