@@ -62,6 +62,16 @@ function SignupForm() {
         setError(formatSignupError(err.message || 'Sign up failed'));
         return;
       }
+      const { error: signInErr } = await authClient.signIn.email({
+        email,
+        password,
+      });
+      if (signInErr) {
+        setError(
+          'Account created, but sign-in failed. Try logging in with your email and password.'
+        );
+        return;
+      }
       if (inviteToken) {
         window.location.href = `/invite/${encodeURIComponent(inviteToken)}?accept=1`;
         return;

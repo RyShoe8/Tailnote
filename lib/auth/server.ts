@@ -92,6 +92,7 @@ export async function getAuth() {
       : {}),
     emailAndPassword: {
       enabled: true,
+      autoSignIn: false,
       sendResetPassword: async ({ user, url }) => {
         if (!isBrevoConfigured()) {
           if (process.env.NODE_ENV === 'development') {
