@@ -1,5 +1,5 @@
 const LEGACY_ORG_SLUG_INDEX_MESSAGE =
-  'Database still has a legacy organizations slug index. Run: npx tsx scripts/drop-legacy-organization-slug-index.ts';
+  'A legacy organizations slug index is still present in this database.';
 
 export function isLegacyOrganizationSlugIndexError(err: unknown): boolean {
   if (!err || typeof err !== 'object') return false;

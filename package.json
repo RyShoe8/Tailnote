@@ -12,7 +12,6 @@
     "lint": "next lint",
     "seed": "npx tsx scripts/seed.ts",
     "migrate:legacy": "npx tsx scripts/migrate-legacy.ts",
-    "migrate:org-slug-index": "npx tsx scripts/drop-legacy-organization-slug-index.ts",
     "verify:signature": "npm run email-client-smoke --workspace=emailsignature-engine && npx tsx scripts/vcard-smoke.ts",
     "verify:list-tracking": "npx tsx scripts/signature-tracking-list-smoke.ts",
     "verify:gmail-signature": "npx tsx scripts/gmail-signature-html-smoke.ts",

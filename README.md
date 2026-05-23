@@ -21,5 +21,3 @@ Auth is **Better Auth** (`/api/auth/*`). Marketing routes: `/`, `/pricing`, `/te
 - `npm run verify:signature` — workspace smoke script for the signature engine
 
 These do not run on **Vercel** during deploy by default. Run only with a deliberate `MONGODB_URI` aligned with your **Vercel** **Production** (or staging **Preview**) secrets — see **SETUP.md**.
-
-If you upgraded from a build that stored **`slug`** on organizations, drop the legacy index once against your database (same `MONGODB_URI` as production): `npm run migrate:org-slug-index` or `npx tsx scripts/drop-legacy-organization-slug-index.ts`.
