@@ -12,6 +12,8 @@ export type AdminOrgRow = {
   plan: string;
   /** Human-readable pinned or resolved plan name */
   planDisplayName: string;
+  /** Pinned SubscriptionPlan document id, or empty string */
+  subscriptionPlanId: string;
   subscriptionStatus: string;
   createdAt?: Date;
   userCount: number;
@@ -128,6 +130,7 @@ export async function listOrganizationsWithUserCounts(): Promise<AdminOrgRow[]> 
       name: String(o.name ?? ''),
       plan: legacyPlan,
       planDisplayName,
+      subscriptionPlanId: pinned?._id ? String(pinned._id) : '',
       subscriptionStatus: String(o.subscriptionStatus ?? 'none'),
       createdAt: o.createdAt,
       userCount,

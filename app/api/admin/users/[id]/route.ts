@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import {
+  DeleteOrganizationUserError,
+  deleteOrganizationUser,
+} from '@/lib/admin/deleteOrganizationUser';
 import { requirePlatformAdminApi } from '@/lib/admin/platformAdminApi';
 import { AUTH_USER_COLLECTION, authUserDbFilterBySessionId } from '@/lib/auth/platformAdmin';
 import { connectMongoose, getMongoDb } from '@/lib/mongoose';
@@ -53,4 +57,24 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
   const user = await db.collection(AUTH_USER_COLLECTION).findOne(filter);
   return NextResponse.json({ user });
+}
+
+export async function DELETE(_request: Request, { params }: RouteParams) {
+  const denied = await requirePlatformAdminApi();
+  if (denied) return denied;
+  const { id: targetUserId } = await params;
+  if (!targetUserId?.trim()) {
+    return NextResponse.json({ error: 'Invalid user id' }, { status: 400 });
+  }
+
+  try {
+    await deleteOrganizationUser(targetUserId);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    if (err instanceof DeleteOrganizationUserError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    console.error('[admin] delete user', err);
+    return NextResponse.json({ error: 'Could not delete user' }, { status: 500 });
+  }
 }
