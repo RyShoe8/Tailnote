@@ -11,6 +11,10 @@ import { seedDefaultTemplates } from '@/lib/seedOrgTemplates';
 import { ensureOwnerEmployee } from '@/lib/employees/ensureOwnerEmployee';
 import { isValidObjectIdString } from '@/lib/admin/data';
 import {
+  legacyOrganizationSlugIndexMessage,
+  mapLegacyOrganizationSlugIndexError,
+} from '@/lib/admin/mongoErrors';
+import {
   createCheckoutSessionForOrganization,
   validatePlanForCheckout,
   CheckoutSessionError,
@@ -85,11 +89,20 @@ export async function POST(request: Request) {
       throw e;
     }
 
-    const org = await OrganizationModel.create({
-      name: parsed.data.name,
-      companyName: parsed.data.name,
-      subscriptionStatus: 'incomplete',
-    });
+    let org;
+    try {
+      org = await OrganizationModel.create({
+        name: parsed.data.name,
+        companyName: parsed.data.name,
+        subscriptionStatus: 'incomplete',
+      });
+    } catch (err) {
+      const legacySlug = mapLegacyOrganizationSlugIndexError(err);
+      if (legacySlug) {
+        return NextResponse.json({ error: legacyOrganizationSlugIndexMessage() }, { status: 503 });
+      }
+      throw err;
+    }
 
     try {
       await seedDefaultTemplates(org._id);
@@ -129,17 +142,27 @@ export async function POST(request: Request) {
     } catch (err) {
       console.error('[onboarding] organization setup failed', err);
       await rollbackOrg(org._id);
-      const message =
-        err instanceof CheckoutSessionError
+      const legacySlug = mapLegacyOrganizationSlugIndexError(err);
+      const message = legacySlug
+        ? legacyOrganizationSlugIndexMessage()
+        : err instanceof CheckoutSessionError
           ? err.message
           : err instanceof Error
             ? err.message
             : 'Could not create organization';
-      const status = err instanceof CheckoutSessionError ? err.status : 500;
+      const status = legacySlug
+        ? 503
+        : err instanceof CheckoutSessionError
+          ? err.status
+          : 500;
       return NextResponse.json({ error: message }, { status });
     }
   } catch (err) {
     console.error('[onboarding] unhandled error', err);
+    const legacySlug = mapLegacyOrganizationSlugIndexError(err);
+    if (legacySlug) {
+      return NextResponse.json({ error: legacyOrganizationSlugIndexMessage() }, { status: 503 });
+    }
     return NextResponse.json({ error: 'Could not create organization' }, { status: 500 });
   }
 }

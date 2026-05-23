@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 import { isValidObjectIdString } from '@/lib/admin/data';
 import { assignOrganizationPlan } from '@/lib/admin/assignOrganizationPlan';
+import {
+  legacyOrganizationSlugIndexMessage,
+  mapLegacyOrganizationSlugIndexError,
+} from '@/lib/admin/mongoErrors';
 import { connectMongoose } from '@/lib/mongoose';
 import { seedDefaultTemplates } from '@/lib/seedOrgTemplates';
 import { OrganizationModel } from '@/models/Organization';
@@ -31,12 +35,21 @@ export async function provisionOrganization(
   const subscriptionStatus =
     input.subscriptionStatus ?? (hasPlan ? 'active' : 'none');
 
-  const org = await OrganizationModel.create({
-    name: input.name.trim(),
-    companyName: input.name.trim(),
-    subscriptionStatus,
-    plan: hasPlan ? undefined : 'none',
-  });
+  let org;
+  try {
+    org = await OrganizationModel.create({
+      name: input.name.trim(),
+      companyName: input.name.trim(),
+      subscriptionStatus,
+      plan: hasPlan ? undefined : 'none',
+    });
+  } catch (err) {
+    const legacySlug = mapLegacyOrganizationSlugIndexError(err);
+    if (legacySlug) {
+      throw new ProvisionOrganizationError(legacyOrganizationSlugIndexMessage(), 503);
+    }
+    throw err;
+  }
 
   try {
     await seedDefaultTemplates(org._id);
@@ -65,6 +78,10 @@ export async function provisionOrganization(
   } catch (err) {
     await OrganizationModel.findByIdAndDelete(org._id);
     if (err instanceof ProvisionOrganizationError) throw err;
+    const legacySlug = mapLegacyOrganizationSlugIndexError(err);
+    if (legacySlug) {
+      throw new ProvisionOrganizationError(legacyOrganizationSlugIndexMessage(), 503);
+    }
     const message = err instanceof Error ? err.message : 'Could not provision organization';
     throw new ProvisionOrganizationError(message, 400);
   }

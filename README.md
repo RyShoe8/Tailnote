@@ -22,4 +22,4 @@ Auth is **Better Auth** (`/api/auth/*`). Marketing routes: `/`, `/pricing`, `/te
 
 These do not run on **Vercel** during deploy by default. Run only with a deliberate `MONGODB_URI` aligned with your **Vercel** **Production** (or staging **Preview**) secrets — see **SETUP.md**.
 
-If you upgraded from a build that stored **`slug`** on organizations, drop the old index in MongoDB if it remains (e.g. `db.organizations.dropIndex("slug_1")` when the field is gone). Optionally remove leftover values: `db.organizations.updateMany({}, { $unset: { slug: "" } })`.
+If you upgraded from a build that stored **`slug`** on organizations, drop the legacy index once against your database (same `MONGODB_URI` as production): `npm run migrate:org-slug-index` or `npx tsx scripts/drop-legacy-organization-slug-index.ts`.
