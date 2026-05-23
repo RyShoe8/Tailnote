@@ -5,36 +5,19 @@
  * Or: npm run migrate:org-slug-index
  */
 import mongoose from 'mongoose';
-import { connectMongoose } from '../lib/mongoose';
-import { OrganizationModel } from '../models/Organization';
-
-const LEGACY_INDEX = 'slug_1';
+import { dropLegacyOrganizationSlugIndex } from '../lib/admin/dropLegacyOrganizationSlugIndex';
 
 async function main() {
-  await connectMongoose();
-  const collection = OrganizationModel.collection;
+  const result = await dropLegacyOrganizationSlugIndex();
 
-  const indexes = await collection.indexes();
-  const hasSlugIndex = indexes.some((idx) => idx.name === LEGACY_INDEX);
-
-  if (hasSlugIndex) {
-    try {
-      await collection.dropIndex(LEGACY_INDEX);
-      console.log(`[Tailnote] Dropped legacy index ${LEGACY_INDEX} on organizations.`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      if (!message.includes('index not found')) {
-        throw err;
-      }
-      console.log(`[Tailnote] Index ${LEGACY_INDEX} was already removed.`);
-    }
+  if (result.droppedSlugIndex) {
+    console.log('[Tailnote] Dropped legacy index slug_1 on organizations.');
   } else {
-    console.log(`[Tailnote] No ${LEGACY_INDEX} index on organizations — nothing to drop.`);
+    console.log('[Tailnote] No slug_1 index on organizations — nothing to drop.');
   }
 
-  const unsetResult = await collection.updateMany({}, { $unset: { slug: '' } });
   console.log(
-    `[Tailnote] Cleared slug field on ${unsetResult.modifiedCount} organization document(s).`
+    `[Tailnote] Cleared slug field on ${result.clearedSlugCount} organization document(s).`
   );
 
   await mongoose.disconnect();

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { AdminCreateOrganizationForm } from '@/components/admin/AdminCreateOrganizationForm';
+import { AdminDropLegacySlugIndexButton } from '@/components/admin/AdminDropLegacySlugIndexButton';
 import { listAssignableSubscriptionPlans, listOrganizationsWithUserCounts } from '@/lib/admin/data';
 
 export const dynamic = 'force-dynamic';
@@ -21,6 +22,7 @@ export default async function AdminOrganizationsPage() {
         </div>
         <AdminCreateOrganizationForm assignablePlans={assignablePlans} />
       </div>
+      <AdminDropLegacySlugIndexButton />
       <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <div className="overflow-x-auto rounded-md border min-w-0">
         <table className="w-full min-w-[36rem] text-sm">
