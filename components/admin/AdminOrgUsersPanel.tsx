@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import type { AdminOrgPlanContext, AdminUserRow } from '@/lib/admin/data';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Card,
@@ -40,6 +41,18 @@ export function AdminOrgUsersPanel({
       draftPlatformAdmin: u.platformAdmin,
     }))
   );
+
+  const [addEmail, setAddEmail] = useState('');
+  const [addName, setAddName] = useState('');
+  const [addPassword, setAddPassword] = useState('');
+  const [addRole, setAddRole] = useState<'owner' | 'admin' | 'member'>(() =>
+    initialUsers.some((u) => u.role === 'owner') ? 'member' : 'owner'
+  );
+  const [addSaving, setAddSaving] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [addSuccess, setAddSuccess] = useState<string | null>(null);
+
+  const hasOwner = rows.some((r) => (r.role || r.draftRole) === 'owner');
 
   const planDirty = useMemo(
     () => subscriptionPlanId !== (planContext.initialSubscriptionPlanId || NONE_PLAN_VALUE),
@@ -88,6 +101,51 @@ export function AdminOrgUsersPanel({
       return typeof j.error === 'string' ? j.error : 'Save failed';
     }
     return null;
+  }
+
+  async function addUser(e: React.FormEvent) {
+    e.preventDefault();
+    setAddSaving(true);
+    setAddError(null);
+    setAddSuccess(null);
+    try {
+      const res = await fetch(`/api/admin/organizations/${organizationId}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: addEmail.trim(),
+          name: addName.trim(),
+          password: addPassword,
+          role: addRole,
+        }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setAddError(typeof j.error === 'string' ? j.error : 'Could not create user');
+        return;
+      }
+      const user = j.user as AdminUserRow | undefined;
+      if (user?.id) {
+        setRows((prev) => [
+          ...prev,
+          {
+            ...user,
+            draftRole: user.role || 'member',
+            draftPlatformAdmin: user.platformAdmin,
+          },
+        ]);
+      }
+      setAddEmail('');
+      setAddName('');
+      setAddPassword('');
+      setAddRole(hasOwner ? 'member' : 'owner');
+      setAddSuccess('User created. Share the password securely; they can use Forgot password to change it later.');
+    } catch {
+      setAddError('Could not create user');
+    } finally {
+      setAddSaving(false);
+    }
   }
 
   return (
@@ -149,6 +207,78 @@ export function AdminOrgUsersPanel({
           <Button type="button" disabled={!planDirty || orgSaving} onClick={() => void savePlan()}>
             {orgSaving ? 'Saving…' : 'Save plan'}
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Add user</CardTitle>
+          <CardDescription>
+            Creates an email/password account linked to this organization. Minimum 8 characters for
+            the password.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={(e) => void addUser(e)} className="space-y-4 max-w-lg">
+            <div className="space-y-2">
+              <Label htmlFor="add-email">Email</Label>
+              <Input
+                id="add-email"
+                type="email"
+                value={addEmail}
+                onChange={(e) => setAddEmail(e.target.value)}
+                required
+                autoComplete="off"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-name">Name</Label>
+              <Input
+                id="add-name"
+                value={addName}
+                onChange={(e) => setAddName(e.target.value)}
+                required
+                maxLength={120}
+                autoComplete="off"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-password">Password</Label>
+              <Input
+                id="add-password"
+                type="password"
+                value={addPassword}
+                onChange={(e) => setAddPassword(e.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-role">Org role</Label>
+              <select
+                id="add-role"
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                value={addRole}
+                onChange={(e) => setAddRole(e.target.value as 'owner' | 'admin' | 'member')}
+              >
+                <option value="owner" disabled={hasOwner}>
+                  owner{hasOwner ? ' (already assigned)' : ''}
+                </option>
+                <option value="admin">admin</option>
+                <option value="member">member</option>
+              </select>
+            </div>
+            {addError ? (
+              <p className="text-sm text-destructive" role="alert">
+                {addError}
+              </p>
+            ) : null}
+            {addSuccess ? <p className="text-sm text-muted-foreground">{addSuccess}</p> : null}
+            <Button type="submit" disabled={addSaving}>
+              {addSaving ? 'Creating…' : 'Add user'}
+            </Button>
+          </form>
         </CardContent>
       </Card>
 

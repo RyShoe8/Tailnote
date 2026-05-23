@@ -1,16 +1,25 @@
 import Link from 'next/link';
-import { listOrganizationsWithUserCounts } from '@/lib/admin/data';
+import { AdminCreateOrganizationForm } from '@/components/admin/AdminCreateOrganizationForm';
+import { listAssignableSubscriptionPlans, listOrganizationsWithUserCounts } from '@/lib/admin/data';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminOrganizationsPage() {
-  const organizations = await listOrganizationsWithUserCounts();
+  const [organizations, assignablePlans] = await Promise.all([
+    listOrganizationsWithUserCounts(),
+    listAssignableSubscriptionPlans(),
+  ]);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold tracking-tight">Organizations</h2>
-        <p className="text-sm text-muted-foreground mt-1">Open an organization to view users, roles, and plans.</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight">Organizations</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Create organizations or open one to manage users, roles, and plans.
+          </p>
+        </div>
+        <AdminCreateOrganizationForm assignablePlans={assignablePlans} />
       </div>
       <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <div className="overflow-x-auto rounded-md border min-w-0">
