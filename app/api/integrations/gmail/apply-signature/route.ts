@@ -7,6 +7,11 @@ import { patchGmailSignature } from '@/lib/gmailApi';
 import { OrganizationModel } from '@/models/Organization';
 import { assertOrganizationSubscriptionPaid } from '@/lib/dashboard/subscriptionRequired';
 import { GmailIntegrationModel } from '@/models/GmailIntegration';
+import {
+  canonicalSessionUserId,
+  findGmailIntegrationForSessionUser,
+  isGmailIntegrationConnected,
+} from '@/lib/integrations/gmailIntegration';
 
 const BodySchema = z.object({
   html: z.string().min(1).max(900_000),
@@ -48,8 +53,13 @@ export async function POST(request: Request) {
     if (subErr) return subErr;
   }
 
-  const row = await GmailIntegrationModel.findOne({ userId: user.id }).lean();
-  if (!row?.encryptedRefreshToken) {
+  const sessionUserId = canonicalSessionUserId(user.id);
+  if (!sessionUserId) {
+    return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
+  }
+
+  const row = await findGmailIntegrationForSessionUser(sessionUserId);
+  if (!row || !isGmailIntegrationConnected(row)) {
     return NextResponse.json({ error: 'Gmail is not connected' }, { status: 400 });
   }
 
@@ -65,7 +75,7 @@ export async function POST(request: Request) {
   try {
     const { sendAsEmail } = await patchGmailSignature(refreshToken, parsed.data.html);
     await GmailIntegrationModel.updateOne(
-      { userId: user.id },
+      { userId: sessionUserId },
       { $set: { applyToReplies } }
     );
     return NextResponse.json({ ok: true, sendAsEmail, applyToReplies });

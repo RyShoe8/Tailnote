@@ -1,3 +1,4 @@
+import '@/lib/billing-engine';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { randomBytes } from 'crypto';
@@ -9,12 +10,12 @@ import { SignatureTemplateModel } from '@/models/SignatureTemplate';
 import { canUsePaidFeatures } from '@/lib/orgAccess';
 import { getDefaultTemplateForOrg } from '@/lib/seedOrgTemplates';
 import { findOrgTemplateWithAvailablePreset } from '@/lib/templates/validateOrgTemplate';
-import { syncStripeSubscriptionSeatsForOrganization } from '@/lib/stripe/syncSubscriptionSeats';
+import { syncStripeSubscriptionSeatsForOrganization } from 'billing-engine';
 import {
   assertCanAddEmployee,
   EmployeeLimitReachedError,
   getEmployeeLimitsForOrganization,
-} from '@/lib/billing/employeeLimits';
+} from 'billing-engine';
 import { nameFromEmail } from '@/lib/employees/nameFromEmail';
 import { generateInviteToken, inviteExpiresAtFromNow } from '@/lib/employees/inviteToken';
 import { sendEmployeeInvite } from '@/lib/employees/sendEmployeeInvite';

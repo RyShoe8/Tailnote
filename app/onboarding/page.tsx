@@ -1,11 +1,12 @@
+import '@/lib/billing-engine';
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { OnboardingForm } from '@/components/onboarding/OnboardingForm';
 import { getServerSession } from '@/lib/auth/session';
 import { connectMongoose } from '@/lib/mongoose';
-import { getPublicPricingPlans } from '@/lib/billing/getPublicPricingPlans';
+import { getPublicPricingPlans } from 'billing-engine';
 import { OrganizationModel } from '@/models/Organization';
-import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
+import { isOrganizationPaid } from 'billing-engine';
 import { findPendingInviteByEmail } from '@/lib/employees/findPendingInviteByEmail';
 
 export const dynamic = 'force-dynamic';

@@ -1,11 +1,12 @@
+import '@/lib/billing-engine';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PricingPlanCard } from '@/components/billing/PricingPlanCard';
+import { PricingPlanCard } from 'billing-engine/next/components';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { FloatingOrbs } from '@/components/marketing/FloatingOrbs';
 import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
-import { getPublicPricingPlans } from '@/lib/billing/getPublicPricingPlans';
-import { isRecommendedPlan } from '@/lib/billing/pricingPlanDisplay';
+import { getPublicPricingPlans } from 'billing-engine';
+import { isRecommendedPlan } from 'billing-engine';
 import { softwareApplicationJsonLd, webPageJsonLd } from '@/lib/seo/jsonLd';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { marketingPageByKey } from '@/lib/seo/marketingPages';

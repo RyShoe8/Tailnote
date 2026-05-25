@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { connectMongoose } from '@/lib/mongoose';
 import { SubscriptionPlanModel, type SubscriptionPlanDoc } from '@/models/SubscriptionPlan';
-import { getPlanSubscriptionCapUsage } from '@/lib/billing/planSubscriptionCap';
-import { AdminPlansTable, type PlanRow } from '@/components/admin/AdminPlansTable';
+import { getPlanSubscriptionCapUsage } from 'billing-engine';
+import { AdminPlansTable, type PlanRow } from 'billing-engine/next/components';
 
 export const dynamic = 'force-dynamic';
 

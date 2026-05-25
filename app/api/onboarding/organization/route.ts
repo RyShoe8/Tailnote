@@ -1,3 +1,4 @@
+import '@/lib/billing-engine';
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { z } from 'zod';
@@ -18,8 +19,8 @@ import {
   createCheckoutSessionForOrganization,
   validatePlanForCheckout,
   CheckoutSessionError,
-} from '@/lib/billing/createCheckoutSession';
-import { stripeBillingEnabled } from '@/lib/billing/subscriptionAccess';
+} from 'billing-engine';
+import { stripeBillingEnabled } from 'billing-engine';
 import { linkUserToOrganization } from '@/lib/onboarding/linkUserToOrganization';
 import { getAppBaseUrl } from '@/lib/email/appUrl';
 

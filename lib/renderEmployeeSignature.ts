@@ -5,7 +5,7 @@ import type { OrganizationDoc } from '@/models/Organization';
 import type { EmployeeDoc } from '@/models/Employee';
 import type { SignatureTemplateDoc } from '@/models/SignatureTemplate';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
-import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
+import { isOrganizationPaid } from 'billing-engine';
 import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
 import { appendSignatureClickTrackingIfEnabled } from '@/lib/signatureTrackingHtml';
 import { vcardDownloadUrl } from '@/lib/vcard/vcardDownloadUrl';

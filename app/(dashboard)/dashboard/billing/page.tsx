@@ -12,10 +12,10 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { AccountSecurityCard } from '@/components/dashboard/AccountSecurityCard';
-import { PricingPlanCard } from '@/components/billing/PricingPlanCard';
-import type { PublicPricingPlan } from '@/lib/billing/getPublicPricingPlans';
-import type { EmployeeLimitInfo } from '@/lib/billing/employeeLimits';
-import { formatUsd, intervalSuffix } from '@/lib/billing/pricingPlanDisplay';
+import { PricingPlanCard } from 'billing-engine/next/components';
+import type { PublicPricingPlan } from 'billing-engine';
+import type { EmployeeLimitInfo } from 'billing-engine';
+import { formatUsd, intervalSuffix } from 'billing-engine';
 
 type BillingSummary = {
   renewsAt?: string | null;

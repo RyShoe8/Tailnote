@@ -50,7 +50,14 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   if (!employee) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
-  return NextResponse.json({ employee });
+  return NextResponse.json({
+    employee,
+    viewer: {
+      id: user.id ?? '',
+      email: (session.user as { email?: string }).email ?? '',
+      role: user.role ?? 'member',
+    },
+  });
 }
 
 const ContentBlockListItemSchema = z.object({

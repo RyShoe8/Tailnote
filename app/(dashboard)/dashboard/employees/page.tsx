@@ -1,10 +1,11 @@
+import '@/lib/billing-engine';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getServerSession } from '@/lib/auth/session';
 import { connectMongoose } from '@/lib/mongoose';
 import { EmployeeModel } from '@/models/Employee';
 import { Button } from '@/components/ui/button';
-import { getEmployeeLimitsForOrganization } from '@/lib/billing/employeeLimits';
+import { getEmployeeLimitsForOrganization } from 'billing-engine';
 import { EmployeesList, type EmployeeListItem } from '@/components/dashboard/EmployeesList';
 
 export default async function EmployeesPage() {

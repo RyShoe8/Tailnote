@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import type { PublicPricingPlan } from '@/lib/billing/getPublicPricingPlans';
+import type { PublicPricingPlan } from 'billing-engine';
 import { CORE_PRODUCT_FEATURE_BULLETS } from '@/lib/marketing/productFeatures';
 
 type OnboardingFormProps = {

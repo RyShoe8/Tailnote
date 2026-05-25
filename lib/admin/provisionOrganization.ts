@@ -1,6 +1,7 @@
+import '@/lib/billing-engine';
 import mongoose from 'mongoose';
 import { isValidObjectIdString } from '@/lib/admin/data';
-import { assignOrganizationPlan } from '@/lib/admin/assignOrganizationPlan';
+import { assignOrganizationPlan } from 'billing-engine';
 import {
   legacyOrganizationSlugIndexMessage,
   mapLegacyOrganizationSlugIndexError,

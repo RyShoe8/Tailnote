@@ -34,7 +34,7 @@ import {
 } from '@/lib/email/gmailSignatureHtml';
 import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
-import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
+import { isOrganizationPaid } from 'billing-engine';
 
 type OrgResponse = {
   companyName?: string;
@@ -133,6 +133,7 @@ export function SignatureWorkspace() {
   const [gmailBusy, setGmailBusy] = useState(false);
   const [gmailMessage, setGmailMessage] = useState<string | null>(null);
   const [gmailApplyToReplies, setGmailApplyToReplies] = useState(true);
+  const [tailnoteLoginEmail, setTailnoteLoginEmail] = useState('');
   /** Server-rendered HTML with signed tracking URLs when org flag is on. */
   const [trackedHtml, setTrackedHtml] = useState<string | null>(null);
   /** Bumps after mount so signature HTML re-renders with real `window` origin (SSR memo used localhost). */
@@ -153,6 +154,9 @@ export function SignatureWorkspace() {
       const pJson = await pRes.json().catch(() => ({}));
       if (typeof oJson.viewer?.role === 'string') {
         setViewerRole(oJson.viewer.role);
+      }
+      if (typeof oJson.viewer?.email === 'string') {
+        setTailnoteLoginEmail(oJson.viewer.email);
       }
       if (oJson.permissions && typeof oJson.permissions === 'object') {
         const p = oJson.permissions as OrgPermissions;
@@ -197,6 +201,9 @@ export function SignatureWorkspace() {
         setGmailConnected(false);
         setGmailEmail('');
         setGmailApplyToReplies(true);
+        if (gJson.stale) {
+          setGmailMessage('Previous Gmail link was incomplete. Connect again to link this Tailnote login.');
+        }
       }
       if (pJson.profile && typeof pJson.profile === 'object') {
         const sp = pJson.profile as Partial<SignatureProfile>;
@@ -952,6 +959,14 @@ export function SignatureWorkspace() {
           <CardContent className="space-y-4">
             <div className="rounded-md border p-4 space-y-3">
               <p className="text-sm font-medium">Gmail</p>
+              {tailnoteLoginEmail ? (
+                <p className="text-xs text-muted-foreground">
+                  Tailnote login: <span className="font-medium text-foreground">{tailnoteLoginEmail}</span>
+                  {gmailConnected && gmailEmail
+                    ? ` · Linked Gmail: ${gmailEmail}`
+                    : ' · No Gmail linked for this login yet'}
+                </p>
+              ) : null}
               <p
                 className={
                   gmailOverLimit || gmailPromosBlocked

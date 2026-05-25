@@ -3,7 +3,7 @@ import { getServerSession } from '@/lib/auth/session';
 import { connectMongoose } from '@/lib/mongoose';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import { CheckoutSuccessBanner } from '@/components/dashboard/CheckoutSuccessBanner';
-import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
+import { isOrganizationPaid } from 'billing-engine';
 import { OrganizationModel } from '@/models/Organization';
 import { NOINDEX_METADATA } from '@/lib/seo/metadata';
 

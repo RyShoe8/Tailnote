@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth/session';
 import { signGmailOAuthState } from '@/lib/gmailOAuthState';
+import { canonicalSessionUserId } from '@/lib/integrations/gmailIntegration';
 import { getGoogleRedirectUri } from '@/lib/gmailApi';
 
 const SCOPE = 'https://www.googleapis.com/auth/gmail.settings.basic';
@@ -18,7 +19,12 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  const state = signGmailOAuthState(session.user.id);
+  const sessionUserId = canonicalSessionUserId(session.user.id);
+  if (!sessionUserId) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  const state = signGmailOAuthState(sessionUserId);
   const redirectUri = getGoogleRedirectUri();
   const params = new URLSearchParams({
     client_id: clientId,

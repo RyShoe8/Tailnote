@@ -74,6 +74,9 @@ function EmployeeDetailPageContent() {
   const [gmailBusy, setGmailBusy] = useState(false);
   const [installMessage, setInstallMessage] = useState<string | null>(null);
   const [gmailApplyToReplies, setGmailApplyToReplies] = useState(true);
+  const [viewerId, setViewerId] = useState('');
+  const [viewerEmail, setViewerEmail] = useState('');
+  const [employeeUserId, setEmployeeUserId] = useState('');
   /** Server HTML with signed tracking URLs when org enables analytics. */
   const [trackedHtml, setTrackedHtml] = useState<string | null>(null);
   /** Bumps after mount so signature HTML re-renders with real `window` origin (SSR memo used localhost). */
@@ -96,6 +99,11 @@ function EmployeeDetailPageContent() {
         return;
       }
       const e = empJson.employee;
+      setEmployeeUserId(e.userId ? String(e.userId) : '');
+      if (empJson.viewer && typeof empJson.viewer === 'object') {
+        setViewerId(String(empJson.viewer.id ?? ''));
+        setViewerEmail(String(empJson.viewer.email ?? ''));
+      }
       setFirstName(e.firstName);
       setLastName(e.lastName);
       setTitle(e.title || '');
@@ -129,6 +137,11 @@ function EmployeeDetailPageContent() {
         setGmailConnected(false);
         setGmailEmail('');
         setGmailApplyToReplies(true);
+        if (gJson.stale) {
+          setInstallMessage(
+            'Previous Gmail link was incomplete. Connect again when signed in as this employee’s Tailnote account.'
+          );
+        }
       }
     } finally {
       setLoading(false);
@@ -281,6 +294,13 @@ function EmployeeDetailPageContent() {
   const gmailPromosStripped = gmailPrep.stackedPromosRemoved;
   const hasEnabledPromoBlocks = contentBlocks.some((b) => b.enabled);
   const gmailPromosBlocked = gmailPromosStripped && hasEnabledPromoBlocks;
+
+  const employeeLinkedUserId = employeeUserId.trim();
+  const sessionViewerId = viewerId.trim();
+  const gmailInstallBlockedForOtherUser =
+    employeeLinkedUserId.length > 0 &&
+    sessionViewerId.length > 0 &&
+    employeeLinkedUserId !== sessionViewerId;
 
   const previewUrl = useMemo(() => {
     if (!previewToken) return '';
@@ -578,51 +598,78 @@ function EmployeeDetailPageContent() {
                 uses the full template layout for each mail client.
               </p>
               {installMessage && <p className="text-xs text-muted-foreground">{installMessage}</p>}
-              {gmailConnected ? (
-                <>
-                  <p className="text-xs text-muted-foreground">
-                    Connected{gmailEmail ? ` as ${gmailEmail}` : ''}.
-                  </p>
-                  <div className="flex items-start gap-3 rounded-md border border-dashed p-3">
-                    <input
-                      id="employee-gmail-apply-replies"
-                      type="checkbox"
-                      className="mt-1 h-4 w-4 rounded border-input"
-                      checked={gmailApplyToReplies}
-                      onChange={(e) => setGmailApplyToReplies(e.target.checked)}
-                      disabled={gmailBusy}
-                    />
-                    <div className="space-y-1">
-                      <Label htmlFor="employee-gmail-apply-replies" className="cursor-pointer font-normal leading-snug">
-                        Use this signature for replies and forwards (where Gmail allows)
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        Gmail&apos;s API sets the signature for new messages. Replies may need Signature defaults in
-                        Gmail Settings → General.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      disabled={gmailBusy || !canCopy || gmailOverLimit || gmailPromosBlocked}
-                      onClick={() => void handleApplyGmail()}
-                    >
-                      {gmailBusy ? 'Applying…' : 'Apply signature to Gmail'}
-                    </Button>
-                    <Button type="button" variant="outline" disabled={gmailBusy} onClick={() => void handleDisconnectGmail()}>
-                      Disconnect Gmail
-                    </Button>
-                  </div>
-                </>
+              {gmailInstallBlockedForOtherUser ? (
+                <p className="text-xs text-muted-foreground">
+                  Gmail is linked per Tailnote login, not per employee record. This employee must sign in with
+                  their own Tailnote account ({email}) to connect Gmail. Your login
+                  {viewerEmail ? ` (${viewerEmail})` : ''} cannot install to their inbox from this page.
+                </p>
               ) : (
                 <>
-                  <p className="text-xs text-muted-foreground">
-                    Connect your Google account once (also available on the organization Signature page).
-                  </p>
-                  <Button type="button" variant="secondary" asChild>
-                    <a href="/api/integrations/gmail/start">Connect Gmail</a>
-                  </Button>
+                  {viewerEmail ? (
+                    <p className="text-xs text-muted-foreground">
+                      Tailnote login: <span className="font-medium text-foreground">{viewerEmail}</span>
+                      {gmailConnected && gmailEmail
+                        ? ` · Linked Gmail: ${gmailEmail}`
+                        : ' · No Gmail linked for this login yet'}
+                    </p>
+                  ) : null}
+                  {gmailConnected ? (
+                    <>
+                      <p className="text-xs text-muted-foreground">
+                        Connected{gmailEmail ? ` as ${gmailEmail}` : ''}.
+                      </p>
+                      <div className="flex items-start gap-3 rounded-md border border-dashed p-3">
+                        <input
+                          id="employee-gmail-apply-replies"
+                          type="checkbox"
+                          className="mt-1 h-4 w-4 rounded border-input"
+                          checked={gmailApplyToReplies}
+                          onChange={(e) => setGmailApplyToReplies(e.target.checked)}
+                          disabled={gmailBusy}
+                        />
+                        <div className="space-y-1">
+                          <Label
+                            htmlFor="employee-gmail-apply-replies"
+                            className="cursor-pointer font-normal leading-snug"
+                          >
+                            Use this signature for replies and forwards (where Gmail allows)
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Gmail&apos;s API sets the signature for new messages. Replies may need Signature defaults
+                            in Gmail Settings → General.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          disabled={gmailBusy || !canCopy || gmailOverLimit || gmailPromosBlocked}
+                          onClick={() => void handleApplyGmail()}
+                        >
+                          {gmailBusy ? 'Applying…' : 'Apply signature to Gmail'}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={gmailBusy}
+                          onClick={() => void handleDisconnectGmail()}
+                        >
+                          Disconnect Gmail
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-muted-foreground">
+                        Connect Google for this Tailnote login, then apply this employee&apos;s signature to that
+                        Gmail account.
+                      </p>
+                      <Button type="button" variant="secondary" asChild>
+                        <a href="/api/integrations/gmail/start">Connect Gmail</a>
+                      </Button>
+                    </>
+                  )}
                 </>
               )}
             </div>

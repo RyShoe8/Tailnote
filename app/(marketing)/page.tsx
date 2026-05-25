@@ -1,3 +1,4 @@
+import '@/lib/billing-engine';
 import { HomeHero } from '@/components/marketing/HomeHero';
 import { HomeFeatures } from '@/components/marketing/HomeFeatures';
 import { HomeHowItWorks } from '@/components/marketing/HomeHowItWorks';
@@ -7,7 +8,7 @@ import { HomePricingTeaser } from '@/components/marketing/HomePricingTeaser';
 import { HomeFAQ } from '@/components/marketing/HomeFAQ';
 import { HomeFinalCta } from '@/components/marketing/HomeFinalCta';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { getPublicPricingPlans } from '@/lib/billing/getPublicPricingPlans';
+import { getPublicPricingPlans } from 'billing-engine';
 import { HOME_FAQS } from '@/lib/seo/homeFaq';
 import {
   faqPageJsonLd,

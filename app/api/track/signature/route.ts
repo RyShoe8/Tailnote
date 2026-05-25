@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
+import { isOrganizationPaid } from 'billing-engine';
 import { connectMongoose } from '@/lib/mongoose';
 import { OrganizationModel } from '@/models/Organization';
 import { verifySignatureTrackingToken, isAllowedTrackingDestination } from '@/lib/signatureTrackingToken';

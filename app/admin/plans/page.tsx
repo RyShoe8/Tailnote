@@ -1,9 +1,10 @@
+import '@/lib/billing-engine';
 import Link from 'next/link';
 import { connectMongoose } from '@/lib/mongoose';
 import { SubscriptionPlanModel, type SubscriptionPlanDoc } from '@/models/SubscriptionPlan';
-import { ensureDefaultSubscriptionPlans } from '@/lib/billing/ensureDefaultPlans';
-import { getPlanSubscriptionCapUsage } from '@/lib/billing/planSubscriptionCap';
-import { AdminPlansTable, type PlanRow } from '@/components/admin/AdminPlansTable';
+import { ensureDefaultSubscriptionPlans } from 'billing-engine';
+import { getPlanSubscriptionCapUsage } from 'billing-engine';
+import { AdminPlansTable, type PlanRow } from 'billing-engine/next/components';
 import { Button } from '@/components/ui/button';
 
 export const dynamic = 'force-dynamic';

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { AdminPlanForm } from '@/components/admin/AdminPlanForm';
+import { AdminPlanForm } from 'billing-engine/next/components';
 
 export const dynamic = 'force-dynamic';
 

@@ -1,6 +1,5 @@
 import type { OrganizationDoc } from '@/models/Organization';
-import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
-import { MAX_TEMPLATES_BASIC } from '@/lib/stripe/config';
+import { isOrganizationPaid, MAX_TEMPLATES_BASIC } from 'billing-engine';
 
 export type BillingEntitlements = {
   isPro: boolean;
@@ -28,7 +27,6 @@ export function getBillingEntitlements(
   };
 }
 
-/** True when rendered HTML should include the GIF animation slot for this org + template. */
 export function shouldIncludeSignatureAnimation(
   org: Pick<OrganizationDoc, 'plan' | 'subscriptionStatus'> | null | undefined,
   template: { includeAnimationSlot: boolean }

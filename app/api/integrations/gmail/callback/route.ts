@@ -4,6 +4,7 @@ import { verifyGmailOAuthState } from '@/lib/gmailOAuthState';
 import { encryptSecret } from '@/lib/secretCrypto';
 import { exchangeAuthorizationCode, fetchGoogleProfileEmail } from '@/lib/gmailApi';
 import { GmailIntegrationModel } from '@/models/GmailIntegration';
+import { canonicalSessionUserId } from '@/lib/integrations/gmailIntegration';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -39,11 +40,16 @@ export async function GET(request: Request) {
 
     const googleEmail = await fetchGoogleProfileEmail(tokens.access_token);
 
+    const sessionUserId = canonicalSessionUserId(payload.userId);
+    if (!sessionUserId) {
+      return NextResponse.redirect(new URL('/dashboard/signature?gmail=error&message=invalid_user', base));
+    }
+
     await connectMongoose();
     await GmailIntegrationModel.findOneAndUpdate(
-      { userId: payload.userId },
+      { userId: sessionUserId },
       {
-        userId: payload.userId,
+        userId: sessionUserId,
         encryptedRefreshToken: encryptSecret(tokens.refresh_token),
         googleEmail,
       },

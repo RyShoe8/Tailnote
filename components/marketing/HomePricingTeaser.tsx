@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { PublicPricingPlan } from '@/lib/billing/getPublicPricingPlans';
+import type { PublicPricingPlan } from 'billing-engine';
 
 function formatUsd(cents: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);

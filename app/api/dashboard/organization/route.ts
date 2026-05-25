@@ -87,7 +87,11 @@ export async function GET() {
   const permissions = organization ? orgPermissionFlags(organization as Record<string, unknown>) : null;
   return NextResponse.json({
     organization,
-    viewer: { role: user.role ?? 'member' },
+    viewer: {
+      id: user.id ?? '',
+      email: (session.user as { email?: string }).email ?? '',
+      role: user.role ?? 'member',
+    },
     permissions,
   });
 }

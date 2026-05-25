@@ -1,6 +1,6 @@
 import type { OrganizationDoc } from '@/models/Organization';
 import { getBillingEntitlements } from '@/lib/billing/entitlements';
-import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
+import { isOrganizationPaid } from 'billing-engine';
 
 export function canUsePaidFeatures(org: OrganizationDoc | null): boolean {
   return isOrganizationPaid(org);
