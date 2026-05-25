@@ -34,7 +34,7 @@ import {
 } from '@/lib/email/gmailSignatureHtml';
 import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
-import { isOrganizationPaid } from 'billing-engine';
+import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
 
 type OrgResponse = {
   companyName?: string;

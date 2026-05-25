@@ -8,4 +8,4 @@ export {
   getOrganizationSubscriptionAccess,
   type OrganizationSubscriptionAccess,
   type OrganizationSubscriptionStatus,
-} from 'billing-engine';
+} from 'billing-engine/subscriptionAccess';

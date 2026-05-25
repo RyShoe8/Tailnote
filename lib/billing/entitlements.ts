@@ -1,5 +1,8 @@
 import type { OrganizationDoc } from '@/models/Organization';
-import { isOrganizationPaid, MAX_TEMPLATES_BASIC } from 'billing-engine';
+import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
+
+/** Matches the four built-in presets (minimal, stacked, corporate, professional). */
+const MAX_TEMPLATES_BASIC = 4;
 
 export type BillingEntitlements = {
   isPro: boolean;

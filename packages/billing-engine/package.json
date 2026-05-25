@@ -9,7 +9,9 @@
     ".": "./src/index.ts",
     "./models": "./src/models/index.ts",
     "./next/handlers": "./src/next/handlers/index.ts",
-    "./next/components": "./src/next/components/index.ts"
+    "./next/components": "./src/next/components/index.ts",
+    "./subscriptionAccess": "./src/billing/subscriptionAccess.ts",
+    "./pricing-display": "./src/billing/pricingPlanDisplay.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

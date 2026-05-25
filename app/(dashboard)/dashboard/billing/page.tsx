@@ -15,7 +15,7 @@ import { AccountSecurityCard } from '@/components/dashboard/AccountSecurityCard'
 import { PricingPlanCard } from 'billing-engine/next/components';
 import type { PublicPricingPlan } from 'billing-engine';
 import type { EmployeeLimitInfo } from 'billing-engine';
-import { formatUsd, intervalSuffix } from 'billing-engine';
+import { formatUsd, intervalSuffix } from 'billing-engine/pricing-display';
 
 type BillingSummary = {
   renewsAt?: string | null;
