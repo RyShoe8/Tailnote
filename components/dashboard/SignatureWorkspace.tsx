@@ -254,13 +254,17 @@ export function SignatureWorkspace() {
     const sp = new URLSearchParams(window.location.search);
     const gmail = sp.get('gmail');
     const msg = sp.get('message');
+    const tab = sp.get('tab');
+    if (tab === 'install') {
+      setActiveTab('install');
+    }
     if (gmail === 'connected') {
       setMessage('Gmail connected. You can apply your signature below.');
       load();
     } else if (gmail === 'error' && msg) {
       setMessage(`Gmail: ${decodeURIComponent(msg)}`);
     }
-    if (gmail) {
+    if (gmail || tab) {
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, [load]);

@@ -52,7 +52,9 @@ Users with `platformAdmin: true` on their Better Auth document in the **`user`**
    - `https://<your-app>/api/auth/callback/google` (sign in / sign up)
    - `https://<your-app>/api/integrations/gmail/callback` (or the value of `GOOGLE_REDIRECT_URI` if you set it)
 2. Enable the **Gmail API** for the project.
-3. OAuth consent screen: add scope `https://www.googleapis.com/auth/gmail.settings.basic` (sensitive; may require verification for public apps).
+3. OAuth consent screen: add scopes:
+   - `https://www.googleapis.com/auth/gmail.settings.basic` (sensitive; may require verification for public apps)
+   - `https://www.googleapis.com/auth/userinfo.email` (used as fallback when resolving the linked Gmail address)
 4. Put `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in **Vercel** env vars and redeploy.
 
 ### Organization logos (Blob)

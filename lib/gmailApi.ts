@@ -1,4 +1,4 @@
-import { google } from 'googleapis';
+import { google, gmail_v1 } from 'googleapis';
 import {
   assertGmailSignatureWithinLimit,
   prepareSignatureHtmlForGmail,
@@ -14,6 +14,28 @@ function gmailApiErrorMessage(err: unknown): string {
   return 'Could not update Gmail signature';
 }
 
+function getGoogleOAuthCredentials(): { clientId: string; clientSecret: string } {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    throw new Error('Google OAuth is not configured');
+  }
+  return { clientId, clientSecret };
+}
+
+function createGmailClient(refreshToken: string): gmail_v1.Gmail {
+  const { clientId, clientSecret } = getGoogleOAuthCredentials();
+  const oauth2 = new google.auth.OAuth2(clientId, clientSecret, getGoogleRedirectUri());
+  oauth2.setCredentials({ refresh_token: refreshToken });
+  return google.gmail({ version: 'v1', auth: oauth2 });
+}
+
+function pickPrimarySendAsEmail(entries: gmail_v1.Schema$SendAs[]): string {
+  const pick =
+    entries.find((s) => s.isPrimary) || entries.find((s) => s.isDefault) || entries[0];
+  return (pick?.sendAsEmail || '').trim();
+}
+
 export function getGoogleRedirectUri(): string {
   if (process.env.GOOGLE_REDIRECT_URI?.trim()) {
     return process.env.GOOGLE_REDIRECT_URI.trim();
@@ -27,11 +49,7 @@ export async function exchangeAuthorizationCode(code: string): Promise<{
   refresh_token?: string;
   expires_in?: number;
 }> {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  if (!clientId || !clientSecret) {
-    throw new Error('Google OAuth is not configured');
-  }
+  const { clientId, clientSecret } = getGoogleOAuthCredentials();
   const body = new URLSearchParams({
     code,
     client_id: clientId,
@@ -60,21 +78,18 @@ export async function fetchGoogleProfileEmail(accessToken: string): Promise<stri
   return (json.email || '').trim();
 }
 
-export async function patchGmailSignature(refreshToken: string, html: string): Promise<{ sendAsEmail: string }> {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  if (!clientId || !clientSecret) {
-    throw new Error('Google OAuth is not configured');
-  }
-  const oauth2 = new google.auth.OAuth2(clientId, clientSecret, getGoogleRedirectUri());
-  oauth2.setCredentials({ refresh_token: refreshToken });
-
-  const gmail = google.gmail({ version: 'v1', auth: oauth2 });
+/** Primary send-as address for the linked Gmail account (works with gmail.settings.basic scope). */
+export async function fetchPrimarySendAsEmail(refreshToken: string): Promise<string> {
+  const gmail = createGmailClient(refreshToken);
   const list = await gmail.users.settings.sendAs.list({ userId: 'me' });
-  const entries = list.data.sendAs || [];
-  const pick =
-    entries.find((s) => s.isPrimary) || entries.find((s) => s.isDefault) || entries[0];
-  if (!pick?.sendAsEmail) {
+  return pickPrimarySendAsEmail(list.data.sendAs || []);
+}
+
+export async function patchGmailSignature(refreshToken: string, html: string): Promise<{ sendAsEmail: string }> {
+  const gmail = createGmailClient(refreshToken);
+  const list = await gmail.users.settings.sendAs.list({ userId: 'me' });
+  const sendAsEmail = pickPrimarySendAsEmail(list.data.sendAs || []);
+  if (!sendAsEmail) {
     throw new Error('No send-as identity found for this Gmail account');
   }
 
@@ -84,12 +99,12 @@ export async function patchGmailSignature(refreshToken: string, html: string): P
   try {
     await gmail.users.settings.sendAs.patch({
       userId: 'me',
-      sendAsEmail: pick.sendAsEmail,
+      sendAsEmail,
       requestBody: { signature: prepared },
     });
   } catch (err) {
     throw new Error(gmailApiErrorMessage(err));
   }
 
-  return { sendAsEmail: pick.sendAsEmail };
+  return { sendAsEmail };
 }

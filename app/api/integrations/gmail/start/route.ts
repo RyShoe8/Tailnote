@@ -4,7 +4,10 @@ import { signGmailOAuthState } from '@/lib/gmailOAuthState';
 import { canonicalSessionUserId } from '@/lib/integrations/gmailIntegration';
 import { getGoogleRedirectUri } from '@/lib/gmailApi';
 
-const SCOPE = 'https://www.googleapis.com/auth/gmail.settings.basic';
+const SCOPE = [
+  'https://www.googleapis.com/auth/gmail.settings.basic',
+  'https://www.googleapis.com/auth/userinfo.email',
+].join(' ');
 
 export async function GET(request: Request) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
