@@ -129,9 +129,11 @@ function EmployeeDetailPageContent() {
       const role = orgJson.viewer?.role;
       setCanManage(role === 'owner' || role === 'admin');
       const gJson = await gRes.json().catch(() => ({}));
-      if (gJson.connected) {
+      const gmailEmailFromApi = String(gJson.googleEmail || '').trim();
+      const gmailLinkedFromApi = Boolean(gJson.connected && gmailEmailFromApi);
+      if (gmailLinkedFromApi) {
         setGmailConnected(true);
-        setGmailEmail(String(gJson.googleEmail || ''));
+        setGmailEmail(gmailEmailFromApi);
         setGmailApplyToReplies(gJson.applyToReplies !== false);
       } else {
         setGmailConnected(false);
@@ -365,6 +367,8 @@ function EmployeeDetailPageContent() {
         : null
     ) &&
     Boolean(profile.firstName.trim() && profile.lastName.trim() && profile.email.trim() && previewHtml.trim());
+
+  const gmailLinked = gmailConnected && Boolean(gmailEmail.trim());
 
   async function handleApplyGmail() {
     if (!gmailSourceHtml.trim() || gmailOverLimit || gmailPromosBlocked) return;
@@ -609,15 +613,15 @@ function EmployeeDetailPageContent() {
                   {viewerEmail ? (
                     <p className="text-xs text-muted-foreground">
                       Tailnote login: <span className="font-medium text-foreground">{viewerEmail}</span>
-                      {gmailConnected && gmailEmail
+                      {gmailLinked
                         ? ` · Linked Gmail: ${gmailEmail}`
                         : ' · No Gmail linked for this login yet'}
                     </p>
                   ) : null}
-                  {gmailConnected ? (
+                  {gmailLinked ? (
                     <>
                       <p className="text-xs text-muted-foreground">
-                        Connected{gmailEmail ? ` as ${gmailEmail}` : ''}.
+                        Connected as {gmailEmail}.
                       </p>
                       <div className="flex items-start gap-3 rounded-md border border-dashed p-3">
                         <input

@@ -193,9 +193,11 @@ export function SignatureWorkspace() {
         ? list.find((t) => t._id === savedTemplateId) ?? defaultRow ?? list[0]
         : defaultRow ?? list[0];
       if (pick) setSelectedTemplateId(pick._id);
-      if (gJson.connected) {
+      const gmailEmailFromApi = String(gJson.googleEmail || '').trim();
+      const gmailLinkedFromApi = Boolean(gJson.connected && gmailEmailFromApi);
+      if (gmailLinkedFromApi) {
         setGmailConnected(true);
-        setGmailEmail(String(gJson.googleEmail || ''));
+        setGmailEmail(gmailEmailFromApi);
         setGmailApplyToReplies(gJson.applyToReplies !== false);
       } else {
         setGmailConnected(false);
@@ -426,6 +428,8 @@ export function SignatureWorkspace() {
         : null
     ) &&
     Boolean(profile.firstName.trim() && profile.lastName.trim() && profile.email.trim() && engineTemplate);
+
+  const gmailLinked = gmailConnected && Boolean(gmailEmail.trim());
 
   const patchSignatureProfile = async (opts?: { includeBlocks?: boolean; includeTemplate?: boolean }) => {
     const includeBlocks = opts?.includeBlocks === true;
@@ -962,7 +966,7 @@ export function SignatureWorkspace() {
               {tailnoteLoginEmail ? (
                 <p className="text-xs text-muted-foreground">
                   Tailnote login: <span className="font-medium text-foreground">{tailnoteLoginEmail}</span>
-                  {gmailConnected && gmailEmail
+                  {gmailLinked
                     ? ` · Linked Gmail: ${gmailEmail}`
                     : ' · No Gmail linked for this login yet'}
                 </p>
@@ -989,10 +993,10 @@ export function SignatureWorkspace() {
                 uses the full template layout for each mail client.
               </p>
               {gmailMessage ? <p className="text-xs text-muted-foreground">{gmailMessage}</p> : null}
-              {gmailConnected ? (
+              {gmailLinked ? (
                 <>
                   <p className="text-xs text-muted-foreground">
-                    Connected{gmailEmail ? ` as ${gmailEmail}` : ''}. Gmail may rewrite HTML when saving.
+                    Connected as {gmailEmail}. Gmail may rewrite HTML when saving.
                   </p>
                   <div className="flex items-start gap-3 rounded-md border border-dashed p-3">
                     <input

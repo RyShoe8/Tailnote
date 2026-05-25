@@ -42,9 +42,9 @@ export async function deleteGmailIntegrationForSessionUser(sessionUserId: string
   await GmailIntegrationModel.deleteMany(filter);
 }
 
-/** Row counts as connected only when a refresh token is stored. */
+/** Row counts as connected only when a refresh token and linked Gmail email are stored. */
 export function isGmailIntegrationConnected(
-  row: Pick<GmailIntegrationDoc, 'encryptedRefreshToken'> | null | undefined
+  row: Pick<GmailIntegrationDoc, 'encryptedRefreshToken' | 'googleEmail'> | null | undefined
 ): boolean {
-  return Boolean(row?.encryptedRefreshToken?.trim());
+  return Boolean(row?.encryptedRefreshToken?.trim() && row?.googleEmail?.trim());
 }
