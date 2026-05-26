@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import mongoose from 'mongoose';
 import { assignOrganizationPlan } from '@/lib/admin/assignOrganizationPlan';
+import { DeleteOrganizationError, deleteOrganization } from '@/lib/admin/deleteOrganization';
 import { requirePlatformAdminApi } from '@/lib/admin/platformAdminApi';
 import { isValidObjectIdString } from '@/lib/admin/data';
 import { connectMongoose } from '@/lib/mongoose';
@@ -112,4 +113,21 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     .lean();
 
   return NextResponse.json({ organization, organizationSubscription: orgSubscription });
+}
+
+export async function DELETE(_request: Request, { params }: RouteParams) {
+  const denied = await requirePlatformAdminApi();
+  if (denied) return denied;
+  const { id } = await params;
+
+  try {
+    await deleteOrganization(id);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    if (err instanceof DeleteOrganizationError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    console.error('[admin] delete organization', err);
+    return NextResponse.json({ error: 'Could not delete organization' }, { status: 500 });
+  }
 }

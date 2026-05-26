@@ -15,6 +15,7 @@ type Props = {
 export function AdminOrganizationsTable({ organizations: initialOrganizations, assignablePlans }: Props) {
   const [organizations, setOrganizations] = useState(initialOrganizations);
   const [expandedOrgId, setExpandedOrgId] = useState<string | null>(null);
+  const [deletingOrgId, setDeletingOrgId] = useState<string | null>(null);
 
   function toggleExpanded(orgId: string) {
     setExpandedOrgId((current) => (current === orgId ? null : orgId));
@@ -34,10 +35,37 @@ export function AdminOrganizationsTable({ organizations: initialOrganizations, a
     );
   }
 
+  async function deleteOrganization(org: AdminOrgRow) {
+    const userLabel = org.userCount === 1 ? '1 user' : `${org.userCount} users`;
+    const confirmed = window.confirm(
+      `Delete "${org.name}" and ${userLabel}? This permanently removes the organization, all members, templates, and related data. This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setDeletingOrgId(org._id);
+    try {
+      const res = await fetch(`/api/admin/organizations/${org._id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(typeof j.error === 'string' ? j.error : 'Could not delete organization');
+        return;
+      }
+      setOrganizations((prev) => prev.filter((o) => o._id !== org._id));
+      if (expandedOrgId === org._id) {
+        setExpandedOrgId(null);
+      }
+    } finally {
+      setDeletingOrgId(null);
+    }
+  }
+
   return (
     <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       <div className="overflow-x-auto rounded-md border min-w-0">
-        <table className="w-full min-w-[48rem] text-sm">
+        <table className="w-full min-w-[52rem] text-sm">
           <thead>
             <tr className="border-b bg-muted/40 text-left">
               <th className="p-3 w-10" aria-label="Expand" />
@@ -46,18 +74,20 @@ export function AdminOrganizationsTable({ organizations: initialOrganizations, a
               <th className="p-3 font-medium">Subscription</th>
               <th className="p-3 font-medium">Users</th>
               <th className="p-3 font-medium">Created</th>
+              <th className="p-3 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
             {organizations.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-6 text-muted-foreground text-center">
+                <td colSpan={7} className="p-6 text-muted-foreground text-center">
                   No organizations yet.
                 </td>
               </tr>
             ) : (
               organizations.map((org) => {
                 const expanded = expandedOrgId === org._id;
+                const deleting = deletingOrgId === org._id;
                 return (
                   <Fragment key={org._id}>
                     <tr className="border-b last:border-0">
@@ -70,6 +100,7 @@ export function AdminOrganizationsTable({ organizations: initialOrganizations, a
                           aria-expanded={expanded}
                           aria-label={expanded ? 'Collapse users' : 'Expand users'}
                           onClick={() => toggleExpanded(org._id)}
+                          disabled={deleting}
                         >
                           {expanded ? (
                             <ChevronDown className="h-4 w-4" />
@@ -96,10 +127,22 @@ export function AdminOrganizationsTable({ organizations: initialOrganizations, a
                       <td className="p-3 text-muted-foreground whitespace-nowrap align-top">
                         {org.createdAt ? new Date(org.createdAt).toLocaleDateString() : '—'}
                       </td>
+                      <td className="p-3 align-top">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive border-destructive/40 hover:bg-destructive/10"
+                          disabled={deleting || deletingOrgId !== null}
+                          onClick={() => void deleteOrganization(org)}
+                        >
+                          {deleting ? 'Deleting…' : 'Delete organization'}
+                        </Button>
+                      </td>
                     </tr>
                     {expanded ? (
                       <tr className="border-b last:border-0 bg-muted/10">
-                        <td colSpan={6} className="p-0">
+                        <td colSpan={7} className="p-0">
                           <AdminOrgUsersManager
                             organizationId={org._id}
                             onUserCountChange={(delta) => adjustUserCount(org._id, delta)}

@@ -1,11 +1,9 @@
-import { accountFilterBySessionUserId } from '@/lib/auth/accountQueries';
 import {
   AUTH_USER_COLLECTION,
   authUserDbFilterBySessionId,
 } from '@/lib/auth/platformAdmin';
+import { purgeOrganizationUserAuth } from '@/lib/admin/purgeOrganizationUserAuth';
 import { connectMongoose, getMongoDb } from '@/lib/mongoose';
-import { EmployeeModel } from '@/models/Employee';
-import { UserSignatureProfileModel } from '@/models/UserSignatureProfile';
 
 export class DeleteOrganizationUserError extends Error {
   constructor(
@@ -23,10 +21,6 @@ type AuthUserDoc = {
   organizationId?: string;
   role?: string;
 };
-
-function sessionFilterByUserId(userId: string) {
-  return accountFilterBySessionUserId(userId);
-}
 
 export async function deleteOrganizationUser(userId: string): Promise<void> {
   const filter = authUserDbFilterBySessionId(userId);
@@ -56,13 +50,5 @@ export async function deleteOrganizationUser(userId: string): Promise<void> {
     }
   }
 
-  const uid = String(user.id ?? user._id ?? userId);
-  const linkedFilter = sessionFilterByUserId(uid);
-
-  await db.collection('account').deleteMany(linkedFilter);
-  await db.collection('session').deleteMany(linkedFilter);
-  await db.collection(AUTH_USER_COLLECTION).deleteOne(filter);
-
-  await EmployeeModel.deleteMany({ userId: uid });
-  await UserSignatureProfileModel.deleteMany({ userId: uid });
+  await purgeOrganizationUserAuth(userId);
 }
