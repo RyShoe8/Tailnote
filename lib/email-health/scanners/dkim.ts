@@ -47,6 +47,13 @@ export async function scanDkim(domain: string): Promise<DkimScanResult> {
         'DKIM adds a cryptographic signature so inbox providers can verify your messages were not tampered with in transit.',
       recommendation:
         'Enable DKIM in your email provider (Google Workspace, Microsoft 365, etc.) and publish the TXT record they provide.',
+      stepsToPass: [
+        'Sign in to your email provider admin (Google Admin, Microsoft 365 Defender, etc.).',
+        'Find DKIM settings and generate a new signing key if none exists.',
+        'Copy the TXT record (host and value) exactly as shown by your provider.',
+        'Add the TXT record in DNS at the host they specify (e.g. selector1._domainkey).',
+        'Click “Start authentication” or equivalent in the provider, wait for DNS, then rescan.',
+      ],
       technicalDetail: `Checked common selectors (${COMMON_SELECTORS.join(', ')}) — none returned DKIM keys.`,
       dnsRecords: [
         {
@@ -75,6 +82,13 @@ export async function scanDkim(domain: string): Promise<DkimScanResult> {
       title: 'DKIM key may be using older key length',
       explanation: 'Shorter RSA keys are easier to forge; many providers now prefer 2048-bit keys.',
       recommendation: 'Rotate to a 2048-bit DKIM key in your mail provider admin console.',
+      stepsToPass: [
+        'Open DKIM settings in your email provider admin.',
+        'Create or rotate to a 2048-bit RSA signing key.',
+        'Publish the new TXT record at the selector host your provider specifies.',
+        'Remove or deactivate the old selector after the new key is active.',
+        'Send a test message and rescan.',
+      ],
       technicalDetail: `Selectors: ${selectorsFound.join(', ')}`,
     });
   } else {

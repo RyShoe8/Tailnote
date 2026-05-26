@@ -7,9 +7,11 @@ import { EmailHealthRescanButton } from '@/components/email-health/EmailHealthRe
 import { EmailHealthScoreRing } from '@/components/email-health/EmailHealthScoreRing';
 import { EmailHealthTailnoteCta } from '@/components/email-health/EmailHealthTailnoteCta';
 import { IssueCard } from '@/components/email-health/IssueCard';
+import { ScoreGuide } from '@/components/email-health/ScoreGuide';
+import { buildStepsByCategory, getCategoryGuide } from '@/lib/email-health/categoryGuide';
 import { aggregateDnsRecords } from '@/lib/email-health/scoring';
 import { loadOrCreateScanBySlug } from '@/lib/email-health/loadScan';
-import type { DomainIssue } from '@/lib/email-health/types';
+import type { DomainIssue, EmailHealthCategory } from '@/lib/email-health/types';
 import { faqPageJsonLd, webPageJsonLd } from '@/lib/seo/jsonLd';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { absoluteUrl } from '@/lib/seo/site';
@@ -42,15 +44,14 @@ function problemIssues(issues: DomainIssue[]) {
   return issues.filter((i) => i.severity === 'fail' || i.severity === 'warn');
 }
 
-function uniqueRecommendations(issues: DomainIssue[]) {
-  const seen = new Set<string>();
-  const out: string[] = [];
+function problemsByCategory(issues: DomainIssue[]) {
+  const map = new Map<EmailHealthCategory, DomainIssue[]>();
   for (const issue of problemIssues(issues)) {
-    if (seen.has(issue.recommendation)) continue;
-    seen.add(issue.recommendation);
-    out.push(issue.recommendation);
+    const list = map.get(issue.category) ?? [];
+    list.push(issue);
+    map.set(issue.category, list);
   }
-  return out;
+  return map;
 }
 
 export default async function EmailHealthResultPage({ params }: Props) {
@@ -59,7 +60,8 @@ export default async function EmailHealthResultPage({ params }: Props) {
   if (!scan) notFound();
 
   const problems = problemIssues(scan.issues);
-  const recommendations = uniqueRecommendations(scan.issues);
+  const stepsByCategory = buildStepsByCategory(scan.issues);
+  const groupedProblems = problemsByCategory(scan.issues);
   const dnsRecords = aggregateDnsRecords(scan.issues);
   const scannedLabel = new Date(scan.scannedAt).toLocaleString('en-US', {
     dateStyle: 'medium',
@@ -114,38 +116,47 @@ export default async function EmailHealthResultPage({ params }: Props) {
           </div>
 
           <div className="space-y-10 min-w-0">
+            <ScoreGuide statusLabel={scan.statusLabel} />
+
             <section>
               <h2 className="text-lg font-semibold tracking-tight">Category breakdown</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Each row shows what we measured, your points, and how to earn full credit when not passing.
+              </p>
               <div className="mt-4">
-                <CategoryBreakdown categories={scan.categories} />
+                <CategoryBreakdown categories={scan.categories} stepsByCategory={stepsByCategory} />
               </div>
             </section>
 
             {problems.length > 0 ? (
               <section>
                 <h2 className="text-lg font-semibold tracking-tight">Problems detected</h2>
-                <div className="mt-4 space-y-4">
-                  {problems.map((issue, i) => (
-                    <IssueCard key={`${issue.category}-${issue.title}-${i}`} issue={issue} />
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Follow the numbered steps on each card to move from warn or fail to pass.
+                </p>
+                <div className="mt-6 space-y-8">
+                  {Array.from(groupedProblems.entries()).map(([category, categoryIssues]) => (
+                    <div key={category}>
+                      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                        {getCategoryGuide(category).label}
+                      </h3>
+                      <div className="mt-3 space-y-4">
+                        {categoryIssues.map((issue, i) => (
+                          <IssueCard key={`${issue.category}-${issue.title}-${i}`} issue={issue} />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </section>
-            ) : null}
-
-            {recommendations.length > 0 ? (
-              <section>
-                <h2 className="text-lg font-semibold tracking-tight">Recommended fixes</h2>
-                <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-                  {recommendations.map((rec) => (
-                    <li key={rec}>{rec}</li>
-                  ))}
-                </ul>
               </section>
             ) : null}
 
             {dnsRecords.length > 0 ? (
               <section>
                 <h2 className="text-lg font-semibold tracking-tight">DNS records to add</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Copy these into your DNS provider. Values may need customization for your host.
+                </p>
                 <div className="mt-4 space-y-3">
                   {dnsRecords.map((rec) => (
                     <DnsRecordCopy key={`${rec.type}-${rec.host}-${rec.value}`} record={rec} />

@@ -28,6 +28,13 @@ export async function scanDmarc(domain: string): Promise<DmarcScanResult> {
         'Without DMARC, your domain is easier to impersonate — phishing emails may look like they came from you.',
       recommendation:
         'Publish a DMARC TXT record at _dmarc.yourdomain, start with p=none for monitoring, then move to quarantine or reject.',
+      stepsToPass: [
+        'In DNS, create a TXT record at host _dmarc (full name: _dmarc.yourdomain).',
+        'Paste the sample record below starting with v=DMARC1; p=none and a rua= reporting address.',
+        'Wait 2–4 weeks while reviewing aggregate reports for spoofing and misconfigurations.',
+        'Change p=none to p=quarantine, then p=reject when legitimate mail passes SPF/DKIM.',
+        'Rescan after each policy change.',
+      ],
       technicalDetail: `No v=DMARC1 record at ${host}.`,
       dnsRecords: [
         {
@@ -62,6 +69,13 @@ export async function scanDmarc(domain: string): Promise<DmarcScanResult> {
         'DMARC is present but set to p=none — receivers are told to accept failing messages. Impersonation is still possible.',
       recommendation:
         'After reviewing aggregate reports (rua), tighten policy to p=quarantine then p=reject.',
+      stepsToPass: [
+        'Confirm rua= is set so you receive DMARC aggregate reports (see sample record if missing).',
+        'Review reports for 2–4 weeks and fix any SPF/DKIM failures from legitimate senders.',
+        'Update the record to p=quarantine; pct=100; keep rua= for monitoring.',
+        'After a stable period with no false positives, change p=reject for full protection.',
+        'Rescan after each DNS update.',
+      ],
       technicalDetail: dmarc,
       dnsRecords: [
         {
@@ -98,6 +112,12 @@ export async function scanDmarc(domain: string): Promise<DmarcScanResult> {
       title: 'DMARC policy value is unusual',
       explanation: 'Receivers may not interpret unknown policy values consistently.',
       recommendation: 'Use p=none, quarantine, or reject per the DMARC specification.',
+      stepsToPass: [
+        'Edit the _dmarc TXT record and set p= to none, quarantine, or reject only.',
+        'Include v=DMARC1; at the start and valid rua= for reporting.',
+        'Remove unknown or experimental tags until you understand their effect.',
+        'Rescan after saving DNS.',
+      ],
       technicalDetail: dmarc,
     });
   }
@@ -110,6 +130,12 @@ export async function scanDmarc(domain: string): Promise<DmarcScanResult> {
       title: 'No DMARC reporting addresses configured',
       explanation: 'Without rua/ruf you will not receive visibility into spoofing attempts or misconfiguration.',
       recommendation: `Add rua=mailto:dmarc-reports@${domain} (or a vendor address) to your DMARC record.`,
+      stepsToPass: [
+        'Edit your existing _dmarc TXT record (do not create a second DMARC record).',
+        'Add rua=mailto:you@yourdomain.com or a DMARC report inbox from your provider.',
+        'Optionally add ruf= for forensic reports if your team can handle the volume.',
+        'Save DNS and confirm reports arrive within a few days, then rescan.',
+      ],
       technicalDetail: dmarc,
     });
   }
@@ -122,6 +148,12 @@ export async function scanDmarc(domain: string): Promise<DmarcScanResult> {
       title: 'DMARC is only partially enforced',
       explanation: `pct=${pct} means only a fraction of failing messages receive the ${policy} policy.`,
       recommendation: 'Move pct to 100 once testing is complete.',
+      stepsToPass: [
+        'Confirm legitimate mail passes SPF and DKIM in DMARC reports.',
+        'Edit the _dmarc record and set pct=100 (or remove pct to default to 100).',
+        'Keep p=quarantine or p=reject as intended.',
+        'Rescan after DNS propagation.',
+      ],
       technicalDetail: dmarc,
     });
   }

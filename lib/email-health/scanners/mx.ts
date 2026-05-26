@@ -39,6 +39,12 @@ export async function scanMx(domain: string): Promise<MxScanResult> {
       title: 'No mail servers (MX) found for this domain',
       explanation: 'Without MX records, this domain cannot receive email at standard addresses.',
       recommendation: 'Add MX records pointing to your email hosting provider.',
+      stepsToPass: [
+        'Sign in to your email provider and find the MX values they require.',
+        'In DNS, add MX records at @ using the provider’s priority and hostname.',
+        'Remove any outdated MX records pointing to old hosts.',
+        'Wait for DNS propagation, send a test email to the domain, then rescan.',
+      ],
       technicalDetail: `No MX records for ${domain}.`,
       dnsRecords: [
         {
@@ -74,6 +80,12 @@ export async function scanMx(domain: string): Promise<MxScanResult> {
       title: 'All MX records share the same priority',
       explanation: 'Equal priorities can cause uneven delivery or unpredictable failover behavior.',
       recommendation: 'Use distinct priorities (e.g. 10, 20) for primary and backup mail servers.',
+      stepsToPass: [
+        'Identify which hostname is your primary mail server (from your email provider docs).',
+        'Set the primary MX to priority 10 (lower number = higher priority).',
+        'Set backup or secondary MX hosts to 20 or higher.',
+        'Save DNS and rescan after propagation.',
+      ],
       technicalDetail: sorted.map((r) => `${r.priority} ${r.exchange}`).join('; '),
     });
   }

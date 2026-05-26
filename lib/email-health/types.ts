@@ -25,6 +25,7 @@ export type DomainIssue = {
   title: string;
   explanation: string;
   recommendation: string;
+  stepsToPass?: string[];
   technicalDetail?: string;
   dnsRecords?: DnsRecordSuggestion[];
 };

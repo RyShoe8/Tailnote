@@ -23,6 +23,9 @@ type Props = {
 export function IssueCard({ issue }: Props) {
   const showTechnical = Boolean(issue.technicalDetail);
   const hasDns = (issue.dnsRecords?.length ?? 0) > 0;
+  const showSteps =
+    (issue.severity === 'warn' || issue.severity === 'fail') &&
+    (issue.stepsToPass?.length ?? 0) > 0;
 
   return (
     <article className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-card">
@@ -36,8 +39,20 @@ export function IssueCard({ issue }: Props) {
       </div>
       <h3 className="mt-3 text-base font-semibold text-foreground">{issue.title}</h3>
       <p className="mt-2 text-sm text-muted-foreground">{issue.explanation}</p>
+
+      {showSteps ? (
+        <div className="mt-4">
+          <p className="text-sm font-medium text-foreground">Steps to pass</p>
+          <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
+            {issue.stepsToPass!.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+        </div>
+      ) : null}
+
       <p className="mt-3 text-sm text-foreground">
-        <span className="font-medium">Recommended fix: </span>
+        <span className="font-medium">{showSteps ? 'Summary: ' : 'Recommended fix: '}</span>
         {issue.recommendation}
       </p>
 

@@ -80,6 +80,12 @@ export function smtpTlsInconclusiveResult(reason?: string): SmtpTlsScanResult {
           'Some cloud networks block outbound SMTP ports. This does not necessarily mean your mail is insecure.',
         recommendation:
           'Confirm STARTTLS is enabled with your email provider (Google, Microsoft, etc.).',
+        stepsToPass: [
+          'Check your email provider’s documentation — Google Workspace and Microsoft 365 enforce TLS by default.',
+          'If you self-host mail, enable STARTTLS on ports 587 and 25 in your MTA settings.',
+          'Ask your provider to confirm TLS is active if you cannot verify from DNS alone.',
+          'Rescan after any mail-server change; inconclusive results may persist on blocked networks.',
+        ],
         technicalDetail,
       },
     ],
@@ -137,6 +143,12 @@ async function probeMxHost(host: string): Promise<SmtpTlsScanResult> {
           explanation:
             'Without TLS, messages may travel unencrypted between mail servers — a deliverability and privacy concern.',
           recommendation: 'Enable STARTTLS on your mail host or confirm with your email provider.',
+          stepsToPass: [
+            'If using a cloud email host, open a support ticket to confirm STARTTLS is enabled on the MX host.',
+            'If self-hosting, enable STARTTLS in Postfix, Exim, or your MTA and restart the service.',
+            'Install a valid TLS certificate on the mail server (same or separate from web SSL).',
+            'Test with an external SMTP checker, then rescan.',
+          ],
           technicalDetail: `MX host ${normalized} did not complete STARTTLS handshake in our probe.`,
         },
       ],
@@ -162,6 +174,11 @@ export async function scanSmtpTls(
           title: 'Could not test mail server encryption',
           explanation: 'TLS checks require at least one MX record.',
           recommendation: 'Configure MX records first, then rescan.',
+          stepsToPass: [
+            'Add MX records from your email provider in DNS (see Mail routing section).',
+            'Wait for DNS propagation (up to 48 hours).',
+            'Run a new scan once MX records resolve.',
+          ],
         },
       ],
     };

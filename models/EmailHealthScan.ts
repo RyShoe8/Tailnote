@@ -20,6 +20,7 @@ const DomainIssueSchema = new Schema(
     title: { type: String, required: true },
     explanation: { type: String, required: true },
     recommendation: { type: String, required: true },
+    stepsToPass: { type: [String], default: undefined },
     technicalDetail: { type: String },
     dnsRecords: { type: [DnsRecordSchema], default: [] },
   },
