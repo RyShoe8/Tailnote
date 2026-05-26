@@ -32,6 +32,12 @@ function LoginForm() {
   );
   const [loading, setLoading] = useState(false);
   const { getToken, enabled: recaptchaEnabled } = useRecaptcha(RECAPTCHA_ACTIONS.login);
+  const { data: session, isPending: sessionPending } = authClient.useSession();
+
+  useEffect(() => {
+    if (sessionPending || !session?.user) return;
+    router.replace(next);
+  }, [sessionPending, session?.user, router, next]);
 
   useEffect(() => {
     if (!oauthError) return;

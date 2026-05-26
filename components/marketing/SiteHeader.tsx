@@ -6,7 +6,11 @@ import {
   SiteHeaderProductNav,
 } from '@/components/marketing/SiteHeaderNav';
 
-export function SiteHeader() {
+type SiteHeaderProps = {
+  isLoggedIn?: boolean;
+};
+
+export function SiteHeader({ isLoggedIn = false }: SiteHeaderProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-background/85 backdrop-blur-md">
       <div className="container flex min-h-14 min-w-0 items-center justify-between gap-3 py-0 sm:gap-4">
@@ -24,8 +28,8 @@ export function SiteHeader() {
           <SiteHeaderProductNav />
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <SiteHeaderAuth />
-          <SiteHeaderMobileMenu />
+          <SiteHeaderAuth isLoggedIn={isLoggedIn} />
+          <SiteHeaderMobileMenu isLoggedIn={isLoggedIn} />
         </div>
       </div>
     </header>

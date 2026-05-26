@@ -45,6 +45,13 @@ function SignupForm() {
   const signupRecaptcha = useRecaptcha(RECAPTCHA_ACTIONS.signup);
   const loginRecaptcha = useRecaptcha(RECAPTCHA_ACTIONS.login);
   const recaptchaEnabled = signupRecaptcha.enabled;
+  const { data: session, isPending: sessionPending } = authClient.useSession();
+  const postSignupPath = buildPostSignupPath(searchParams, inviteToken);
+
+  useEffect(() => {
+    if (sessionPending || !session?.user) return;
+    router.replace(postSignupPath);
+  }, [sessionPending, session?.user, router, postSignupPath]);
 
   useEffect(() => {
     if (!oauthError) return;
