@@ -14,21 +14,29 @@ type Props = {
   active?: boolean;
 };
 
-function EmailClientAmbience() {
+function EmailClientAmbience({ layout }: { layout: 'hero' | 'carousel' }) {
+  const isHero = layout === 'hero';
+
   return (
     <>
       <div
         aria-hidden
-        className="pointer-events-none absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-to-br from-[#0065c9]/10 via-[#0c8fa3]/8 to-[#4fd6b2]/15 blur-2xl sm:-inset-8 sm:rounded-[2.5rem] sm:from-[#0065c9]/15 sm:via-[#0c8fa3]/10 sm:to-[#4fd6b2]/20 sm:blur-3xl"
+        className={
+          isHero
+            ? 'pointer-events-none absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-to-br from-[#0065c9]/15 via-[#0065c9]/10 to-[#0065c9]/5 blur-2xl sm:-inset-8 sm:rounded-[2.5rem] sm:from-[#0065c9]/20 sm:via-[#0065c9]/12 sm:to-[#0065c9]/8 sm:blur-3xl'
+            : 'pointer-events-none absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-to-br from-[#0065c9]/10 via-[#0c8fa3]/8 to-[#4fd6b2]/15 blur-2xl sm:-inset-8 sm:rounded-[2.5rem] sm:from-[#0065c9]/15 sm:via-[#0c8fa3]/10 sm:to-[#4fd6b2]/20 sm:blur-3xl'
+        }
       />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-10 -top-10 -z-10 hidden h-40 w-40 rounded-full bg-[#4fd6b2]/30 blur-2xl md:block tn-float"
-      />
+      {!isHero ? (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-10 -top-10 -z-10 hidden h-40 w-40 rounded-full bg-[#4fd6b2]/30 blur-2xl md:block tn-float"
+        />
+      ) : null}
       <div
         aria-hidden
         className="pointer-events-none absolute -left-8 bottom-10 -z-10 hidden h-32 w-32 rounded-full bg-[#0065c9]/30 blur-2xl md:block tn-float"
-        style={{ animationDelay: '2s' }}
+        style={{ animationDelay: isHero ? undefined : '2s' }}
       />
     </>
   );
@@ -93,7 +101,7 @@ export function MarketingEmailClientFrame({
         className
       )}
     >
-      {showAmbience ? <EmailClientAmbience /> : null}
+      {showAmbience ? <EmailClientAmbience layout={layout} /> : null}
 
       {isCarousel ? (
         <div
