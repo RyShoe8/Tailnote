@@ -9,6 +9,8 @@ Canonical site: https://tailnote.com
 - [Home](https://tailnote.com/)
 - [Pricing](https://tailnote.com/pricing)
 - [Templates](https://tailnote.com/templates)
+- [Promotional Blocks](https://tailnote.com/promotional-blocks)
+- [Analytics](https://tailnote.com/analytics)
 - [Email Health (free domain scan)](https://tailnote.com/email-health)
 - [About](https://tailnote.com/about)
 - [Contact](https://tailnote.com/contact)

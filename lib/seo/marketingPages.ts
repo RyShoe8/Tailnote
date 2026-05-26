@@ -6,6 +6,8 @@ export type MarketingPageKey =
   | 'home'
   | 'pricing'
   | 'templates'
+  | 'promotionalBlocks'
+  | 'analytics'
   | 'emailHealth'
   | 'about'
   | 'contact'
@@ -41,6 +43,20 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     title: 'Email signature templates',
     description:
       'Curated email signature templates with built-in promotional blocks — book-a-call buttons, offer lists, blog feeds, and image banners that work in real inboxes.',
+  },
+  {
+    key: 'promotionalBlocks',
+    path: '/promotional-blocks',
+    title: 'Promotional blocks for email signatures',
+    description:
+      'Add book-a-call buttons, offer lists, blog feeds, and promo banners to every employee email. Organization-wide updates with built-in UTM tracking.',
+  },
+  {
+    key: 'analytics',
+    path: '/analytics',
+    title: 'Email signature click analytics',
+    description:
+      'Track signature link clicks by day, team member, and link type. See which promotional blocks and CTAs drive engagement, with UTM support for Google Analytics.',
   },
   {
     key: 'emailHealth',
