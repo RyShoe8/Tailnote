@@ -1,4 +1,8 @@
 import type { MetadataRoute } from 'next';
+import {
+  EMAIL_HEALTH_PAGE_DESCRIPTION,
+  EMAIL_HEALTH_PAGE_TITLE,
+} from '@/lib/email-health/seoCopy';
 import { LEGAL_LAST_UPDATED } from '@/lib/marketing/legalContent';
 import { absoluteUrl } from '@/lib/seo/site';
 
@@ -61,9 +65,8 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
   {
     key: 'emailHealth',
     path: '/email-health',
-    title: 'Free email health check',
-    description:
-      'Free domain email health scan — SPF, DKIM, DMARC, BIMI, MX, and TLS explained in plain English with an actionable trust score.',
+    title: EMAIL_HEALTH_PAGE_TITLE,
+    description: EMAIL_HEALTH_PAGE_DESCRIPTION,
   },
   {
     key: 'about',

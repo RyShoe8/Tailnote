@@ -12,7 +12,7 @@ import { buildStepsByCategory, getCategoryGuide } from '@/lib/email-health/categ
 import { aggregateDnsRecords } from '@/lib/email-health/scoring';
 import { loadOrCreateScanBySlug } from '@/lib/email-health/loadScan';
 import type { DomainIssue, EmailHealthCategory } from '@/lib/email-health/types';
-import { faqPageJsonLd, webPageJsonLd } from '@/lib/seo/jsonLd';
+import { breadcrumbJsonLd, faqPageJsonLd, webPageJsonLd } from '@/lib/seo/jsonLd';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { absoluteUrl } from '@/lib/seo/site';
 
@@ -30,8 +30,8 @@ export async function generateMetadata({ params }: Props) {
   }
 
   const issueCount = scan.issues.filter((i) => i.severity === 'fail' || i.severity === 'warn').length;
-  const title = `${scan.domain} Email Health Score: ${scan.score}/100`;
-  const description = `${scan.domain} scored ${scan.score}/100 (${scan.statusLabel}). ${issueCount} item${issueCount === 1 ? '' : 's'} need attention. Free SPF, DKIM, and DMARC check by Tailnote.`;
+  const title = `${scan.domain} Email Trust Score: ${scan.score}/100`;
+  const description = `${scan.domain} email trust score: ${scan.score}/100 (${scan.statusLabel}). SPF, DKIM, DMARC, and BIMI checker results — ${issueCount} item${issueCount === 1 ? '' : 's'} need attention. Free domain email health report.`;
 
   return createPageMetadata({
     title,
@@ -79,23 +79,40 @@ export default async function EmailHealthResultPage({ params }: Props) {
         data={[
           webPageJsonLd({
             path: `/email-health/${scan.domainSlug}`,
-            name: `${scan.domain} Email Health`,
-            description: `Email trust score ${scan.score}/100 for ${scan.domain}`,
+            name: `${scan.domain} Email Trust Score`,
+            description: `Email trust score ${scan.score}/100 for ${scan.domain} — SPF, DKIM, DMARC, and BIMI checker results.`,
             dateModified: new Date(scan.scannedAt).toISOString().slice(0, 10),
           }),
+          breadcrumbJsonLd([
+            { name: 'Home', path: '/' },
+            { name: 'Email Health', path: '/email-health' },
+            { name: scan.domain, path: `/email-health/${scan.domainSlug}` },
+          ]),
           ...(seoFaqs.length > 0 ? [faqPageJsonLd(seoFaqs)] : []),
         ]}
       />
 
       <div className="container py-12 sm:py-16">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
+          <ol className="flex flex-wrap items-center gap-1.5">
+            <li>
+              <Link href="/" className="transition-colors hover:text-foreground">
+                Home
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li>
+              <Link href="/email-health" className="transition-colors hover:text-foreground">
+                Email Health
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li className="font-medium text-foreground">{scan.domain}</li>
+          </ol>
+        </nav>
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <Link
-              href="/email-health"
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              ← Email Health
-            </Link>
             <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{scan.domain}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Last scanned {scannedLabel}

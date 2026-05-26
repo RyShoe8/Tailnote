@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { RecaptchaNotice } from '@/components/recaptcha/RecaptchaNotice';
+import { EMAIL_HEALTH_NAV_TITLE } from '@/lib/email-health/seoCopy';
 
 const MEDIA_SHOP_URL = 'https://themediashop.co';
 
@@ -9,7 +10,7 @@ const FOOTER_LINKS = {
     { href: '/promotional-blocks', label: 'Promotional Blocks' },
     { href: '/analytics', label: 'Analytics' },
     { href: '/pricing', label: 'Pricing' },
-    { href: '/email-health', label: 'Email Health' },
+    { href: '/email-health', label: 'Email Health', title: EMAIL_HEALTH_NAV_TITLE },
   ],
   company: [
     { href: '/about', label: 'About Us' },
@@ -30,10 +31,11 @@ type SiteFooterProps = {
   variant?: 'full' | 'compact';
 };
 
-function FooterLink({ href, label }: { href: string; label: string }) {
+function FooterLink({ href, label, title }: { href: string; label: string; title?: string }) {
   return (
     <Link
       href={href}
+      title={title}
       className="transition-colors hover:text-foreground hover:underline underline-offset-4"
     >
       {label}
@@ -94,7 +96,11 @@ export function SiteFooter({ variant = 'full' }: SiteFooterProps) {
             <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
               {FOOTER_LINKS.product.map((item) => (
                 <li key={item.href}>
-                  <FooterLink href={item.href} label={item.label} />
+                  <FooterLink
+                    href={item.href}
+                    label={item.label}
+                    title={'title' in item ? item.title : undefined}
+                  />
                 </li>
               ))}
             </ul>

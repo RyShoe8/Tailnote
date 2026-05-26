@@ -11,7 +11,7 @@ Canonical site: https://tailnote.com
 - [Templates](https://tailnote.com/templates)
 - [Promotional Blocks](https://tailnote.com/promotional-blocks)
 - [Analytics](https://tailnote.com/analytics)
-- [Email Health (free domain scan)](https://tailnote.com/email-health)
+- [Email Health — SPF, DKIM, DMARC & BIMI checker](https://tailnote.com/email-health): free email deliverability audit with SPF checker, DKIM checker, DMARC checker, BIMI checker, 0–100 email trust score, and domain email health report. Helps answer why emails go to spam.
 - [About](https://tailnote.com/about)
 - [Contact](https://tailnote.com/contact)
 - [Terms](https://tailnote.com/terms)
@@ -24,7 +24,7 @@ Canonical site: https://tailnote.com
 - Templates designed for Gmail, Outlook, and common email clients
 - Built-in UTM parameters and optional per-link click analytics
 - Stripe billing: monthly, annual, and Lifetime (one-time) plans
-- Free Email Health tool: SPF, DKIM, DMARC, and deliverability checks at /email-health
+- Free Email Health tool at /email-health: SPF checker, DKIM checker, DMARC checker, BIMI checker, email trust score, domain email health, email deliverability audit, and guidance on why emails go to spam
 
 ## Who it is for
 

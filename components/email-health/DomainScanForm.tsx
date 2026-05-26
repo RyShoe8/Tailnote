@@ -79,7 +79,7 @@ export function DomainScanForm({ initialDomain = '', size = 'default' }: Props) 
           onChange={(e) => setDomain(e.target.value)}
           disabled={loading}
           className={isLarge ? 'h-14 text-base sm:flex-1' : 'sm:flex-1'}
-          aria-label="Domain name"
+          aria-label="Enter domain for SPF, DKIM, and DMARC check"
         />
         <Button
           type="submit"

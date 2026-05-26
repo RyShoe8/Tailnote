@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion';
 import { DomainScanForm } from '@/components/email-health/DomainScanForm';
+import { EMAIL_HEALTH_HERO } from '@/lib/email-health/seoCopy';
 
 export function EmailHealthHero() {
   const reduceMotion = useReducedMotion();
@@ -14,13 +15,15 @@ export function EmailHealthHero() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: 'easeOut' }}
       >
-        <p className="text-sm font-semibold uppercase tracking-wider text-primary">Free tool</p>
+        <p className="text-sm font-semibold uppercase tracking-wider text-primary">
+          {EMAIL_HEALTH_HERO.eyebrow}
+        </p>
         <h1 className="mt-3 text-balance text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
-          Check your <span className="text-primary">email health</span>
+          {EMAIL_HEALTH_HERO.h1} —{' '}
+          <span className="text-primary">{EMAIL_HEALTH_HERO.h1Highlight}</span>
         </h1>
         <p className="mt-5 text-pretty text-base text-muted-foreground sm:text-lg">
-          Scan your domain for SPF, DKIM, DMARC, and more — plain-English results for founders,
-          marketers, and growing teams. No sysadmin jargon required.
+          {EMAIL_HEALTH_HERO.subcopy}
         </p>
       </motion.div>
 

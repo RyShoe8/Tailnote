@@ -1,3 +1,4 @@
+import { EMAIL_HEALTH_ITEM_LIST_CHECKS } from '@/lib/email-health/seoCopy';
 import { absoluteOgImageUrl, absoluteUrl, getSiteUrl, SITE_NAME } from '@/lib/seo/site';
 
 type JsonLd = Record<string, unknown>;
@@ -180,6 +181,48 @@ function pricingOfferBillingDuration(interval: PricingPlanForSchema['interval'])
   if (interval === 'month') return 'P1M';
   if (interval === 'year') return 'P1Y';
   return undefined;
+}
+
+const EMAIL_HEALTH_PATH = '/email-health';
+
+export function emailHealthWebApplicationJsonLd(): JsonLd {
+  const url = absoluteUrl(EMAIL_HEALTH_PATH);
+  return {
+    ...baseContext(),
+    '@type': 'WebApplication',
+    name: `${SITE_NAME} Email Health — SPF, DKIM & DMARC Checker`,
+    url,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Web',
+    browserRequirements: 'Requires JavaScript',
+    description:
+      'Free email deliverability audit with SPF checker, DKIM checker, DMARC checker, BIMI checker, and a 0–100 email trust score for any domain.',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+    },
+    isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: getSiteUrl() },
+  };
+}
+
+export function emailHealthChecksItemListJsonLd(): JsonLd {
+  const base = absoluteUrl(EMAIL_HEALTH_PATH);
+  return {
+    ...baseContext(),
+    '@type': 'ItemList',
+    name: 'Email deliverability audit checks',
+    itemListElement: EMAIL_HEALTH_ITEM_LIST_CHECKS.map((check, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'Thing',
+        name: check.name,
+        url: `${base}#${check.id}`,
+      },
+    })),
+  };
 }
 
 export function pricingPlansJsonLd(plans: PricingPlanForSchema[]): JsonLd {

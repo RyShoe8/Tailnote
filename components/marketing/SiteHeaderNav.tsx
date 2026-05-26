@@ -6,13 +6,14 @@ import { useEffect, useState } from 'react';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { EMAIL_HEALTH_NAV_TITLE } from '@/lib/email-health/seoCopy';
 
 export const PRODUCT_NAV = [
   { href: '/templates', label: 'Templates' },
   { href: '/promotional-blocks', label: 'Promotional Blocks' },
   { href: '/analytics', label: 'Analytics' },
   { href: '/pricing', label: 'Pricing' },
-  { href: '/email-health', label: 'Email Health' },
+  { href: '/email-health', label: 'Email Health', title: EMAIL_HEALTH_NAV_TITLE },
 ] as const;
 
 const AUTH_NAV = [{ href: '/login', label: 'Log In' }] as const;
@@ -28,6 +29,7 @@ export function SiteHeaderProductNav() {
         <Link
           key={item.href}
           href={item.href}
+          title={'title' in item ? item.title : undefined}
           className="whitespace-nowrap transition-colors hover:text-foreground"
         >
           {item.label}
@@ -90,6 +92,7 @@ export function SiteHeaderMobileMenu({ isLoggedIn = false }: AuthNavProps) {
             <Link
               key={item.href}
               href={item.href}
+              title={'title' in item ? item.title : undefined}
               onClick={close}
               className="rounded-md px-2 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >

@@ -48,7 +48,7 @@ export default function robots(): MetadataRoute.Robots {
 
   return {
     rules,
-    sitemap: `${siteUrl}/sitemap.xml`,
+    sitemap: [`${siteUrl}/sitemap.xml`, `${siteUrl}/email-health/sitemap.xml`],
     host: siteUrl,
   };
 }
