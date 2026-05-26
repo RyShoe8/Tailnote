@@ -12,7 +12,7 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#0065c9',
     icons: [
       {
-        src: '/images/tailnote-logo-mark.png',
+        src: '/images/tailnote-icon.png',
         sizes: '512x512',
         type: 'image/png',
       },

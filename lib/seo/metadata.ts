@@ -69,8 +69,11 @@ export function rootLayoutMetadata(): Metadata {
     },
     description: DEFAULT_DESCRIPTION,
     icons: {
-      icon: '/images/tailnote-logo-mark.png',
-      apple: '/images/tailnote-logo-mark.png',
+      icon: [
+        { url: '/images/tailnote-icon.png', sizes: '48x48', type: 'image/png' },
+        { url: '/images/tailnote-icon.png', sizes: '512x512', type: 'image/png' },
+      ],
+      apple: '/images/tailnote-icon.png',
     },
     openGraph: {
       type: 'website',
