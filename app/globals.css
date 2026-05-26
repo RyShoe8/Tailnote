@@ -192,12 +192,12 @@
     opacity: 0;
     transform: translateY(8px);
   }
-  /* Homepage template carousel: active email-client slide lifts in 3D */
-  .home-carousel-email-stage {
+  /* Homepage template carousel: active email-client slide lifts in 3D (outer shell, overflow visible) */
+  .home-carousel-email-stage-outer {
     transform-style: preserve-3d;
     backface-visibility: hidden;
   }
-  .home-carousel-email-stage--active {
+  .home-carousel-email-stage-outer--active {
     transform: perspective(1200px) rotateX(1.5deg) translateY(-6px);
   }
 
@@ -210,7 +210,7 @@
     .tn-reveal {
       animation: none !important;
     }
-    .home-carousel-email-stage--active {
+    .home-carousel-email-stage-outer--active {
       transform: none;
     }
     .tn-reveal-init {

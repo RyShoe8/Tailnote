@@ -11,6 +11,8 @@ import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePrevie
 import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
 
 const SWIPE_THRESHOLD_PX = 50;
+/** Room for 3D lift, shadows, and ambience orbs outside the email window */
+const STAGE_EFFECT_PADDING_PX = 56;
 
 type Props = {
   presets: CatalogPresetRow[];
@@ -145,9 +147,9 @@ function TemplateSlidePreview({ preset }: { preset: CatalogPresetRow }) {
 export function HomeTemplateCarousel({ presets }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [hasSwiped, setHasSwiped] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  const [stageMinHeight, setStageMinHeight] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
-  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
 
   const goToIndex = useCallback(
     (index: number) => {
@@ -158,24 +160,23 @@ export function HomeTemplateCarousel({ presets }: Props) {
   );
 
   useLayoutEffect(() => {
-    const root = viewportRef.current;
+    const root = stageRef.current;
     if (!root) return;
 
-    const getActiveSlide = () =>
-      root.querySelector<HTMLElement>('[data-carousel-slide][data-carousel-active="true"]');
-
     const measure = () => {
-      const activeSlide = getActiveSlide();
-      if (!activeSlide) return;
-      const h = Math.ceil(activeSlide.getBoundingClientRect().height);
-      if (h > 0) setViewportHeight(h);
+      const nodes = root.querySelectorAll<HTMLElement>('[data-carousel-slide]');
+      let max = 0;
+      nodes.forEach((node) => {
+        max = Math.max(max, Math.ceil(node.getBoundingClientRect().height));
+      });
+      if (max > 0) setStageMinHeight(max + STAGE_EFFECT_PADDING_PX);
     };
 
     measure();
 
     const ro = new ResizeObserver(() => measure());
-    const activeSlide = getActiveSlide();
-    if (activeSlide) ro.observe(activeSlide);
+    const nodes = root.querySelectorAll<HTMLElement>('[data-carousel-slide]');
+    nodes.forEach((node) => ro.observe(node));
 
     const onImgLoad = () => measure();
     root.querySelectorAll('img').forEach((img) => {
@@ -188,7 +189,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
       ro.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [presets, activeIndex]);
+  }, [presets]);
 
   function scrollBySlide(delta: number) {
     goToIndex(activeIndex + delta);
@@ -247,17 +248,13 @@ export function HomeTemplateCarousel({ presets }: Props) {
       <MobileSwipeHint hidden={hasSwiped} />
 
       <div
-        className="relative px-4 pb-6 pt-0 sm:px-6 sm:pb-8 md:pt-1"
+        ref={stageRef}
+        className="home-template-carousel-stage relative isolate overflow-visible px-4 py-8 pb-6 sm:px-6 sm:py-10 sm:pb-8 md:pt-1"
+        style={stageMinHeight != null ? { minHeight: stageMinHeight } : undefined}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div
-          ref={viewportRef}
-          className={`relative w-full min-w-0 overflow-x-hidden overflow-y-visible transition-[height] duration-300 ease-out motion-reduce:transition-none ${
-            viewportHeight == null ? 'min-h-[200px]' : ''
-          }`}
-          style={viewportHeight != null ? { height: viewportHeight } : undefined}
-        >
+        <div className="relative w-full min-w-0 overflow-x-hidden overflow-y-visible">
           <div
             className="flex items-start transition-transform duration-300 ease-out motion-reduce:transition-none"
             style={{
@@ -277,7 +274,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
                   aria-roledescription="slide"
                   aria-hidden={!isActive}
                 >
-                  <div className="overflow-visible pb-2">
+                  <div className="overflow-visible">
                     <MarketingEmailClientFrame
                       layout="carousel"
                       showAmbience={isActive}

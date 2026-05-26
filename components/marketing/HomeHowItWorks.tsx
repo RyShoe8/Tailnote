@@ -4,7 +4,7 @@ const STEPS = [
   {
     title: 'Set your brand',
     description:
-      'Upload your logo, pick brand colors and a template, and add social links. Tailnote builds clean, on-brand HTML once.',
+      'Upload your logo, pick brand colors and a template, and add social links. Then add your customizable promo blocks. Tailnote builds clean, on-brand HTML once.',
   },
   {
     title: 'Add your team',

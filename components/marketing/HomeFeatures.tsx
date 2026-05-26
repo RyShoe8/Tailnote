@@ -34,7 +34,8 @@ const FEATURES = [
   {
     icon: Users,
     title: 'Team-wide control',
-    description: 'Set brand, offers, and social links once. Every employee sends the same on-brand marketing footprint.',
+    description:
+      'Set brand, offers, and social links once. Every employee sends the same on-brand marketing footprint or let each customize.',
   },
 ] as const;
 

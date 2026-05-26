@@ -46,7 +46,7 @@ export function HomeHero() {
               </Button>
             </div>
             <p className="mt-4 text-xs text-muted-foreground">
-              No credit card required &middot; Install to Gmail in one click
+              Install to Gmail in one click
             </p>
           </div>
 
