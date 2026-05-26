@@ -5,7 +5,7 @@ import { scanDmarc } from '@/lib/email-health/scanners/dmarc';
 import { scanHttps } from '@/lib/email-health/scanners/https';
 import { scanMx } from '@/lib/email-health/scanners/mx';
 import { scanSpf } from '@/lib/email-health/scanners/spf';
-import { scanSmtpTls } from '@/lib/email-health/scanners/smtpTls';
+import { scanSmtpTls, smtpTlsInconclusiveResult } from '@/lib/email-health/scanners/smtpTls';
 import { scoreFromCategories, statusLabelFromScore } from '@/lib/email-health/scoring';
 import type { EmailHealthReport } from '@/lib/email-health/types';
 
@@ -36,7 +36,12 @@ export async function runEmailHealthScan(rawDomain: string): Promise<EmailHealth
     withTimeout(scanHttps(domain), 'HTTPS'),
   ]);
 
-  const tls = await withTimeout(scanSmtpTls(mx.primaryMx), 'SMTP TLS');
+  let tls;
+  try {
+    tls = await scanSmtpTls(mx.primaryMx, mx.mailProvider);
+  } catch {
+    tls = smtpTlsInconclusiveResult();
+  }
 
   const categories = [
     spf.category,

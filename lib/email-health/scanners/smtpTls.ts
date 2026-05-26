@@ -2,18 +2,27 @@ import net from 'node:net';
 import tls from 'node:tls';
 import { buildCategoryResult } from '@/lib/email-health/scoring';
 import type { CategoryResult, DomainIssue } from '@/lib/email-health/types';
+import type { MailProvider } from '@/lib/email-health/scanners/mx';
 
-const PROBE_TIMEOUT_MS = 6000;
+const PROBE_TIMEOUT_MS = 4000;
+const OVERALL_CAP_MS = 8000;
 
-function probeStartTls(
-  host: string,
-  port: number
-): Promise<'tls-ok' | 'plain-only' | 'unreachable'> {
+type ProbeResult = 'tls-ok' | 'plain-only' | 'unreachable';
+
+function pickBestProbeResult(results: ProbeResult[]): ProbeResult {
+  if (results.includes('tls-ok')) return 'tls-ok';
+  if (results.includes('plain-only')) return 'plain-only';
+  return 'unreachable';
+}
+
+function probeStartTls(host: string, port: number): Promise<ProbeResult> {
   return new Promise((resolve) => {
     const socket = net.connect({ host, port, timeout: PROBE_TIMEOUT_MS });
     let settled = false;
+    let phase: 'banner' | 'ehlo' = 'banner';
+    let buffer = '';
 
-    const finish = (result: 'tls-ok' | 'plain-only' | 'unreachable') => {
+    const finish = (result: ProbeResult) => {
       if (settled) return;
       settled = true;
       socket.destroy();
@@ -21,17 +30,20 @@ function probeStartTls(
     };
 
     socket.setTimeout(PROBE_TIMEOUT_MS);
-
     socket.on('timeout', () => finish('unreachable'));
     socket.on('error', () => finish('unreachable'));
 
-    socket.on('connect', () => {
-      socket.write('EHLO tailnote-health.local\r\n');
-    });
-
-    let buffer = '';
     socket.on('data', (chunk) => {
       buffer += chunk.toString('utf8');
+
+      if (phase === 'banner') {
+        if (!/220[\s-]/.test(buffer)) return;
+        phase = 'ehlo';
+        buffer = '';
+        socket.write('EHLO tailnote-health.local\r\n');
+        return;
+      }
+
       if (!buffer.includes('250')) return;
 
       if (buffer.toLowerCase().includes('starttls')) {
@@ -52,9 +64,94 @@ export type SmtpTlsScanResult = {
   issues: DomainIssue[];
 };
 
-export async function scanSmtpTls(mxHost: string | undefined): Promise<SmtpTlsScanResult> {
-  const issues: DomainIssue[] = [];
+export function smtpTlsInconclusiveResult(reason?: string): SmtpTlsScanResult {
+  const technicalDetail =
+    reason ??
+    `Unable to connect on ports 587/25 within ${PROBE_TIMEOUT_MS}ms from our servers.`;
 
+  return {
+    category: buildCategoryResult('tls', 'warn', 'TLS check inconclusive'),
+    issues: [
+      {
+        category: 'tls',
+        severity: 'warn',
+        title: 'Could not verify mail server encryption from our servers',
+        explanation:
+          'Some cloud networks block outbound SMTP ports. This does not necessarily mean your mail is insecure.',
+        recommendation:
+          'Confirm STARTTLS is enabled with your email provider (Google, Microsoft, etc.).',
+        technicalDetail,
+      },
+    ],
+  };
+}
+
+function providerTlsPassResult(mailProvider: MailProvider): SmtpTlsScanResult {
+  return {
+    category: buildCategoryResult('tls', 'pass', 'TLS enforced by provider'),
+    issues: [
+      {
+        category: 'tls',
+        severity: 'info',
+        title: 'Mail encryption handled by your email provider',
+        explanation: `${mailProvider} enforces TLS for mail delivery in production.`,
+        recommendation: 'No action needed if you host email on this provider.',
+        technicalDetail: 'Skipped live SMTP probe; TLS enforced by provider.',
+      },
+    ],
+  };
+}
+
+async function probeMxHost(host: string): Promise<SmtpTlsScanResult> {
+  const normalized = host.replace(/\.$/, '');
+  const probeResults = await Promise.all(
+    [587, 25].map((port) => probeStartTls(normalized, port))
+  );
+  const result = pickBestProbeResult(probeResults);
+
+  if (result === 'tls-ok') {
+    return {
+      category: buildCategoryResult('tls', 'pass', 'STARTTLS supported'),
+      issues: [
+        {
+          category: 'tls',
+          severity: 'info',
+          title: 'Mail server supports encrypted delivery (STARTTLS)',
+          explanation:
+            'Messages can be protected in transit between servers when peers use TLS.',
+          recommendation: 'Keep TLS enabled and use strong certificates on your mail host.',
+          technicalDetail: `STARTTLS probe succeeded for ${normalized}`,
+        },
+      ],
+    };
+  }
+
+  if (result === 'plain-only') {
+    return {
+      category: buildCategoryResult('tls', 'warn', 'STARTTLS not confirmed'),
+      issues: [
+        {
+          category: 'tls',
+          severity: 'warn',
+          title: 'Mail server may not advertise STARTTLS',
+          explanation:
+            'Without TLS, messages may travel unencrypted between mail servers — a deliverability and privacy concern.',
+          recommendation: 'Enable STARTTLS on your mail host or confirm with your email provider.',
+          technicalDetail: `MX host ${normalized} did not complete STARTTLS handshake in our probe.`,
+        },
+      ],
+    };
+  }
+
+  return smtpTlsInconclusiveResult(
+    `Unable to connect to ${normalized} on ports 587/25 within ${PROBE_TIMEOUT_MS}ms.`
+  );
+}
+
+export async function scanSmtpTls(
+  mxHost: string | undefined,
+  mailProvider?: MailProvider
+): Promise<SmtpTlsScanResult> {
   if (!mxHost) {
     return {
       category: buildCategoryResult('tls', 'warn', 'No MX host to test TLS'),
@@ -70,58 +167,16 @@ export async function scanSmtpTls(mxHost: string | undefined): Promise<SmtpTlsSc
     };
   }
 
-  const host = mxHost.replace(/\.$/, '');
-  let result: 'tls-ok' | 'plain-only' | 'unreachable' = 'unreachable';
-
-  for (const port of [587, 25]) {
-    result = await probeStartTls(host, port);
-    if (result !== 'unreachable') break;
+  if (mailProvider === 'Google Workspace' || mailProvider === 'Microsoft 365') {
+    return providerTlsPassResult(mailProvider);
   }
 
-  if (result === 'tls-ok') {
-    issues.push({
-      category: 'tls',
-      severity: 'info',
-      title: 'Mail server supports encrypted delivery (STARTTLS)',
-      explanation: 'Messages can be protected in transit between servers when peers use TLS.',
-      recommendation: 'Keep TLS enabled and use strong certificates on your mail host.',
-      technicalDetail: `STARTTLS probe succeeded for ${host}`,
-    });
-    return {
-      category: buildCategoryResult('tls', 'pass', 'STARTTLS supported'),
-      issues,
-    };
-  }
+  const capped = Promise.race([
+    probeMxHost(mxHost),
+    new Promise<SmtpTlsScanResult>((resolve) => {
+      setTimeout(() => resolve(smtpTlsInconclusiveResult('SMTP TLS probe exceeded time limit')), OVERALL_CAP_MS);
+    }),
+  ]);
 
-  if (result === 'plain-only') {
-    issues.push({
-      category: 'tls',
-      severity: 'warn',
-      title: 'Mail server may not advertise STARTTLS',
-      explanation:
-        'Without TLS, messages may travel unencrypted between mail servers — a deliverability and privacy concern.',
-      recommendation: 'Enable STARTTLS on your mail host or confirm with your email provider.',
-      technicalDetail: `MX host ${host} did not complete STARTTLS handshake in our probe.`,
-    });
-    return {
-      category: buildCategoryResult('tls', 'warn', 'STARTTLS not confirmed'),
-      issues,
-    };
-  }
-
-  issues.push({
-    category: 'tls',
-    severity: 'warn',
-    title: 'Could not verify mail server encryption from our servers',
-    explanation:
-      'Some cloud networks block outbound SMTP ports. This does not necessarily mean your mail is insecure.',
-    recommendation:
-      'Confirm STARTTLS is enabled with your email provider (Google, Microsoft, etc.).',
-    technicalDetail: `Unable to connect to ${host} on ports 587/25 within ${PROBE_TIMEOUT_MS}ms.`,
-  });
-
-  return {
-    category: buildCategoryResult('tls', 'warn', 'TLS check inconclusive'),
-    issues,
-  };
+  return capped;
 }

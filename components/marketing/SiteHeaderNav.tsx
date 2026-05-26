@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 export const PRODUCT_NAV = [
-  { href: '/pricing', label: 'Pricing' },
   { href: '/templates', label: 'Templates' },
   { href: '/promotional-blocks', label: 'Promotional Blocks' },
   { href: '/analytics', label: 'Analytics' },
+  { href: '/pricing', label: 'Pricing' },
   { href: '/email-health', label: 'Email Health' },
 ] as const;
 
