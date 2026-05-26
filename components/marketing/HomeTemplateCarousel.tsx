@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarketingEmailClientFrame } from '@/components/marketing/MarketingEmailClientFrame';
@@ -11,6 +11,8 @@ import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePrevie
 import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
 
 const SWIPE_THRESHOLD_PX = 50;
+const RESERVE_BUFFER_PX = 12;
+const RESERVE_MAX_HEIGHT_PX = 1200;
 
 type Props = {
   presets: CatalogPresetRow[];
@@ -145,7 +147,11 @@ function TemplateSlidePreview({ preset }: { preset: CatalogPresetRow }) {
 export function HomeTemplateCarousel({ presets }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [hasSwiped, setHasSwiped] = useState(false);
+  const [reserveMinHeight, setReserveMinHeight] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
+  const chromeRef = useRef<HTMLDivElement | null>(null);
+  const floatZoneRef = useRef<HTMLDivElement | null>(null);
+  const reserveMinHeightRef = useRef<number | null>(null);
 
   const goToIndex = useCallback(
     (index: number) => {
@@ -154,6 +160,54 @@ export function HomeTemplateCarousel({ presets }: Props) {
     },
     [presets.length]
   );
+
+  useLayoutEffect(() => {
+    const chrome = chromeRef.current;
+    const floatZone = floatZoneRef.current;
+    if (!chrome || !floatZone) return;
+
+    const measure = () => {
+      let maxSlide = 0;
+      floatZone.querySelectorAll<HTMLElement>('[data-carousel-slide]').forEach((node) => {
+        maxSlide = Math.max(maxSlide, Math.ceil(node.getBoundingClientRect().height));
+      });
+
+      const style = getComputedStyle(floatZone);
+      const padTop = parseFloat(style.paddingTop) || 0;
+      const padBottom = parseFloat(style.paddingBottom) || 0;
+      const chromeH = Math.ceil(chrome.offsetHeight);
+      const next = Math.min(
+        RESERVE_MAX_HEIGHT_PX,
+        chromeH + padTop + padBottom + maxSlide + RESERVE_BUFFER_PX
+      );
+
+      if (next <= 0) return;
+      const prev = reserveMinHeightRef.current;
+      if (prev != null && Math.abs(next - prev) <= 2) return;
+
+      reserveMinHeightRef.current = next;
+      setReserveMinHeight(next);
+    };
+
+    measure();
+
+    const ro = new ResizeObserver(() => measure());
+    floatZone.querySelectorAll<HTMLElement>('[data-carousel-slide]').forEach((node) => {
+      ro.observe(node);
+    });
+
+    const onImgLoad = () => measure();
+    floatZone.querySelectorAll('img').forEach((img) => {
+      if (!img.complete) img.addEventListener('load', onImgLoad, { once: true });
+    });
+
+    window.addEventListener('resize', measure);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [presets]);
 
   function scrollBySlide(delta: number) {
     goToIndex(activeIndex + delta);
@@ -193,11 +247,12 @@ export function HomeTemplateCarousel({ presets }: Props) {
   return (
     <div
       className="relative mt-8 md:mt-10"
+      style={reserveMinHeight != null ? { minHeight: reserveMinHeight } : undefined}
       role="region"
       aria-roledescription="carousel"
       aria-label="Signature template previews"
     >
-      <div data-templates-carousel-chrome>
+      <div ref={chromeRef} data-templates-carousel-chrome>
         <div className="mb-4 flex items-center justify-center gap-3">
           <CarouselPrevButton activeIndex={activeIndex} onPrev={onPrev} />
           <CarouselDots activeIndex={activeIndex} presets={presets} onGoToIndex={goToIndex} />
@@ -214,6 +269,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
       </div>
 
       <div
+        ref={floatZoneRef}
         data-templates-float-zone
         className="relative overflow-x-clip pt-12 pb-10 sm:pt-14"
         onTouchStart={handleTouchStart}
