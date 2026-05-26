@@ -1,7 +1,7 @@
 import { ContactForm } from '@/components/marketing/ContactForm';
 import { FloatingOrbs } from '@/components/marketing/FloatingOrbs';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { contactPageJsonLd } from '@/lib/seo/jsonLd';
+import { contactPageJsonLd, marketingBreadcrumbJsonLd } from '@/lib/seo/jsonLd';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { marketingPageByKey } from '@/lib/seo/marketingPages';
 
@@ -17,11 +17,14 @@ export default function ContactPage() {
   return (
     <div className="relative isolate">
       <JsonLd
-        data={contactPageJsonLd({
-          path: contactPage.path,
-          name: contactPage.title,
-          description: contactPage.description,
-        })}
+        data={[
+          contactPageJsonLd({
+            path: contactPage.path,
+            name: contactPage.title,
+            description: contactPage.description,
+          }),
+          marketingBreadcrumbJsonLd(contactPage.title, contactPage.path),
+        ]}
       />
       <div
         aria-hidden

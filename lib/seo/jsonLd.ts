@@ -3,6 +3,16 @@ import type { HOME_FAQS } from '@/lib/seo/homeFaq';
 
 type JsonLd = Record<string, unknown>;
 
+export type PricingPlanForSchema = {
+  id: string;
+  name: string;
+  description: string;
+  slug: string;
+  interval: 'month' | 'year' | 'lifetime';
+  basePriceCents: number;
+  soldOut: boolean;
+};
+
 function baseContext(): JsonLd {
   return { '@context': 'https://schema.org' };
 }
@@ -14,6 +24,11 @@ export function organizationJsonLd(): JsonLd {
     name: SITE_NAME,
     url: getSiteUrl(),
     logo: absoluteOgImageUrl(),
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      url: absoluteUrl('/contact'),
+    },
   };
 }
 
@@ -134,6 +149,63 @@ export function itemListJsonLd(
         name: item.name,
         ...(item.description ? { description: item.description } : {}),
         ...(item.url ? { url: item.url } : {}),
+      },
+    })),
+  };
+}
+
+export function breadcrumbJsonLd(crumbs: { name: string; path: string }[]): JsonLd {
+  return {
+    ...baseContext(),
+    '@type': 'BreadcrumbList',
+    itemListElement: crumbs.map((crumb, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: crumb.name,
+      item: absoluteUrl(crumb.path),
+    })),
+  };
+}
+
+/** Home → current page breadcrumb for inner marketing routes. */
+export function marketingBreadcrumbJsonLd(pageTitle: string, path: string): JsonLd {
+  return breadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: pageTitle, path },
+  ]);
+}
+
+function pricingOfferBillingDuration(interval: PricingPlanForSchema['interval']): string | undefined {
+  if (interval === 'month') return 'P1M';
+  if (interval === 'year') return 'P1Y';
+  return undefined;
+}
+
+export function pricingPlansJsonLd(plans: PricingPlanForSchema[]): JsonLd {
+  return {
+    ...baseContext(),
+    '@type': 'ItemList',
+    name: `${SITE_NAME} pricing plans`,
+    itemListElement: plans.map((plan, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'Product',
+        name: plan.name,
+        description: plan.description,
+        sku: plan.slug,
+        offers: {
+          '@type': 'Offer',
+          url: absoluteUrl(`/signup?subscriptionPlanId=${encodeURIComponent(plan.id)}`),
+          price: (plan.basePriceCents / 100).toFixed(2),
+          priceCurrency: 'USD',
+          availability: plan.soldOut
+            ? 'https://schema.org/SoldOut'
+            : 'https://schema.org/InStock',
+          ...(plan.interval === 'lifetime'
+            ? { category: 'Lifetime (one-time purchase)' }
+            : { priceSpecification: { billingDuration: pricingOfferBillingDuration(plan.interval) } }),
+        },
       },
     })),
   };

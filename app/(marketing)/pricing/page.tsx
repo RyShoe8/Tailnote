@@ -7,7 +7,12 @@ import { FloatingOrbs } from '@/components/marketing/FloatingOrbs';
 import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
 import { getPublicPricingPlans } from 'billing-engine';
 import { isRecommendedPlan } from 'billing-engine';
-import { softwareApplicationJsonLd, webPageJsonLd } from '@/lib/seo/jsonLd';
+import {
+  marketingBreadcrumbJsonLd,
+  pricingPlansJsonLd,
+  softwareApplicationJsonLd,
+  webPageJsonLd,
+} from '@/lib/seo/jsonLd';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { marketingPageByKey } from '@/lib/seo/marketingPages';
 
@@ -33,6 +38,8 @@ export default async function PricingPage() {
             name: pricingPage.title,
             description: pricingPage.description,
           }),
+          marketingBreadcrumbJsonLd(pricingPage.title, pricingPage.path),
+          ...(plans.length > 0 ? [pricingPlansJsonLd(plans)] : []),
           softwareApplicationJsonLd(),
         ]}
       />

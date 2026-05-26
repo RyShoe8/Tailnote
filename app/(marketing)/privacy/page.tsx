@@ -1,7 +1,7 @@
 import { MarketingDocPage } from '@/components/marketing/MarketingDocPage';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { LEGAL_LAST_UPDATED, privacyContent } from '@/lib/marketing/legalContent';
-import { webPageJsonLd } from '@/lib/seo/jsonLd';
+import { marketingBreadcrumbJsonLd, webPageJsonLd } from '@/lib/seo/jsonLd';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { marketingPageByKey } from '@/lib/seo/marketingPages';
 
@@ -17,12 +17,15 @@ export default function PrivacyPage() {
   return (
     <>
       <JsonLd
-        data={webPageJsonLd({
-          path: privacyPage.path,
-          name: privacyContent.title,
-          description: privacyPage.description,
-          dateModified: LEGAL_LAST_UPDATED,
-        })}
+        data={[
+          webPageJsonLd({
+            path: privacyPage.path,
+            name: privacyContent.title,
+            description: privacyPage.description,
+            dateModified: LEGAL_LAST_UPDATED,
+          }),
+          marketingBreadcrumbJsonLd(privacyPage.title, privacyPage.path),
+        ]}
       />
       <MarketingDocPage
       title={privacyContent.title}

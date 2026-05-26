@@ -13,6 +13,7 @@ import { HOME_FAQS } from '@/lib/seo/homeFaq';
 import {
   faqPageJsonLd,
   softwareApplicationJsonLd,
+  webPageJsonLd,
   webSiteJsonLd,
 } from '@/lib/seo/jsonLd';
 import { createPageMetadata } from '@/lib/seo/metadata';
@@ -35,7 +36,16 @@ export default async function HomePage() {
   return (
     <div className="min-w-0">
       <JsonLd
-        data={[webSiteJsonLd(), softwareApplicationJsonLd(), faqPageJsonLd(HOME_FAQS)]}
+        data={[
+          webSiteJsonLd(),
+          webPageJsonLd({
+            path: homePage.path,
+            name: homePage.title,
+            description: homePage.description,
+          }),
+          softwareApplicationJsonLd(),
+          faqPageJsonLd(HOME_FAQS),
+        ]}
       />
       <HomeHero />
       <HomeFeatures />

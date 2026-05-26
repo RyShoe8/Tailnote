@@ -8,7 +8,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import type { TemplatePresetId } from '@/lib/email/templatePresets';
 import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
 import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
-import { itemListJsonLd, webPageJsonLd } from '@/lib/seo/jsonLd';
+import { itemListJsonLd, marketingBreadcrumbJsonLd, webPageJsonLd } from '@/lib/seo/jsonLd';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { marketingPageByKey } from '@/lib/seo/marketingPages';
 
@@ -40,6 +40,7 @@ export default async function TemplatesMarketingPage() {
             name: templatesPage.title,
             description: templatesPage.description,
           }),
+          marketingBreadcrumbJsonLd(templatesPage.title, templatesPage.path),
           ...(listItems.length > 0 ? [itemListJsonLd(listItems)] : []),
         ]}
       />

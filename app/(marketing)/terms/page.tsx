@@ -1,7 +1,7 @@
 import { MarketingDocPage } from '@/components/marketing/MarketingDocPage';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { LEGAL_LAST_UPDATED, termsContent } from '@/lib/marketing/legalContent';
-import { webPageJsonLd } from '@/lib/seo/jsonLd';
+import { marketingBreadcrumbJsonLd, webPageJsonLd } from '@/lib/seo/jsonLd';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { marketingPageByKey } from '@/lib/seo/marketingPages';
 
@@ -17,12 +17,15 @@ export default function TermsPage() {
   return (
     <>
       <JsonLd
-        data={webPageJsonLd({
-          path: termsPage.path,
-          name: termsContent.title,
-          description: termsPage.description,
-          dateModified: LEGAL_LAST_UPDATED,
-        })}
+        data={[
+          webPageJsonLd({
+            path: termsPage.path,
+            name: termsContent.title,
+            description: termsPage.description,
+            dateModified: LEGAL_LAST_UPDATED,
+          }),
+          marketingBreadcrumbJsonLd(termsPage.title, termsPage.path),
+        ]}
       />
       <MarketingDocPage
       title={termsContent.title}

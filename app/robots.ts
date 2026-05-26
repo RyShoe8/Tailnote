@@ -1,6 +1,10 @@
 import type { MetadataRoute } from 'next';
 import { getSiteUrl } from '@/lib/seo/site';
 
+/**
+ * Crawler policy for Tailnote. Marketing pages are allowed; app and API routes are not.
+ * AI crawlers: product summary for LLMs is at /llms.txt (no standard robots field; convention).
+ */
 const PRIVATE_DISALLOWS = [
   '/dashboard/',
   '/admin/',

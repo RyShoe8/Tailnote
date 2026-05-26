@@ -1,5 +1,11 @@
 import type { Metadata } from 'next';
-import { absoluteOgImageUrl, absoluteUrl, getSiteUrl, SITE_NAME } from '@/lib/seo/site';
+import {
+  absoluteOgImageUrl,
+  absoluteUrl,
+  DEFAULT_DESCRIPTION,
+  getSiteUrl,
+  SITE_NAME,
+} from '@/lib/seo/site';
 
 export type CreatePageMetadataInput = {
   title: string;
@@ -7,6 +13,13 @@ export type CreatePageMetadataInput = {
   /** Path including leading slash, e.g. `/pricing` */
   path: string;
   ogType?: 'website' | 'article';
+};
+
+const ogImage = {
+  url: absoluteOgImageUrl(),
+  width: 1200,
+  height: 630,
+  alt: `${SITE_NAME} — email signatures for teams`,
 };
 
 export function createPageMetadata({
@@ -29,12 +42,7 @@ export function createPageMetadata({
       siteName: SITE_NAME,
       title: `${title} — ${SITE_NAME}`,
       description,
-      images: [
-        {
-          url: absoluteOgImageUrl(),
-          alt: `${SITE_NAME} logo`,
-        },
-      ],
+      images: [ogImage],
     },
     twitter: {
       card: 'summary_large_image',
@@ -59,13 +67,17 @@ export function rootLayoutMetadata(): Metadata {
       default: SITE_NAME,
       template: `%s — ${SITE_NAME}`,
     },
-    description:
-      'Professional email signatures for modern teams — promotional blocks, UTM tracking, and polished templates.',
+    description: DEFAULT_DESCRIPTION,
+    icons: {
+      icon: '/images/tailnote-logo-mark.png',
+      apple: '/images/tailnote-logo-mark.png',
+    },
     openGraph: {
       type: 'website',
       locale: 'en_US',
       siteName: SITE_NAME,
-      images: [{ url: absoluteOgImageUrl(), alt: `${SITE_NAME} logo` }],
+      description: DEFAULT_DESCRIPTION,
+      images: [ogImage],
     },
     twitter: {
       card: 'summary_large_image',

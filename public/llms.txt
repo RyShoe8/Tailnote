@@ -1,0 +1,41 @@
+# Tailnote
+
+> Tailnote is email signature software for teams: on-brand signatures, promotional content blocks in every email, UTM link tracking, click analytics, curated templates, and optional Gmail one-click install.
+
+Canonical site: https://tailnote.com
+
+## Key pages
+
+- [Home](https://tailnote.com/)
+- [Pricing](https://tailnote.com/pricing)
+- [Templates](https://tailnote.com/templates)
+- [About](https://tailnote.com/about)
+- [Contact](https://tailnote.com/contact)
+- [Terms](https://tailnote.com/terms)
+- [Privacy](https://tailnote.com/privacy)
+
+## What Tailnote does
+
+- Organization-wide email signature management for employees
+- Promotional blocks (buttons, offers, blog feeds, banners) inside signatures
+- Templates designed for Gmail, Outlook, and common email clients
+- Built-in UTM parameters and optional per-link click analytics
+- Stripe billing: monthly, annual, and Lifetime (one-time) plans
+
+## Who it is for
+
+Marketing, sales, and operations teams that want every outbound email to carry consistent branding and measurable calls to action without hand-editing HTML.
+
+## Pricing
+
+Paid SaaS per organization. Plans include a set number of users; see /pricing for current options including Lifetime one-time purchases.
+
+## Legal
+
+Full terms including Lifetime subscriptions (minimum twelve months of access guaranteed): https://tailnote.com/terms
+
+Privacy policy: https://tailnote.com/privacy
+
+## Contact
+
+https://tailnote.com/contact

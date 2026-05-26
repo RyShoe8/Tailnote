@@ -4,7 +4,7 @@ export type LegalSection = {
   listItems?: string[];
 };
 
-export const LEGAL_LAST_UPDATED = 'May 17, 2026';
+export const LEGAL_LAST_UPDATED = 'May 22, 2026';
 
 const MEDIA_SHOP = 'The Media Shop (themediashop.co)';
 
@@ -154,6 +154,14 @@ export const termsContent = {
       paragraphs: [
         'Paid plans are billed through Stripe according to the pricing shown at checkout or in your dashboard. Fees are charged in advance for the billing period selected unless otherwise stated. Plan limits (such as included users or promotional caps) are enforced as described at purchase.',
         'You may cancel or change plans through the billing portal where available. Refunds are handled according to our published refund policy and applicable law. We may change pricing with reasonable notice for future billing periods.',
+      ],
+    },
+    {
+      title: 'Lifetime subscriptions',
+      paragraphs: [
+        'Lifetime plans are one-time purchases that grant access to Tailnote for as long as we continue to operate the Service. "Lifetime" means for the life of the platform, not for the life of the purchaser or any fixed calendar term beyond what is stated below.',
+        'We guarantee that your Lifetime access will remain active for at least twelve (12) months from the date of purchase. If we discontinue the Service or end Lifetime access before that twelve-month period has elapsed, we will honor access through the end of that minimum period or provide a remedy consistent with applicable law (such as a pro-rata refund), at our discretion.',
+        'Lifetime access does not constitute a promise that Tailnote will operate indefinitely, and does not entitle you to compensation beyond the minimum period described above if we wind down the Service in compliance with these Terms.',
       ],
     },
     {

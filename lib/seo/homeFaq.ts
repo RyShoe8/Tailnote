@@ -16,6 +16,10 @@ export const HOME_FAQS = [
     a: 'Once you cancel you will lose access to the platform and be unable to make updates until you reactivate your plan',
   },
   {
+    q: 'What is a Lifetime plan?',
+    a: 'A Lifetime plan is a one-time purchase that keeps your organization on Tailnote for as long as we operate the platform. We guarantee at least twelve months of access from your purchase date; full details are in our Terms and Conditions.',
+  },
+  {
     q: 'Is there a free tier?',
     a: 'Tailnote is a paid product. When you sign up you choose a subscription plan and complete checkout before using the workspace. See Pricing for current plans.',
   },

@@ -1,3 +1,7 @@
+import type { MetadataRoute } from 'next';
+import { LEGAL_LAST_UPDATED } from '@/lib/marketing/legalContent';
+import { absoluteUrl } from '@/lib/seo/site';
+
 export type MarketingPageKey =
   | 'home'
   | 'pricing'
@@ -28,7 +32,7 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     path: '/pricing',
     title: 'Email signature pricing',
     description:
-      'Simple per-organization plans with included users, promotional signature blocks, UTM link tracking, and click analytics. Compare Tailnote pricing.',
+      'Simple per-organization plans with included users, monthly and annual subscriptions, optional Lifetime one-time plans, promotional signature blocks, UTM tracking, and click analytics.',
   },
   {
     key: 'templates',
@@ -63,7 +67,7 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     path: '/terms',
     title: 'Terms and Conditions',
     description:
-      'Terms of service for using Tailnote — subscriptions, acceptable use, and your rights as a customer.',
+      'Terms of service for using Tailnote — subscriptions, Lifetime plans, acceptable use, and your rights as a customer.',
   },
 ] as const;
 
@@ -71,4 +75,22 @@ export function marketingPageByKey(key: MarketingPageKey): MarketingPageConfig {
   const page = INDEXABLE_MARKETING_PAGES.find((p) => p.key === key);
   if (!page) throw new Error(`Unknown marketing page: ${key}`);
   return page;
+}
+
+const LEGAL_PAGE_PATHS = new Set(['/privacy', '/terms']);
+
+function legalLastModified(): Date {
+  return new Date(LEGAL_LAST_UPDATED);
+}
+
+/** Sitemap rows for indexable marketing pages with per-page lastModified. */
+export function marketingSitemapEntries(): MetadataRoute.Sitemap {
+  const defaultLastModified = new Date();
+
+  return INDEXABLE_MARKETING_PAGES.map((page) => ({
+    url: absoluteUrl(page.path),
+    lastModified: LEGAL_PAGE_PATHS.has(page.path) ? legalLastModified() : defaultLastModified,
+    changeFrequency: page.path === '/' ? ('weekly' as const) : ('monthly' as const),
+    priority: page.path === '/' ? 1 : 0.8,
+  }));
 }

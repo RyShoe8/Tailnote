@@ -2,7 +2,7 @@ import { FloatingOrbs } from '@/components/marketing/FloatingOrbs';
 import { MarketingDocPage } from '@/components/marketing/MarketingDocPage';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { aboutContent, LEGAL_LAST_UPDATED } from '@/lib/marketing/legalContent';
-import { aboutPageJsonLd } from '@/lib/seo/jsonLd';
+import { aboutPageJsonLd, marketingBreadcrumbJsonLd } from '@/lib/seo/jsonLd';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { marketingPageByKey } from '@/lib/seo/marketingPages';
 
@@ -18,11 +18,14 @@ export default function AboutPage() {
   return (
     <>
       <JsonLd
-        data={aboutPageJsonLd({
-          path: aboutPage.path,
-          name: aboutContent.title,
-          description: aboutPage.description,
-        })}
+        data={[
+          aboutPageJsonLd({
+            path: aboutPage.path,
+            name: aboutContent.title,
+            description: aboutPage.description,
+          }),
+          marketingBreadcrumbJsonLd(aboutPage.title, aboutPage.path),
+        ]}
       />
       <div className="relative isolate overflow-hidden">
         <FloatingOrbs
