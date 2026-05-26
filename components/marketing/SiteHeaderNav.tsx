@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 const NAV_ITEMS = [
   { href: '/pricing', label: 'Pricing' },
   { href: '/templates', label: 'Templates' },
+  { href: '/email-health', label: 'Email Health' },
   { href: '/login', label: 'Log in' },
 ] as const;
 

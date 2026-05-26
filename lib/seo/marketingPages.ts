@@ -6,6 +6,7 @@ export type MarketingPageKey =
   | 'home'
   | 'pricing'
   | 'templates'
+  | 'emailHealth'
   | 'about'
   | 'contact'
   | 'privacy'
@@ -40,6 +41,13 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     title: 'Email signature templates',
     description:
       'Curated email signature templates with built-in promotional blocks — book-a-call buttons, offer lists, blog feeds, and image banners that work in real inboxes.',
+  },
+  {
+    key: 'emailHealth',
+    path: '/email-health',
+    title: 'Free email health check',
+    description:
+      'Free domain email health scan — SPF, DKIM, DMARC, BIMI, MX, and TLS explained in plain English with an actionable trust score.',
   },
   {
     key: 'about',
@@ -91,6 +99,6 @@ export function marketingSitemapEntries(): MetadataRoute.Sitemap {
     url: absoluteUrl(page.path),
     lastModified: LEGAL_PAGE_PATHS.has(page.path) ? legalLastModified() : defaultLastModified,
     changeFrequency: page.path === '/' ? ('weekly' as const) : ('monthly' as const),
-    priority: page.path === '/' ? 1 : 0.8,
+    priority: page.path === '/' ? 1 : page.path === '/email-health' ? 0.9 : 0.8,
   }));
 }

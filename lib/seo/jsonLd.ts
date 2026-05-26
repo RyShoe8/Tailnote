@@ -1,5 +1,4 @@
 import { absoluteOgImageUrl, absoluteUrl, getSiteUrl, SITE_NAME } from '@/lib/seo/site';
-import type { HOME_FAQS } from '@/lib/seo/homeFaq';
 
 type JsonLd = Record<string, unknown>;
 
@@ -120,7 +119,9 @@ export function softwareApplicationJsonLd(): JsonLd {
   };
 }
 
-export function faqPageJsonLd(faqs: typeof HOME_FAQS): JsonLd {
+export function faqPageJsonLd(
+  faqs: ReadonlyArray<{ readonly q: string; readonly a: string }>
+): JsonLd {
   return {
     ...baseContext(),
     '@type': 'FAQPage',

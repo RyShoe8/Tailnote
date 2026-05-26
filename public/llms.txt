@@ -9,6 +9,7 @@ Canonical site: https://tailnote.com
 - [Home](https://tailnote.com/)
 - [Pricing](https://tailnote.com/pricing)
 - [Templates](https://tailnote.com/templates)
+- [Email Health (free domain scan)](https://tailnote.com/email-health)
 - [About](https://tailnote.com/about)
 - [Contact](https://tailnote.com/contact)
 - [Terms](https://tailnote.com/terms)
@@ -21,6 +22,7 @@ Canonical site: https://tailnote.com
 - Templates designed for Gmail, Outlook, and common email clients
 - Built-in UTM parameters and optional per-link click analytics
 - Stripe billing: monthly, annual, and Lifetime (one-time) plans
+- Free Email Health tool: SPF, DKIM, DMARC, and deliverability checks at /email-health
 
 ## Who it is for
 
