@@ -3,6 +3,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { MarketingEmailClientFrame } from '@/components/marketing/MarketingEmailClientFrame';
 import { MarketingLiveSignaturePreview } from '@/components/marketing/MarketingLiveSignaturePreview';
 import type { TemplatePresetId } from '@/lib/email/templatePresets';
 import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
@@ -141,16 +142,6 @@ function TemplateSlidePreview({ preset }: { preset: CatalogPresetRow }) {
   );
 }
 
-function SlideCardShell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="group overflow-visible pb-2">
-      <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-float ring-1 ring-black/5 transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-ring">
-        <div className="bg-gradient-to-b from-slate-50/60 to-white p-4 sm:p-6 md:bg-white">{children}</div>
-      </div>
-    </div>
-  );
-}
-
 export function HomeTemplateCarousel({ presets }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [hasSwiped, setHasSwiped] = useState(false);
@@ -170,20 +161,21 @@ export function HomeTemplateCarousel({ presets }: Props) {
     const root = viewportRef.current;
     if (!root) return;
 
+    const getActiveSlide = () =>
+      root.querySelector<HTMLElement>('[data-carousel-slide][data-carousel-active="true"]');
+
     const measure = () => {
-      const nodes = root.querySelectorAll<HTMLElement>('[data-carousel-slide]');
-      let max = 0;
-      nodes.forEach((node) => {
-        max = Math.max(max, Math.ceil(node.getBoundingClientRect().height));
-      });
-      if (max > 0) setViewportHeight(max);
+      const activeSlide = getActiveSlide();
+      if (!activeSlide) return;
+      const h = Math.ceil(activeSlide.getBoundingClientRect().height);
+      if (h > 0) setViewportHeight(h);
     };
 
     measure();
 
     const ro = new ResizeObserver(() => measure());
-    const nodes = root.querySelectorAll<HTMLElement>('[data-carousel-slide]');
-    nodes.forEach((node) => ro.observe(node));
+    const activeSlide = getActiveSlide();
+    if (activeSlide) ro.observe(activeSlide);
 
     const onImgLoad = () => measure();
     root.querySelectorAll('img').forEach((img) => {
@@ -196,7 +188,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
       ro.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [presets]);
+  }, [presets, activeIndex]);
 
   function scrollBySlide(delta: number) {
     goToIndex(activeIndex + delta);
@@ -261,7 +253,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
       >
         <div
           ref={viewportRef}
-          className={`relative w-full min-w-0 overflow-x-hidden overflow-y-visible ${
+          className={`relative w-full min-w-0 overflow-x-hidden overflow-y-visible transition-[height] duration-300 ease-out motion-reduce:transition-none ${
             viewportHeight == null ? 'min-h-[200px]' : ''
           }`}
           style={viewportHeight != null ? { height: viewportHeight } : undefined}
@@ -273,22 +265,30 @@ export function HomeTemplateCarousel({ presets }: Props) {
               transform: `translateX(-${trackOffsetPercent}%)`,
             }}
           >
-            {presets.map((preset, index) => (
-              <article
-                key={preset.presetId}
-                data-carousel-slide
-                className="shrink-0 grow-0"
-                style={{ width: `${slideSharePercent}%` }}
-                aria-roledescription="slide"
-                aria-hidden={index !== activeIndex}
-              >
-                <div className="overflow-visible">
-                  <SlideCardShell>
-                    <TemplateSlidePreview preset={preset} />
-                  </SlideCardShell>
-                </div>
-              </article>
-            ))}
+            {presets.map((preset, index) => {
+              const isActive = index === activeIndex;
+              return (
+                <article
+                  key={preset.presetId}
+                  data-carousel-slide
+                  data-carousel-active={isActive ? 'true' : 'false'}
+                  className="shrink-0 grow-0"
+                  style={{ width: `${slideSharePercent}%` }}
+                  aria-roledescription="slide"
+                  aria-hidden={!isActive}
+                >
+                  <div className="overflow-visible pb-2">
+                    <MarketingEmailClientFrame
+                      layout="carousel"
+                      showAmbience={isActive}
+                      active={isActive}
+                    >
+                      <TemplateSlidePreview preset={preset} />
+                    </MarketingEmailClientFrame>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       </div>
