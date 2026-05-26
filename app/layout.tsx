@@ -22,6 +22,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={inter.variable}>
       <head>
         <Script
+          src="https://cdn.cookie-script.com/s/4b7070c065ab1eeb4da1eea7696ba1e6.js"
+          strategy="beforeInteractive"
+          charSet="UTF-8"
+        />
+        <Script
           src="https://analytics.ahrefs.com/analytics.js"
           data-key="84d4ltvZgmF7PeBybMQ5+g"
           strategy="afterInteractive"
