@@ -16,7 +16,7 @@ export const aboutContent = {
     {
       title: 'What we do',
       paragraphs: [
-        'Tailnote is a SaaS platform built for modern teams that need consistent branding in every email. You choose from curated signature templates, set brand colors and logos, manage employees, and publish signatures that work in real inboxes—including optional hosted preview pages and Gmail integration.',
+        'Tailnote is a SaaS platform built for modern teams that need consistent branding in every email. You choose from curated signature templates, set brand colors and logos, manage employees, and publish signatures that work in real inboxes—including optional hosted preview pages and copy-paste install for Gmail and Outlook.',
       ],
     },
     {
@@ -62,7 +62,6 @@ export const privacyContent = {
         'Organization and employee data: company name, job titles, contact fields, social links, signature content, and template preferences you enter in the dashboard.',
         'Uploaded assets: logos and images you upload for signatures (stored via Vercel Blob).',
         'Billing information: subscription and payment details processed by Stripe. We do not store full payment card numbers on our servers.',
-        'Gmail integration (optional): if you connect Gmail, we receive OAuth tokens to apply signatures on your behalf. Tokens are encrypted at rest.',
         'Signature analytics (optional): when your organization enables click tracking, we log clicks on tracked links in signatures (for example, link URL and timestamp).',
         'Usage and technical data: IP address, browser type, device information, and pages visited, including through analytics tools described below.',
       ],
@@ -73,8 +72,7 @@ export const privacyContent = {
         'Provide, maintain, and improve the Service.',
         'Authenticate users and secure accounts.',
         'Process subscriptions and send billing-related communications.',
-        'Apply email signatures through connected integrations when you request it.',
-        'Generate signature HTML, hosted previews, and optional analytics reports.',
+        'Generate signature HTML for copy-paste install, hosted previews, and optional analytics reports.',
         'Comply with legal obligations and enforce our Terms.',
       ],
     },
@@ -88,7 +86,7 @@ export const privacyContent = {
         'MongoDB (database hosting) for application data.',
         'Vercel (hosting and file storage) for the application and uploaded logos.',
         'Stripe (payments) for subscriptions and billing.',
-        'Google (OAuth / Gmail API) when you connect Gmail.',
+        'Google (OAuth) when you sign in with Google.',
         'Google Analytics (measurement ID G-DBX0LXGNND) and Ahrefs Analytics for website usage insights.',
       ],
     },

@@ -8,25 +8,32 @@ type Props = {
   html: string;
   disabled?: boolean;
   label?: string;
+  copiedLabel?: string;
+  onCopyResult?: (ok: boolean) => void;
 };
 
-export function CopySignatureButton({ html, disabled, label = 'Copy HTML' }: Props) {
+export function CopySignatureButton({
+  html,
+  disabled,
+  label = 'Copy signature',
+  copiedLabel = 'Copied',
+  onCopyResult,
+}: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleClick = useCallback(async () => {
     if (disabled || !html.trim()) return;
-    try {
-      await copyHtmlToClipboard(html);
+    const result = await copyHtmlToClipboard(html);
+    onCopyResult?.(result.ok);
+    if (result.ok) {
       setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
+      window.setTimeout(() => setCopied(false), 2500);
     }
-  }, [html, disabled]);
+  }, [html, disabled, onCopyResult]);
 
   return (
-    <Button type="button" variant="default" onClick={handleClick} disabled={disabled || !html.trim()}>
-      {copied ? 'Copied' : label}
+    <Button type="button" variant="default" onClick={() => void handleClick()} disabled={disabled || !html.trim()}>
+      {copied ? copiedLabel : label}
     </Button>
   );
 }

@@ -12,9 +12,9 @@ const STEPS = [
       'Invite employees and let them fill in name, title, and contact details. Brand and promo blocks stay locked to your settings.',
   },
   {
-    title: 'Install in one click',
+    title: 'Copy into your inbox',
     description:
-      "Connect Gmail to apply signatures automatically, or copy HTML that pastes into Outlook and any other client.",
+      'Copy your signature from Tailnote, paste into Gmail settings or Outlook, and every outbound email is on-brand.',
   },
 ] as const;
 

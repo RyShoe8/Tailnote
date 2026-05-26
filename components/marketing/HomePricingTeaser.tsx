@@ -49,7 +49,7 @@ export function HomePricingTeaser({ plans }: Props) {
             </h2>
             <p className="text-pretty text-muted-foreground">
               Skip expensive agency rebuilds. Tailnote gives your whole team on-brand signatures,
-              promotional content blocks, built-in UTM tracking, and Gmail-ready installs for a
+              promotional content blocks, built-in UTM tracking, and copy-paste install for Gmail and Outlook for a
               fraction of what you&apos;d pay elsewhere.
             </p>
             {fallback ? (

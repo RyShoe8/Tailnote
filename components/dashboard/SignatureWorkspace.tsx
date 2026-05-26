@@ -25,13 +25,7 @@ import {
 } from '@/components/signature/SignaturePreviewFrame';
 import { LivePreviewStickyColumn } from '@/components/signature/LivePreviewStickyColumn';
 import { CopySignatureButton } from '@/components/signature/CopySignatureButton';
-import { CopyRichTextButton } from '@/components/signature/CopyRichTextButton';
-import { OutlookInstallHelp } from '@/components/signature/OutlookInstallHelp';
-import { downloadHtml } from '@/lib/clipboard';
-import {
-  GMAIL_SIGNATURE_MAX_CHARS,
-  prepareSignatureHtmlForGmailDetailed,
-} from '@/lib/email/gmailSignatureHtml';
+import { SignatureInstallPanel } from '@/components/signature/SignatureInstallPanel';
 import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
 import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
@@ -128,12 +122,6 @@ export function SignatureWorkspace() {
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [gmailConnected, setGmailConnected] = useState(false);
-  const [gmailEmail, setGmailEmail] = useState('');
-  const [gmailBusy, setGmailBusy] = useState(false);
-  const [gmailMessage, setGmailMessage] = useState<string | null>(null);
-  const [gmailApplyToReplies, setGmailApplyToReplies] = useState(true);
-  const [tailnoteLoginEmail, setTailnoteLoginEmail] = useState('');
   /** Server-rendered HTML with signed tracking URLs when org flag is on. */
   const [trackedHtml, setTrackedHtml] = useState<string | null>(null);
   /** Bumps after mount so signature HTML re-renders with real `window` origin (SSR memo used localhost). */
@@ -142,21 +130,16 @@ export function SignatureWorkspace() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [oRes, tRes, gRes, pRes] = await Promise.all([
+      const [oRes, tRes, pRes] = await Promise.all([
         fetch('/api/dashboard/organization', { credentials: 'include' }),
         fetch('/api/dashboard/templates', { credentials: 'include' }),
-        fetch('/api/integrations/gmail/status', { credentials: 'include' }),
         fetch('/api/dashboard/me/signature-profile', { credentials: 'include' }),
       ]);
       const oJson = await oRes.json();
       const tJson = await tRes.json();
-      const gJson = await gRes.json().catch(() => ({}));
       const pJson = await pRes.json().catch(() => ({}));
       if (typeof oJson.viewer?.role === 'string') {
         setViewerRole(oJson.viewer.role);
-      }
-      if (typeof oJson.viewer?.email === 'string') {
-        setTailnoteLoginEmail(oJson.viewer.email);
       }
       if (oJson.permissions && typeof oJson.permissions === 'object') {
         const p = oJson.permissions as OrgPermissions;
@@ -193,20 +176,6 @@ export function SignatureWorkspace() {
         ? list.find((t) => t._id === savedTemplateId) ?? defaultRow ?? list[0]
         : defaultRow ?? list[0];
       if (pick) setSelectedTemplateId(pick._id);
-      const gmailEmailFromApi = String(gJson.googleEmail || '').trim();
-      const gmailLinkedFromApi = Boolean(gJson.connected && gmailEmailFromApi);
-      if (gmailLinkedFromApi) {
-        setGmailConnected(true);
-        setGmailEmail(gmailEmailFromApi);
-        setGmailApplyToReplies(gJson.applyToReplies !== false);
-      } else {
-        setGmailConnected(false);
-        setGmailEmail('');
-        setGmailApplyToReplies(true);
-        if (gJson.stale) {
-          setGmailMessage('Previous Gmail link was incomplete. Connect again to link this Tailnote login.');
-        }
-      }
       if (pJson.profile && typeof pJson.profile === 'object') {
         const sp = pJson.profile as Partial<SignatureProfile>;
         setProfile({
@@ -252,22 +221,12 @@ export function SignatureWorkspace() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const sp = new URLSearchParams(window.location.search);
-    const gmail = sp.get('gmail');
-    const msg = sp.get('message');
     const tab = sp.get('tab');
     if (tab === 'install') {
       setActiveTab('install');
-    }
-    if (gmail === 'connected') {
-      setMessage('Gmail connected. You can apply your signature below.');
-      load();
-    } else if (gmail === 'error' && msg) {
-      setMessage(`Gmail: ${decodeURIComponent(msg)}`);
-    }
-    if (gmail || tab) {
       window.history.replaceState({}, '', window.location.pathname);
     }
-  }, [load]);
+  }, []);
 
   const selectedTemplate = useMemo(
     () => templates.find((t) => t._id === selectedTemplateId),
@@ -405,18 +364,6 @@ export function SignatureWorkspace() {
 
   const previewHtml = trackedHtml ?? html;
 
-  const trackingForGmail = Boolean(org?.signatureClickTrackingEnabled && trackedHtml);
-  const gmailSourceHtml = trackingForGmail ? trackedHtml! : html;
-  const gmailPrep = useMemo(
-    () => prepareSignatureHtmlForGmailDetailed(gmailSourceHtml),
-    [gmailSourceHtml]
-  );
-  const gmailCharCount = gmailPrep.charCount;
-  const gmailOverLimit = gmailCharCount > GMAIL_SIGNATURE_MAX_CHARS;
-  const gmailPromosStripped = gmailPrep.stackedPromosRemoved;
-  const hasEnabledPromoBlocks = contentBlocks.some((b) => b.enabled);
-  const gmailPromosBlocked = gmailPromosStripped && hasEnabledPromoBlocks;
-
   const canCopy =
     isOrganizationPaid(
       org
@@ -432,8 +379,6 @@ export function SignatureWorkspace() {
         : null
     ) &&
     Boolean(profile.firstName.trim() && profile.lastName.trim() && profile.email.trim() && engineTemplate);
-
-  const gmailLinked = gmailConnected && Boolean(gmailEmail.trim());
 
   const patchSignatureProfile = async (opts?: { includeBlocks?: boolean; includeTemplate?: boolean }) => {
     const includeBlocks = opts?.includeBlocks === true;
@@ -632,51 +577,6 @@ export function SignatureWorkspace() {
       }
     } finally {
       setUploadingLogo(false);
-    }
-  };
-
-  const handleApplyGmail = async () => {
-    if (!gmailSourceHtml.trim() || gmailOverLimit || gmailPromosBlocked) return;
-    setGmailBusy(true);
-    setGmailMessage(null);
-    try {
-      const res = await fetch('/api/integrations/gmail/apply-signature', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ html: gmailSourceHtml, applyToReplies: gmailApplyToReplies }),
-      });
-      const j = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setGmailMessage(typeof j.error === 'string' ? j.error : 'Could not update Gmail signature');
-        return;
-      }
-      const who = typeof j.sendAsEmail === 'string' ? j.sendAsEmail : 'your send-as address';
-      let msg = `Gmail signature updated for ${who}. Gmail may simplify HTML.`;
-      if (gmailApplyToReplies) {
-        msg +=
-          ' For replies and forwards, open Gmail Settings → General → Signature defaults and choose this signature under “For replies and forwards” if it does not apply automatically. See https://support.google.com/mail/answer/8395';
-      }
-      setGmailMessage(msg);
-    } finally {
-      setGmailBusy(false);
-    }
-  };
-
-  const handleDisconnectGmail = async () => {
-    setGmailBusy(true);
-    setGmailMessage(null);
-    try {
-      const res = await fetch('/api/integrations/gmail/disconnect', { method: 'POST', credentials: 'include' });
-      if (!res.ok) {
-        setGmailMessage('Could not disconnect Gmail');
-        return;
-      }
-      setGmailConnected(false);
-      setGmailEmail('');
-      setGmailMessage('Gmail disconnected.');
-    } finally {
-      setGmailBusy(false);
     }
   };
 
@@ -960,92 +860,14 @@ export function SignatureWorkspace() {
           )}
           {activeTab === 'install' && (
             <Card>
-          <CardHeader>
-            <CardTitle>Install to your inbox</CardTitle>
-            <CardDescription>Gmail (OAuth) and Outlook (manual).</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-md border p-4 space-y-3">
-              <p className="text-sm font-medium">Gmail</p>
-              {tailnoteLoginEmail ? (
-                <p className="text-xs text-muted-foreground">
-                  Tailnote login: <span className="font-medium text-foreground">{tailnoteLoginEmail}</span>
-                  {gmailLinked
-                    ? ` · Linked Gmail: ${gmailEmail}`
-                    : ' · No Gmail linked for this login yet'}
-                </p>
-              ) : null}
-              <p
-                className={
-                  gmailOverLimit || gmailPromosBlocked
-                    ? 'text-xs text-destructive font-medium'
-                    : 'text-xs text-muted-foreground'
-                }
-              >
-                Gmail size: {gmailCharCount.toLocaleString()} / {GMAIL_SIGNATURE_MAX_CHARS.toLocaleString()}{' '}
-                characters
-                {gmailOverLimit
-                  ? ' — over limit. Remove promo blocks, use a simpler template, or shorten content.'
-                  : gmailPromosBlocked
-                    ? ' — promotional blocks would be omitted to meet Gmail’s limit. Remove a promo block, shorten copy, switch template, or disable click tracking.'
-                    : trackingForGmail
-                      ? '. Tracked links included when under the size limit.'
-                      : '. Direct links are used (enable click analytics on Overview to track Gmail link clicks).'}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Gmail uses a stacked layout for promotional blocks, matching this preview. Copied HTML
-                uses the full template layout for each mail client.
-              </p>
-              {gmailMessage ? <p className="text-xs text-muted-foreground">{gmailMessage}</p> : null}
-              {gmailLinked ? (
-                <>
-                  <p className="text-xs text-muted-foreground">
-                    Connected as {gmailEmail}. Gmail may rewrite HTML when saving.
-                  </p>
-                  <div className="flex items-start gap-3 rounded-md border border-dashed p-3">
-                    <input
-                      id="gmail-apply-replies"
-                      type="checkbox"
-                      className="mt-1 h-4 w-4 rounded border-input"
-                      checked={gmailApplyToReplies}
-                      onChange={(e) => setGmailApplyToReplies(e.target.checked)}
-                      disabled={gmailBusy}
-                    />
-                    <div className="space-y-1">
-                      <Label htmlFor="gmail-apply-replies" className="cursor-pointer font-normal leading-snug">
-                        Use this signature for replies and forwards (where Gmail allows)
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        Gmail&apos;s API sets the signature for new messages. Replies may need Signature defaults in
-                        Gmail Settings → General.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      disabled={gmailBusy || !canCopy || gmailOverLimit || gmailPromosBlocked}
-                      onClick={handleApplyGmail}
-                    >
-                      {gmailBusy ? 'Applying…' : 'Apply signature to Gmail'}
-                    </Button>
-                    <Button type="button" variant="outline" disabled={gmailBusy} onClick={handleDisconnectGmail}>
-                      Disconnect Gmail
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-xs text-muted-foreground">Connect once, then apply your signature to Gmail send-as.</p>
-                  <Button type="button" variant="secondary" asChild>
-                    <a href="/api/integrations/gmail/start">Connect Gmail</a>
-                  </Button>
-                </>
-              )}
-            </div>
-            <OutlookInstallHelp />
-          </CardContent>
-        </Card>
+              <CardHeader>
+                <CardTitle>Install your signature</CardTitle>
+                <CardDescription>Copy and paste into Gmail or Outlook — takes about a minute.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SignatureInstallPanel html={previewHtml} disabled={!canCopy} />
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>
@@ -1066,14 +888,8 @@ export function SignatureWorkspace() {
           </div>
           <div className="flex flex-wrap gap-2">
             <CopySignatureButton html={previewHtml} disabled={!canCopy} />
-            <CopyRichTextButton html={previewHtml} disabled={!canCopy} />
-            <Button
-              type="button"
-              variant="outline"
-              disabled={!canCopy}
-              onClick={() => downloadHtml('tailnote-signature.html', previewHtml)}
-            >
-              Download HTML
+            <Button type="button" variant="outline" size="sm" asChild>
+              <a href="/dashboard/signature?tab=install">Install steps</a>
             </Button>
           </div>
         </CardContent>

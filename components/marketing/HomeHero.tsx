@@ -38,7 +38,7 @@ export function HomeHero() {
               </Button>
             </div>
             <p className="mt-4 text-xs text-muted-foreground">
-              Install to Gmail in one click
+              Copy and paste into Gmail or Outlook in minutes
             </p>
           </div>
 

@@ -29,12 +29,10 @@ Add each variable for **Production** (and **Preview** if you want previews fully
 | `STRIPE_BASIC_PRICE_ID` | Optional fallback Basic Price id during migration (prefer seeded plans + admin sync) |
 | `STRIPE_PRO_PRICE_ID` | Optional fallback Pro Price id during migration |
 | `BLOB_READ_WRITE_TOKEN` | [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) read/write token for dashboard logo uploads (`POST /api/dashboard/organization/logo`) |
-| `GOOGLE_CLIENT_ID` | Google OAuth client id for **sign in with Google** and **Connect Gmail** |
+| `GOOGLE_CLIENT_ID` | Google OAuth client id for **Sign in with Google** (Better Auth) |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
-| `GOOGLE_REDIRECT_URI` | Optional. Defaults to `{BETTER_AUTH_URL or NEXT_PUBLIC_APP_URL}/api/integrations/gmail/callback`. Must exactly match an **Authorized redirect URI** in [Google Cloud Console](https://console.cloud.google.com/apis/credentials) for the OAuth client. |
 
 Better Auth sessions last **30 days** by default (refreshed daily while active). Users stay signed in until they log out or the session expires.
-| `GOOGLE_OAUTH_ENCRYPTION_KEY` | Optional. Strong secret used to encrypt stored Gmail refresh tokens at rest; if omitted, a key is derived from `BETTER_AUTH_SECRET` (set an explicit value in production). |
 | `BREVO_API_KEY` | Brevo API key (SMTP transactional + contacts API) |
 | `BREVO_SENDER_EMAIL` | Verified sender email in Brevo (e.g. `invites@yourdomain.com`) |
 | `BREVO_SENDER_NAME` | Optional. Display name in inboxes (default `Tailnote Team`) |
@@ -58,16 +56,11 @@ Protects the **contact form** and **email** signup, login, and password-reset fl
    - Optional `RECAPTCHA_MIN_SCORE` (default `0.5`)
 4. Redeploy. If both keys are unset, captcha is disabled (useful for local dev).
 
-### Gmail integration
+### Sign in with Google
 
-1. In **Google Cloud Console**, create an OAuth **Web application** client. Add **Authorized redirect URIs**:
-   - `https://<your-app>/api/auth/callback/google` (sign in / sign up)
-   - `https://<your-app>/api/integrations/gmail/callback` (or the value of `GOOGLE_REDIRECT_URI` if you set it)
-2. Enable the **Gmail API** for the project.
-3. OAuth consent screen: add scopes:
-   - `https://www.googleapis.com/auth/gmail.settings.basic` (sensitive; may require verification for public apps)
-   - `https://www.googleapis.com/auth/userinfo.email` (used as fallback when resolving the linked Gmail address)
-4. Put `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in **Vercel** env vars and redeploy.
+1. In **Google Cloud Console**, create an OAuth **Web application** client. Add **Authorized redirect URI**:
+   - `https://<your-app>/api/auth/callback/google`
+2. Put `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in **Vercel** env vars and redeploy.
 
 ### Organization logos (Blob)
 
@@ -94,7 +87,7 @@ Enable **Customer Portal** cancellation so `customer.subscription.updated` / `cu
 
 - **Paid access** requires `Organization.subscriptionStatus` of `active` or `trialing` (see `lib/billing/subscriptionAccess.ts`). `past_due`, `canceled`, and `incomplete` lock out paid features immediately.
 - **Webhooks** sync Stripe → MongoDB (`Organization` + `OrganizationSubscription`). `invoice.paid` restores access; `invoice.payment_failed` sets `past_due` and emails the org owner; subscription end/cancel emails the owner (one email per Stripe event id).
-- **Signature serving (Tailnote-controlled):** public preview `/p/[token]`, tracked links `/api/track/signature`, and dashboard HTML export / Gmail apply are blocked when unpaid. Copy/Gmail buttons in the dashboard are disabled when unpaid.
+- **Signature serving (Tailnote-controlled):** public preview `/p/[token]`, tracked links `/api/track/signature`, and dashboard copy/export are blocked when unpaid.
 - **Limitation:** HTML already pasted into Gmail or Outlook cannot be removed remotely. Direct image URLs (e.g. Vercel Blob) in old signatures may still load. Tracked links are the main enforcement lever for links in deployed signatures.
 
 ### Subscription plans (source of truth)

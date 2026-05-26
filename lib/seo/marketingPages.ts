@@ -70,7 +70,7 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     path: '/about',
     title: 'About Us',
     description:
-      'Tailnote helps teams create, manage, and deploy professional email signatures with consistent branding, templates, and optional Gmail integration.',
+      'Tailnote helps teams create, manage, and deploy professional email signatures with consistent branding, templates, and copy-paste install for Gmail and Outlook.',
   },
   {
     key: 'contact',

@@ -109,7 +109,7 @@ export function softwareApplicationJsonLd(): JsonLd {
     operatingSystem: 'Web',
     url: getSiteUrl(),
     description:
-      'SaaS platform for team email signatures with promotional content blocks, UTM tracking, templates, and Gmail integration.',
+      'SaaS platform for team email signatures with promotional content blocks, UTM tracking, templates, and copy-paste install for Gmail and Outlook.',
     offers: {
       '@type': 'Offer',
       url: absoluteUrl('/pricing'),

@@ -52,7 +52,7 @@ const STEPS = [
   },
   {
     title: 'Send and promote',
-    description: 'Install to Gmail or paste into Outlook. Every outbound email carries your latest offer.',
+    description: 'Copy into Gmail or paste into Outlook. Every outbound email carries your latest offer.',
   },
 ] as const;
 

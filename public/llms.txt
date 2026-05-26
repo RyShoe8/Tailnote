@@ -1,6 +1,6 @@
 # Tailnote
 
-> Tailnote is email signature software for teams: on-brand signatures, promotional content blocks in every email, UTM link tracking, click analytics, curated templates, and optional Gmail one-click install.
+> Tailnote is email signature software for teams: on-brand signatures, promotional content blocks in every email, UTM link tracking, click analytics, curated templates, and copy-paste install for Gmail and Outlook.
 
 Canonical site: https://tailnote.com
 

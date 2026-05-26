@@ -14,7 +14,6 @@
     "migrate:legacy": "npx tsx scripts/migrate-legacy.ts",
     "verify:signature": "npm run email-client-smoke --workspace=emailsignature-engine && npx tsx scripts/vcard-smoke.ts",
     "verify:list-tracking": "npx tsx scripts/signature-tracking-list-smoke.ts",
-    "verify:gmail-signature": "npx tsx scripts/gmail-signature-html-smoke.ts",
     "icons:reddit": "node scripts/generate-reddit-icon.mjs"
   },
   "dependencies": {
@@ -33,7 +32,6 @@
     "clsx": "^2.1.1",
     "emailsignature-engine": "workspace:*",
     "framer-motion": "^12.40.0",
-    "googleapis": "^171.4.0",
     "lucide-react": "^0.468.0",
     "mongodb": "^6.12.0",
     "mongoose": "^8.9.5",

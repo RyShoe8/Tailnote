@@ -7,24 +7,24 @@ import { Button } from '@/components/ui/button';
 type Props = {
   html: string;
   disabled?: boolean;
+  onCopyResult?: (ok: boolean) => void;
 };
 
-export function CopyRichTextButton({ html, disabled }: Props) {
+export function CopyRichTextButton({ html, disabled, onCopyResult }: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleClick = useCallback(async () => {
     if (disabled || !html.trim()) return;
-    try {
-      await copyHtmlToClipboard(html);
+    const result = await copyHtmlToClipboard(html);
+    onCopyResult?.(result.ok);
+    if (result.ok) {
       setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
+      window.setTimeout(() => setCopied(false), 2500);
     }
-  }, [html, disabled]);
+  }, [html, disabled, onCopyResult]);
 
   return (
-    <Button type="button" variant="secondary" onClick={handleClick} disabled={disabled || !html.trim()}>
+    <Button type="button" variant="secondary" onClick={() => void handleClick()} disabled={disabled || !html.trim()}>
       {copied ? 'Copied' : 'Copy rich text'}
     </Button>
   );

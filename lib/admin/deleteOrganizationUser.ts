@@ -5,7 +5,6 @@ import {
 } from '@/lib/auth/platformAdmin';
 import { connectMongoose, getMongoDb } from '@/lib/mongoose';
 import { EmployeeModel } from '@/models/Employee';
-import { GmailIntegrationModel } from '@/models/GmailIntegration';
 import { UserSignatureProfileModel } from '@/models/UserSignatureProfile';
 
 export class DeleteOrganizationUserError extends Error {
@@ -66,5 +65,4 @@ export async function deleteOrganizationUser(userId: string): Promise<void> {
 
   await EmployeeModel.deleteMany({ userId: uid });
   await UserSignatureProfileModel.deleteMany({ userId: uid });
-  await GmailIntegrationModel.deleteOne({ userId: uid });
 }

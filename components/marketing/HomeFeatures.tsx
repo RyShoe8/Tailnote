@@ -29,7 +29,8 @@ const FEATURES = [
   {
     icon: Mail,
     title: 'Gmail + Outlook ready',
-    description: 'Install to Gmail in one click, or copy HTML that holds up in Outlook and other clients.',
+    description:
+      'Copy your signature and paste into Gmail settings, or use the same HTML in Outlook and other clients.',
   },
   {
     icon: Users,

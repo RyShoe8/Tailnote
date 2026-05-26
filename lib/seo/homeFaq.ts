@@ -1,7 +1,7 @@
 export const HOME_FAQS = [
   {
     q: 'How does Tailnote get my signature into Gmail or Outlook?',
-    a: 'Tailnote installs to Gmail with a one-click OAuth connection so your whole team can apply on-brand signatures without touching settings. For Outlook and other clients we generate clean HTML you can paste into the standard signature field.',
+    a: 'Copy your rendered signature from Tailnote and paste it into Gmail (Settings → General → Signature) or Outlook’s signature editor. We generate clean HTML that holds up in real inboxes—no OAuth or API connection required.',
   },
   {
     q: 'Do I need a designer to set this up?',
@@ -25,6 +25,6 @@ export const HOME_FAQS = [
   },
   {
     q: 'How does Tailnote handle our data?',
-    a: 'We store the minimum required to render and install your signatures. We never sell data. Full details are in our Privacy Policy and Terms.',
+    a: 'We store the minimum required to render and manage your signatures. We never sell data. Full details are in our Privacy Policy and Terms.',
   },
 ] as const;
