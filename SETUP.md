@@ -46,6 +46,18 @@ Better Auth sessions last **30 days** by default (refreshed daily while active).
 
 Users with `platformAdmin: true` on their Better Auth document in the **`user`** collection (app database from `MONGODB_DB_NAME`, default `emailsignature`) can open **`/admin`**. Set that field in MongoDB for the first operator, or have an existing platform admin use **Organizations → Manage → Users** and toggle **Platform admin** for another account.
 
+### Google reCAPTCHA v3
+
+Protects the **contact form** and **email** signup, login, and password-reset flows (not Google OAuth sign-in).
+
+1. In [Google reCAPTCHA admin](https://www.google.com/recaptcha/admin), create a **v3** key pair.
+2. Add your production domain and `localhost` (for local testing) to allowed domains.
+3. In **Vercel** → **Environment Variables**, set:
+   - `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` — site key (public)
+   - `RECAPTCHA_SECRET_KEY` — secret key
+   - Optional `RECAPTCHA_MIN_SCORE` (default `0.5`)
+4. Redeploy. If both keys are unset, captcha is disabled (useful for local dev).
+
 ### Gmail integration
 
 1. In **Google Cloud Console**, create an OAuth **Web application** client. Add **Authorized redirect URIs**:

@@ -8,12 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { RecaptchaNotice } from '@/components/recaptcha/RecaptchaNotice';
+import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha/config';
+import { authCaptchaFetchOptions, useRecaptcha } from '@/lib/recaptcha/client';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { getToken, enabled: recaptchaEnabled } = useRecaptcha(RECAPTCHA_ACTIONS.forgot_password);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,10 +25,16 @@ export default function ForgotPasswordPage() {
     setMessage(null);
     setLoading(true);
     try {
+      const captchaToken = await getToken();
+      if (recaptchaEnabled && !captchaToken) {
+        setError('Security check failed. Please try again.');
+        return;
+      }
       const origin = typeof window !== 'undefined' ? window.location.origin : '';
       const { error: err } = await authClient.requestPasswordReset({
         email,
         redirectTo: `${origin}/reset-password`,
+        fetchOptions: authCaptchaFetchOptions(captchaToken),
       });
       if (err) {
         setError(err.message || 'Request failed');
@@ -63,6 +73,7 @@ export default function ForgotPasswordPage() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Sending…' : 'Send reset link'}
           </Button>
+          <RecaptchaNotice />
         </form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
           <Link href="/login" className="underline underline-offset-4">

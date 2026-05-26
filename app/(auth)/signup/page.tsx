@@ -10,7 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { RecaptchaNotice } from '@/components/recaptcha/RecaptchaNotice';
 import { formatOAuthCallbackError, formatSignupError } from '@/lib/auth/formatAuthError';
+import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha/config';
+import { authCaptchaFetchOptions, useRecaptcha } from '@/lib/recaptcha/client';
 
 function buildPostSignupPath(searchParams: URLSearchParams, inviteToken: string | null): string {
   if (inviteToken) {
@@ -39,6 +42,9 @@ function SignupForm() {
     oauthError ? formatOAuthCallbackError(oauthError) : null
   );
   const [loading, setLoading] = useState(false);
+  const signupRecaptcha = useRecaptcha(RECAPTCHA_ACTIONS.signup);
+  const loginRecaptcha = useRecaptcha(RECAPTCHA_ACTIONS.login);
+  const recaptchaEnabled = signupRecaptcha.enabled;
 
   useEffect(() => {
     if (!oauthError) return;
@@ -53,18 +59,33 @@ function SignupForm() {
     setError(null);
     setLoading(true);
     try {
+      const signupToken = await signupRecaptcha.getToken();
+      if (recaptchaEnabled && !signupToken) {
+        setError('Security check failed. Please try again.');
+        return;
+      }
+
       const { error: err } = await authClient.signUp.email({
         email,
         password,
         name,
+        fetchOptions: authCaptchaFetchOptions(signupToken),
       });
       if (err) {
         setError(formatSignupError(err.message || 'Sign up failed'));
         return;
       }
+      const loginToken = await loginRecaptcha.getToken();
+      if (recaptchaEnabled && !loginToken) {
+        setError(
+          'Account created, but sign-in failed. Try logging in with your email and password.'
+        );
+        return;
+      }
       const { error: signInErr } = await authClient.signIn.email({
         email,
         password,
+        fetchOptions: authCaptchaFetchOptions(loginToken),
       });
       if (signInErr) {
         setError(
@@ -138,6 +159,7 @@ function SignupForm() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Creating…' : 'Create account'}
           </Button>
+          <RecaptchaNotice />
         </form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
           <Link href="/login" className="underline underline-offset-4">

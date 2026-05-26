@@ -1,14 +1,18 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { RecaptchaNotice } from '@/components/recaptcha/RecaptchaNotice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha/config';
+import { useRecaptcha } from '@/lib/recaptcha/client';
 
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 
 export function ContactForm() {
+  const { getToken, enabled: recaptchaEnabled } = useRecaptcha(RECAPTCHA_ACTIONS.contact);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
@@ -59,12 +63,19 @@ export function ContactForm() {
 
     setSubmitting(true);
     try {
+      const recaptchaToken = await getToken();
+      if (recaptchaEnabled && !recaptchaToken) {
+        setError('Security check failed. Please try again.');
+        return;
+      }
+
       const formData = new FormData();
       formData.set('name', name.trim());
       formData.set('email', email.trim());
       formData.set('subject', subject.trim());
       formData.set('details', details.trim());
       formData.set('company', honeypot);
+      if (recaptchaToken) formData.set('recaptchaToken', recaptchaToken);
       if (file) formData.set('file', file);
 
       const res = await fetch('/api/contact', { method: 'POST', body: formData });
@@ -180,6 +191,7 @@ export function ContactForm() {
       <Button type="submit" size="lg" className="w-full shadow-card" disabled={submitting}>
         {submitting ? 'Sending…' : 'Send message'}
       </Button>
+      <RecaptchaNotice />
     </form>
   );
 }

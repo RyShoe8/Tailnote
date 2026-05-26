@@ -10,7 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { RecaptchaNotice } from '@/components/recaptcha/RecaptchaNotice';
 import { formatLoginError, formatOAuthCallbackError } from '@/lib/auth/formatAuthError';
+import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha/config';
+import { authCaptchaFetchOptions, useRecaptcha } from '@/lib/recaptcha/client';
 
 function LoginForm() {
   const router = useRouter();
@@ -28,6 +31,7 @@ function LoginForm() {
     oauthError ? formatOAuthCallbackError(oauthError) : null
   );
   const [loading, setLoading] = useState(false);
+  const { getToken, enabled: recaptchaEnabled } = useRecaptcha(RECAPTCHA_ACTIONS.login);
 
   useEffect(() => {
     if (!oauthError) return;
@@ -42,7 +46,16 @@ function LoginForm() {
     setError(null);
     setLoading(true);
     try {
-      const { error: err } = await authClient.signIn.email({ email, password });
+      const captchaToken = await getToken();
+      if (recaptchaEnabled && !captchaToken) {
+        setError('Security check failed. Please try again.');
+        return;
+      }
+      const { error: err } = await authClient.signIn.email({
+        email,
+        password,
+        fetchOptions: authCaptchaFetchOptions(captchaToken),
+      });
       if (err) {
         setError(formatLoginError(err.message || 'Sign in failed'));
         return;
@@ -104,6 +117,7 @@ function LoginForm() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Signing in…' : 'Continue'}
           </Button>
+          <RecaptchaNotice />
         </form>
         <div className="mt-4 flex min-w-0 flex-col gap-2 text-center text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-1">
           <Link href="/forgot-password" className="underline underline-offset-4">

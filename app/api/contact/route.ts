@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectMongoose } from '@/lib/mongoose';
+import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha/config';
+import { verifyRecaptchaToken } from '@/lib/recaptcha/verify';
 import { SecureImageUploadError, uploadSecureImage } from '@/lib/uploads/secureImageUpload';
 import { FeedbackSubmissionModel } from '@/models/FeedbackSubmission';
 
@@ -63,6 +65,12 @@ export async function POST(request: Request) {
   const ip = ipFromHeaders(request);
   if (!takeRateSlot(ip)) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
+  const recaptchaToken = trimField(formData.get('recaptchaToken'), 4096);
+  const captcha = await verifyRecaptchaToken(recaptchaToken, RECAPTCHA_ACTIONS.contact);
+  if (!captcha.ok) {
+    return NextResponse.json({ error: captcha.error }, { status: 400 });
   }
 
   const name = trimField(formData.get('name'), MAX_NAME);

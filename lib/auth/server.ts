@@ -1,6 +1,8 @@
 import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
+import { captcha } from 'better-auth/plugins';
 import { nextCookies } from 'better-auth/next-js';
+import { getRecaptchaMinScore } from '@/lib/recaptcha/config';
 import { sendEmail } from '@/lib/email/mail';
 import { isBrevoConfigured } from '@/lib/email/brevo';
 import { buildPasswordResetEmail } from '@/lib/email/templates/passwordResetEmail';
@@ -122,7 +124,18 @@ export async function getAuth() {
         platformAdmin: { type: 'boolean', required: false },
       },
     },
-    plugins: [nextCookies()],
+    plugins: [
+      ...(process.env.RECAPTCHA_SECRET_KEY?.trim()
+        ? [
+            captcha({
+              provider: 'google-recaptcha',
+              secretKey: process.env.RECAPTCHA_SECRET_KEY.trim(),
+              minScore: getRecaptchaMinScore(),
+            }),
+          ]
+        : []),
+      nextCookies(),
+    ],
   }) as unknown as ReturnType<typeof betterAuth>;
 
   return authInstance;
