@@ -2,14 +2,18 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CopySignatureButton } from '@/components/signature/CopySignatureButton';
 import { CopyRichTextButton } from '@/components/signature/CopyRichTextButton';
 import { GmailInstallHelp } from '@/components/signature/GmailInstallHelp';
+import { OpenEmailSettingsButton } from '@/components/signature/OpenEmailSettingsButton';
 import { OutlookInstallHelp } from '@/components/signature/OutlookInstallHelp';
 import { downloadHtml } from '@/lib/clipboard';
 import { GMAIL_SETTINGS_URL } from '@/lib/install/gmailSettingsUrl';
+import {
+  OUTLOOK_PERSONAL_SETTINGS_URL,
+  OUTLOOK_WORK_SETTINGS_URL,
+} from '@/lib/install/outlookSettingsUrl';
 
 type Props = {
   html: string;
@@ -36,17 +40,6 @@ export function SignatureInstallPanel({
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2">
           <CopySignatureButton html={html} disabled={disabled} onCopyResult={handleCopyResult} />
-          <Button type="button" variant="outline" asChild disabled={disabled}>
-            <a
-              href={GMAIL_SETTINGS_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setSettingsOpened(true)}
-            >
-              Open Gmail settings
-              <ExternalLink className="ml-1.5 h-3.5 w-3.5" aria-hidden />
-            </a>
-          </Button>
           <CopyRichTextButton html={html} disabled={disabled} onCopyResult={handleCopyResult} />
           <Button
             type="button"
@@ -58,24 +51,12 @@ export function SignatureInstallPanel({
           </Button>
         </div>
         <div className="sticky bottom-0 z-10 -mx-1 border-t border-slate-200/80 bg-background/95 p-3 backdrop-blur-sm md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none lg:hidden">
-          <div className="flex gap-2">
-            <CopySignatureButton
-              html={html}
-              disabled={disabled}
-              onCopyResult={handleCopyResult}
-              label="Copy signature"
-            />
-            <Button type="button" variant="outline" className="flex-1" asChild disabled={disabled}>
-              <a
-                href={GMAIL_SETTINGS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setSettingsOpened(true)}
-              >
-                Gmail settings
-              </a>
-            </Button>
-          </div>
+          <CopySignatureButton
+            html={html}
+            disabled={disabled}
+            onCopyResult={handleCopyResult}
+            label="Copy signature"
+          />
         </div>
       </div>
 
@@ -86,17 +67,30 @@ export function SignatureInstallPanel({
         >
           <p className="font-medium">Signature copied</p>
           <p className="mt-1 text-muted-foreground">
-            Now paste it into Gmail. Open settings, paste into the signature field, and save changes.
+            Now paste it into your email client. Open settings, paste into the signature field, and save changes.
           </p>
           {settingsOpened ? (
-            <p className="mt-2 text-xs text-muted-foreground">Gmail settings opened in a new tab.</p>
+            <p className="mt-2 text-xs text-muted-foreground">Email settings opened in a new tab.</p>
           ) : null}
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button type="button" size="sm" variant="outline" asChild>
-              <a href={GMAIL_SETTINGS_URL} target="_blank" rel="noopener noreferrer">
-                Open Gmail settings
-              </a>
-            </Button>
+            <OpenEmailSettingsButton
+              href={GMAIL_SETTINGS_URL}
+              label="Open Gmail email settings"
+              size="sm"
+              onOpen={() => setSettingsOpened(true)}
+            />
+            <OpenEmailSettingsButton
+              href={OUTLOOK_WORK_SETTINGS_URL}
+              label="Open Outlook email settings"
+              size="sm"
+              onOpen={() => setSettingsOpened(true)}
+            />
+            <OpenEmailSettingsButton
+              href={OUTLOOK_PERSONAL_SETTINGS_URL}
+              label="Open Outlook.com email settings"
+              size="sm"
+              onOpen={() => setSettingsOpened(true)}
+            />
             <Button type="button" size="sm" variant="ghost" asChild>
               <Link href="/dashboard">Back to dashboard</Link>
             </Button>
@@ -111,8 +105,8 @@ export function SignatureInstallPanel({
         </p>
       ) : null}
 
-      <GmailInstallHelp />
-      <OutlookInstallHelp />
+      <GmailInstallHelp disabled={disabled} onSettingsOpen={() => setSettingsOpened(true)} />
+      <OutlookInstallHelp disabled={disabled} />
     </div>
   );
 }

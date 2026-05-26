@@ -1,27 +1,47 @@
-'use client';
+import { OpenEmailSettingsButton } from '@/components/signature/OpenEmailSettingsButton';
+import {
+  OUTLOOK_PERSONAL_SETTINGS_URL,
+  OUTLOOK_WORK_LAYOUT_SETTINGS_URL,
+  OUTLOOK_WORK_SETTINGS_URL,
+} from '@/lib/install/outlookSettingsUrl';
 
-import Link from 'next/link';
+type Props = {
+  disabled?: boolean;
+};
 
-export function OutlookInstallHelp() {
+export function OutlookInstallHelp({ disabled }: Props) {
   return (
     <div className="rounded-md border bg-muted/30 p-4 text-sm text-muted-foreground space-y-3">
       <p className="font-medium text-foreground">Outlook</p>
+      <div className="flex flex-wrap gap-2">
+        <OpenEmailSettingsButton
+          href={OUTLOOK_WORK_SETTINGS_URL}
+          label="Open Outlook email settings"
+          disabled={disabled}
+        />
+        <OpenEmailSettingsButton
+          href={OUTLOOK_PERSONAL_SETTINGS_URL}
+          label="Open Outlook.com email settings"
+          disabled={disabled}
+        />
+      </div>
       <p>
         Microsoft does not offer a supported public API to set your personal HTML signature from a website (Microsoft
         Graph cannot update signature HTML). Use copy-and-paste or install from a file.
       </p>
       <ol className="list-decimal pl-5 space-y-2">
         <li>
-          <strong>Outlook on the web:</strong> open{' '}
-          <Link
-            href="https://outlook.office.com/mail/options/mail/layout"
+          <strong>Outlook on the web:</strong> use the buttons above (work or personal account), then paste under{' '}
+          <strong>Email signature</strong>. If your tenant uses the classic settings UI, try{' '}
+          <a
+            href={OUTLOOK_WORK_LAYOUT_SETTINGS_URL}
             className="text-primary underline underline-offset-2"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
           >
             Mail → Layout
-          </Link>{' '}
-          (path may differ slightly by tenant), then paste under Email signature.
+          </a>{' '}
+          instead.
         </li>
         <li>
           <strong>Outlook desktop (Windows):</strong> File → Options → Mail → Signatures… → paste under Edit signature.
