@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { RecaptchaNotice } from '@/components/recaptcha/RecaptchaNotice';
 
 const MEDIA_SHOP_URL = 'https://themediashop.co';
 
@@ -73,6 +74,7 @@ export function SiteFooter({ variant = 'full' }: SiteFooterProps) {
               ))}
             </nav>
             <MediaShopCopyright />
+            <RecaptchaNotice />
           </div>
         </div>
       </footer>
@@ -118,7 +120,7 @@ export function SiteFooter({ variant = 'full' }: SiteFooterProps) {
             </ul>
           </div>
         </div>
-        <div className="mt-10 flex flex-col gap-2 border-t border-slate-200/70 pt-8 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 flex flex-col gap-3 border-t border-slate-200/70 pt-8 sm:flex-row sm:items-center sm:justify-between">
           <MediaShopCopyright />
           <p className="text-sm text-muted-foreground">
             Tailnote is operated by{' '}
@@ -131,6 +133,9 @@ export function SiteFooter({ variant = 'full' }: SiteFooterProps) {
               The Media Shop
             </a>
           </p>
+        </div>
+        <div className="mt-4 max-w-2xl">
+          <RecaptchaNotice />
         </div>
       </div>
     </footer>

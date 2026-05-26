@@ -417,3 +417,8 @@
     box-sizing: border-box !important;
   }
 }
+
+/* reCAPTCHA v3 badge — disclosure shown in site footer */
+.grecaptcha-badge {
+  visibility: hidden;
+}
