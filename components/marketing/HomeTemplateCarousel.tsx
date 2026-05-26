@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarketingEmailClientFrame } from '@/components/marketing/MarketingEmailClientFrame';
@@ -11,8 +11,6 @@ import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePrevie
 import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
 
 const SWIPE_THRESHOLD_PX = 50;
-/** Room for 3D lift, shadows, and ambience orbs outside the email window */
-const STAGE_EFFECT_PADDING_PX = 56;
 
 type Props = {
   presets: CatalogPresetRow[];
@@ -147,9 +145,7 @@ function TemplateSlidePreview({ preset }: { preset: CatalogPresetRow }) {
 export function HomeTemplateCarousel({ presets }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [hasSwiped, setHasSwiped] = useState(false);
-  const [stageMinHeight, setStageMinHeight] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
-  const stageRef = useRef<HTMLDivElement | null>(null);
 
   const goToIndex = useCallback(
     (index: number) => {
@@ -158,38 +154,6 @@ export function HomeTemplateCarousel({ presets }: Props) {
     },
     [presets.length]
   );
-
-  useLayoutEffect(() => {
-    const root = stageRef.current;
-    if (!root) return;
-
-    const measure = () => {
-      const nodes = root.querySelectorAll<HTMLElement>('[data-carousel-slide]');
-      let max = 0;
-      nodes.forEach((node) => {
-        max = Math.max(max, Math.ceil(node.getBoundingClientRect().height));
-      });
-      if (max > 0) setStageMinHeight(max + STAGE_EFFECT_PADDING_PX);
-    };
-
-    measure();
-
-    const ro = new ResizeObserver(() => measure());
-    const nodes = root.querySelectorAll<HTMLElement>('[data-carousel-slide]');
-    nodes.forEach((node) => ro.observe(node));
-
-    const onImgLoad = () => measure();
-    root.querySelectorAll('img').forEach((img) => {
-      if (!img.complete) img.addEventListener('load', onImgLoad, { once: true });
-    });
-
-    window.addEventListener('resize', measure);
-
-    return () => {
-      ro.disconnect();
-      window.removeEventListener('resize', measure);
-    };
-  }, [presets]);
 
   function scrollBySlide(delta: number) {
     goToIndex(activeIndex + delta);
@@ -233,60 +197,57 @@ export function HomeTemplateCarousel({ presets }: Props) {
       aria-roledescription="carousel"
       aria-label="Signature template previews"
     >
-      <div className="mb-4 flex items-center justify-center gap-3">
-        <CarouselPrevButton activeIndex={activeIndex} onPrev={onPrev} />
-        <CarouselDots activeIndex={activeIndex} presets={presets} onGoToIndex={goToIndex} />
-        <CarouselNextButton
-          activeIndex={activeIndex}
-          presetsLength={presets.length}
-          onNext={onNext}
-        />
+      <div data-templates-carousel-chrome>
+        <div className="mb-4 flex items-center justify-center gap-3">
+          <CarouselPrevButton activeIndex={activeIndex} onPrev={onPrev} />
+          <CarouselDots activeIndex={activeIndex} presets={presets} onGoToIndex={goToIndex} />
+          <CarouselNextButton
+            activeIndex={activeIndex}
+            presetsLength={presets.length}
+            onNext={onNext}
+          />
+        </div>
+
+        <CarouselSlideMeta preset={activePreset} />
+
+        <MobileSwipeHint hidden={hasSwiped} />
       </div>
 
-      <CarouselSlideMeta preset={activePreset} />
-
-      <MobileSwipeHint hidden={hasSwiped} />
-
       <div
-        ref={stageRef}
-        className="home-template-carousel-stage relative isolate overflow-visible px-4 py-8 pb-6 sm:px-6 sm:py-10 sm:pb-8 md:pt-1"
-        style={stageMinHeight != null ? { minHeight: stageMinHeight } : undefined}
+        data-templates-float-zone
+        className="relative overflow-x-clip pt-12 pb-10 sm:pt-14"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="relative w-full min-w-0 overflow-x-hidden overflow-y-visible">
-          <div
-            className="flex items-start transition-transform duration-300 ease-out motion-reduce:transition-none"
-            style={{
-              width: `${presets.length * 100}%`,
-              transform: `translateX(-${trackOffsetPercent}%)`,
-            }}
-          >
-            {presets.map((preset, index) => {
-              const isActive = index === activeIndex;
-              return (
-                <article
-                  key={preset.presetId}
-                  data-carousel-slide
-                  data-carousel-active={isActive ? 'true' : 'false'}
-                  className="shrink-0 grow-0"
-                  style={{ width: `${slideSharePercent}%` }}
-                  aria-roledescription="slide"
-                  aria-hidden={!isActive}
+        <div
+          className="flex items-start transition-transform duration-300 ease-out motion-reduce:transition-none"
+          style={{
+            width: `${presets.length * 100}%`,
+            transform: `translateX(-${trackOffsetPercent}%)`,
+          }}
+        >
+          {presets.map((preset, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <article
+                key={preset.presetId}
+                data-carousel-slide
+                data-carousel-active={isActive ? 'true' : 'false'}
+                className="shrink-0 grow-0 px-1 sm:px-2"
+                style={{ width: `${slideSharePercent}%` }}
+                aria-roledescription="slide"
+                aria-hidden={!isActive}
+              >
+                <MarketingEmailClientFrame
+                  layout="carousel"
+                  showAmbience={isActive}
+                  active={isActive}
                 >
-                  <div className="overflow-visible">
-                    <MarketingEmailClientFrame
-                      layout="carousel"
-                      showAmbience={isActive}
-                      active={isActive}
-                    >
-                      <TemplateSlidePreview preset={preset} />
-                    </MarketingEmailClientFrame>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+                  <TemplateSlidePreview preset={preset} />
+                </MarketingEmailClientFrame>
+              </article>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -198,7 +198,7 @@
     backface-visibility: hidden;
   }
   .home-carousel-email-stage-outer--active {
-    transform: perspective(1200px) rotateX(1.5deg) translateY(-6px);
+    transform: perspective(1200px) rotateX(1.5deg) translateY(-2px);
   }
 
   @media (prefers-reduced-motion: reduce) {
