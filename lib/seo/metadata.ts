@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import {
-  absoluteOgImageUrl,
   absoluteUrl,
   DEFAULT_DESCRIPTION,
   formatPageTitle,
   getSiteUrl,
+  OG_IMAGE_HEIGHT,
+  OG_IMAGE_WIDTH,
   SITE_NAME,
   SITE_TITLE_DEFAULT,
 } from '@/lib/seo/site';
@@ -17,12 +18,21 @@ export type CreatePageMetadataInput = {
   ogType?: 'website' | 'article';
 };
 
-const ogImage = {
-  url: absoluteOgImageUrl(),
-  width: 1200,
-  height: 630,
-  alt: SITE_TITLE_DEFAULT,
-};
+/**
+ * Explicit OG image entry when a route cannot use the app/opengraph-image file convention.
+ * Prefer omitting images so Next.js serves /opengraph-image (1200×630) automatically.
+ */
+export function defaultOgImageMetadata(): NonNullable<Metadata['openGraph']>['images'] {
+  return [
+    {
+      url: '/opengraph-image',
+      width: OG_IMAGE_WIDTH,
+      height: OG_IMAGE_HEIGHT,
+      type: 'image/png',
+      alt: SITE_TITLE_DEFAULT,
+    },
+  ];
+}
 
 export function createPageMetadata({
   title,
@@ -31,6 +41,7 @@ export function createPageMetadata({
   ogType = 'website',
 }: CreatePageMetadataInput): Metadata {
   const canonical = absoluteUrl(path);
+  const socialTitle = formatPageTitle(title);
 
   return {
     title,
@@ -42,15 +53,13 @@ export function createPageMetadata({
       locale: 'en_US',
       url: canonical,
       siteName: SITE_NAME,
-      title: formatPageTitle(title),
+      title: socialTitle,
       description,
-      images: [ogImage],
     },
     twitter: {
       card: 'summary_large_image',
-      title: formatPageTitle(title),
+      title: socialTitle,
       description,
-      images: [absoluteOgImageUrl()],
     },
   };
 }
@@ -81,12 +90,13 @@ export function rootLayoutMetadata(): Metadata {
       type: 'website',
       locale: 'en_US',
       siteName: SITE_NAME,
+      title: SITE_TITLE_DEFAULT,
       description: DEFAULT_DESCRIPTION,
-      images: [ogImage],
     },
     twitter: {
       card: 'summary_large_image',
-      images: [absoluteOgImageUrl()],
+      title: SITE_TITLE_DEFAULT,
+      description: DEFAULT_DESCRIPTION,
     },
   };
 }

@@ -33,8 +33,14 @@ export const metadata: Metadata = {
     path: homePage.path,
   }),
   title: { absolute: SITE_TITLE_DEFAULT },
-  openGraph: { title: SITE_TITLE_DEFAULT },
-  twitter: { title: SITE_TITLE_DEFAULT },
+  openGraph: {
+    title: SITE_TITLE_DEFAULT,
+    description: homePage.description,
+  },
+  twitter: {
+    title: SITE_TITLE_DEFAULT,
+    description: homePage.description,
+  },
 };
 
 export default async function HomePage() {

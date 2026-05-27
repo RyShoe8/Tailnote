@@ -1,6 +1,6 @@
 import { EMAIL_HEALTH_ITEM_LIST_CHECKS } from '@/lib/email-health/seoCopy';
 import {
-  absoluteOgImageUrl,
+  absoluteOrganizationLogoUrl,
   absoluteUrl,
   DEFAULT_DESCRIPTION,
   getSiteUrl,
@@ -30,7 +30,7 @@ export function organizationJsonLd(): JsonLd {
     '@type': 'Organization',
     name: SITE_NAME,
     url: getSiteUrl(),
-    logo: absoluteOgImageUrl(),
+    logo: absoluteOrganizationLogoUrl(),
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer support',
