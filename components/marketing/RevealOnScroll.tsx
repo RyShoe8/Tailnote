@@ -1,6 +1,8 @@
 'use client';
 
 import {
+  createContext,
+  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -8,6 +10,14 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
+
+const RevealOnScrollContext = createContext<boolean | null>(null);
+
+/** True when the nearest RevealOnScroll ancestor has finished revealing (or there is none). */
+export function useRevealOnScrollReady(): boolean {
+  const ready = useContext(RevealOnScrollContext);
+  return ready ?? true;
+}
 
 type Props = {
   children: ReactNode;
@@ -75,10 +85,13 @@ export function RevealOnScroll({ children, delayMs, className, as: Tag = 'div' }
     state === 'ssr' ? '' : state === 'init' ? 'tn-reveal-init' : 'tn-reveal';
 
   const composed = [className, stateClass].filter(Boolean).join(' ');
+  const chartsReady = state === 'revealed';
 
   return (
-    <Tag ref={ref as never} className={composed || undefined} style={style}>
-      {children}
-    </Tag>
+    <RevealOnScrollContext.Provider value={chartsReady}>
+      <Tag ref={ref as never} className={composed || undefined} style={style}>
+        {children}
+      </Tag>
+    </RevealOnScrollContext.Provider>
   );
 }

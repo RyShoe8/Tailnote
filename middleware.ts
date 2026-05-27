@@ -1,9 +1,17 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getSessionCookie } from 'better-auth/cookies';
+import { normalizeBackslashPathname } from '@/lib/security/normalizePathname';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  const normalizedPath = normalizeBackslashPathname(pathname);
+  if (normalizedPath !== null) {
+    const url = request.nextUrl.clone();
+    url.pathname = normalizedPath;
+    return NextResponse.redirect(url, 301);
+  }
 
   if (pathname === '/onboarding') {
     const token = getSessionCookie(request);
@@ -42,18 +50,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/onboarding',
-    '/invite/:path*',
-    '/api/invite/:path*',
-    '/admin',
-    '/admin/:path*',
-    '/dashboard/:path*',
-    '/api/dashboard/:path*',
-    '/api/admin/:path*',
-    '/api/stripe/checkout',
-    '/api/stripe/cancel-subscription',
-    '/api/stripe/change-plan',
-    '/api/stripe/reactivate-subscription',
-    '/api/onboarding/:path*',
+    '/((?!_next/static|_next/image|.*\\..*).*)',
   ],
 };
