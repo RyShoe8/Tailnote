@@ -1,19 +1,43 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { connectMongoose } from '@/lib/mongoose';
 import { EmployeeModel, type EmployeeDoc } from '@/models/Employee';
 import { OrganizationModel } from '@/models/Organization';
-import { SignatureTemplateModel } from '@/models/SignatureTemplate';
+import { SignatureTemplateModel, type SignatureTemplateDoc } from '@/models/SignatureTemplate';
 import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
+import { isTemplatePresetId, TEMPLATE_PRESET_META } from '@/lib/email/templatePresets';
 import { renderSignatureForEmployeeResolved } from '@/lib/renderEmployeeSignature';
 import { getRequestSiteOrigin, getSignatureAssetOrigin } from '@/lib/siteOrigin';
+import { SITE_NAME } from '@/lib/seo/site';
 
-export const metadata = {
-  robots: { index: false, follow: false },
+type PageProps = {
+  params: Promise<{ previewToken: string }>;
+  searchParams: Promise<{ preset?: string }>;
 };
 
-export default async function PublicSignaturePage({ params }: { params: Promise<{ previewToken: string }> }) {
+function presetDisplayName(presetId: string): string {
+  const meta = TEMPLATE_PRESET_META.find((p) => p.id === presetId);
+  return meta?.name ?? presetId;
+}
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const { preset } = await searchParams;
+  if (preset && isTemplatePresetId(preset)) {
+    return {
+      title: `${presetDisplayName(preset)} · ${SITE_NAME} preview`,
+      robots: { index: false, follow: false },
+    };
+  }
+  return {
+    title: `${SITE_NAME} preview`,
+    robots: { index: false, follow: false },
+  };
+}
+
+export default async function PublicSignaturePage({ params, searchParams }: PageProps) {
   const { previewToken } = await params;
+  const { preset: presetParam } = await searchParams;
   await connectMongoose();
   const employee = await EmployeeModel.findOne({ previewToken }).lean<EmployeeDoc | null>();
   if (!employee) notFound();
@@ -21,13 +45,19 @@ export default async function PublicSignaturePage({ params }: { params: Promise<
   const tmpl = await SignatureTemplateModel.findOne({
     _id: employee.templateId,
     organizationId: employee.organizationId,
-  }).lean();
+  }).lean<SignatureTemplateDoc | null>();
   if (!org || !tmpl) notFound();
   if (!isOrganizationPaid(org as { subscriptionStatus?: string })) notFound();
 
+  const presetOverride =
+    presetParam && isTemplatePresetId(presetParam) ? presetParam : undefined;
+  const renderTmpl = (
+    presetOverride ? { ...tmpl, presetId: presetOverride } : tmpl
+  ) as SignatureTemplateDoc;
+
   const h = await headers();
   const origin = getRequestSiteOrigin(h) ?? getSignatureAssetOrigin();
-  const html = await renderSignatureForEmployeeResolved(org as never, employee as never, tmpl as never, {
+  const html = await renderSignatureForEmployeeResolved(org as never, employee as never, renderTmpl as never, {
     publicSiteOrigin: origin,
   });
 

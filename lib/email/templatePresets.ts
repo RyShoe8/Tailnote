@@ -11,6 +11,22 @@ export type TemplatePresetId =
   | 'portfolio'
   | 'ecard';
 
+const TEMPLATE_PRESET_IDS: readonly TemplatePresetId[] = [
+  'default',
+  'creator',
+  'executive_minimalist',
+  'minimal',
+  'stacked',
+  'corporate',
+  'professional',
+  'portfolio',
+  'ecard',
+];
+
+export function isTemplatePresetId(value: string): value is TemplatePresetId {
+  return (TEMPLATE_PRESET_IDS as readonly string[]).includes(value);
+}
+
 export type TemplatePresetMeta = {
   id: TemplatePresetId;
   name: string;

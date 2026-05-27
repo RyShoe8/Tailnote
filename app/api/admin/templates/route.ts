@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { buildTemplateShowcaseUrlsForPresets } from '@/lib/admin/templateShowcase';
 import { requirePlatformAdminApi } from '@/lib/admin/platformAdminApi';
 import { ensurePresetCatalog } from '@/lib/templates/ensurePresetCatalog';
 import { getFullCatalogPresets } from '@/lib/templates/getEnabledPresets';
@@ -27,6 +28,9 @@ export async function GET() {
 
   await ensurePresetCatalog();
   const rows = await getFullCatalogPresets();
+  const previewUrls = await buildTemplateShowcaseUrlsForPresets(
+    rows.map((r) => String(r.presetId))
+  );
 
   const presets = await Promise.all(
     rows.map(async (r) => {
@@ -43,6 +47,7 @@ export async function GET() {
         sortOrder: Number(r.sortOrder ?? 0),
         employeeCount: usage.employeeCount,
         orgTemplateCount: usage.orgTemplateCount,
+        previewUrl: previewUrls.get(presetId) ?? null,
       };
     })
   );

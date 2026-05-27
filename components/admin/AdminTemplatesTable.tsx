@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { CopyPreviewLinkButton } from '@/components/admin/CopyPreviewLinkButton';
 
 export type CatalogPresetRow = {
   presetId: string;
@@ -13,9 +14,16 @@ export type CatalogPresetRow = {
   sortOrder: number;
   employeeCount: number;
   orgTemplateCount: number;
+  previewUrl: string | null;
 };
 
-export function AdminTemplatesTable({ initialPresets }: { initialPresets: CatalogPresetRow[] }) {
+type Props = {
+  initialPresets: CatalogPresetRow[];
+  showcaseEmail: string;
+  showcaseConfigured: boolean;
+};
+
+export function AdminTemplatesTable({ initialPresets, showcaseEmail, showcaseConfigured }: Props) {
   const router = useRouter();
   const [presets, setPresets] = useState(initialPresets);
   const [msg, setMsg] = useState<string | null>(null);
@@ -77,6 +85,17 @@ export function AdminTemplatesTable({ initialPresets }: { initialPresets: Catalo
   return (
     <div className="space-y-4">
       {msg ? <p className="text-sm text-destructive">{msg}</p> : null}
+      {!showcaseConfigured ? (
+        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
+          No showcase employee found for <strong>{showcaseEmail}</strong> (or org subscription is inactive).
+          Preview links require a paid org employee with a preview token.
+        </p>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Shareable previews use <strong>{showcaseEmail}</strong>&apos;s signature data in each layout. Links are
+          public (same as hosted employee previews).
+        </p>
+      )}
       <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <div className="overflow-x-auto rounded-md border min-w-0">
         <table className="w-full text-sm">
@@ -85,6 +104,7 @@ export function AdminTemplatesTable({ initialPresets }: { initialPresets: Catalo
               <th className="p-3 font-medium">Preset</th>
               <th className="p-3 font-medium">Status</th>
               <th className="p-3 font-medium">Usage</th>
+              <th className="p-3 font-medium">Preview</th>
               <th className="p-3 font-medium">Actions</th>
             </tr>
           </thead>
@@ -109,6 +129,23 @@ export function AdminTemplatesTable({ initialPresets }: { initialPresets: Catalo
                   {p.employeeCount} employee{p.employeeCount === 1 ? '' : 's'}
                   <br />
                   {p.orgTemplateCount} org row{p.orgTemplateCount === 1 ? '' : 's'}
+                </td>
+                <td className="p-3 align-top">
+                  {p.previewUrl ? (
+                    <div className="flex flex-wrap gap-2">
+                      <a
+                        href={p.previewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex h-8 items-center rounded-md border border-input bg-background px-3 text-xs font-medium hover:bg-accent hover:text-accent-foreground"
+                      >
+                        Open
+                      </a>
+                      <CopyPreviewLinkButton url={p.previewUrl} />
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
                 </td>
                 <td className="p-3 align-top">
                   <div className="flex flex-wrap gap-2">

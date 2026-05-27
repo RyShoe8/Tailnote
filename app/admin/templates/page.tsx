@@ -6,6 +6,11 @@ import {
   AdminTemplatesTable,
   type CatalogPresetRow,
 } from '@/components/admin/AdminTemplatesTable';
+import {
+  buildTemplateShowcaseUrlsForPresets,
+  getTemplateShowcaseEmployee,
+  TEMPLATE_SHOWCASE_EMAIL,
+} from '@/lib/admin/templateShowcase';
 import type { CatalogPresetId } from '@/models/SignaturePresetCatalog';
 
 export const dynamic = 'force-dynamic';
@@ -28,6 +33,10 @@ export default async function AdminTemplatesPage() {
   await connectMongoose();
   await ensurePresetCatalog();
   const rows = await getFullCatalogPresets();
+  const showcase = await getTemplateShowcaseEmployee();
+  const previewUrls = await buildTemplateShowcaseUrlsForPresets(
+    rows.map((r) => String(r.presetId))
+  );
 
   const initialPresets: CatalogPresetRow[] = await Promise.all(
     rows.map(async (r) => {
@@ -44,6 +53,7 @@ export default async function AdminTemplatesPage() {
         sortOrder: Number(r.sortOrder ?? 0),
         employeeCount: usage.employeeCount,
         orgTemplateCount: usage.orgTemplateCount,
+        previewUrl: previewUrls.get(presetId) ?? null,
       };
     })
   );
@@ -57,7 +67,11 @@ export default async function AdminTemplatesPage() {
           signature and employee pickers.
         </p>
       </div>
-      <AdminTemplatesTable initialPresets={initialPresets} />
+      <AdminTemplatesTable
+        initialPresets={initialPresets}
+        showcaseEmail={TEMPLATE_SHOWCASE_EMAIL}
+        showcaseConfigured={Boolean(showcase)}
+      />
     </div>
   );
 }
