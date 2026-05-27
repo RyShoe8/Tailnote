@@ -1,5 +1,12 @@
 import { EMAIL_HEALTH_ITEM_LIST_CHECKS } from '@/lib/email-health/seoCopy';
-import { absoluteOgImageUrl, absoluteUrl, getSiteUrl, SITE_NAME } from '@/lib/seo/site';
+import {
+  absoluteOgImageUrl,
+  absoluteUrl,
+  DEFAULT_DESCRIPTION,
+  getSiteUrl,
+  SITE_NAME,
+  SITE_TAGLINE,
+} from '@/lib/seo/site';
 
 type JsonLd = Record<string, unknown>;
 
@@ -38,8 +45,7 @@ export function webSiteJsonLd(): JsonLd {
     '@type': 'WebSite',
     name: SITE_NAME,
     url: getSiteUrl(),
-    description:
-      'Email signature software for teams — promotional blocks, UTM tracking, and templates for Gmail and Outlook.',
+    description: DEFAULT_DESCRIPTION,
     publisher: {
       '@type': 'Organization',
       name: SITE_NAME,
@@ -109,8 +115,7 @@ export function softwareApplicationJsonLd(): JsonLd {
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
     url: getSiteUrl(),
-    description:
-      'SaaS platform for team email signatures with promotional content blocks, UTM tracking, templates, and copy-paste install for Gmail and Outlook.',
+    description: `${SITE_TAGLINE} — team email signatures with promotional content blocks, UTM tracking, templates, and copy-paste install for Gmail and Outlook.`,
     offers: {
       '@type': 'Offer',
       url: absoluteUrl('/pricing'),

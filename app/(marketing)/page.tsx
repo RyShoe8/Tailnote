@@ -16,19 +16,26 @@ import {
   webPageJsonLd,
   webSiteJsonLd,
 } from '@/lib/seo/jsonLd';
+import type { Metadata } from 'next';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { marketingPageByKey } from '@/lib/seo/marketingPages';
+import { SITE_TITLE_DEFAULT } from '@/lib/seo/site';
 import { getActiveCatalogPresets } from '@/lib/templates/getEnabledPresets';
 
 export const dynamic = 'force-dynamic';
 
 const homePage = marketingPageByKey('home');
 
-export const metadata = createPageMetadata({
-  title: homePage.title,
-  description: homePage.description,
-  path: homePage.path,
-});
+export const metadata: Metadata = {
+  ...createPageMetadata({
+    title: homePage.title,
+    description: homePage.description,
+    path: homePage.path,
+  }),
+  title: { absolute: SITE_TITLE_DEFAULT },
+  openGraph: { title: SITE_TITLE_DEFAULT },
+  twitter: { title: SITE_TITLE_DEFAULT },
+};
 
 export default async function HomePage() {
   const [plans, presets] = await Promise.all([getPublicPricingPlans(), getActiveCatalogPresets()]);

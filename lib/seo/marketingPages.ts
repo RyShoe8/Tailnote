@@ -4,7 +4,7 @@ import {
   EMAIL_HEALTH_PAGE_TITLE,
 } from '@/lib/email-health/seoCopy';
 import { LEGAL_LAST_UPDATED } from '@/lib/marketing/legalContent';
-import { absoluteUrl } from '@/lib/seo/site';
+import { absoluteUrl, SITE_TAGLINE } from '@/lib/seo/site';
 
 export type MarketingPageKey =
   | 'home'
@@ -21,7 +21,7 @@ export type MarketingPageKey =
 export type MarketingPageConfig = {
   key: MarketingPageKey;
   path: string;
-  /** Page title without site suffix (root layout adds " — Tailnote" via template). */
+  /** Page title without site suffix (root layout adds " | Tailnote" via template). */
   title: string;
   description: string;
 };
@@ -30,9 +30,9 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
   {
     key: 'home',
     path: '/',
-    title: 'Email signatures that market your business',
+    title: SITE_TAGLINE,
     description:
-      'Turn every employee email into a marketing touchpoint with promotional content blocks, built-in UTM tracking, and polished signature templates for Gmail and Outlook.',
+      `${SITE_TAGLINE}. Promotional content blocks, built-in UTM tracking, and polished signature templates for Gmail and Outlook.`,
   },
   {
     key: 'pricing',

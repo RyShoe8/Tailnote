@@ -3,8 +3,10 @@ import {
   absoluteOgImageUrl,
   absoluteUrl,
   DEFAULT_DESCRIPTION,
+  formatPageTitle,
   getSiteUrl,
   SITE_NAME,
+  SITE_TITLE_DEFAULT,
 } from '@/lib/seo/site';
 
 export type CreatePageMetadataInput = {
@@ -19,7 +21,7 @@ const ogImage = {
   url: absoluteOgImageUrl(),
   width: 1200,
   height: 630,
-  alt: `${SITE_NAME} — email signatures for teams`,
+  alt: SITE_TITLE_DEFAULT,
 };
 
 export function createPageMetadata({
@@ -40,13 +42,13 @@ export function createPageMetadata({
       locale: 'en_US',
       url: canonical,
       siteName: SITE_NAME,
-      title: `${title} — ${SITE_NAME}`,
+      title: formatPageTitle(title),
       description,
       images: [ogImage],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${title} — ${SITE_NAME}`,
+      title: formatPageTitle(title),
       description,
       images: [absoluteOgImageUrl()],
     },
@@ -64,8 +66,8 @@ export function rootLayoutMetadata(): Metadata {
   return {
     metadataBase,
     title: {
-      default: SITE_NAME,
-      template: `%s — ${SITE_NAME}`,
+      default: SITE_TITLE_DEFAULT,
+      template: `%s | ${SITE_NAME}`,
     },
     description: DEFAULT_DESCRIPTION,
     icons: {

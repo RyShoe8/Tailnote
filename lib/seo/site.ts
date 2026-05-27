@@ -2,11 +2,22 @@ import { getPublicSiteOrigin } from '@/lib/siteOrigin';
 
 export const SITE_NAME = 'Tailnote';
 
+export const SITE_TAGLINE = 'Turn every email into a marketing moment';
+
+export const SITE_TITLE_DEFAULT = `${SITE_NAME} | ${SITE_TAGLINE}`;
+
+/** Suffix highlighted in the home hero H1 gradient. */
+export const SITE_TAGLINE_GRADIENT_SUFFIX = 'marketing moment';
+
 /** Social / Open Graph image (1200×630 recommended; place under public/). */
 export const DEFAULT_OG_IMAGE_PATH = '/images/og/tailnote-og.jpg';
 
-export const DEFAULT_DESCRIPTION =
-  'Professional email signatures for modern teams — promotional blocks, UTM tracking, and polished templates for Gmail and Outlook.';
+export const DEFAULT_DESCRIPTION = `${SITE_TAGLINE} — on-brand signatures, promotional blocks, UTM tracking, and templates for Gmail and Outlook.`;
+
+/** Page title for subpages: `Page title | Tailnote`. */
+export function formatPageTitle(pageTitle: string): string {
+  return `${pageTitle} | ${SITE_NAME}`;
+}
 
 /** Canonical site origin for metadata, sitemap, and JSON-LD. */
 export function getSiteUrl(): string {

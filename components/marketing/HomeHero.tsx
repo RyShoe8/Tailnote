@@ -4,6 +4,11 @@ import { Button } from '@/components/ui/button';
 import { EmailClientMock } from '@/components/marketing/EmailClientMock';
 import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
 import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
+import { SITE_TAGLINE, SITE_TAGLINE_GRADIENT_SUFFIX } from '@/lib/seo/site';
+
+const taglinePrefix = SITE_TAGLINE.endsWith(SITE_TAGLINE_GRADIENT_SUFFIX)
+  ? SITE_TAGLINE.slice(0, -SITE_TAGLINE_GRADIENT_SUFFIX.length)
+  : `${SITE_TAGLINE} `;
 
 export function HomeHero() {
   const signatureHtml = stripSignaturePreviewLinks(renderMarketingSample('default'));
@@ -18,8 +23,8 @@ export function HomeHero() {
               New: Creator and Executive layouts
             </span>
             <h1 className="mt-5 text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl md:text-6xl">
-              Turn every email into a{' '}
-              <span className="tn-grad-text">marketing moment</span>
+              {taglinePrefix}
+              <span className="tn-grad-text">{SITE_TAGLINE_GRADIENT_SUFFIX}</span>
             </h1>
             <p className="mt-5 text-pretty text-base text-muted-foreground sm:text-lg">
               Tailnote pairs on-brand signatures with promotional content blocks, built-in UTM
