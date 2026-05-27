@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requirePlatformAdminApi } from '@/lib/admin/platformAdminApi';
 import {
-  CreateOrganizationUserError,
-  createOrganizationUser,
-} from '@/lib/admin/createOrganizationUser';
+  CreateOrganizationUserInviteError,
+  createOrganizationUserInvite,
+} from '@/lib/admin/createOrganizationUserInvite';
+import { listPendingOrganizationUserInvites } from '@/lib/admin/listPendingOrganizationUserInvites';
 import { isValidObjectIdString, listUsersInOrganization } from '@/lib/admin/data';
 import { OrganizationModel } from '@/models/Organization';
 import { connectMongoose } from '@/lib/mongoose';
@@ -14,7 +15,6 @@ export const dynamic = 'force-dynamic';
 const PostSchema = z.object({
   email: z.string().trim().email(),
   name: z.string().trim().min(1).max(120),
-  password: z.string().min(8).max(128),
   role: z.enum(['owner', 'admin', 'member']),
 });
 
@@ -32,8 +32,16 @@ export async function GET(_request: Request, { params }: RouteParams) {
   if (!org) {
     return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
   }
-  const users = await listUsersInOrganization(id);
-  return NextResponse.json({ organizationId: id, organizationName: org.name, users });
+  const [users, pendingInvites] = await Promise.all([
+    listUsersInOrganization(id),
+    listPendingOrganizationUserInvites(id),
+  ]);
+  return NextResponse.json({
+    organizationId: id,
+    organizationName: org.name,
+    users,
+    pendingInvites,
+  });
 }
 
 export async function POST(request: Request, { params }: RouteParams) {
@@ -60,19 +68,25 @@ export async function POST(request: Request, { params }: RouteParams) {
   }
 
   try {
-    const user = await createOrganizationUser({
+    const invite = await createOrganizationUserInvite({
       organizationId: id,
       email: parsed.data.email,
       name: parsed.data.name,
-      password: parsed.data.password,
       role: parsed.data.role,
     });
-    return NextResponse.json({ user }, { status: 201 });
+    return NextResponse.json(
+      {
+        inviteSent: true,
+        invite,
+        message: 'Invitation email sent.',
+      },
+      { status: 201 }
+    );
   } catch (err) {
-    if (err instanceof CreateOrganizationUserError) {
+    if (err instanceof CreateOrganizationUserInviteError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
     }
-    console.error('[admin] create organization user', err);
-    return NextResponse.json({ error: 'Could not create user' }, { status: 500 });
+    console.error('[admin] create organization user invite', err);
+    return NextResponse.json({ error: 'Could not send invitation' }, { status: 500 });
   }
 }

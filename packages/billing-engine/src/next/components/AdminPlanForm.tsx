@@ -18,6 +18,7 @@ const empty = {
   description: '',
   badge: '',
   maxSubscriptionSlots: 0,
+  listOnPricingPage: true,
 };
 
 export function AdminPlanForm({
@@ -48,6 +49,7 @@ export function AdminPlanForm({
         description: form.description,
         badge: form.badge,
         maxSubscriptionSlots: Number(form.maxSubscriptionSlots),
+        listOnPricingPage: form.listOnPricingPage,
       };
       const url = mode === 'create' ? '/api/admin/plans' : `/api/admin/plans/${planId}`;
       const res = await fetch(url, {
@@ -178,6 +180,23 @@ export function AdminPlanForm({
               }
             />
           </div>
+          <div className="flex items-center gap-2">
+            <input
+              id="listOnPricingPage"
+              type="checkbox"
+              className="h-4 w-4 rounded border border-input"
+              checked={form.listOnPricingPage}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setForm((f) => ({ ...f, listOnPricingPage: e.target.checked }))
+              }
+            />
+            <Label htmlFor="listOnPricingPage" className="font-normal cursor-pointer">
+              Show on pricing page
+            </Label>
+          </div>
+          <p className="text-xs text-muted-foreground -mt-2">
+            Uncheck to hide from public pricing while keeping the plan assignable in admin.
+          </p>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <div className="flex flex-wrap gap-2">
             <Button type="submit" disabled={loading}>

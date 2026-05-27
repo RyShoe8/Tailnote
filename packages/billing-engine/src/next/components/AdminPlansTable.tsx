@@ -16,6 +16,7 @@ export type PlanRow = {
   active: boolean;
   paused: boolean;
   archived?: boolean;
+  listOnPricingPage?: boolean;
   version: number;
   stripeBasePriceId?: string;
   maxSubscriptionSlots?: number;
@@ -96,6 +97,23 @@ export function AdminPlansTable({
     router.refresh();
   }
 
+  async function toggleListOnPricing(id: string, listOnPricingPage: boolean) {
+    setMsg(null);
+    const res = await fetch(`/api/admin/plans/${id}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ listOnPricingPage: !listOnPricingPage }),
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      setMsg(typeof j.error === 'string' ? j.error : 'Update failed');
+      return;
+    }
+    await reload();
+    router.refresh();
+  }
+
   async function setArchived(id: string, archived: boolean) {
     setMsg(null);
     const res = await fetch(`/api/admin/plans/${id}`, {
@@ -146,6 +164,11 @@ export function AdminPlansTable({
                   <td className="p-3 font-medium">
                     {p.name}
                     <span className="block text-xs text-muted-foreground">v{p.version}</span>
+                    {p.listOnPricingPage === false ? (
+                      <span className="mt-1 inline-block rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                        Hidden from pricing
+                      </span>
+                    ) : null}
                   </td>
                   <td className="p-3">{p.interval}</td>
                   <td className="p-3">{fmtMoney(p.basePriceCents)}</td>
@@ -163,6 +186,14 @@ export function AdminPlansTable({
                           </Button>
                           <Button type="button" size="sm" variant="outline" onClick={() => void clone(p._id)}>
                             Clone
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => void toggleListOnPricing(p._id, p.listOnPricingPage !== false)}
+                          >
+                            {p.listOnPricingPage === false ? 'Show on pricing' : 'Hide from pricing'}
                           </Button>
                           <Button
                             type="button"

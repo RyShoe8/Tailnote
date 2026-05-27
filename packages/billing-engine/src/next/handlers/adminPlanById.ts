@@ -18,6 +18,7 @@ const PatchSchema = z.object({
   paused: z.boolean().optional(),
   maxSubscriptionSlots: z.number().int().nonnegative().optional(),
   archived: z.boolean().optional(),
+  listOnPricingPage: z.boolean().optional(),
 });
 
 type Params = { params: Promise<{ id: string }> };

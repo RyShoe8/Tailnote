@@ -13,6 +13,7 @@ const PRIVATE_DISALLOWS = [
   '/signup',
   '/onboarding',
   '/invite/',
+  '/join/',
   '/p/',
 ] as const;
 

@@ -19,9 +19,11 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get('invite');
+  const joinToken = searchParams.get('join');
   const inviteEmail = searchParams.get('email');
-  const next =
-    inviteToken
+  const next = joinToken
+    ? `/join/${encodeURIComponent(joinToken)}?accept=1`
+    : inviteToken
       ? `/invite/${encodeURIComponent(inviteToken)}?accept=1`
       : searchParams.get('next') || '/dashboard';
   const [email, setEmail] = useState(inviteEmail || '');

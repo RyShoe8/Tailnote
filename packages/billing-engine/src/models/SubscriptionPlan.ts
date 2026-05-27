@@ -21,6 +21,8 @@ const SubscriptionPlanSchema = new Schema(
     maxSubscriptionSlots: { type: Number, default: 0, min: 0 },
     /** Retired from public catalog; existing subs stay pinned */
     archived: { type: Boolean, default: false, index: true },
+    /** When false, plan is assignable in admin but omitted from marketing pricing UI */
+    listOnPricingPage: { type: Boolean, default: true, index: true },
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } }
 );

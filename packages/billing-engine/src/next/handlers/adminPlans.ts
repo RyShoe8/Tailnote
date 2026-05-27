@@ -20,6 +20,7 @@ const CreateSchema = z.object({
   paused: z.boolean().optional(),
   maxSubscriptionSlots: z.number().int().nonnegative().optional(),
   archived: z.boolean().optional(),
+  listOnPricingPage: z.boolean().optional(),
 });
 
 async function enrichPlans(plans: SubscriptionPlanDoc[]) {
@@ -89,6 +90,7 @@ export async function POST(request: Request) {
       paused: parsed.data.paused ?? false,
       maxSubscriptionSlots: parsed.data.maxSubscriptionSlots ?? 0,
       archived: parsed.data.archived ?? false,
+      listOnPricingPage: parsed.data.listOnPricingPage ?? true,
     });
     return NextResponse.json({ plan });
   } catch (e) {

@@ -13,14 +13,22 @@ type Props = {
 
 type RowState = AdminUserRow & { draftRole: string; draftPlatformAdmin: boolean };
 
+type PendingInviteRow = {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  inviteSentAt: string | null;
+};
+
 export function AdminOrgUsersManager({ organizationId, onUserCountChange }: Props) {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [rows, setRows] = useState<RowState[]>([]);
+  const [pendingInvites, setPendingInvites] = useState<PendingInviteRow[]>([]);
 
   const [addEmail, setAddEmail] = useState('');
   const [addName, setAddName] = useState('');
-  const [addPassword, setAddPassword] = useState('');
   const [addRole, setAddRole] = useState<'owner' | 'admin' | 'member'>('member');
   const [addSaving, setAddSaving] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
@@ -45,6 +53,7 @@ export function AdminOrgUsersManager({ organizationId, onUserCountChange }: Prop
           return;
         }
         const users = (j.users as AdminUserRow[] | undefined) ?? [];
+        const pending = (j.pendingInvites as PendingInviteRow[] | undefined) ?? [];
         if (!cancelled) {
           setRows(
             users.map((u) => ({
@@ -53,6 +62,7 @@ export function AdminOrgUsersManager({ organizationId, onUserCountChange }: Prop
               draftPlatformAdmin: u.platformAdmin,
             }))
           );
+          setPendingInvites(pending);
           setAddRole(users.some((u) => u.role === 'owner') ? 'member' : 'owner');
         }
       } catch {
@@ -92,7 +102,24 @@ export function AdminOrgUsersManager({ organizationId, onUserCountChange }: Prop
     return null;
   }
 
-  async function addUser(e: React.FormEvent) {
+  async function reloadUsers() {
+    const res = await fetch(`/api/admin/organizations/${organizationId}/users`, {
+      credentials: 'include',
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) return;
+    const users = (j.users as AdminUserRow[] | undefined) ?? [];
+    setRows(
+      users.map((u) => ({
+        ...u,
+        draftRole: u.role || 'member',
+        draftPlatformAdmin: u.platformAdmin,
+      }))
+    );
+    setPendingInvites((j.pendingInvites as PendingInviteRow[] | undefined) ?? []);
+  }
+
+  async function sendInvite(e: React.FormEvent) {
     e.preventDefault();
     setAddSaving(true);
     setAddError(null);
@@ -105,37 +132,48 @@ export function AdminOrgUsersManager({ organizationId, onUserCountChange }: Prop
         body: JSON.stringify({
           email: addEmail.trim(),
           name: addName.trim(),
-          password: addPassword,
           role: addRole,
         }),
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setAddError(typeof j.error === 'string' ? j.error : 'Could not create user');
+        setAddError(typeof j.error === 'string' ? j.error : 'Could not send invitation');
         return;
-      }
-      const user = j.user as AdminUserRow | undefined;
-      if (user?.id) {
-        setRows((prev) => [
-          ...prev,
-          {
-            ...user,
-            draftRole: user.role || 'member',
-            draftPlatformAdmin: user.platformAdmin,
-          },
-        ]);
-        onUserCountChange?.(1);
       }
       setAddEmail('');
       setAddName('');
-      setAddPassword('');
       setAddRole(hasOwner ? 'member' : 'owner');
-      setAddSuccess('User created.');
+      setAddSuccess(
+        typeof j.message === 'string' ? j.message : 'Invitation email sent. They can create an account from the link.'
+      );
+      await reloadUsers();
     } catch {
-      setAddError('Could not create user');
+      setAddError('Could not send invitation');
     } finally {
       setAddSaving(false);
     }
+  }
+
+  async function resendInvite(invite: PendingInviteRow) {
+    setAddError(null);
+    setAddSuccess(null);
+    const res = await fetch(`/api/admin/organizations/${organizationId}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        email: invite.email,
+        name: invite.name,
+        role: invite.role,
+      }),
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setAddError(typeof j.error === 'string' ? j.error : 'Could not resend invitation');
+      return;
+    }
+    setAddSuccess(`Invitation resent to ${invite.email}.`);
+    await reloadUsers();
   }
 
   if (loading) {
@@ -151,9 +189,34 @@ export function AdminOrgUsersManager({ organizationId, onUserCountChange }: Prop
       <div>
         <h3 className="text-sm font-medium">Users</h3>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Org role and platform admin. Delete removes the auth account.
+          Send an invite email so users create their own account. Invite links are secret URLs.
         </p>
       </div>
+
+      {pendingInvites.length > 0 ? (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">Pending invitations</p>
+          {pendingInvites.map((invite) => (
+            <div
+              key={invite.id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed bg-background px-3 py-2 text-sm"
+            >
+              <div>
+                <p className="font-medium">{invite.email}</p>
+                <p className="text-xs text-muted-foreground">
+                  {invite.name} · {invite.role}
+                  {invite.inviteSentAt
+                    ? ` · sent ${new Date(invite.inviteSentAt).toLocaleDateString()}`
+                    : ''}
+                </p>
+              </div>
+              <Button type="button" size="sm" variant="outline" onClick={() => void resendInvite(invite)}>
+                Resend
+              </Button>
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">No users linked to this organization.</p>
@@ -177,8 +240,8 @@ export function AdminOrgUsersManager({ organizationId, onUserCountChange }: Prop
         </div>
       )}
 
-      <form onSubmit={(e) => void addUser(e)} className="space-y-3 max-w-lg border-t pt-4">
-        <p className="text-sm font-medium">Add user</p>
+      <form onSubmit={(e) => void sendInvite(e)} className="space-y-3 max-w-lg border-t pt-4">
+        <p className="text-sm font-medium">Invite user</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor={`add-email-${organizationId}`}>Email</Label>
@@ -203,34 +266,20 @@ export function AdminOrgUsersManager({ organizationId, onUserCountChange }: Prop
             />
           </div>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor={`add-password-${organizationId}`}>Password</Label>
-            <Input
-              id={`add-password-${organizationId}`}
-              type="password"
-              value={addPassword}
-              onChange={(e) => setAddPassword(e.target.value)}
-              required
-              minLength={8}
-              autoComplete="new-password"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor={`add-role-${organizationId}`}>Org role</Label>
-            <select
-              id={`add-role-${organizationId}`}
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-              value={addRole}
-              onChange={(e) => setAddRole(e.target.value as 'owner' | 'admin' | 'member')}
-            >
-              <option value="owner" disabled={hasOwner}>
-                owner{hasOwner ? ' (already assigned)' : ''}
-              </option>
-              <option value="admin">admin</option>
-              <option value="member">member</option>
-            </select>
-          </div>
+        <div className="space-y-1.5 max-w-xs">
+          <Label htmlFor={`add-role-${organizationId}`}>Org role</Label>
+          <select
+            id={`add-role-${organizationId}`}
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+            value={addRole}
+            onChange={(e) => setAddRole(e.target.value as 'owner' | 'admin' | 'member')}
+          >
+            <option value="owner" disabled={hasOwner}>
+              owner{hasOwner ? ' (already assigned)' : ''}
+            </option>
+            <option value="admin">admin</option>
+            <option value="member">member</option>
+          </select>
         </div>
         {addError ? (
           <p className="text-sm text-destructive" role="alert">
@@ -239,7 +288,7 @@ export function AdminOrgUsersManager({ organizationId, onUserCountChange }: Prop
         ) : null}
         {addSuccess ? <p className="text-sm text-muted-foreground">{addSuccess}</p> : null}
         <Button type="submit" size="sm" disabled={addSaving}>
-          {addSaving ? 'Creating…' : 'Add user'}
+          {addSaving ? 'Sending…' : 'Send invite'}
         </Button>
       </form>
     </div>

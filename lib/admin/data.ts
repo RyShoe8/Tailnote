@@ -28,6 +28,7 @@ export type AdminAssignablePlan = {
   active: boolean;
   paused: boolean;
   archived: boolean;
+  listOnPricingPage: boolean;
   label: string;
 };
 
@@ -39,10 +40,13 @@ export type AdminOrgPlanContext = {
   assignablePlans: AdminAssignablePlan[];
 };
 
-export function formatAssignablePlanLabel(plan: Pick<AdminAssignablePlan, 'name' | 'version' | 'interval' | 'paused' | 'active'>): string {
+export function formatAssignablePlanLabel(
+  plan: Pick<AdminAssignablePlan, 'name' | 'version' | 'interval' | 'paused' | 'active' | 'listOnPricingPage'>
+): string {
   const flags: string[] = [];
   if (plan.paused) flags.push('paused');
   if (!plan.active) flags.push('inactive');
+  if (plan.listOnPricingPage === false) flags.push('hidden from pricing');
   const suffix = flags.length > 0 ? `, ${flags.join(', ')}` : '';
   return `${plan.name} (v${plan.version}, ${plan.interval}${suffix})`;
 }
@@ -67,6 +71,7 @@ export async function listAssignableSubscriptionPlans(): Promise<AdminAssignable
       active: Boolean(p.active),
       paused: Boolean(p.paused),
       archived: Boolean(p.archived),
+      listOnPricingPage: p.listOnPricingPage !== false,
     };
     return {
       ...plan,

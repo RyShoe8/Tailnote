@@ -27,7 +27,12 @@ export async function getPublicPricingPlans(): Promise<PublicPricingPlan[]> {
   await connectBillingDb();
   await ensureDefaultSubscriptionPlans();
 
-  const rows = await SubscriptionPlanModel.find({ active: true, paused: false, archived: false })
+  const rows = await SubscriptionPlanModel.find({
+    active: true,
+    paused: false,
+    archived: false,
+    listOnPricingPage: true,
+  })
     .sort({ slug: 1, version: -1 })
     .lean<SubscriptionPlanDoc[]>();
 

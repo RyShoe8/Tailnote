@@ -22,7 +22,9 @@ export function middleware(request: NextRequest) {
 
   const isPublicInvite =
     pathname.startsWith('/invite/') ||
-    (pathname.startsWith('/api/invite/') && !pathname.endsWith('/accept'));
+    pathname.startsWith('/join/') ||
+    (pathname.startsWith('/api/invite/') && !pathname.endsWith('/accept')) ||
+    (pathname.startsWith('/api/join/') && !pathname.endsWith('/accept'));
 
   const needsAuth =
     !isPublicInvite &&

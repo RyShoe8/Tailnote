@@ -15,7 +15,14 @@ import { formatOAuthCallbackError, formatSignupError } from '@/lib/auth/formatAu
 import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha/config';
 import { authCaptchaFetchOptions, useRecaptcha } from '@/lib/recaptcha/client';
 
-function buildPostSignupPath(searchParams: URLSearchParams, inviteToken: string | null): string {
+function buildPostSignupPath(
+  searchParams: URLSearchParams,
+  inviteToken: string | null,
+  joinToken: string | null
+): string {
+  if (joinToken) {
+    return `/join/${encodeURIComponent(joinToken)}?accept=1`;
+  }
   if (inviteToken) {
     return `/invite/${encodeURIComponent(inviteToken)}?accept=1`;
   }
@@ -32,8 +39,9 @@ function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get('invite');
+  const joinToken = searchParams.get('join');
   const inviteEmail = searchParams.get('email');
-  const googleCallback = buildPostSignupPath(searchParams, inviteToken);
+  const googleCallback = buildPostSignupPath(searchParams, inviteToken, joinToken);
   const [name, setName] = useState('');
   const [email, setEmail] = useState(inviteEmail || '');
   const [password, setPassword] = useState('');
@@ -46,7 +54,7 @@ function SignupForm() {
   const loginRecaptcha = useRecaptcha(RECAPTCHA_ACTIONS.login);
   const recaptchaEnabled = signupRecaptcha.enabled;
   const { data: session, isPending: sessionPending } = authClient.useSession();
-  const postSignupPath = buildPostSignupPath(searchParams, inviteToken);
+  const postSignupPath = buildPostSignupPath(searchParams, inviteToken, joinToken);
 
   useEffect(() => {
     if (sessionPending || !session?.user) return;
@@ -100,11 +108,15 @@ function SignupForm() {
         );
         return;
       }
+      if (joinToken) {
+        window.location.href = `/join/${encodeURIComponent(joinToken)}?accept=1`;
+        return;
+      }
       if (inviteToken) {
         window.location.href = `/invite/${encodeURIComponent(inviteToken)}?accept=1`;
         return;
       }
-      router.push(buildPostSignupPath(searchParams, inviteToken));
+      router.push(buildPostSignupPath(searchParams, inviteToken, joinToken));
       router.refresh();
     } catch {
       setError('Sign up failed');
@@ -118,7 +130,7 @@ function SignupForm() {
       <CardHeader>
         <CardTitle>Create account</CardTitle>
         <CardDescription>
-          {inviteToken
+          {joinToken || inviteToken
             ? 'Create your account to accept your team invitation.'
             : 'Start with email and password.'}
         </CardDescription>
