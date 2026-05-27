@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import type { SubscriptionAddonDoc } from '../models/SubscriptionAddon';
 import { getStripe } from '../stripe/client';
 import { priceMatchesAddon, resolveOrCreatePrice } from '../stripe/resolveStripePrice';
+import { resolveOrCreateStripeProduct } from '../stripe/resolveStripeProduct';
 
 export type AddonForSync = SubscriptionAddonDoc & { _id: mongoose.Types.ObjectId };
 
@@ -17,21 +18,14 @@ export async function syncAddonToStripe(addon: AddonForSync) {
     tailnoteAddonSlug: addon.slug,
   };
 
-  let productId = addon.stripeProductId;
-  if (!productId) {
-    const product = await stripe.products.create({
+  const { productId, recreated: productRecreated } = await resolveOrCreateStripeProduct(stripe, {
+    existingProductId: addon.stripeProductId,
+    fields: {
       name: addon.name,
       description: addon.description || undefined,
       metadata: meta,
-    });
-    productId = product.id;
-  } else {
-    await stripe.products.update(productId, {
-      name: addon.name,
-      description: addon.description || undefined,
-      metadata: meta,
-    });
-  }
+    },
+  });
 
   const baseParams: Stripe.PriceCreateParams = {
     product: productId,
@@ -44,7 +38,7 @@ export async function syncAddonToStripe(addon: AddonForSync) {
   };
 
   const priceId = await resolveOrCreatePrice(stripe, {
-    existingPriceId: addon.stripePriceId,
+    existingPriceId: productRecreated ? undefined : addon.stripePriceId,
     createParams: baseParams,
     matches: (price) => priceMatchesAddon(price, addon, productId),
   });

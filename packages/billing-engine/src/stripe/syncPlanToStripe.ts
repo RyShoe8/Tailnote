@@ -9,6 +9,7 @@ import {
   priceMatchesSeatPlan,
   resolveOrCreatePrice,
 } from '../stripe/resolveStripePrice';
+import { resolveOrCreateStripeProduct } from '../stripe/resolveStripeProduct';
 
 export type PlanForSync = SubscriptionPlanDoc & { _id: mongoose.Types.ObjectId };
 
@@ -43,13 +44,10 @@ export async function syncPlanToStripe(plan: PlanForSync) {
     ...(taxCode ? { tax_code: taxCode } : {}),
   };
 
-  let productId = plan.stripeProductId;
-  if (!productId) {
-    const product = await stripe.products.create(productFields);
-    productId = product.id;
-  } else {
-    await stripe.products.update(productId, productFields);
-  }
+  const { productId, recreated: productRecreated } = await resolveOrCreateStripeProduct(stripe, {
+    existingProductId: plan.stripeProductId,
+    fields: productFields,
+  });
 
   const baseParams: Stripe.PriceCreateParams = {
     product: productId,
@@ -62,7 +60,7 @@ export async function syncPlanToStripe(plan: PlanForSync) {
   };
 
   const basePriceId = await resolveOrCreatePrice(stripe, {
-    existingPriceId: plan.stripeBasePriceId,
+    existingPriceId: productRecreated ? undefined : plan.stripeBasePriceId,
     createParams: baseParams,
     matches: (price) => priceMatchesBasePlan(price, plan, productId),
   });
@@ -72,7 +70,7 @@ export async function syncPlanToStripe(plan: PlanForSync) {
 
   if (plan.additionalUserPriceCents > 0 && plan.interval !== 'lifetime') {
     seatPriceId = await resolveOrCreatePrice(stripe, {
-      existingPriceId: plan.stripeSeatPriceId,
+      existingPriceId: productRecreated ? undefined : plan.stripeSeatPriceId,
       createParams: {
         product: productId,
         currency: 'usd',
