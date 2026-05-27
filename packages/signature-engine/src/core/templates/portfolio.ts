@@ -11,7 +11,7 @@ export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" c
       <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 12px auto;border-collapse:collapse;">
         <tr>
           <td align="center" style="line-height:0;font-size:0;">
-            <a href="{{logoLink}}" style="text-decoration:none;border:0;outline:none;display:inline-block;">
+            <a href="{{logoLink}}" style="text-decoration:none;border:0;outline:none;display:block;">
               {{#if hasLogoSizedHeight}}
               <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" style="display:block;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;max-width:{{logoWidth}}px;border-radius:{{logoImgBorderRadius}};border:3px solid {{secondaryColor}};background-color:#ffffff;" />
               {{/if}}

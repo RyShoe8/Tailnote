@@ -87,7 +87,7 @@ export const CORPORATE_SIGNATURE_TEMPLATE = `<style type="text/css">
           <!-- Logo column -->
           <td class="sig-corp-logo-stack" width="{{logoWidth}}" style="vertical-align:top;line-height:0;font-size:0;padding-right:28px;width:{{logoWidth}}px;">
             {{#if hasLogo}}
-            <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:inline-block;">
+            <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:block;">
 {{#if hasLogoSizedHeight}}
               <img src="{{logoUrl}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" border="0" alt="" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;border:0;outline:none;text-decoration:none;border-radius:{{logoImgBorderRadius}};" />
 {{/if}}

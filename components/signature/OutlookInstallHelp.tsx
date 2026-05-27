@@ -49,7 +49,8 @@ export function OutlookInstallHelp({ disabled }: Props) {
       </ol>
       <p className="text-xs">
         Use <strong>Copy rich text</strong> for best results in Outlook, or <strong>Download HTML</strong> if your IT
-        policy prefers a file.
+        policy prefers a file. If your logo does not appear, re-upload it in Tailnote (logos are saved as PNG for
+        Outlook compatibility) and paste the signature again.
       </p>
     </div>
   );

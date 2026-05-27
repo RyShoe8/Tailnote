@@ -47,6 +47,29 @@ function logoWidthForLayout(layout: SignatureTemplate['layout'], useCircle: bool
   }
 }
 
+/** Outlook and most clients need explicit img height; GIF logos may use height:auto. */
+export function resolveLogoDisplayHeight(
+  logoWidthPx: number,
+  explicitLogoHeightPx: number | undefined,
+  useAnimatedGif: boolean
+): { displayHeight: string; useAutoHeight: boolean } {
+  if (useAnimatedGif && (!explicitLogoHeightPx || explicitLogoHeightPx <= 0)) {
+    return { displayHeight: '', useAutoHeight: true };
+  }
+  let h: number;
+  if (
+    typeof explicitLogoHeightPx === 'number' &&
+    Number.isFinite(explicitLogoHeightPx) &&
+    explicitLogoHeightPx > 0 &&
+    explicitLogoHeightPx <= 400
+  ) {
+    h = Math.round(explicitLogoHeightPx);
+  } else {
+    h = Math.min(120, Math.max(24, Math.round(logoWidthPx * 0.45)));
+  }
+  return { displayHeight: String(h), useAutoHeight: false };
+}
+
 function logoImgBorderRadiusForLayout(
   layout: SignatureTemplate['layout'],
   useCircle: boolean
@@ -973,14 +996,18 @@ export function mergeRenderContext(
     if (useCircleLogo) {
       logoDisplayHeightStr = logoWidthStr;
       hasLogoSizedHeight = true;
-    } else if (explicitLogoH) {
-      logoDisplayHeightStr = String(logoHeightPxRounded);
-      hasLogoSizedHeight = true;
-    } else if (isPortfolioLayout && useCircleLogo) {
-      logoDisplayHeightStr = logoWidthStr;
-      hasLogoSizedHeight = true;
     } else {
-      hasLogoAutoHeight = true;
+      const resolved = resolveLogoDisplayHeight(
+        parseInt(logoWidthStr, 10) || 110,
+        explicitLogoH ? logoHeightPxRounded : brand.logoHeightPx,
+        useAnimation
+      );
+      if (resolved.useAutoHeight) {
+        hasLogoAutoHeight = true;
+      } else {
+        logoDisplayHeightStr = resolved.displayHeight;
+        hasLogoSizedHeight = true;
+      }
     }
   }
 

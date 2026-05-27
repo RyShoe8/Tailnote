@@ -4,7 +4,11 @@
  */
 import assert from 'node:assert/strict';
 import { renderSignature } from '../src/index';
-import { mockSignatureBrand, mockSignatureTemplate } from '../src/fixtures';
+import {
+  defaultSignatureElements,
+  mockSignatureBrand,
+  mockSignatureTemplate,
+} from '../src/fixtures';
 
 const profile = {
   firstName: 'Test',
@@ -25,9 +29,12 @@ const htmlStandard = renderSignature({
 
 assert.match(
   htmlStandard,
-  /height:auto/,
-  'standard: generic static logo uses height:auto so aspect ratio is preserved'
+  /width="110" height="\d+"/,
+  'standard: static logo uses explicit width and height for Outlook'
 );
+const standardLogoImg = htmlStandard.match(/<img[^>]*logo\.png[^>]*>/i)?.[0] ?? '';
+assert.ok(standardLogoImg.length > 0, 'standard: logo img present');
+assert.doesNotMatch(standardLogoImg, /height:auto/i, 'standard: logo img avoids height:auto');
 assert.doesNotMatch(
   htmlStandard,
   /height="134"/,
@@ -124,7 +131,7 @@ const htmlStacked = renderSignature({
   template: mockSignatureTemplate('stacked'),
   publicSiteOrigin: origin,
 });
-assert.match(htmlStacked, /height:auto/, 'stacked: generic static logo uses height:auto');
+assert.match(htmlStacked, /width="110" height="\d+"/, 'stacked: static logo uses explicit dimensions');
 assert.match(
   htmlStacked,
   /max-width:665px/,
@@ -138,14 +145,16 @@ const htmlAnimatedLogo = renderSignature({
     logoHeightPx: undefined,
     animation: { enabled: true, gifUrl: 'https://example.com/images/sample.gif' },
   },
-  template: mockSignatureTemplate('standard'),
+  template: {
+    ...mockSignatureTemplate('standard'),
+    elements: [...defaultSignatureElements, { type: 'animation' }],
+  },
   publicSiteOrigin: origin,
 });
-assert.match(
-  htmlAnimatedLogo,
-  /height:auto/,
-  'standard: animated GIF logo without logoHeightPx still uses height:auto'
-);
+assert.ok(htmlAnimatedLogo.includes('sample.gif'), 'standard: animated logo uses gif URL');
+const animatedLogoImg = htmlAnimatedLogo.match(/<img[^>]*sample\.gif[^>]*>/i)?.[0] ?? '';
+assert.ok(animatedLogoImg.length > 0, 'standard: animated logo img present');
+assert.match(animatedLogoImg, /height:auto/i, 'standard: animated GIF logo uses height:auto');
 
 // Corporate template with List + Image content blocks
 const corporateTemplate: import('../src/core/types').SignatureTemplate = {
@@ -884,7 +893,23 @@ assert.doesNotMatch(
   'creator: card shell does not use brand primaryColor as fill'
 );
 assert.ok(htmlCreator.includes('border-collapse: collapse'), 'creator: nested tables');
+assert.match(
+  htmlCreator,
+  /<img[^>]*logo\.png[^>]*width="100"[^>]*height="\d+"/i,
+  'creator: static logo has explicit width and height'
+);
+assert.doesNotMatch(
+  htmlCreator,
+  /<img[^>]*logo\.png[^>]*height:auto/i,
+  'creator: logo img avoids height:auto for Outlook'
+);
+assert.ok(htmlCreator.includes('mso-line-height-rule: exactly'), 'creator: logo cell uses MSO line-height');
 assert.ok(htmlCreator.includes(`${iconBase}icon-linkedin.png?v=6`), 'creator: hosted LinkedIn icon');
+assert.match(
+  htmlCreator,
+  /icon-linkedin\.png[^>]*height="18"/,
+  'creator: social icons use explicit height'
+);
 assert.doesNotMatch(htmlCreator, /flaticon\.com/i, 'creator: no external flaticon CDN');
 assert.doesNotMatch(htmlCreator, /src="http:\/\//i, 'creator: no non-HTTPS images');
 assert.ok(htmlCreator.includes('mailto:test@example.com'), 'creator: mailto link');
@@ -1006,8 +1031,8 @@ assert.ok(htmlPortfolio.includes(`${iconBase}icon-linkedin.png?v=6`), 'portfolio
 assert.doesNotMatch(htmlPortfolio, /flaticon\.com/i, 'portfolio: no external flaticon CDN');
 assert.match(
   htmlPortfolio,
-  /width="85"[^>]*style="[^"]*height:auto/,
-  'portfolio: rectangle logo keeps aspect ratio (width fixed, height auto)'
+  /width="85" height="\d+"/,
+  'portfolio: rectangle logo uses explicit dimensions for Outlook'
 );
 assert.doesNotMatch(htmlPortfolio, /border-radius:50%/, 'portfolio: rectangle logoShape avoids circular crop');
 

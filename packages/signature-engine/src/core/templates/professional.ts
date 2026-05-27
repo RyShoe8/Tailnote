@@ -99,7 +99,7 @@ export const PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
             {{#if hasLogo}}
             <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
               <td bgcolor="#f0f4ff" style="background-color:#f0f4ff;border-radius:12px;padding:6px;line-height:0;font-size:0;">
-            <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:inline-block;">
+            <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:block;">
 {{#if hasLogoSizedHeight}}
               <img src="{{logoUrl}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" border="0" alt="" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;border:0;outline:none;text-decoration:none;border-radius:{{logoImgBorderRadius}};" />
 {{/if}}

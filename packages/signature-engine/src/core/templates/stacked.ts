@@ -3,7 +3,7 @@ export const STACKED_SIGNATURE_TEMPLATE = `<table class="sig-stacked-root" cellp
   <tr>
     <td valign="top" width="1%" style="vertical-align:top;line-height:0;font-size:0;padding-bottom:12px;padding-right:12px;white-space:nowrap;width:1%;">
       {{#if hasLogo}}
-      <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:inline-block;">
+      <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:block;">
 {{#if hasLogoSizedHeight}}
         <img src="{{logoUrl}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" border="0" alt="" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;border:0;outline:none;text-decoration:none;border-radius:{{logoImgBorderRadius}};" />
 {{/if}}

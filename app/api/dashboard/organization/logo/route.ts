@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { connectMongoose } from '@/lib/mongoose';
 import { getServerSession } from '@/lib/auth/session';
-import { SecureImageUploadError, uploadSecureImage } from '@/lib/uploads/secureImageUpload';
+import {
+  SecureImageUploadError,
+  logoHeightPxForEmailDisplay,
+  uploadSecureImage,
+} from '@/lib/uploads/secureImageUpload';
+import { OrganizationModel } from '@/models/Organization';
 
 const MAX_BYTES = 4 * 1024 * 1024;
 const MAX_WIDTH = 800;
@@ -40,12 +45,20 @@ export async function POST(request: Request) {
   await connectMongoose();
 
   try {
-    const { url } = await uploadSecureImage(file, {
+    const { url, width, height } = await uploadSecureImage(file, {
       pathnamePrefix: `tailnote/orgs/${user.organizationId}/logos`,
       maxBytes: MAX_BYTES,
       maxWidth: MAX_WIDTH,
+      outputFormat: 'png',
     });
-    return NextResponse.json({ url });
+
+    const logoHeightPx = logoHeightPxForEmailDisplay(width, height);
+
+    await OrganizationModel.findByIdAndUpdate(user.organizationId, {
+      $set: { logoUrl: url, logoHeightPx },
+    });
+
+    return NextResponse.json({ url, logoHeightPx });
   } catch (e) {
     if (e instanceof SecureImageUploadError) {
       return NextResponse.json({ error: e.message }, { status: e.status });

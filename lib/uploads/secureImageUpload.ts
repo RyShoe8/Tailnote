@@ -20,16 +20,22 @@ const SHARP_FORMAT_TO_MIME: Record<string, string> = {
 
 const MAX_DIMENSION = 8000;
 
+export type SecureImageOutputFormat = 'webp' | 'png' | 'jpeg';
+
 export type SecureImageUploadOptions = {
   /** Blob path prefix, e.g. `tailnote/orgs/{orgId}` — must not contain user-controlled segments */
   pathnamePrefix: string;
   maxBytes: number;
   maxWidth: number;
+  /** Default `webp`. Use `png` or `jpeg` for email signatures (Outlook does not render WebP). */
+  outputFormat?: SecureImageOutputFormat;
 };
 
 export type SecureImageUploadResult = {
   url: string;
   contentType: string;
+  width: number;
+  height: number;
 };
 
 export class SecureImageUploadError extends Error {
@@ -103,18 +109,39 @@ export async function uploadSecureImage(
     throw new SecureImageUploadError('Image dimensions are too large', 400);
   }
 
+  const outputFormat = opts.outputFormat ?? 'webp';
+
   let processedBuffer: Buffer = buffer;
   let finalMime = detectedMime;
   let ext = extFromMime(detectedMime);
+  let outWidth = w;
+  let outHeight = h;
 
-  if (sharpFormat !== 'gif') {
+  if (sharpFormat === 'gif') {
+    outWidth = w;
+    outHeight = h;
+  } else {
     try {
-      processedBuffer = await sharp(buffer, { failOn: 'error' })
-        .resize({ width: opts.maxWidth, withoutEnlargement: true })
-        .webp({ quality: 80, effort: 4 })
-        .toBuffer();
-      finalMime = 'image/webp';
-      ext = 'webp';
+      const resized = sharp(buffer, { failOn: 'error' }).resize({
+        width: opts.maxWidth,
+        withoutEnlargement: true,
+      });
+      if (outputFormat === 'png') {
+        processedBuffer = await resized.png({ compressionLevel: 9 }).toBuffer();
+        finalMime = 'image/png';
+        ext = 'png';
+      } else if (outputFormat === 'jpeg') {
+        processedBuffer = await resized.jpeg({ quality: 85, mozjpeg: true }).toBuffer();
+        finalMime = 'image/jpeg';
+        ext = 'jpg';
+      } else {
+        processedBuffer = await resized.webp({ quality: 80, effort: 4 }).toBuffer();
+        finalMime = 'image/webp';
+        ext = 'webp';
+      }
+      const outMeta = await sharp(processedBuffer).metadata();
+      outWidth = outMeta.width ?? w;
+      outHeight = outMeta.height ?? h;
     } catch {
       throw new SecureImageUploadError('Failed to process image', 400);
     }
@@ -129,5 +156,21 @@ export async function uploadSecureImage(
     contentType: finalMime,
   });
 
-  return { url: blob.url, contentType: finalMime };
+  return {
+    url: blob.url,
+    contentType: finalMime,
+    width: outWidth,
+    height: outHeight,
+  };
+}
+
+/** Display height (px) at 110px logo width — used when saving org.logoHeightPx after upload. */
+export function logoHeightPxForEmailDisplay(
+  intrinsicWidth: number,
+  intrinsicHeight: number,
+  displayLogoWidthPx = 110
+): number {
+  if (intrinsicWidth <= 0 || intrinsicHeight <= 0) return 48;
+  const scaled = Math.round((intrinsicHeight / intrinsicWidth) * displayLogoWidthPx);
+  return Math.min(400, Math.max(24, scaled));
 }

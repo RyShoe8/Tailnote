@@ -4,6 +4,8 @@ const OrganizationSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
     logoUrl: { type: String, default: '' },
+    /** Rendered logo height in px at template width (Outlook needs explicit dimensions). */
+    logoHeightPx: { type: Number, min: 1, max: 400 },
     logoShape: {
       type: String,
       enum: ['rectangle', 'circle'],

@@ -34,6 +34,7 @@ type OrgResponse = {
   companyName?: string;
   website?: string;
   logoUrl?: string;
+  logoHeightPx?: number;
   logoShape?: 'rectangle' | 'circle';
   logoLink?: string;
   primaryColor?: string;
@@ -70,6 +71,9 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
     companyName: (org.companyName || displayName || '').trim(),
     website: (org.website || '').trim(),
     logoUrl: (org.logoUrl || '').trim(),
+    ...(typeof org.logoHeightPx === 'number' && org.logoHeightPx > 0
+      ? { logoHeightPx: org.logoHeightPx }
+      : {}),
     logoShape: org.logoShape === 'circle' ? 'circle' : 'rectangle',
     logoLink: (org.logoLink || '').trim(),
     primaryColor: org.primaryColor?.trim() || '#0a0a0a',

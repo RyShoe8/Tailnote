@@ -25,7 +25,7 @@ export const EXECUTIVE_MINIMALIST_SIGNATURE_TEMPLATE = `<table class="sig-execut
               <tr>
                 {{#if hasLogo}}
                 <td valign="middle" style="padding-right: 10px; line-height: 0; font-size: 0; width: {{logoWidth}}px;">
-                  <a href="{{logoLink}}" style="text-decoration: none; border: 0; outline: none; display: inline-block;">
+                  <a href="{{logoLink}}" style="text-decoration: none; border: 0; outline: none; display: block;">
                     {{#if hasLogoSizedHeight}}
                     <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;border:0;border-radius:{{logoImgBorderRadius}};" />
                     {{/if}}
