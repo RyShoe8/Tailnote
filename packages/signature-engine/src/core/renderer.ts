@@ -47,11 +47,15 @@ function logoWidthForLayout(layout: SignatureTemplate['layout'], useCircle: bool
   }
 }
 
+/** Width used when persisting org.logoHeightPx after upload (see logoHeightPxForEmailDisplay). */
+export const LOGO_HEIGHT_REFERENCE_WIDTH_PX = 110;
+
 /** Outlook and most clients need explicit img height; GIF logos may use height:auto. */
 export function resolveLogoDisplayHeight(
   logoWidthPx: number,
   explicitLogoHeightPx: number | undefined,
-  useAnimatedGif: boolean
+  useAnimatedGif: boolean,
+  referenceLogoWidthPx: number = LOGO_HEIGHT_REFERENCE_WIDTH_PX
 ): { displayHeight: string; useAutoHeight: boolean } {
   if (useAnimatedGif && (!explicitLogoHeightPx || explicitLogoHeightPx <= 0)) {
     return { displayHeight: '', useAutoHeight: true };
@@ -63,10 +67,12 @@ export function resolveLogoDisplayHeight(
     explicitLogoHeightPx > 0 &&
     explicitLogoHeightPx <= 400
   ) {
-    h = Math.round(explicitLogoHeightPx);
+    const refW = referenceLogoWidthPx > 0 ? referenceLogoWidthPx : LOGO_HEIGHT_REFERENCE_WIDTH_PX;
+    h = Math.round(explicitLogoHeightPx * (logoWidthPx / refW));
   } else {
     h = Math.min(120, Math.max(24, Math.round(logoWidthPx * 0.45)));
   }
+  h = Math.min(400, Math.max(24, h));
   return { displayHeight: String(h), useAutoHeight: false };
 }
 
@@ -829,24 +835,27 @@ function buildEcardContactTableHtml(
   return rows.join('');
 }
 
-function buildEcardPortfolioLinksHtml(
-  blocks: ContentBlockData[],
-  primaryColor: string
-): { title: string; linksHtml: string } {
-  const enabledLists = blocks.filter((b) => b.enabled && b.type === 'list');
-  if (enabledLists.length === 0) return { title: '', linksHtml: '' };
+function joinEcardPortfolioLinkParts(parts: string[]): string {
+  if (parts.length === 0) return '';
+  let linksHtml = parts[0]!;
+  for (let i = 1; i < parts.length; i++) {
+    if (i % 3 === 0) {
+      linksHtml += `<br>${parts[i]}`;
+    } else {
+      linksHtml += ` &bull; ${parts[i]}`;
+    }
+  }
+  return linksHtml;
+}
 
-  const items = collectFlattenedListItems(enabledLists);
-  if (items.length === 0) return { title: '', linksHtml: '' };
-
-  const title =
-    enabledLists.map((b) => (b.listTitle || b.customTitle || '').trim()).find(Boolean) ||
-    'Portfolio';
+function buildEcardListBlockLinksHtml(block: ContentBlockData, primaryColor: string): string {
+  if (block.type !== 'list' || !block.listItems) return '';
   const accent = escapeHtml(primaryColor);
   const parts: string[] = [];
 
-  for (const item of items) {
-    const labelRaw = item.title || (item.url ? listItemLinkFallbackLabel(item.url) : '');
+  for (const item of block.listItems.filter(listItemHasBody).slice(0, 4)) {
+    const labelRaw =
+      (item.title || '').trim() || (item.url ? listItemLinkFallbackLabel(item.url) : '');
     if (!labelRaw) continue;
     const label = escapeHtml(labelRaw);
     const url = item.url
@@ -861,18 +870,27 @@ function buildEcardPortfolioLinksHtml(
     }
   }
 
-  if (parts.length === 0) return { title: '', linksHtml: '' };
+  return joinEcardPortfolioLinkParts(parts);
+}
 
-  let linksHtml = parts[0];
-  for (let i = 1; i < parts.length; i++) {
-    if (i % 3 === 0) {
-      linksHtml += `<br>${parts[i]}`;
-    } else {
-      linksHtml += ` &bull; ${parts[i]}`;
-    }
+/** One titled section per list promo block (up to two), preserving each block's listTitle. */
+function buildEcardPortfolioSectionsHtml(blocks: ContentBlockData[], primaryColor: string): string {
+  const enabledLists = blocks.filter((b) => b.enabled && b.type === 'list').slice(0, 2);
+  if (enabledLists.length === 0) return '';
+
+  const sections: string[] = [];
+  for (const block of enabledLists) {
+    const linksHtml = buildEcardListBlockLinksHtml(block, primaryColor);
+    if (!linksHtml) continue;
+    const sectionTitle =
+      (block.listTitle || block.customTitle || '').trim() || 'Portfolio';
+    const marginTop = sections.length > 0 ? 'margin-top:10px;' : '';
+    sections.push(
+      `<div style="${marginTop}"><strong style="color:#111827;display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">${escapeHtml(sectionTitle)}</strong>${linksHtml}</div>`
+    );
   }
 
-  return { title, linksHtml };
+  return sections.join('');
 }
 
 function layoutSocialTdStyles(
@@ -1287,12 +1305,10 @@ export function mergeRenderContext(
         )
       : '';
   const hasEcardContactTable = Boolean(ecardContactTableHtml);
-  const ecardPortfolio = isEcardLayout
-    ? buildEcardPortfolioLinksHtml(contentBlocks, brandPrimaryColor)
-    : { title: '', linksHtml: '' };
-  const hasEcardPortfolioSection = Boolean(ecardPortfolio.linksHtml);
-  const ecardPortfolioTitle = escapeHtml(ecardPortfolio.title);
-  const ecardPortfolioLinksHtml = ecardPortfolio.linksHtml;
+  const ecardPortfolioSectionsHtml = isEcardLayout
+    ? buildEcardPortfolioSectionsHtml(contentBlocks, brandPrimaryColor)
+    : '';
+  const hasEcardPortfolioSection = Boolean(ecardPortfolioSectionsHtml);
   const ecardLogoFrameWidth =
     isEcardLayout && hasLogo ? String(parseInt(logoWidthStr, 10) + 24) : '';
   const ecardVcardUrlTrimmed = (vcardDownloadUrl ?? '').trim();
@@ -1423,8 +1439,7 @@ export function mergeRenderContext(
     portfolioSocialTdDiscordStyle: portfolioSocial.dc,
     ecardRoleLine,
     ecardContactTableHtml,
-    ecardPortfolioTitle,
-    ecardPortfolioLinksHtml,
+    ecardPortfolioSectionsHtml,
     ecardLogoFrameWidth,
     ecardVcardUrl: escapeHtml(ecardVcardUrlTrimmed),
     ecardSocialTdLiStyle: ecardSocial.li,

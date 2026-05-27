@@ -1123,6 +1123,66 @@ assert.ok(htmlEcard.includes('Founder @ The Media Shop'), 'ecard: role line');
 assert.ok(htmlEcard.includes('>P:</'), 'ecard: phone contact row');
 assert.ok(htmlEcard.includes('>Portfolio</'), 'ecard: portfolio section label');
 assert.ok(htmlEcard.includes('Nucleas') && htmlEcard.includes('&bull;'), 'ecard: portfolio bullet links');
+const htmlEcardTwoLists = renderSignature({
+  profile: { ...profile, title: 'Founder' },
+  brand: {
+    ...mockSignatureBrand,
+    primaryColor: '#4F46E5',
+    contentBlocks: [
+      {
+        type: 'list',
+        enabled: true,
+        listTitle: 'Portfolio',
+        listItems: [{ title: 'Alpha', url: 'https://example.com/alpha' }],
+      },
+      {
+        type: 'list',
+        enabled: true,
+        listTitle: 'Services',
+        listItems: [{ title: 'Beta', url: 'https://example.com/beta' }],
+      },
+    ],
+  },
+  template: mockSignatureTemplate('ecard'),
+  publicSiteOrigin: origin,
+});
+assert.ok(
+  htmlEcardTwoLists.includes('>Portfolio</') && htmlEcardTwoLists.includes('>Services</'),
+  'ecard: each list block renders its own section title'
+);
+const portfolioTitleIdx = htmlEcardTwoLists.indexOf('>Portfolio</');
+const servicesTitleIdx = htmlEcardTwoLists.indexOf('>Services</');
+const alphaIdx = htmlEcardTwoLists.indexOf('Alpha');
+const betaIdx = htmlEcardTwoLists.indexOf('Beta');
+assert.ok(
+  portfolioTitleIdx >= 0 &&
+    alphaIdx > portfolioTitleIdx &&
+    servicesTitleIdx > alphaIdx &&
+    betaIdx > servicesTitleIdx,
+  'ecard: list items stay under their block title (no merged lists)'
+);
+const htmlEcardScaledLogo = renderSignature({
+  profile,
+  brand: { ...mockSignatureBrand, logoHeightPx: 55 },
+  template: mockSignatureTemplate('ecard'),
+  publicSiteOrigin: origin,
+});
+assert.match(
+  htmlEcardScaledLogo,
+  /width="80"[^>]*height="40"/,
+  'ecard: logoHeightPx scales from 110px reference to 80px layout width'
+);
+const htmlExecutiveScaledLogo = renderSignature({
+  profile,
+  brand: { ...mockSignatureBrand, logoHeightPx: 55 },
+  template: mockSignatureTemplate('executive_minimalist'),
+  publicSiteOrigin: origin,
+});
+assert.match(
+  htmlExecutiveScaledLogo,
+  /width="90"[^>]*height="45"/,
+  'executive: logoHeightPx scales from 110px reference to 90px layout width'
+);
 assert.ok(htmlEcard.includes(`${iconBase}icon-linkedin.png?v=6`), 'ecard: hosted LinkedIn icon');
 assert.doesNotMatch(htmlEcard, /flaticon\.com/i, 'ecard: no external flaticon CDN');
 assert.match(htmlEcard, /width="80"/, 'ecard: 80px logo in framed box');

@@ -48,8 +48,7 @@ export const ECARD_SIGNATURE_TEMPLATE = `<table class="sig-ecard-root" cellpaddi
           <tr>
             {{#if hasEcardPortfolioSection}}
             <td valign="middle" style="font-size:12px;color:#6B7280;line-height:1.5;">
-              <strong style="color:#111827;display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">{{ecardPortfolioTitle}}</strong>
-              {{ecardPortfolioLinksHtml}}
+              {{ecardPortfolioSectionsHtml}}
             </td>
             {{/if}}
             {{#if showSocialBlock}}
