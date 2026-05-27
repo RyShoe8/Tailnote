@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Menu } from 'lucide-react';
+import { SignOutButton } from '@/components/dashboard/SignOutButton';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { EMAIL_HEALTH_NAV_TITLE } from '@/lib/email-health/seoCopy';
@@ -43,9 +44,10 @@ export function SiteHeaderAuth({ isLoggedIn = false }: AuthNavProps) {
   if (isLoggedIn) {
     return (
       <div className="hidden shrink-0 items-center gap-2 md:flex">
-        <Button asChild size="sm">
+        <Button asChild size="sm" variant="outline">
           <Link href="/dashboard">Dashboard</Link>
         </Button>
+        <SignOutButton variant="outline" size="sm" className="shrink-0" />
       </div>
     );
   }
@@ -113,11 +115,18 @@ export function SiteHeaderMobileMenu({ isLoggedIn = false }: AuthNavProps) {
             : null}
         </nav>
         {isLoggedIn ? (
-          <Button asChild className="w-full">
-            <Link href="/dashboard" onClick={close}>
-              Dashboard
-            </Link>
-          </Button>
+          <div className="mt-auto flex flex-col gap-2">
+            <Button asChild className="w-full">
+              <Link href="/dashboard" onClick={close}>
+                Dashboard
+              </Link>
+            </Button>
+            <SignOutButton
+              variant="outline"
+              className="w-full"
+              onSignedOut={close}
+            />
+          </div>
         ) : (
           <Button asChild className="w-full">
             <Link href="/signup" onClick={close}>

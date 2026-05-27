@@ -57,10 +57,8 @@ async function OnboardingContent() {
 
 export default function OnboardingPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-10 sm:py-12">
-      <Suspense fallback={<div className="text-sm text-muted-foreground">Loading…</div>}>
-        <OnboardingContent />
-      </Suspense>
-    </div>
+    <Suspense fallback={<div className="text-sm text-muted-foreground">Loading…</div>}>
+      <OnboardingContent />
+    </Suspense>
   );
 }
