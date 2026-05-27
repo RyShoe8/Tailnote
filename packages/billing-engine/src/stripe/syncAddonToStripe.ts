@@ -2,11 +2,13 @@ import type { Stripe } from 'stripe';
 import mongoose from 'mongoose';
 import type { SubscriptionAddonDoc } from '../models/SubscriptionAddon';
 import { getStripe } from '../stripe/client';
+import { priceMatchesAddon, resolveOrCreatePrice } from '../stripe/resolveStripePrice';
 
 export type AddonForSync = SubscriptionAddonDoc & { _id: mongoose.Types.ObjectId };
 
 /**
- * Creates/updates Stripe Product and a new immutable Price for the add-on (same pattern as subscription plans).
+ * Creates/updates Stripe Product and Price for the add-on.
+ * Reuses existing price when amount and interval are unchanged.
  */
 export async function syncAddonToStripe(addon: AddonForSync) {
   const stripe = getStripe();
@@ -36,19 +38,16 @@ export async function syncAddonToStripe(addon: AddonForSync) {
     currency: 'usd',
     unit_amount: addon.priceCents,
     metadata: meta,
+    ...(addon.interval === 'one_time'
+      ? {}
+      : { recurring: { interval: addon.interval === 'year' ? 'year' : 'month' } }),
   };
 
-  let priceId = addon.stripePriceId;
-  if (addon.interval === 'one_time') {
-    const price = await stripe.prices.create(baseParams);
-    priceId = price.id;
-  } else {
-    const price = await stripe.prices.create({
-      ...baseParams,
-      recurring: { interval: addon.interval === 'year' ? 'year' : 'month' },
-    });
-    priceId = price.id;
-  }
+  const priceId = await resolveOrCreatePrice(stripe, {
+    existingPriceId: addon.stripePriceId,
+    createParams: baseParams,
+    matches: (price) => priceMatchesAddon(price, addon, productId),
+  });
 
   return { stripeProductId: productId, stripePriceId: priceId };
 }

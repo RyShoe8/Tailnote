@@ -14,7 +14,8 @@
     "./pricing-display": "./src/billing/pricingPlanDisplay.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test src/stripe/resolveStripePrice.test.ts"
   },
   "peerDependencies": {
     "lucide-react": "^0.468.0",
