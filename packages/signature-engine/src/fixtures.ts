@@ -25,6 +25,7 @@ export const mockSignatureBrand: SignatureBrand = {
     reddit: 'https://www.reddit.com/user/example',
   },
   address: '123 Main St',
+  city: 'Dallas',
   state: 'TX',
   zip: '75201',
   animation: {

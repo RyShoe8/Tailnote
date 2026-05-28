@@ -269,6 +269,7 @@ function demoBrand(origin: string, presetId: TemplatePresetId): SignatureBrand {
           facebook: 'https://www.facebook.com/example',
         },
     address: '123 Main St',
+    city: 'Dallas',
     state: 'TX',
     zip: '75201',
     animation: { enabled: false, gifUrl: '' },

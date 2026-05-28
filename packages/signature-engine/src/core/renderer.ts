@@ -1056,6 +1056,7 @@ export function mergeRenderContext(
 
   const addressLine =
     hasAddressEl && brand.address?.trim() ? brand.address.trim() : '';
+  const cityLine = hasAddressEl && brand.city?.trim() ? brand.city.trim() : '';
   const stateLine = hasAddressEl && brand.state?.trim() ? brand.state.trim() : '';
   const zipLine = hasAddressEl && brand.zip?.trim() ? brand.zip.trim() : '';
 
@@ -1091,11 +1092,11 @@ export function mergeRenderContext(
     socialTdDiscordStyle = 'padding:0;vertical-align:middle;';
   }
 
-  const showAddressBlock = hasAddressEl && Boolean(addressLine || stateLine || zipLine);
+  const showAddressBlock = hasAddressEl && Boolean(addressLine || cityLine || stateLine || zipLine);
   const addressBlockLines: string[] = [];
   if (addressLine) addressBlockLines.push(escapeHtml(addressLine));
-  const stateZipLine = [stateLine, zipLine].filter(Boolean).join(' ');
-  if (stateZipLine) addressBlockLines.push(escapeHtml(stateZipLine));
+  const localityLine = [cityLine, [stateLine, zipLine].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+  if (localityLine) addressBlockLines.push(escapeHtml(localityLine));
   const addressBlockHtml = addressBlockLines.join('<br/>');
 
   const officePhoneRaw = profile.officePhone?.trim() ?? '';
@@ -1354,7 +1355,8 @@ export function mergeRenderContext(
     hasExecutiveSocialLine,
     hasExecutivePromoRows,
     hasExecutiveLogoColumn:
-      isExecutiveLayout && (hasLogo || (hasAddressEl && Boolean(addressLine || stateLine || zipLine))),
+      isExecutiveLayout &&
+      (hasLogo || (hasAddressEl && Boolean(addressLine || cityLine || stateLine || zipLine))),
     hasPortfolioRoleLine,
     hasPortfolioContactPills,
     hasPortfolioNetworkSection,

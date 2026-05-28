@@ -47,6 +47,7 @@ const BrandOverrideSchema = z
       })
       .optional(),
     address: z.string().max(300).optional(),
+    city: z.string().max(120).optional(),
     state: z.string().max(120).optional(),
     zip: z.string().max(40).optional(),
     animation: z
@@ -202,6 +203,7 @@ export async function POST(request: Request) {
       ...(override.website !== undefined ? { website: override.website } : {}),
       ...(override.companyName !== undefined ? { companyName: override.companyName } : {}),
       ...(override.address !== undefined ? { address: override.address } : {}),
+      ...(override.city !== undefined ? { city: override.city } : {}),
       ...(override.state !== undefined ? { state: override.state } : {}),
       ...(override.zip !== undefined ? { zip: override.zip } : {}),
       socialLinks: { ...orgBrand.socialLinks, ...(override.socialLinks ?? {}) },

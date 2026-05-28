@@ -24,6 +24,7 @@ export type OrgBrandInput = {
     discord?: string;
   };
   address?: string;
+  city?: string;
   state?: string;
   zip?: string;
   animation?: { enabled: boolean; gifUrl?: string };
@@ -58,6 +59,7 @@ export function toSignatureBrand(input: OrgBrandInput): SignatureBrand {
       discord: input.socialLinks.discord?.trim() || undefined,
     },
     address: input.address?.trim() || undefined,
+    city: input.city?.trim() || undefined,
     state: input.state?.trim() || undefined,
     zip: input.zip?.trim() || undefined,
     animation: {

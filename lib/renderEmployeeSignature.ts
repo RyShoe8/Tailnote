@@ -36,6 +36,7 @@ export function orgToBrandInput(org: OrganizationDoc, contentBlocks?: ContentBlo
       discord: sl?.discord,
     },
     address: org.address ?? undefined,
+    city: org.city ?? undefined,
     state: org.state ?? undefined,
     zip: org.zip ?? undefined,
     animation: org.animation as OrgBrandInput['animation'],

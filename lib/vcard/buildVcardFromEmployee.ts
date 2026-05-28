@@ -27,6 +27,7 @@ export function employeeAndOrgToVcardContact(
     '';
 
   const street = (org.address as string | undefined)?.trim() ?? '';
+  const city = (org.city as string | undefined)?.trim() ?? '';
   const region = (org.state as string | undefined)?.trim() ?? '';
   const postal = (org.zip as string | undefined)?.trim() ?? '';
 
@@ -41,6 +42,7 @@ export function employeeAndOrgToVcardContact(
     companyName: companyName || undefined,
     website: website || undefined,
     street: street || undefined,
+    city: city || undefined,
     region: region || undefined,
     postalCode: postal || undefined,
     photoUrl: logoUrl.startsWith('https://') ? logoUrl : undefined,

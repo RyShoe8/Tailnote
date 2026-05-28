@@ -65,6 +65,7 @@ export type SignatureBrand = {
     discord?: string;
   };
   address?: string;
+  city?: string;
   state?: string;
   zip?: string;
   animation?: {

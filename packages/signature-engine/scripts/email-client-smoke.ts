@@ -1189,8 +1189,9 @@ assert.match(htmlEcard, /width="80"/, 'ecard: 80px logo in framed box');
 assert.ok(htmlEcard.includes('width:104px'), 'ecard: logo frame width fits 80px logo plus padding');
 assert.ok(htmlEcard.includes('W:&nbsp;'), 'ecard: space after W: label');
 
-// Address placement across layouts (mockSignatureBrand includes street/state/zip)
+// Address placement across layouts (mockSignatureBrand includes street/city/state/zip)
 assert.ok(htmlDefault.includes('123 Main St'), 'default: address renders');
+assert.ok(htmlDefault.includes('Dallas, TX 75201'), 'default: city renders with state and zip');
 assert.match(
   htmlDefault,
   /width="130"[\s\S]*?123 Main St[\s\S]*?font-weight: 600; color: #111111;">P:&nbsp;</,

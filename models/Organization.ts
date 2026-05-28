@@ -35,6 +35,7 @@ const OrganizationSchema = new Schema(
       discord: { type: String },
     },
     address: { type: String },
+    city: { type: String },
     state: { type: String },
     zip: { type: String },
     animation: {

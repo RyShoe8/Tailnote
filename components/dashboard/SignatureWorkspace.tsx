@@ -42,6 +42,7 @@ type OrgResponse = {
   fontFamily?: string;
   socialLinks?: { linkedin?: string; facebook?: string; instagram?: string; reddit?: string; discord?: string };
   address?: string;
+  city?: string;
   state?: string;
   zip?: string;
   animation?: { enabled?: boolean; gifUrl?: string };
@@ -87,6 +88,7 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
       discord: sl.discord?.trim(),
     },
     address: org.address?.trim(),
+    city: org.city?.trim(),
     state: org.state?.trim(),
     zip: org.zip?.trim(),
     animation: {
@@ -310,6 +312,7 @@ export function SignatureWorkspace() {
                 companyName: brand.companyName,
                 socialLinks: brand.socialLinks,
                 address: brand.address,
+                city: brand.city,
                 state: brand.state,
                 zip: brand.zip,
                 animation: brand.animation,
@@ -356,6 +359,7 @@ export function SignatureWorkspace() {
     brand.socialLinks?.reddit,
     brand.socialLinks?.discord,
     brand.address,
+    brand.city,
     brand.state,
     brand.zip,
     brand.animation?.enabled,
@@ -524,6 +528,7 @@ export function SignatureWorkspace() {
           fontFamily: org.fontFamily,
           socialLinks: org.socialLinks,
           address: org.address,
+          city: org.city,
           state: org.state,
           zip: org.zip,
           animation: org.animation,
@@ -637,6 +642,15 @@ export function SignatureWorkspace() {
                   value={org.address ?? ''}
                   onChange={(e) => setOrg((o) => ({ ...(o || {}), address: e.target.value }))}
                   placeholder="123 Main St"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="org-city">City</Label>
+                <Input
+                  id="org-city"
+                  value={org.city ?? ''}
+                  onChange={(e) => setOrg((o) => ({ ...(o || {}), city: e.target.value }))}
+                  placeholder="Dallas"
                 />
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
