@@ -19,6 +19,7 @@ const SHARP_FORMAT_TO_MIME: Record<string, string> = {
 };
 
 const MAX_DIMENSION = 8000;
+const JPEG_QUALITY = 82;
 
 export type SecureImageOutputFormat = 'webp' | 'png' | 'jpeg';
 
@@ -65,6 +66,24 @@ function normalizeSharpFormat(format: string | undefined): string | null {
 
 function mimeFromSharpFormat(format: string): string | null {
   return SHARP_FORMAT_TO_MIME[format] ?? null;
+}
+
+async function encodeResizedImage(
+  pipeline: sharp.Sharp,
+  outputFormat: SecureImageOutputFormat
+): Promise<{ buffer: Buffer; mime: string; ext: string }> {
+  if (outputFormat === 'png') {
+    const buffer = await pipeline
+      .png({ compressionLevel: 9, palette: true, effort: 10 })
+      .toBuffer();
+    return { buffer, mime: 'image/png', ext: 'png' };
+  }
+  if (outputFormat === 'jpeg') {
+    const buffer = await pipeline.jpeg({ quality: JPEG_QUALITY, mozjpeg: true }).toBuffer();
+    return { buffer, mime: 'image/jpeg', ext: 'jpg' };
+  }
+  const buffer = await pipeline.webp({ quality: 80, effort: 4 }).toBuffer();
+  return { buffer, mime: 'image/webp', ext: 'webp' };
 }
 
 export async function uploadSecureImage(
@@ -117,34 +136,20 @@ export async function uploadSecureImage(
   let outWidth = w;
   let outHeight = h;
 
-  if (sharpFormat === 'gif') {
-    outWidth = w;
-    outHeight = h;
-  } else {
-    try {
-      const resized = sharp(buffer, { failOn: 'error' }).resize({
-        width: opts.maxWidth,
-        withoutEnlargement: true,
-      });
-      if (outputFormat === 'png') {
-        processedBuffer = await resized.png({ compressionLevel: 9 }).toBuffer();
-        finalMime = 'image/png';
-        ext = 'png';
-      } else if (outputFormat === 'jpeg') {
-        processedBuffer = await resized.jpeg({ quality: 85, mozjpeg: true }).toBuffer();
-        finalMime = 'image/jpeg';
-        ext = 'jpg';
-      } else {
-        processedBuffer = await resized.webp({ quality: 80, effort: 4 }).toBuffer();
-        finalMime = 'image/webp';
-        ext = 'webp';
-      }
-      const outMeta = await sharp(processedBuffer).metadata();
-      outWidth = outMeta.width ?? w;
-      outHeight = outMeta.height ?? h;
-    } catch {
-      throw new SecureImageUploadError('Failed to process image', 400);
-    }
+  try {
+    const resized = sharp(buffer, { failOn: 'error', animated: false, page: 0 }).resize({
+      width: opts.maxWidth,
+      withoutEnlargement: true,
+    });
+    const encoded = await encodeResizedImage(resized, outputFormat);
+    processedBuffer = encoded.buffer;
+    finalMime = encoded.mime;
+    ext = encoded.ext;
+    const outMeta = await sharp(processedBuffer).metadata();
+    outWidth = outMeta.width ?? w;
+    outHeight = outMeta.height ?? h;
+  } catch {
+    throw new SecureImageUploadError('Failed to process image', 400);
   }
 
   const prefix = opts.pathnamePrefix.replace(/\/+$/, '');

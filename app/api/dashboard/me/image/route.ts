@@ -4,7 +4,7 @@ import { getServerSession } from '@/lib/auth/session';
 import { SecureImageUploadError, uploadSecureImage } from '@/lib/uploads/secureImageUpload';
 
 const MAX_BYTES = 4 * 1024 * 1024;
-const MAX_WIDTH = 400;
+const MAX_WIDTH = 600;
 
 type SessionUser = {
   id?: string;
@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       pathnamePrefix: `tailnote/users/${user.id}/images`,
       maxBytes: MAX_BYTES,
       maxWidth: MAX_WIDTH,
+      outputFormat: 'jpeg',
     });
     return NextResponse.json({ url });
   } catch (e) {

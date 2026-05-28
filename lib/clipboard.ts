@@ -25,7 +25,7 @@ function padCfOffset(n: number): string {
   return String(n).padStart(10, '0');
 }
 
-/** Windows/Outlook-style HTML clipboard format; improves Gmail and mobile WebKit paste. */
+/** Windows/Outlook CF_HTML with Version header — not used for web clipboard paste (Gmail shows header as text). */
 export function wrapClipboardHtml(fragment: string): string {
   const body = `<html><body><!--StartFragment-->${fragment}<!--EndFragment--></body></html>`;
   const versionLine = 'Version:0.9\r\n';
@@ -47,7 +47,12 @@ export function wrapClipboardHtml(fragment: string): string {
   return header + body;
 }
 
-function copyHtmlUsingSelection(cfHtml: string, displayHtml: string, plain: string): boolean {
+/** HTML written to text/html for Gmail/Outlook paste — no CF_HTML Version header (avoids visible metadata lines). */
+export function clipboardHtmlForPaste(fragment: string): string {
+  return `<html><body><!--StartFragment-->${fragment}<!--EndFragment--></body></html>`;
+}
+
+function copyHtmlUsingSelection(pasteHtml: string, displayHtml: string, plain: string): boolean {
   if (typeof document === 'undefined') return false;
 
   const container = document.createElement('div');
@@ -74,7 +79,7 @@ function copyHtmlUsingSelection(cfHtml: string, displayHtml: string, plain: stri
   let copied = false;
   const onCopy = (event: ClipboardEvent) => {
     event.preventDefault();
-    event.clipboardData?.setData('text/html', cfHtml);
+    event.clipboardData?.setData('text/html', pasteHtml);
     event.clipboardData?.setData('text/plain', plain);
     copied = true;
   };
@@ -92,13 +97,13 @@ function copyHtmlUsingSelection(cfHtml: string, displayHtml: string, plain: stri
   return copied;
 }
 
-async function writeClipboardHtml(cfHtml: string, plain: string): Promise<boolean> {
+async function writeClipboardHtml(pasteHtml: string, plain: string): Promise<boolean> {
   if (typeof navigator === 'undefined' || !navigator.clipboard || typeof ClipboardItem === 'undefined') {
     return false;
   }
   try {
     const item = new ClipboardItem({
-      'text/html': new Blob([cfHtml], { type: 'text/html' }),
+      'text/html': new Blob([pasteHtml], { type: 'text/html' }),
       'text/plain': new Blob([plain], { type: 'text/plain' }),
     });
     await navigator.clipboard.write([item]);
@@ -117,11 +122,11 @@ export async function copyHtmlToClipboard(html: string): Promise<CopyHtmlResult>
   if (!fragment) return { ok: false, method: 'failed' };
 
   const plain = stripHtmlToPlainText(fragment);
-  const cfHtml = wrapClipboardHtml(fragment);
+  const pasteHtml = clipboardHtmlForPaste(fragment);
   const mobile = typeof window !== 'undefined' && isMobileDevice();
 
-  const trySelection = () => copyHtmlUsingSelection(cfHtml, fragment, plain);
-  const tryClipboardItem = () => writeClipboardHtml(cfHtml, plain);
+  const trySelection = () => copyHtmlUsingSelection(pasteHtml, fragment, plain);
+  const tryClipboardItem = () => writeClipboardHtml(pasteHtml, plain);
 
   if (mobile) {
     if (trySelection()) return { ok: true, method: 'html' };

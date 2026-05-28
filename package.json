@@ -14,7 +14,8 @@
     "migrate:legacy": "npx tsx scripts/migrate-legacy.ts",
     "verify:signature": "npm run email-client-smoke --workspace=emailsignature-engine && npx tsx scripts/vcard-smoke.ts && npx tsx scripts/clipboard-smoke.ts",
     "verify:list-tracking": "npx tsx scripts/signature-tracking-list-smoke.ts",
-    "icons:reddit": "node scripts/generate-reddit-icon.mjs"
+    "icons:reddit": "node scripts/generate-reddit-icon.mjs",
+    "optimize:email-assets": "node scripts/optimize-email-assets.mjs"
   },
   "dependencies": {
     "@radix-ui/react-collapsible": "^1.1.12",

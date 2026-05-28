@@ -9,7 +9,7 @@ import {
 import { OrganizationModel } from '@/models/Organization';
 
 const MAX_BYTES = 4 * 1024 * 1024;
-const MAX_WIDTH = 800;
+const MAX_WIDTH = 400;
 
 type SessionUser = {
   id?: string;

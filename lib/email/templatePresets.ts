@@ -11,7 +11,7 @@ export type TemplatePresetId =
   | 'portfolio'
   | 'ecard';
 
-const TEMPLATE_PRESET_IDS: readonly TemplatePresetId[] = [
+export const TEMPLATE_PRESET_IDS: readonly TemplatePresetId[] = [
   'default',
   'creator',
   'executive_minimalist',
