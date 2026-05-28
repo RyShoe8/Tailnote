@@ -3,26 +3,6 @@
  * Light grey panels per section (logo-style tint), brand color as accent only.
  */
 export const PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
-@media only screen and (min-width:601px),
-  only screen and (min-device-width:601px) {
-  tr.sig-blocks-stacked-row {
-    display: none !important;
-    max-height: 0 !important;
-    overflow: hidden !important;
-    mso-hide: all;
-  }
-  td.sig-blocks-desktop {
-    display: table-cell !important;
-  }
-  td.sig-content-block-cell-left {
-    padding-right: 12px !important;
-  }
-  td.sig-content-block-cell-right {
-    padding-left: 12px !important;
-    border-left: 1px solid #e5e5e5 !important;
-    border-top: none !important;
-  }
-}
 @media only screen and (max-width:600px),
   only screen and (max-width:768px),
   only screen and (max-device-width:600px),
@@ -31,15 +11,6 @@ export const PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
   table.sig-corp-header-layout-table {
     table-layout: auto !important;
     width: 100% !important;
-  }
-  td.sig-blocks-desktop {
-    display: none !important;
-    max-height: 0 !important;
-    overflow: hidden !important;
-    mso-hide: all;
-  }
-  tr.sig-blocks-stacked-row {
-    display: table-row !important;
   }
   td.sig-content-block-cell {
     display: block !important;
@@ -209,12 +180,6 @@ export const PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
             {{/if}}
           </td>
 
-          {{#if sideColumnContentBlocks}}
-          <td class="sig-corp-blocks-stack sig-blocks-desktop" valign="top" style="vertical-align:top;padding:8px 8px 8px 10px;border-left:4px solid {{primaryColor}};background-color:#f0f4ff;width:54%;min-width:212px;">
-            {{contentBlocksHtml}}
-          </td>
-          {{/if}}
-
         </tr>
       </table>
     </td>
@@ -231,7 +196,7 @@ export const PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
   </tr>
   {{/if}}
 
-  {{#if sideColumnContentBlocks}}
+  {{#if hasContentBlocks}}
   <tr class="sig-blocks-stacked-row">
     <td colspan="3" style="padding:10px 10px 0 10px;">
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;"><tr>

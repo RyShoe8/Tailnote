@@ -500,12 +500,22 @@ assert.match(
 assert.ok(
   htmlProfessionalBlocks.includes('sig-blocks-stacked-row') &&
     htmlProfessionalBlocks.includes('sig-corp-header-layout-table'),
-  'professional: shares corporate breakpoint structure'
+  'professional: promo blocks render in stacked row below header'
 );
 assert.match(
   htmlProfessionalBlocks,
-  /sig-corp-blocks-stack[\s\S]*Recent Wins/,
-  'professional: content blocks in header side column on desktop'
+  /sig-blocks-stacked-row[\s\S]*Recent Wins/,
+  'professional: content blocks appear below contact info'
+);
+assert.doesNotMatch(
+  htmlProfessionalBlocks,
+  /sig-corp-blocks-stack|sig-blocks-desktop/,
+  'professional: no desktop side-column promo blocks copy'
+);
+assert.equal(
+  (htmlProfessionalBlocks.match(/Recent Wins/g) ?? []).length,
+  1,
+  'professional: promo block title appears once in HTML'
 );
 assert.ok(
   !htmlProfessional.includes('border-radius:13px'),

@@ -1321,7 +1321,10 @@ export function mergeRenderContext(
 
   /** Standard layout: optional third column for blocks (stacked keeps blocks below). */
   const sideColumnContentBlocks =
-    template.layout !== 'stacked' && !usesCustomPromoLayout && hasContentBlocks;
+    template.layout !== 'stacked' &&
+    template.layout !== 'professional' &&
+    !usesCustomPromoLayout &&
+    hasContentBlocks;
   const signatureRootColspan =
     template.layout === 'standard' && hasContentBlocks ? '3' : '2';
 
