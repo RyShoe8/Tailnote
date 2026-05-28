@@ -20,6 +20,7 @@ export async function getOrganizationUserInviteInfo(
   if (!invite) return null;
 
   const org = await OrganizationModel.findById(invite.organizationId).lean<OrganizationDoc | null>();
+  if (!org) return null;
   const orgName = org?.companyName?.trim() || org?.name?.trim() || 'your team';
 
   return {

@@ -9,6 +9,7 @@ import { EmployeeModel } from '@/models/Employee';
 import { FeedbackSubmissionModel } from '@/models/FeedbackSubmission';
 import { OrganizationModel, type OrganizationDoc } from '@/models/Organization';
 import { OrganizationSubscriptionModel } from '@/models/OrganizationSubscription';
+import { OrganizationUserInviteModel } from '@/models/OrganizationUserInvite';
 import { SignatureClickEventModel } from '@/models/SignatureClickEvent';
 import { SignatureTemplateModel } from '@/models/SignatureTemplate';
 
@@ -66,6 +67,7 @@ export async function deleteOrganization(organizationId: string): Promise<void> 
   await EmployeeModel.deleteMany({ organizationId: orgId });
   await SignatureTemplateModel.deleteMany({ organizationId: orgId });
   await OrganizationSubscriptionModel.deleteMany({ organizationId: orgId });
+  await OrganizationUserInviteModel.deleteMany({ organizationId: orgId });
   await SignatureClickEventModel.deleteMany({ organizationId: orgId });
   await FeedbackSubmissionModel.deleteMany({ organizationId: organizationId });
 

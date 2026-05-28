@@ -37,7 +37,12 @@ export default function ForgotPasswordPage() {
         fetchOptions: authCaptchaFetchOptions(captchaToken),
       });
       if (err) {
-        setError(err.message || 'Request failed');
+        const msg = String(err.message || '');
+        if (/user not found/i.test(msg)) {
+          setMessage('If an account exists for that email, a reset link has been sent.');
+          return;
+        }
+        setError('Request failed');
         return;
       }
       setMessage('If an account exists for that email, a reset link has been sent.');

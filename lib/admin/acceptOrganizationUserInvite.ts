@@ -35,6 +35,11 @@ export async function acceptOrganizationUserInvite(
     return { ok: false, error: 'This invitation has expired', status: 410 };
   }
 
+  const orgExists = await OrganizationModel.exists({ _id: invite.organizationId });
+  if (!orgExists) {
+    return { ok: false, error: 'This invitation is no longer valid', status: 410 };
+  }
+
   const sessionEmail = sessionUser.email.trim().toLowerCase();
   if (sessionEmail !== invite.email) {
     return {
@@ -68,9 +73,8 @@ export async function acceptOrganizationUserInvite(
   invite.acceptedAt = new Date();
   await invite.save();
 
-  const org = await OrganizationModel.findById(invite.organizationId);
-  if (invite.role === 'owner' && org) {
-    await ensureOwnerEmployee(org._id, {
+  if (invite.role === 'owner') {
+    await ensureOwnerEmployee(invite.organizationId, {
       id: sessionUser.id,
       email: sessionEmail,
       name: sessionUser.name || invite.name,

@@ -48,6 +48,10 @@ function JoinPageContent() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (res.status === 401 && typeof data.redirect === 'string') {
+          window.location.href = data.redirect;
+          return;
+        }
         setError(typeof data.error === 'string' ? data.error : 'Could not accept invitation');
         return;
       }
@@ -84,7 +88,7 @@ function JoinPageContent() {
           </CardHeader>
           <CardContent>
             <Button asChild variant="secondary">
-              <Link href="/login">Go to login</Link>
+              <Link href="/">Back to site</Link>
             </Button>
           </CardContent>
         </Card>
@@ -93,9 +97,6 @@ function JoinPageContent() {
   }
 
   if (!info) return null;
-
-  const signupUrl = `/signup?join=${encodeURIComponent(token)}&email=${encodeURIComponent(info.email)}`;
-  const loginUrl = `/login?join=${encodeURIComponent(token)}&email=${encodeURIComponent(info.email)}`;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-10">
@@ -134,21 +135,10 @@ function JoinPageContent() {
               <Button className="w-full" disabled={accepting} onClick={() => void tryAccept()}>
                 {accepting ? 'Accepting…' : 'Accept invitation'}
               </Button>
-              <p className="text-center text-xs text-muted-foreground">
-                Sign in or create an account with the invited email first.
-              </p>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Button asChild variant="secondary" className="flex-1">
-                  <Link href={signupUrl}>Create account</Link>
-                </Button>
-                <Button asChild variant="outline" className="flex-1">
-                  <Link href={loginUrl}>Log in</Link>
-                </Button>
-              </div>
             </>
           ) : (
-            <Button asChild className="w-full">
-              <Link href="/login">Log in</Link>
+            <Button asChild className="w-full" variant="secondary">
+              <Link href="/">Back to site</Link>
             </Button>
           )}
         </CardContent>
