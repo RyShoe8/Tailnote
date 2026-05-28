@@ -517,6 +517,12 @@ assert.equal(
   1,
   'professional: promo block title appears once in HTML'
 );
+assert.match(
+  htmlProfessional,
+  /width="105"/,
+  'professional: logo width is 105px'
+);
+
 assert.ok(
   !htmlProfessional.includes('border-radius:13px'),
   'professional: flat social icons without primaryColor circles'

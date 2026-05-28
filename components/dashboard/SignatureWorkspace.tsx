@@ -916,7 +916,7 @@ export function SignatureWorkspace() {
           <CardDescription>See your changes in real time.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 max-w-full min-w-0 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain">
-          <div className="min-w-0 overflow-hidden">
+          <div className="min-w-0 overflow-hidden select-all [&_.signature-email-preview]:select-all">
             <SignaturePreviewFrame
               html={previewHtml}
               variant="mobile"
@@ -924,6 +924,10 @@ export function SignatureWorkspace() {
               mobileFrameWidth={mobileFrameWidthForLayout(engineTemplate?.layout)}
             />
           </div>
+          <p className="text-xs text-muted-foreground lg:hidden">
+            If copy fails, long-press the preview above → Copy, then paste in Gmail browser settings
+            (Settings → General → Signature).
+          </p>
           <div className="flex flex-wrap gap-2">
             <CopySignatureButton html={previewHtml} disabled={!canCopy} />
             <Button type="button" variant="outline" size="sm" asChild>

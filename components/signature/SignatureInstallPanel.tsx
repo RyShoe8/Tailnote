@@ -9,7 +9,7 @@ import { GmailInstallHelp } from '@/components/signature/GmailInstallHelp';
 import { GmailOpenActions } from '@/components/signature/GmailOpenActions';
 import { OpenEmailSettingsButton } from '@/components/signature/OpenEmailSettingsButton';
 import { OutlookInstallHelp } from '@/components/signature/OutlookInstallHelp';
-import { downloadHtml } from '@/lib/clipboard';
+import { downloadHtml, type CopyHtmlMethod } from '@/lib/clipboard';
 import {
   OUTLOOK_PERSONAL_SETTINGS_URL,
   OUTLOOK_WORK_SETTINGS_URL,
@@ -21,18 +21,31 @@ type Props = {
   downloadFilename?: string;
 };
 
+function copySuccessMessage(method: CopyHtmlMethod): string {
+  if (method === 'html') {
+    return 'Copied with formatting. Paste in Gmail in your browser (Settings → General → Signature) for best results.';
+  }
+  return 'Copied as plain text only — formatting may be lost. Use Open Gmail in browser after copying, or long-press the live preview to copy manually.';
+}
+
 export function SignatureInstallPanel({
   html,
   disabled,
   downloadFilename = 'tailnote-signature.html',
 }: Props) {
   const [copied, setCopied] = useState(false);
+  const [copyMethod, setCopyMethod] = useState<CopyHtmlMethod | null>(null);
   const [copyFailed, setCopyFailed] = useState(false);
   const [settingsOpened, setSettingsOpened] = useState(false);
 
-  const handleCopyResult = (ok: boolean) => {
+  const handleCopyResult = (ok: boolean, method: CopyHtmlMethod) => {
     setCopyFailed(!ok);
-    if (ok) setCopied(true);
+    if (ok) {
+      setCopied(true);
+      setCopyMethod(method);
+    } else {
+      setCopyMethod(null);
+    }
   };
 
   return (
@@ -63,10 +76,7 @@ export function SignatureInstallPanel({
           role="status"
         >
           <p className="font-medium">Signature copied</p>
-          <p className="mt-1 text-muted-foreground">
-            Paste into Gmail using the app or browser steps below. For logos and formatting, use{' '}
-            <strong className="text-foreground">Open Gmail in browser</strong>.
-          </p>
+          <p className="mt-1 text-muted-foreground">{copySuccessMessage(copyMethod ?? 'html')}</p>
           {settingsOpened ? (
             <p className="mt-2 text-xs text-muted-foreground">Gmail opened — check your app or browser tab.</p>
           ) : null}
@@ -102,8 +112,8 @@ export function SignatureInstallPanel({
 
       {copyFailed ? (
         <p className="text-sm text-destructive">
-          Couldn&apos;t copy automatically. Try Download HTML, or select the signature in the live
-          preview and copy manually.
+          Couldn&apos;t copy automatically. Try Download HTML, or long-press the signature in the live
+          preview → Copy, then paste in Gmail browser settings.
         </p>
       ) : null}
 

@@ -1,14 +1,14 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { copyHtmlToClipboard } from '@/lib/clipboard';
+import { copyHtmlToClipboard, type CopyHtmlMethod } from '@/lib/clipboard';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type Props = {
   html: string;
   disabled?: boolean;
-  onCopyResult?: (ok: boolean) => void;
+  onCopyResult?: (ok: boolean, method: CopyHtmlMethod) => void;
   className?: string;
 };
 
@@ -18,7 +18,7 @@ export function CopyRichTextButton({ html, disabled, onCopyResult, className }: 
   const handleClick = useCallback(async () => {
     if (disabled || !html.trim()) return;
     const result = await copyHtmlToClipboard(html);
-    onCopyResult?.(result.ok);
+    onCopyResult?.(result.ok, result.method);
     if (result.ok) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2500);
