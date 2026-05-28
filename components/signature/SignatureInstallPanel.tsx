@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { CopySignatureButton } from '@/components/signature/CopySignatureButton';
 import { CopyRichTextButton } from '@/components/signature/CopyRichTextButton';
 import { GmailInstallHelp } from '@/components/signature/GmailInstallHelp';
+import { GmailOpenActions } from '@/components/signature/GmailOpenActions';
 import { OpenEmailSettingsButton } from '@/components/signature/OpenEmailSettingsButton';
 import { OutlookInstallHelp } from '@/components/signature/OutlookInstallHelp';
 import { downloadHtml } from '@/lib/clipboard';
-import { resolveGmailSettingsHref } from '@/lib/install/resolveGmailSettingsHref';
 import {
   OUTLOOK_PERSONAL_SETTINGS_URL,
   OUTLOOK_WORK_SETTINGS_URL,
@@ -29,7 +29,6 @@ export function SignatureInstallPanel({
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
   const [settingsOpened, setSettingsOpened] = useState(false);
-  const gmailHref = resolveGmailSettingsHref();
 
   const handleCopyResult = (ok: boolean) => {
     setCopyFailed(!ok);
@@ -65,35 +64,38 @@ export function SignatureInstallPanel({
         >
           <p className="font-medium">Signature copied</p>
           <p className="mt-1 text-muted-foreground">
-            Now paste it into your email client. Open settings, paste into the signature field, and save
-            changes.
+            Paste into Gmail using the app or browser steps below. For logos and formatting, use{' '}
+            <strong className="text-foreground">Open Gmail in browser</strong>.
           </p>
           {settingsOpened ? (
-            <p className="mt-2 text-xs text-muted-foreground">Email settings opened in a new tab.</p>
+            <p className="mt-2 text-xs text-muted-foreground">Gmail opened — check your app or browser tab.</p>
           ) : null}
-          <div className="mt-3 flex flex-wrap gap-2">
-            <OpenEmailSettingsButton
-              href={gmailHref}
-              label="Open Gmail"
-              size="sm"
-              gmailMobileAware
-              onOpen={() => setSettingsOpened(true)}
-            />
-            <OpenEmailSettingsButton
-              href={OUTLOOK_WORK_SETTINGS_URL}
-              label="Open Outlook email settings"
-              size="sm"
-              onOpen={() => setSettingsOpened(true)}
-            />
-            <OpenEmailSettingsButton
-              href={OUTLOOK_PERSONAL_SETTINGS_URL}
-              label="Open Outlook.com email settings"
-              size="sm"
-              onOpen={() => setSettingsOpened(true)}
-            />
-            <Button type="button" size="sm" variant="ghost" asChild>
-              <Link href="/dashboard">Back to dashboard</Link>
-            </Button>
+          <div className="mt-3 space-y-3">
+            <div>
+              <p className="text-xs font-medium text-foreground mb-2">Gmail</p>
+              <GmailOpenActions
+                size="sm"
+                disabled={disabled}
+                onOpen={() => setSettingsOpened(true)}
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <OpenEmailSettingsButton
+                href={OUTLOOK_WORK_SETTINGS_URL}
+                label="Open Outlook email settings"
+                size="sm"
+                onOpen={() => setSettingsOpened(true)}
+              />
+              <OpenEmailSettingsButton
+                href={OUTLOOK_PERSONAL_SETTINGS_URL}
+                label="Open Outlook.com email settings"
+                size="sm"
+                onOpen={() => setSettingsOpened(true)}
+              />
+              <Button type="button" size="sm" variant="ghost" asChild>
+                <Link href="/dashboard">Back to dashboard</Link>
+              </Button>
+            </div>
           </div>
         </div>
       ) : null}

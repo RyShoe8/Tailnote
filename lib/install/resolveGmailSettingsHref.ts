@@ -1,5 +1,6 @@
-import { GMAIL_SETTINGS_URL, GMAIL_MOBILE_WEB_SETTINGS_URL } from '@/lib/install/gmailSettingsUrl';
+import { GMAIL_SETTINGS_URL } from '@/lib/install/gmailSettingsUrl';
 
+/** Opens the native Gmail app (inbox). There is no public deep link to signature settings. */
 export const GMAIL_APP_URL = 'googlegmail://';
 
 export function isMobileDevice(): boolean {
@@ -10,36 +11,19 @@ export function isMobileDevice(): boolean {
   return coarse || ua;
 }
 
-/** Best-effort Gmail settings URL for the current device (rich HTML via web settings). */
+/** Full Gmail web settings (General tab). User scrolls to Signature. Works on desktop and mobile browsers. */
 export function resolveGmailSettingsHref(): string {
-  return isMobileDevice() ? GMAIL_MOBILE_WEB_SETTINGS_URL : GMAIL_SETTINGS_URL;
+  return GMAIL_SETTINGS_URL;
 }
 
-/**
- * Opens Gmail on mobile: try native app, then fall back to mobile web settings.
- * There is no public deep link to the in-app signature editor.
- */
-export function openGmailSettingsMobileAware(): void {
+/** Opens Gmail app at inbox. Web cannot detect install or link to in-app signature editor. */
+export function openGmailApp(): void {
   if (typeof window === 'undefined') return;
+  window.location.href = GMAIL_APP_URL;
+}
 
-  const mobileWeb = GMAIL_MOBILE_WEB_SETTINGS_URL;
-  if (!isMobileDevice()) {
-    window.open(GMAIL_SETTINGS_URL, '_blank', 'noopener,noreferrer');
-    return;
-  }
-
-  const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const isAndroid = /Android/i.test(navigator.userAgent);
-
-  if (isIos || isAndroid) {
-    const fallbackTimer = window.setTimeout(() => {
-      window.location.href = mobileWeb;
-    }, 600);
-    const clearFallback = () => window.clearTimeout(fallbackTimer);
-    window.addEventListener('pagehide', clearFallback, { once: true });
-    window.location.href = GMAIL_APP_URL;
-    return;
-  }
-
-  window.open(mobileWeb, '_blank', 'noopener,noreferrer');
+/** Opens Gmail web Settings → General in a new tab (best path for rich HTML paste on mobile). */
+export function openGmailSettingsInBrowser(): void {
+  if (typeof window === 'undefined') return;
+  window.open(GMAIL_SETTINGS_URL, '_blank', 'noopener,noreferrer');
 }
