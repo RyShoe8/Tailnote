@@ -24,7 +24,7 @@ import {
   type MobileSignaturePane,
 } from '@/components/signature/MobileSignaturePaneBar';
 import { CopySignatureButton } from '@/components/signature/CopySignatureButton';
-import { useIsLgUp } from '@/lib/hooks/useMediaQuery';
+import { useIsLgUp, useIsMobileInstallContext } from '@/lib/hooks/useMediaQuery';
 import { cn } from '@/lib/utils';
 import { SignatureInstallPanel } from '@/components/signature/SignatureInstallPanel';
 import type { SignatureProfile, ContentBlockData } from 'emailsignature-engine';
@@ -56,6 +56,7 @@ function EmployeeDetailPageContent() {
   const [contentBlocks, setContentBlocks] = useState<ContentBlockData[]>([]);
   const [mobilePane, setMobilePane] = useState<MobileSignaturePane>('edit');
   const isLgUp = useIsLgUp();
+  const isMobileInstall = useIsMobileInstallContext();
   const [previewToken, setPreviewToken] = useState('');
   const [inviteSentAt, setInviteSentAt] = useState<string | null>(null);
   const [inviteAcceptedAt, setInviteAcceptedAt] = useState<string | null>(null);
@@ -493,6 +494,11 @@ function EmployeeDetailPageContent() {
               html={previewHtml}
               disabled={!canCopy}
               downloadFilename={`${firstName}-${lastName}-signature.html`.replace(/\s+/g, '-').toLowerCase()}
+              emailForwardNote={
+                firstName.trim() || lastName.trim()
+                  ? `Forward this email to ${[firstName, lastName].filter(Boolean).join(' ')} if you are installing their signature for them.`
+                  : undefined
+              }
             />
           </CardContent>
         </Card>
@@ -515,8 +521,14 @@ function EmployeeDetailPageContent() {
               mobileFrameWidth={mobileFrameWidthForLayout(engineTemplate?.layout)}
             />
           </div>
+          {isMobileInstall ? (
+            <p className="text-xs text-muted-foreground lg:hidden">
+              Install on a desktop or laptop—phones cannot paste rich signatures. Use the Install tab to download or
+              email the signature to yourself.
+            </p>
+          ) : null}
           <div className="flex flex-wrap gap-2">
-            <CopySignatureButton html={previewHtml} disabled={!canCopy} />
+            {!isMobileInstall ? <CopySignatureButton html={previewHtml} disabled={!canCopy} /> : null}
           </div>
         </CardContent>
       </Card>

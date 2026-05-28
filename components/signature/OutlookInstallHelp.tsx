@@ -13,7 +13,14 @@ export function OutlookInstallHelp({ disabled }: Props) {
   return (
     <div className="rounded-md border bg-muted/30 p-4 text-sm text-muted-foreground space-y-3">
       <p className="font-medium text-foreground">Outlook</p>
-      <div className="flex flex-wrap gap-2">
+
+      <p className="text-xs md:hidden">
+        Install on a <strong className="text-foreground">desktop or laptop</strong> using Outlook on the web or
+        Outlook desktop (Windows). Mobile Outlook apps cannot reliably paste full HTML signatures. After setup on a
+        computer, your signature applies to messages sent from mobile Outlook as well.
+      </p>
+
+      <div className="hidden md:flex flex-wrap gap-2">
         <OpenEmailSettingsButton
           href={OUTLOOK_WORK_SETTINGS_URL}
           label="Open Outlook email settings"
@@ -25,12 +32,12 @@ export function OutlookInstallHelp({ disabled }: Props) {
           disabled={disabled}
         />
       </div>
-      <p>
+      <p className="hidden md:block">
         Microsoft does not offer a supported public API to set your personal HTML signature from a website (Microsoft
         Graph cannot update signature HTML). Use copy-and-paste or install from a file.
       </p>
       <ol className="list-decimal pl-5 space-y-2">
-        <li>
+        <li className="hidden md:list-item">
           <strong>Outlook on the web:</strong> use the buttons above (work or personal account), then paste under{' '}
           <strong>Email signature</strong>. If your tenant uses the classic settings UI, try{' '}
           <a
@@ -43,11 +50,15 @@ export function OutlookInstallHelp({ disabled }: Props) {
           </a>{' '}
           instead.
         </li>
-        <li>
+        <li className="md:hidden">
+          <strong>On your computer:</strong> Outlook on the web or Outlook desktop → paste under{' '}
+          <strong>Email signature</strong> (or File → Options → Mail → Signatures on Windows desktop).
+        </li>
+        <li className="hidden md:list-item">
           <strong>Outlook desktop (Windows):</strong> File → Options → Mail → Signatures… → paste under Edit signature.
         </li>
       </ol>
-      <p className="text-xs">
+      <p className="text-xs hidden md:block">
         Use <strong>Copy rich text</strong> for best results in Outlook, or <strong>Download HTML</strong> if your IT
         policy prefers a file. If your logo does not appear, re-upload it in Tailnote (logos are saved as PNG for
         Outlook compatibility) and paste the signature again.

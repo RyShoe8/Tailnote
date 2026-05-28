@@ -35,3 +35,17 @@ export function useIsMobileUserAgent(): boolean {
     () => false
   );
 }
+
+/**
+ * True when install should be desktop-first (narrow viewport or mobile UA).
+ * Matches `isMobileDevice()` in lib/install/resolveGmailSettingsHref.ts.
+ */
+export function useIsMobileInstallContext(): boolean {
+  const narrow = useSyncExternalStore(
+    (onStoreChange) => subscribeMediaQuery('(max-width: 1023px)', onStoreChange),
+    () => getMediaQuerySnapshot('(max-width: 1023px)', false),
+    () => false
+  );
+  const mobileUa = useIsMobileUserAgent();
+  return narrow || mobileUa;
+}

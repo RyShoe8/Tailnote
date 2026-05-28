@@ -28,7 +28,7 @@ import {
   MobileSignaturePaneBar,
   type MobileSignaturePane,
 } from '@/components/signature/MobileSignaturePaneBar';
-import { useIsLgUp } from '@/lib/hooks/useMediaQuery';
+import { useIsLgUp, useIsMobileInstallContext } from '@/lib/hooks/useMediaQuery';
 import { cn } from '@/lib/utils';
 import { CopySignatureButton } from '@/components/signature/CopySignatureButton';
 import { SignatureInstallPanel } from '@/components/signature/SignatureInstallPanel';
@@ -120,6 +120,7 @@ export function SignatureWorkspace() {
   const [activeTab, setActiveTab] = useState<'brand' | 'blocks' | 'details' | 'install'>('brand');
   const [mobilePane, setMobilePane] = useState<MobileSignaturePane>('edit');
   const isLgUp = useIsLgUp();
+  const isMobileInstall = useIsMobileInstallContext();
   const [viewerRole, setViewerRole] = useState<string>('owner');
   const [permissions, setPermissions] = useState<OrgPermissions>({
     employeesCanEditBrand: false,
@@ -924,12 +925,14 @@ export function SignatureWorkspace() {
               mobileFrameWidth={mobileFrameWidthForLayout(engineTemplate?.layout)}
             />
           </div>
-          <p className="text-xs text-muted-foreground lg:hidden">
-            If copy fails, long-press the preview above → Copy, then paste in Gmail browser settings
-            (Settings → General → Signature).
-          </p>
+          {isMobileInstall ? (
+            <p className="text-xs text-muted-foreground lg:hidden">
+              Install on a desktop or laptop—phones cannot paste rich signatures. Open the{' '}
+              <strong className="text-foreground">Install</strong> tab to download or email your signature to yourself.
+            </p>
+          ) : null}
           <div className="flex flex-wrap gap-2">
-            <CopySignatureButton html={previewHtml} disabled={!canCopy} />
+            {!isMobileInstall ? <CopySignatureButton html={previewHtml} disabled={!canCopy} /> : null}
             <Button type="button" variant="outline" size="sm" asChild>
               <a href="/dashboard/signature?tab=install">Install steps</a>
             </Button>
