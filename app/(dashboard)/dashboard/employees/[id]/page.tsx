@@ -19,7 +19,13 @@ import {
   mobileFrameWidthForLayout,
 } from '@/components/signature/SignaturePreviewFrame';
 import { LivePreviewStickyColumn } from '@/components/signature/LivePreviewStickyColumn';
+import {
+  MobileSignaturePaneBar,
+  type MobileSignaturePane,
+} from '@/components/signature/MobileSignaturePaneBar';
 import { CopySignatureButton } from '@/components/signature/CopySignatureButton';
+import { useIsLgUp } from '@/lib/hooks/useMediaQuery';
+import { cn } from '@/lib/utils';
 import { SignatureInstallPanel } from '@/components/signature/SignatureInstallPanel';
 import type { SignatureProfile, ContentBlockData } from 'emailsignature-engine';
 import { ContentBlocksEditor } from '@/components/signature/ContentBlocksEditor';
@@ -48,6 +54,8 @@ function EmployeeDetailPageContent() {
   const [linkedin, setLinkedin] = useState('');
   const [twitter, setTwitter] = useState('');
   const [contentBlocks, setContentBlocks] = useState<ContentBlockData[]>([]);
+  const [mobilePane, setMobilePane] = useState<MobileSignaturePane>('edit');
+  const isLgUp = useIsLgUp();
   const [previewToken, setPreviewToken] = useState('');
   const [inviteSentAt, setInviteSentAt] = useState<string | null>(null);
   const [inviteAcceptedAt, setInviteAcceptedAt] = useState<string | null>(null);
@@ -345,8 +353,11 @@ function EmployeeDetailPageContent() {
     }
   }
 
+  const showEditColumn = isLgUp || mobilePane === 'edit';
+  const showPreviewColumn = isLgUp || mobilePane === 'preview';
+
   return (
-    <div className="max-w-7xl min-w-0 space-y-8 w-full">
+    <div className={cn('max-w-7xl min-w-0 space-y-8 w-full', !isLgUp && 'pb-24')}>
       <Link href="/dashboard/employees" className="text-sm text-muted-foreground hover:text-foreground">
         ← Employees
       </Link>
@@ -356,6 +367,7 @@ function EmployeeDetailPageContent() {
         </p>
       ) : null}
       <div className="grid gap-8 lg:grid-cols-12 items-start min-w-0">
+        {showEditColumn ? (
         <div className="lg:col-span-5 space-y-8 min-w-0">
         <Card>
           <CardHeader>
@@ -485,7 +497,9 @@ function EmployeeDetailPageContent() {
           </CardContent>
         </Card>
         </div>
+        ) : null}
 
+        {showPreviewColumn ? (
         <LivePreviewStickyColumn className="lg:col-span-7">
       <Card className="max-w-full min-w-0 shadow-xl border-primary/10">
         <CardHeader>
@@ -493,10 +507,11 @@ function EmployeeDetailPageContent() {
           <CardDescription>Live preview; hosted page matches saved data.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 max-w-full min-w-0 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain">
-          <div className="min-w-0">
+          <div className="min-w-0 overflow-hidden">
             <SignaturePreviewFrame
               html={previewHtml}
               variant="mobile"
+              appearance="flat"
               mobileFrameWidth={mobileFrameWidthForLayout(engineTemplate?.layout)}
             />
           </div>
@@ -506,6 +521,11 @@ function EmployeeDetailPageContent() {
         </CardContent>
       </Card>
         </LivePreviewStickyColumn>
+        ) : null}
+
+        {!isLgUp ? (
+          <MobileSignaturePaneBar pane={mobilePane} onPaneChange={setMobilePane} />
+        ) : null}
       </div>
     </div>
   );

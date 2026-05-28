@@ -3,14 +3,16 @@
 import { useCallback, useState } from 'react';
 import { copyHtmlToClipboard } from '@/lib/clipboard';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 type Props = {
   html: string;
   disabled?: boolean;
   onCopyResult?: (ok: boolean) => void;
+  className?: string;
 };
 
-export function CopyRichTextButton({ html, disabled, onCopyResult }: Props) {
+export function CopyRichTextButton({ html, disabled, onCopyResult, className }: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleClick = useCallback(async () => {
@@ -24,7 +26,13 @@ export function CopyRichTextButton({ html, disabled, onCopyResult }: Props) {
   }, [html, disabled, onCopyResult]);
 
   return (
-    <Button type="button" variant="secondary" onClick={() => void handleClick()} disabled={disabled || !html.trim()}>
+    <Button
+      type="button"
+      variant="secondary"
+      className={cn(className)}
+      onClick={() => void handleClick()}
+      disabled={disabled || !html.trim()}
+    >
       {copied ? 'Copied' : 'Copy rich text'}
     </Button>
   );

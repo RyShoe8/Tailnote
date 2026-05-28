@@ -9,7 +9,7 @@ import { GmailInstallHelp } from '@/components/signature/GmailInstallHelp';
 import { OpenEmailSettingsButton } from '@/components/signature/OpenEmailSettingsButton';
 import { OutlookInstallHelp } from '@/components/signature/OutlookInstallHelp';
 import { downloadHtml } from '@/lib/clipboard';
-import { GMAIL_SETTINGS_URL } from '@/lib/install/gmailSettingsUrl';
+import { resolveGmailSettingsHref } from '@/lib/install/resolveGmailSettingsHref';
 import {
   OUTLOOK_PERSONAL_SETTINGS_URL,
   OUTLOOK_WORK_SETTINGS_URL,
@@ -29,6 +29,7 @@ export function SignatureInstallPanel({
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
   const [settingsOpened, setSettingsOpened] = useState(false);
+  const gmailHref = resolveGmailSettingsHref();
 
   const handleCopyResult = (ok: boolean) => {
     setCopyFailed(!ok);
@@ -40,7 +41,12 @@ export function SignatureInstallPanel({
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2">
           <CopySignatureButton html={html} disabled={disabled} onCopyResult={handleCopyResult} />
-          <CopyRichTextButton html={html} disabled={disabled} onCopyResult={handleCopyResult} />
+          <CopyRichTextButton
+            html={html}
+            disabled={disabled}
+            onCopyResult={handleCopyResult}
+            className="hidden sm:inline-flex"
+          />
           <Button
             type="button"
             variant="outline"
@@ -49,14 +55,6 @@ export function SignatureInstallPanel({
           >
             Download HTML
           </Button>
-        </div>
-        <div className="sticky bottom-0 z-10 -mx-1 border-t border-slate-200/80 bg-background/95 p-3 backdrop-blur-sm md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none lg:hidden">
-          <CopySignatureButton
-            html={html}
-            disabled={disabled}
-            onCopyResult={handleCopyResult}
-            label="Copy signature"
-          />
         </div>
       </div>
 
@@ -67,16 +65,18 @@ export function SignatureInstallPanel({
         >
           <p className="font-medium">Signature copied</p>
           <p className="mt-1 text-muted-foreground">
-            Now paste it into your email client. Open settings, paste into the signature field, and save changes.
+            Now paste it into your email client. Open settings, paste into the signature field, and save
+            changes.
           </p>
           {settingsOpened ? (
             <p className="mt-2 text-xs text-muted-foreground">Email settings opened in a new tab.</p>
           ) : null}
           <div className="mt-3 flex flex-wrap gap-2">
             <OpenEmailSettingsButton
-              href={GMAIL_SETTINGS_URL}
-              label="Open Gmail email settings"
+              href={gmailHref}
+              label="Open Gmail"
               size="sm"
+              gmailMobileAware
               onOpen={() => setSettingsOpened(true)}
             />
             <OpenEmailSettingsButton
@@ -100,8 +100,8 @@ export function SignatureInstallPanel({
 
       {copyFailed ? (
         <p className="text-sm text-destructive">
-          Couldn&apos;t copy automatically. Try Download HTML, or select the signature in the live preview
-          and copy manually.
+          Couldn&apos;t copy automatically. Try Download HTML, or select the signature in the live
+          preview and copy manually.
         </p>
       ) : null}
 

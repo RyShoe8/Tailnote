@@ -24,6 +24,12 @@ import {
   mobileFrameWidthForLayout,
 } from '@/components/signature/SignaturePreviewFrame';
 import { LivePreviewStickyColumn } from '@/components/signature/LivePreviewStickyColumn';
+import {
+  MobileSignaturePaneBar,
+  type MobileSignaturePane,
+} from '@/components/signature/MobileSignaturePaneBar';
+import { useIsLgUp } from '@/lib/hooks/useMediaQuery';
+import { cn } from '@/lib/utils';
 import { CopySignatureButton } from '@/components/signature/CopySignatureButton';
 import { SignatureInstallPanel } from '@/components/signature/SignatureInstallPanel';
 import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
@@ -112,6 +118,8 @@ export function SignatureWorkspace() {
   const [orgName, setOrgName] = useState('');
   const [contentBlocks, setContentBlocks] = useState<ContentBlockData[]>([]);
   const [activeTab, setActiveTab] = useState<'brand' | 'blocks' | 'details' | 'install'>('brand');
+  const [mobilePane, setMobilePane] = useState<MobileSignaturePane>('edit');
+  const isLgUp = useIsLgUp();
   const [viewerRole, setViewerRole] = useState<string>('owner');
   const [permissions, setPermissions] = useState<OrgPermissions>({
     employeesCanEditBrand: false,
@@ -597,9 +605,18 @@ export function SignatureWorkspace() {
     return <p className="text-sm text-muted-foreground">Create an organization to edit signature defaults.</p>;
   }
 
+    const showEditColumn = isLgUp || mobilePane === 'edit';
+    const showPreviewColumn = isLgUp || mobilePane === 'preview';
+
     return (
-    <div className="grid lg:grid-cols-12 gap-8 items-start max-w-full min-w-0 pb-20">
-      <div className="lg:col-span-5 xl:col-span-4 space-y-6">
+    <div
+      className={cn(
+        'grid lg:grid-cols-12 gap-8 items-start max-w-full min-w-0',
+        !isLgUp && 'pb-24'
+      )}
+    >
+      {showEditColumn ? (
+      <div className="lg:col-span-5 xl:col-span-4 space-y-6 min-w-0">
         <div className="flex gap-2 pb-2 overflow-x-auto border-b hide-scrollbar">
           {canSeeBrandTab ? (
             <button onClick={() => setActiveTab('brand')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'brand' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Brand</button>
@@ -889,18 +906,21 @@ export function SignatureWorkspace() {
           )}
         </div>
       </div>
+      ) : null}
 
+      {showPreviewColumn ? (
       <LivePreviewStickyColumn className="lg:col-span-7 xl:col-span-8">
-        <Card className="shadow-xl border-primary/10">
+        <Card className="shadow-xl border-primary/10 max-w-full min-w-0">
         <CardHeader>
           <CardTitle>Live preview</CardTitle>
           <CardDescription>See your changes in real time.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 max-w-full min-w-0 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain">
-          <div className="min-w-0">
+          <div className="min-w-0 overflow-hidden">
             <SignaturePreviewFrame
               html={previewHtml}
               variant="mobile"
+              appearance="flat"
               mobileFrameWidth={mobileFrameWidthForLayout(engineTemplate?.layout)}
             />
           </div>
@@ -913,6 +933,11 @@ export function SignatureWorkspace() {
         </CardContent>
       </Card>
       </LivePreviewStickyColumn>
+      ) : null}
+
+      {!isLgUp ? (
+        <MobileSignaturePaneBar pane={mobilePane} onPaneChange={setMobilePane} />
+      ) : null}
     </div>
   );
 }

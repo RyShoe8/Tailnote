@@ -11,7 +11,7 @@ type Props = {
   mobileFrameWidth?: number;
   /** Marketing cards fill the template column up to `mobileFrameWidth` and use fill-width measurement. */
   previewContext?: 'dashboard' | 'marketing';
-  /** Marketing flat: no inner card border/padding (homepage carousel mobile). */
+  /** Flat: no inner card border/padding (dashboard mobile, marketing carousel). */
   appearance?: 'card' | 'flat';
   /** Marketing: scale to fit without scrollbars. */
   fitContained?: boolean;
@@ -22,6 +22,12 @@ export const STACKED_MOBILE_FRAME_WIDTH = 500;
 
 const CLIP_PADDING_PX = 2;
 const PROF_CARD_SHELL_BLEED_PX = 8;
+/** Horizontal inset when marketing previews scale to fit (homepage carousel). */
+const MARKETING_FIT_INSET_PX = 20;
+/** Horizontal inset when dashboard mobile preview scales to fit its card. */
+const DASHBOARD_FIT_INSET_PX = 18;
+/** Extra clip room for Professional card border/radius in marketing fitContained mode. */
+const MARKETING_PROF_CARD_SHELL_BLEED_PX = 16;
 
 export function mobileFrameWidthForLayout(layout?: SignatureLayout): number {
   if (layout === 'stacked') return STACKED_MOBILE_FRAME_WIDTH;
@@ -100,7 +106,9 @@ function MobileSignaturePreviewFrame({
   const [naturalH, setNaturalH] = useState(1);
   const [scale, setScale] = useState(1);
   const isMarketing = previewContext === 'marketing';
+  const isDashboard = previewContext === 'dashboard';
   const isFlat = appearance === 'flat';
+  const useFillWidth = isMarketing || isDashboard;
 
   useLayoutEffect(() => {
     const frame = frameRef.current;
@@ -112,18 +120,24 @@ function MobileSignaturePreviewFrame({
       const frameW = frameRef.current.clientWidth || mobileFrameWidth;
       const marketingInset = isFlat ? 0 : 8;
       const scaleFrameW = isMarketing ? Math.max(1, frameW - marketingInset) : frameW;
+      const useFitInset = (fitContained && isMarketing) || isDashboard;
+      const fitInsetPx =
+        fitContained && isMarketing ? MARKETING_FIT_INSET_PX : DASHBOARD_FIT_INSET_PX;
+      const fitScaleW = useFitInset
+        ? Math.max(1, scaleFrameW - fitInsetPx)
+        : scaleFrameW;
 
       const transformEl = transformRef.current;
       if (transformEl) transformEl.style.width = '';
 
       let { width: nw, height: nh } = measureContentSize(contentRef.current);
 
-      if (isMarketing && nw < scaleFrameW * 0.9 && transformEl) {
-        transformEl.style.width = `${scaleFrameW}px`;
+      if (useFillWidth && nw < fitScaleW * 0.9 && transformEl) {
+        transformEl.style.width = `${fitScaleW}px`;
         ({ width: nw, height: nh } = measureContentSize(contentRef.current));
       }
 
-      const nextScale = nw > 0 ? Math.min(1, scaleFrameW / nw) : 1;
+      const nextScale = nw > 0 ? Math.min(1, fitScaleW / nw) : 1;
       setNaturalW(nw);
       setNaturalH(nh);
       setScale(nextScale);
@@ -144,25 +158,44 @@ function MobileSignaturePreviewFrame({
       ro.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, [html, animationKey, mobileFrameWidth, previewContext, isMarketing, isFlat, fitContained]);
+  }, [
+    html,
+    animationKey,
+    mobileFrameWidth,
+    previewContext,
+    isMarketing,
+    isDashboard,
+    isFlat,
+    fitContained,
+    useFillWidth,
+  ]);
 
   const hasProfCardShell = html.includes('sig-prof-card-shell');
   const hasExecutiveRoot = html.includes('sig-executive-root');
   const hasCreatorRoot = html.includes('sig-creator-root');
   const useWideMarketingLayout = hasExecutiveRoot || hasCreatorRoot;
+  const useContainedOverflow = (fitContained && isMarketing) || isDashboard;
   const useVisibleOverflow =
-    fitContained && isMarketing
+    useContainedOverflow
       ? false
       : hasProfCardShell || (isMarketing && !useWideMarketingLayout);
-  const borderBleed = hasProfCardShell ? PROF_CARD_SHELL_BLEED_PX : 0;
+  const borderBleed = hasProfCardShell
+    ? fitContained && isMarketing
+      ? MARKETING_PROF_CARD_SHELL_BLEED_PX
+      : isDashboard
+        ? MARKETING_PROF_CARD_SHELL_BLEED_PX
+        : PROF_CARD_SHELL_BLEED_PX
+    : 0;
   const clipPad = hasProfCardShell ? CLIP_PADDING_PX : 0;
   const scaledW = Math.ceil(naturalW * scale) + borderBleed + clipPad * 2;
   const scaledH = Math.ceil(naturalH * scale) + borderBleed + clipPad * 2;
-  const frameOverflowX = fitContained && isMarketing ? 'hidden' : useVisibleOverflow ? 'auto' : 'hidden';
-  const frameOverflowY = fitContained && isMarketing ? 'hidden' : 'visible';
+  const frameOverflowX = useContainedOverflow ? 'hidden' : useVisibleOverflow ? 'auto' : 'hidden';
+  const frameOverflowY = useContainedOverflow ? 'hidden' : 'visible';
 
   const frameClassName = isFlat
-    ? 'signature-email-preview signature-email-preview--mobile signature-email-preview--marketing sig-mobile-preview-container w-full p-0 text-left'
+    ? isMarketing
+      ? 'signature-email-preview signature-email-preview--mobile signature-email-preview--marketing sig-mobile-preview-container w-full p-0 text-left'
+      : 'signature-email-preview signature-email-preview--mobile sig-mobile-preview-container w-full p-0 text-left'
     : isMarketing
       ? 'signature-email-preview signature-email-preview--mobile signature-email-preview--marketing sig-mobile-preview-container w-full rounded-md border bg-white p-4 text-left'
       : 'signature-email-preview signature-email-preview--mobile sig-mobile-preview-container w-full rounded-md border bg-white p-4 text-left';
@@ -172,9 +205,9 @@ function MobileSignaturePreviewFrame({
       ref={frameRef}
       className={frameClassName}
       style={{
-        width: isMarketing ? '100%' : mobileFrameWidth,
-        maxWidth: mobileFrameWidth,
-        minHeight: fitContained && isMarketing ? 0 : 200,
+        width: useFillWidth ? '100%' : mobileFrameWidth,
+        maxWidth: useFillWidth ? '100%' : mobileFrameWidth,
+        minHeight: fitContained && isMarketing ? 0 : isDashboard ? 0 : 200,
         overflowX: frameOverflowX,
         overflowY: frameOverflowY,
       }}
@@ -195,7 +228,7 @@ function MobileSignaturePreviewFrame({
           ref={transformRef}
           key={animationKey}
           style={{
-            width: isMarketing ? '100%' : naturalW,
+            width: useFillWidth ? '100%' : naturalW,
             transformOrigin: 'top left',
             transform: `scale(${scale})`,
           }}
@@ -203,7 +236,9 @@ function MobileSignaturePreviewFrame({
           <div
             ref={contentRef}
             className="mobile-signature-scale-root"
-            style={isMarketing ? { width: '100%', minWidth: 0, boxSizing: 'border-box' } : undefined}
+            style={
+              useFillWidth ? { width: '100%', minWidth: 0, boxSizing: 'border-box' } : undefined
+            }
             dangerouslySetInnerHTML={{ __html: html }}
           />
         </div>
