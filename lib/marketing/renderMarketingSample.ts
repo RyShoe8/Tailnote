@@ -10,6 +10,14 @@ import { vcardDownloadUrl } from '@/lib/vcard/vcardDownloadUrl';
 
 const MARKETING_UTM = { source: 'Tailnote', medium: 'Email', campaign: 'Footer' } as const;
 
+/** tailnote-logo-mark.png — keep in sync when regenerating via generate-transparent-logo.mjs */
+const MARKETING_LOGO_INTRINSIC = { width: 619, height: 218 } as const;
+
+/** Stored at 110px reference width for resolveLogoDisplayHeight scaling in the renderer. */
+const MARKETING_LOGO_HEIGHT_PX = Math.round(
+  (MARKETING_LOGO_INTRINSIC.height / MARKETING_LOGO_INTRINSIC.width) * 110
+);
+
 const DEMO_PROFILE: SignatureProfile = {
   firstName: 'Alex',
   lastName: 'Morgan',
@@ -254,6 +262,7 @@ function demoBrand(origin: string, presetId: TemplatePresetId): SignatureBrand {
     website: isMediaShop ? 'themediashop.co' : 'www.acmecorp.com',
     logoUrl,
     logoLink: 'https://www.acmecorp.com',
+    logoHeightPx: MARKETING_LOGO_HEIGHT_PX,
     primaryColor: isPortfolio ? '#1A3A34' : isEcard ? '#4F46E5' : '#2563eb',
     secondaryColor: isPortfolio ? '#E29578' : '',
     logoShape: 'rectangle',

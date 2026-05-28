@@ -64,6 +64,10 @@ async function main() {
     .toFile(tightOutputPath);
 
   console.info(`Wrote ${tightOutputPath} (${cropWidth}x${cropHeight} from ${w}x${h})`);
+  const logoHeightPxAt110 = Math.round((cropHeight / cropWidth) * 110);
+  console.info(
+    `Update MARKETING_LOGO_INTRINSIC / logoHeightPx in lib/marketing/renderMarketingSample.ts: { width: ${cropWidth}, height: ${cropHeight} }, logoHeightPx: ${logoHeightPxAt110}`
+  );
 }
 
 /** Find the bounding box of pixels whose alpha is above the threshold. */

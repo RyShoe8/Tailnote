@@ -35,4 +35,15 @@ for (const presetId of TEMPLATE_PRESET_IDS) {
   assert.ok(!paste.includes('StartHTML:'), `${presetId}: paste html has no StartHTML line`);
 }
 
+const defaultMarketingHtml = renderMarketingSample('default');
+assert.match(
+  defaultMarketingHtml,
+  /height="46"/,
+  'default marketing: logo height matches tailnote-logo-mark aspect at 130px width'
+);
+assert.ok(
+  !defaultMarketingHtml.includes('height="59"'),
+  'default marketing: logo height is not 0.45-width heuristic'
+);
+
 console.log('clipboard-smoke: ok');

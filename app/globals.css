@@ -245,6 +245,13 @@
     object-fit: contain;
   }
 
+  /* Marketing hero/templates: preserve org logo aspect (demo tailnote-logo-mark). */
+  .signature-email-preview--marketing img[src*='tailnote-logo-mark'],
+  .signature-email-preview--static img[src*='tailnote-logo-mark'] {
+    height: auto !important;
+    object-fit: contain;
+  }
+
   /* Mobile preview: @media in email HTML uses viewport width; desktop browsers stay wide so stack rules never run.
      Mirror template @media stack rules via container queries on the phone-sized frame (scoped under
      .signature-email-preview--mobile.sig-mobile-preview-container so overrides beat injected <style>).
