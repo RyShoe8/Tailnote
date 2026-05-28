@@ -3,7 +3,7 @@ import { getServerSession } from '@/lib/auth/session';
 import { acceptOrganizationUserInvite } from '@/lib/admin/acceptOrganizationUserInvite';
 import { getOrganizationUserInviteInfo } from '@/lib/admin/getOrganizationUserInviteInfo';
 import {
-  buildJoinAcceptLoginRedirect,
+  buildJoinAcceptSignupRedirect,
   evaluateJoinInvitePrecheck,
 } from '@/lib/admin/joinInviteAccept';
 
@@ -26,7 +26,7 @@ export async function POST(_request: Request, { params }: RouteParams) {
 
   const session = await getServerSession();
   if (!session?.user?.id || !session.user.email) {
-    const loginRedirect = buildJoinAcceptLoginRedirect(token, invite.email);
+    const loginRedirect = buildJoinAcceptSignupRedirect(token, invite.email);
     return NextResponse.json(
       { error: 'Sign in required to accept this invitation', redirect: loginRedirect },
       { status: 401 }

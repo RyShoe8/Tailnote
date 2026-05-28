@@ -97,6 +97,11 @@ function JoinPageContent() {
   }
 
   if (!info) return null;
+  const signupUrl = `/signup?join=${encodeURIComponent(token)}&email=${encodeURIComponent(info.email)}`;
+  const loginUrl = `/login?join=${encodeURIComponent(token)}&email=${encodeURIComponent(info.email)}`;
+  const isWrongEmailError = /sign in with the email address that received this invitation/i.test(
+    error || ''
+  );
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-10">
@@ -105,9 +110,9 @@ function JoinPageContent() {
           <img
             src="/images/tailnote-logo.png"
             alt="Tailnote"
-            className="mx-auto mb-4 h-10 w-auto"
-            width={140}
-            height={40}
+            className="mx-auto mb-4 h-14 w-auto"
+            width={196}
+            height={56}
           />
           <CardTitle>
             {info.alreadyAccepted
@@ -135,6 +140,21 @@ function JoinPageContent() {
               <Button className="w-full" disabled={accepting} onClick={() => void tryAccept()}>
                 {accepting ? 'Accepting…' : 'Accept invitation'}
               </Button>
+              {isWrongEmailError ? (
+                <div className="space-y-2">
+                  <p className="text-center text-xs text-muted-foreground">
+                    Continue with the invited email to finish accepting this invitation.
+                  </p>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Button asChild variant="secondary" className="flex-1">
+                      <Link href={signupUrl}>Create account</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="flex-1">
+                      <Link href={loginUrl}>Log in</Link>
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
             </>
           ) : (
             <Button asChild className="w-full" variant="secondary">

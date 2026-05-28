@@ -4,8 +4,8 @@ export type JoinInvitePrecheck = {
   alreadyAccepted: boolean;
 };
 
-export function buildJoinAcceptLoginRedirect(token: string, email: string): string {
-  return `/login?join=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+export function buildJoinAcceptSignupRedirect(token: string, email: string): string {
+  return `/signup?join=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
 }
 
 export function evaluateJoinInvitePrecheck(invite: JoinInvitePrecheck): {
