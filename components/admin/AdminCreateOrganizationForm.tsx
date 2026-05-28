@@ -66,10 +66,9 @@ export function AdminCreateOrganizationForm({ assignablePlans }: Props) {
       setSubscriptionPlanId(NONE_PLAN_VALUE);
       setSubscriptionStatus('active');
       if (orgId) {
-        router.push(`/admin/organizations/${orgId}`);
-      } else {
-        router.refresh();
+        router.push('/admin');
       }
+      router.refresh();
     } catch {
       setError('Could not create organization');
     } finally {
