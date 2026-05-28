@@ -48,6 +48,16 @@ export async function POST(_request: Request, { params }: RouteParams) {
   });
 
   if (!result.ok) {
+    if (result.requiresAccountSwitch) {
+      return NextResponse.json(
+        {
+          error: result.error,
+          requiresAccountSwitch: true,
+          redirect: buildJoinAcceptSignupRedirect(token, invite.email),
+        },
+        { status: result.status }
+      );
+    }
     return NextResponse.json({ error: result.error }, { status: result.status });
   }
 

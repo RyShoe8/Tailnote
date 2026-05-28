@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
+  buildJoinAcceptLoginRedirect,
   buildJoinAcceptSignupRedirect,
   evaluateJoinInvitePrecheck,
 } from './joinInviteAccept';
@@ -12,6 +13,11 @@ describe('join invite accept helpers', () => {
       redirect,
       '/signup?join=abc123&email=user%2Btest%40example.com'
     );
+  });
+
+  it('builds login redirect with encoded params', () => {
+    const redirect = buildJoinAcceptLoginRedirect('abc123', 'user+test@example.com');
+    assert.equal(redirect, '/login?join=abc123&email=user%2Btest%40example.com');
   });
 
   it('returns expired invite error', () => {

@@ -8,7 +8,7 @@ import { OrganizationModel } from '@/models/Organization';
 
 export type AcceptOrgUserInviteResult =
   | { ok: true; redirect: string }
-  | { ok: false; error: string; status: number };
+  | { ok: false; error: string; status: number; requiresAccountSwitch?: boolean };
 
 export async function acceptOrganizationUserInvite(
   inviteToken: string,
@@ -46,6 +46,7 @@ export async function acceptOrganizationUserInvite(
       ok: false,
       error: 'Sign in with the email address that received this invitation',
       status: 403,
+      requiresAccountSwitch: true,
     };
   }
 

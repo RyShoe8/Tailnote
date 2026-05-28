@@ -8,6 +8,10 @@ export function buildJoinAcceptSignupRedirect(token: string, email: string): str
   return `/signup?join=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
 }
 
+export function buildJoinAcceptLoginRedirect(token: string, email: string): string {
+  return `/login?join=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+}
+
 export function evaluateJoinInvitePrecheck(invite: JoinInvitePrecheck): {
   status: number;
   error: string;

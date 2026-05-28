@@ -5,6 +5,11 @@ import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  redirectToInviteLogin,
+  redirectToInviteSignup,
+  signOutForInviteContinuation,
+} from '@/lib/auth/inviteAccountSwitch';
 
 type JoinInfo = {
   orgName: string;
@@ -49,6 +54,11 @@ function JoinPageContent() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (res.status === 401 && typeof data.redirect === 'string') {
+          window.location.href = data.redirect;
+          return;
+        }
+        if (data.requiresAccountSwitch === true && typeof data.redirect === 'string') {
+          await signOutForInviteContinuation();
           window.location.href = data.redirect;
           return;
         }
@@ -97,8 +107,6 @@ function JoinPageContent() {
   }
 
   if (!info) return null;
-  const signupUrl = `/signup?join=${encodeURIComponent(token)}&email=${encodeURIComponent(info.email)}`;
-  const loginUrl = `/login?join=${encodeURIComponent(token)}&email=${encodeURIComponent(info.email)}`;
   const isWrongEmailError = /sign in with the email address that received this invitation/i.test(
     error || ''
   );
@@ -146,11 +154,21 @@ function JoinPageContent() {
                     Continue with the invited email to finish accepting this invitation.
                   </p>
                   <div className="flex flex-col gap-2 sm:flex-row">
-                    <Button asChild variant="secondary" className="flex-1">
-                      <Link href={signupUrl}>Create account</Link>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="flex-1"
+                      onClick={() => void redirectToInviteSignup(token, info.email)}
+                    >
+                      Create Account
                     </Button>
-                    <Button asChild variant="outline" className="flex-1">
-                      <Link href={loginUrl}>Log in</Link>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => void redirectToInviteLogin(token, info.email)}
+                    >
+                      Log In
                     </Button>
                   </div>
                 </div>

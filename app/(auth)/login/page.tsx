@@ -14,6 +14,7 @@ import { RecaptchaNotice } from '@/components/recaptcha/RecaptchaNotice';
 import { formatLoginError, formatOAuthCallbackError } from '@/lib/auth/formatAuthError';
 import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha/config';
 import { authCaptchaFetchOptions, useRecaptcha } from '@/lib/recaptcha/client';
+import { sessionMatchesInvitedEmail } from '@/lib/auth/inviteAccountSwitch';
 
 function LoginForm() {
   const router = useRouter();
@@ -38,8 +39,14 @@ function LoginForm() {
 
   useEffect(() => {
     if (sessionPending || !session?.user) return;
+    if (joinToken && inviteEmail) {
+      if (!sessionMatchesInvitedEmail(session.user.email, inviteEmail)) {
+        void authClient.signOut();
+        return;
+      }
+    }
     router.replace(next);
-  }, [sessionPending, session?.user, router, next]);
+  }, [sessionPending, session?.user, router, next, joinToken, inviteEmail]);
 
   useEffect(() => {
     if (!oauthError) return;
@@ -82,7 +89,7 @@ function LoginForm() {
       <CardHeader>
         <CardTitle>Log in</CardTitle>
         <CardDescription>
-          {inviteToken
+          {joinToken || inviteToken
             ? 'Sign in with the email that received the invitation.'
             : 'Access your Tailnote workspace.'}
         </CardDescription>

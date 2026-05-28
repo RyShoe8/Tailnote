@@ -14,6 +14,7 @@ import { RecaptchaNotice } from '@/components/recaptcha/RecaptchaNotice';
 import { formatOAuthCallbackError, formatSignupError } from '@/lib/auth/formatAuthError';
 import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha/config';
 import { authCaptchaFetchOptions, useRecaptcha } from '@/lib/recaptcha/client';
+import { sessionMatchesInvitedEmail } from '@/lib/auth/inviteAccountSwitch';
 
 function buildPostSignupPath(
   searchParams: URLSearchParams,
@@ -58,8 +59,14 @@ function SignupForm() {
 
   useEffect(() => {
     if (sessionPending || !session?.user) return;
+    if (joinToken && inviteEmail) {
+      if (!sessionMatchesInvitedEmail(session.user.email, inviteEmail)) {
+        void authClient.signOut();
+        return;
+      }
+    }
     router.replace(postSignupPath);
-  }, [sessionPending, session?.user, router, postSignupPath]);
+  }, [sessionPending, session?.user, router, postSignupPath, joinToken, inviteEmail]);
 
   useEffect(() => {
     if (!oauthError) return;
