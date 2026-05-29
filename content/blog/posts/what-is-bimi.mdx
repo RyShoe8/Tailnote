@@ -1,0 +1,66 @@
+---
+title: What is BIMI and do you need it?
+slug: what-is-bimi
+description: BIMI displays your logo in supported inboxes — but only after DMARC is dialed in. Here's when it's worth the effort for small teams.
+publishedAt: '2026-05-15'
+author: tailnote-team
+category: email-trust
+tags:
+  - bimi
+  - dmarc
+---
+
+BIMI (Brand Indicators for Message Identification) lets supported email clients show your verified logo next to messages in the inbox. It's the closest thing email has to a blue checkmark for brand recognition.
+
+## Prerequisites you can't skip
+
+BIMI isn't a standalone fix. You need:
+
+1. **DMARC at enforcement** — `p=quarantine` or `p=reject`
+2. **SPF and DKIM passing** for all legitimate senders
+3. A **verified logo** in SVG Tiny P/S format
+4. For Gmail: a **Verified Mark Certificate (VMC)** from an approved provider
+
+<Callout variant="warning" title="Don't rush BIMI">
+  If your DMARC policy is still `p=none`, fix authentication first. BIMI without strong DMARC gives you a logo on mail that might still be spoofable.
+</Callout>
+
+## What recipients actually see
+
+In Gmail, Yahoo, and Apple Mail (with varying support), authenticated messages from BIMI-enabled domains can display your logo in the avatar slot — replacing the generic initial circle.
+
+That visual consistency reinforces trust, especially for sales and support teams sending high-volume outbound.
+
+## Is BIMI worth it for a team of 25?
+
+**Probably not on day one.** The VMC alone can cost hundreds per year, and setup time is non-trivial.
+
+Prioritize instead:
+
+- Consistent [email signatures](/blog/email-signature-best-practices) with a hosted logo
+- [SPF, DKIM, and DMARC](/blog/spf-dkim-dmarc-explained) at enforcement
+- A clean sending reputation
+
+Revisit BIMI once you're sending significant volume and want every inbox touchpoint branded — including the message list view.
+
+<BlogTailnoteCta variant="email-health" />
+
+## BIMI DNS record (when you're ready)
+
+```txt
+default._bimi.yourdomain.com TXT "v=BIMI1; l=https://yourdomain.com/logo.svg;"
+```
+
+With VMC for Gmail:
+
+```txt
+default._bimi.yourdomain.com TXT "v=BIMI1; l=https://yourdomain.com/logo.svg; a=https://yourdomain.com/vmc.pem;"
+```
+
+## Related reading
+
+- [SPF, DKIM, and DMARC explained](/blog/spf-dkim-dmarc-explained)
+- [Branded outbound email](/blog/branded-outbound-email)
+- [Check your domain setup](/email-health)
+
+<BlogTailnoteCta variant="team" />

@@ -1,6 +1,7 @@
 import { EMAIL_HEALTH_ITEM_LIST_CHECKS } from '@/lib/email-health/seoCopy';
 import {
   absoluteOrganizationLogoUrl,
+  absoluteOgImageUrl,
   absoluteUrl,
   DEFAULT_DESCRIPTION,
   getSiteUrl,
@@ -256,6 +257,63 @@ export function pricingPlansJsonLd(plans: PricingPlanForSchema[]): JsonLd {
             : { priceSpecification: { billingDuration: pricingOfferBillingDuration(plan.interval) } }),
         },
       },
+    })),
+  };
+}
+
+export function blogPostingJsonLd(input: {
+  title: string;
+  description: string;
+  slug: string;
+  publishedAt: string;
+  updatedAt?: string;
+  authorName: string;
+  coverImage?: string;
+}): JsonLd {
+  const url = absoluteUrl(`/blog/${input.slug}`);
+  const image = input.coverImage
+    ? input.coverImage.startsWith('http')
+      ? input.coverImage
+      : absoluteUrl(input.coverImage)
+    : absoluteOgImageUrl();
+
+  return {
+    ...baseContext(),
+    '@type': 'BlogPosting',
+    headline: input.title,
+    description: input.description,
+    url,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    datePublished: new Date(input.publishedAt).toISOString(),
+    dateModified: new Date(input.updatedAt ?? input.publishedAt).toISOString(),
+    author: {
+      '@type': 'Person',
+      name: input.authorName,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_NAME,
+      url: getSiteUrl(),
+      logo: {
+        '@type': 'ImageObject',
+        url: absoluteOrganizationLogoUrl(),
+      },
+    },
+    image,
+  };
+}
+
+export function blogBreadcrumbJsonLd(input: {
+  items: Array<{ name: string; path: string }>;
+}): JsonLd {
+  return {
+    ...baseContext(),
+    '@type': 'BreadcrumbList',
+    itemListElement: input.items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: absoluteUrl(item.path),
     })),
   };
 }

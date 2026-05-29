@@ -15,6 +15,18 @@ export function getBrevoListId(): number {
   return Number.isFinite(n) ? n : 3;
 }
 
+export function getBrevoNewsletterListId(): number {
+  const raw = process.env.BREVO_NEWSLETTER_LIST_ID?.trim();
+  if (!raw) {
+    throw new Error('BREVO_NEWSLETTER_LIST_ID is not configured');
+  }
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isFinite(n)) {
+    throw new Error('BREVO_NEWSLETTER_LIST_ID must be a number');
+  }
+  return n;
+}
+
 export function isBrevoConfigured(): boolean {
   return Boolean(process.env.BREVO_API_KEY?.trim() && getBrevoSenderEmail());
 }

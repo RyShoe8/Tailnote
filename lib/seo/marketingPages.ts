@@ -13,6 +13,7 @@ export type MarketingPageKey =
   | 'promotionalBlocks'
   | 'analytics'
   | 'emailHealth'
+  | 'blog'
   | 'about'
   | 'contact'
   | 'privacy'
@@ -67,6 +68,13 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     path: '/email-health',
     title: EMAIL_HEALTH_PAGE_TITLE,
     description: EMAIL_HEALTH_PAGE_DESCRIPTION,
+  },
+  {
+    key: 'blog',
+    path: '/blog',
+    title: 'Blog',
+    description:
+      'Guides on email signatures, SPF, DKIM, DMARC, BIMI, deliverability, and branded outbound email for solo founders and SMB teams.',
   },
   {
     key: 'about',

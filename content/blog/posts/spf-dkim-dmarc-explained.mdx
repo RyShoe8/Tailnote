@@ -1,0 +1,71 @@
+---
+title: SPF, DKIM, and DMARC explained for non-technical founders
+slug: spf-dkim-dmarc-explained
+description: Understand the three DNS records that protect your domain from spoofing and improve email deliverability — without a computer science degree.
+publishedAt: '2026-05-10'
+author: tailnote-team
+category: email-deliverability
+tags:
+  - spf
+  - dkim
+  - dmarc
+---
+
+If you've ever wondered why your newsletters land in spam — or why someone can fake emails from your domain — the answer usually lives in three acronyms: **SPF**, **DKIM**, and **DMARC**.
+
+## SPF — who can send as you?
+
+SPF (Sender Policy Framework) is a DNS TXT record listing which mail servers are allowed to send email for your domain.
+
+```txt
+v=spf1 include:_spf.google.com include:sendgrid.net ~all
+```
+
+When a receiving server gets mail claiming to be from `@yourcompany.com`, it checks SPF. If the sending IP isn't authorized, the message may fail or get flagged.
+
+<Callout variant="info" title="Common mistake">
+  You can only have one SPF record per domain. If you use Google Workspace and a newsletter tool, merge both into a single `v=spf1` record — don't publish two separate TXT records.
+</Callout>
+
+## DKIM — cryptographic proof
+
+DKIM (DomainKeys Identified Mail) adds a digital signature to each outgoing message. Receiving servers verify the signature against a public key in your DNS.
+
+Unlike SPF, DKIM survives forwarding — which makes it essential for B2B email where messages get relayed between help desks and shared inboxes.
+
+## DMARC — the policy layer
+
+DMARC tells receivers what to do when SPF or DKIM fails, and sends you aggregate reports about who's sending as your domain.
+
+```txt
+v=DMARC1; p=none; rua=mailto:dmarc@yourcompany.com
+```
+
+Start with `p=none` to monitor, then move to `p=quarantine` or `p=reject` once you're confident legitimate senders pass authentication.
+
+<BlogTailnoteCta variant="email-health" />
+
+## How they work together
+
+| Record | Purpose | Where it lives |
+|--------|---------|----------------|
+| SPF | Authorize senders | DNS TXT |
+| DKIM | Sign messages | DNS TXT + mail provider |
+| DMARC | Policy + reporting | DNS TXT |
+
+All three should pass for best deliverability. Many inbox providers now treat missing authentication as a negative signal.
+
+## Quick checklist for small teams
+
+1. Enable DKIM in Google Workspace or Microsoft 365 admin
+2. Publish SPF including your ESP and workspace provider
+3. Add DMARC with `p=none` and a reporting address
+4. Review reports monthly before tightening policy
+
+## Related reading
+
+- [Email signature best practices](/blog/email-signature-best-practices)
+- [What is BIMI?](/blog/what-is-bimi)
+- [Run a free domain check](/email-health)
+
+<BlogTailnoteCta variant="signatures" />
