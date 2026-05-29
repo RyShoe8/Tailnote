@@ -1,12 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { BlogEditor } from '@/components/admin/BlogEditor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BLOG_AUTHORS } from '@/lib/blog/authors';
 import { BLOG_CATEGORIES, slugify } from '@/lib/blog/categories';
@@ -24,7 +25,6 @@ type FormState = {
   seoTitle: string;
   seoDescription: string;
   canonicalUrl: string;
-  featured: boolean;
   draft: boolean;
   body: string;
 };
@@ -46,7 +46,6 @@ function rowToForm(post: AdminBlogPostRow & { body?: string }): FormState {
     seoTitle: '',
     seoDescription: '',
     canonicalUrl: '',
-    featured: post.featured ?? false,
     draft: post.isDraft ?? false,
     body: post.body ?? '',
   };
@@ -64,7 +63,6 @@ const emptyForm = (): FormState => ({
   seoTitle: '',
   seoDescription: '',
   canonicalUrl: '',
-  featured: false,
   draft: true,
   body: '',
 });
@@ -77,17 +75,21 @@ type AdminBlogPostFormProps = {
 
 export function AdminBlogPostForm({ mode, postId, initial }: AdminBlogPostFormProps) {
   const router = useRouter();
+  const slugTouched = useRef(false);
   const [form, setForm] = useState<FormState>(() =>
     initial ? rowToForm(initial) : emptyForm()
   );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverUploadError, setCoverUploadError] = useState<string | null>(null);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewTab, setPreviewTab] = useState<'edit' | 'preview'>('edit');
 
   useEffect(() => {
     if (initial) {
+      slugTouched.current = true;
       setForm({
         ...rowToForm(initial),
         seoTitle: initial.seoTitle ?? '',
@@ -127,6 +129,35 @@ export function AdminBlogPostForm({ mode, postId, initial }: AdminBlogPostFormPr
     return () => clearTimeout(timer);
   }, [form.body, fetchPreview]);
 
+  async function handleCoverFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setCoverUploadError(null);
+    setCoverUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/admin/blog/cover', {
+        method: 'POST',
+        credentials: 'include',
+        body: fd,
+      });
+      const j = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (!res.ok) {
+        setCoverUploadError(typeof j.error === 'string' ? j.error : 'Cover upload failed');
+        return;
+      }
+      if (typeof j.url === 'string') {
+        const url = j.url;
+        setForm((f) => ({ ...f, coverImage: url }));
+      }
+    } finally {
+      setCoverUploading(false);
+    }
+  }
+
   function buildPayload() {
     const tags = form.tags
       .split(',')
@@ -146,7 +177,6 @@ export function AdminBlogPostForm({ mode, postId, initial }: AdminBlogPostFormPr
       seoTitle: form.seoTitle.trim() || undefined,
       seoDescription: form.seoDescription.trim() || undefined,
       canonicalUrl: form.canonicalUrl.trim() || undefined,
-      featured: form.featured,
       draft: form.draft,
       body: form.body,
     };
@@ -209,7 +239,7 @@ export function AdminBlogPostForm({ mode, postId, initial }: AdminBlogPostFormPr
         <CardHeader>
           <CardTitle>{mode === 'create' ? 'New blog post' : 'Edit blog post'}</CardTitle>
           <CardDescription>
-            Content is stored in MongoDB and published to the public blog when not marked as draft.
+            Content is stored in MongoDB. Check Published to make the post live on the public blog.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -223,7 +253,7 @@ export function AdminBlogPostForm({ mode, postId, initial }: AdminBlogPostFormPr
                 setForm((f) => ({
                   ...f,
                   title,
-                  slug: mode === 'create' && !f.slug ? slugify(title) : f.slug,
+                  slug: mode === 'create' && !slugTouched.current ? slugify(title) : f.slug,
                 }));
               }}
               required
@@ -234,7 +264,10 @@ export function AdminBlogPostForm({ mode, postId, initial }: AdminBlogPostFormPr
             <Input
               id="slug"
               value={form.slug}
-              onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value.toLowerCase() }))}
+              onChange={(e) => {
+                slugTouched.current = true;
+                setForm((f) => ({ ...f, slug: e.target.value.toLowerCase() }));
+              }}
               required
               disabled={mode === 'edit'}
               pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
@@ -252,11 +285,13 @@ export function AdminBlogPostForm({ mode, postId, initial }: AdminBlogPostFormPr
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="description">Description</Label>
-            <Input
+            <Textarea
               id="description"
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               required
+              maxLength={500}
+              rows={3}
             />
           </div>
           <div className="space-y-2">
@@ -299,22 +334,47 @@ export function AdminBlogPostForm({ mode, postId, initial }: AdminBlogPostFormPr
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="coverImage">Cover image URL</Label>
+            <Label htmlFor="coverImage">Cover image</Label>
             <Input
               id="coverImage"
-              value={form.coverImage}
-              onChange={(e) => setForm((f) => ({ ...f, coverImage: e.target.value }))}
-              placeholder="/blog/covers/example.png"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              onChange={(e) => void handleCoverFile(e)}
+              disabled={coverUploading}
             />
+            {coverUploading ? (
+              <p className="text-sm text-muted-foreground">Uploading…</p>
+            ) : null}
+            {coverUploadError ? (
+              <p className="text-sm text-destructive">{coverUploadError}</p>
+            ) : null}
+            {form.coverImage ? (
+              <div className="space-y-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={form.coverImage}
+                  alt="Cover preview"
+                  className="max-h-48 rounded-md border object-cover"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setForm((f) => ({ ...f, coverImage: '' }))}
+                >
+                  Remove
+                </Button>
+              </div>
+            ) : null}
           </div>
           <div className="flex flex-wrap gap-6 sm:col-span-2">
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
-                checked={form.featured}
-                onChange={(e) => setForm((f) => ({ ...f, featured: e.target.checked }))}
+                checked={!form.draft}
+                onChange={(e) => setForm((f) => ({ ...f, draft: !e.target.checked }))}
               />
-              Featured
+              Published
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input
