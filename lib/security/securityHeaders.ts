@@ -93,3 +93,60 @@ export function getSecurityHeaders(): SecurityHeader[] {
     { key: 'Content-Security-Policy', value: buildContentSecurityPolicy() },
   ];
 }
+
+/** Public static files embedded cross-origin in email signatures (Gmail, Outlook). */
+export function getPublicStaticAssetHeaders(): SecurityHeader[] {
+  return [
+    {
+      key: 'Cache-Control',
+      value: 'public, max-age=86400, stale-while-revalidate=604800',
+    },
+    { key: 'X-Content-Type-Options', value: 'nosniff' },
+    { key: 'Cross-Origin-Resource-Policy', value: 'cross-origin' },
+    /** Override site-wide COEP so email clients can embed icon PNGs cross-origin. */
+    { key: 'Cross-Origin-Embedder-Policy', value: 'unsafe-none' },
+  ];
+}
+
+function headerValue(headers: SecurityHeader[], key: string): string | undefined {
+  return headers.find((h) => h.key.toLowerCase() === key.toLowerCase())?.value;
+}
+
+/** Merge Next.js header rules the same way duplicate keys use the last matching rule. */
+export function resolveHeadersForPath(
+  path: string,
+  rules: { source: string; headers: SecurityHeader[] }[]
+): SecurityHeader[] {
+  const matched = rules.filter((rule) => pathMatchesSource(path, rule.source));
+  const merged = new Map<string, string>();
+  for (const rule of matched) {
+    for (const h of rule.headers) {
+      merged.set(h.key.toLowerCase(), h.value);
+    }
+  }
+  return [...merged.entries()].map(([key, value]) => ({
+    key: headersKeyCase(key, matched.flatMap((r) => r.headers)),
+    value,
+  }));
+}
+
+function headersKeyCase(lowerKey: string, all: SecurityHeader[]): string {
+  return all.find((h) => h.key.toLowerCase() === lowerKey)?.key ?? lowerKey;
+}
+
+function pathMatchesSource(path: string, source: string): boolean {
+  if (source === '/:path*') return true;
+  const prefix = source.replace(/\/:path\*$/, '/').replace(/\/$/, '');
+  if (source.endsWith('/:path*')) {
+    return path === prefix || path.startsWith(`${prefix}/`);
+  }
+  return path === source;
+}
+
+export function getNextHeaderRules(): { source: string; headers: SecurityHeader[] }[] {
+  const securityHeaders = getSecurityHeaders();
+  return [
+    { source: '/:path*', headers: securityHeaders },
+    { source: '/email-assets/:path*', headers: getPublicStaticAssetHeaders() },
+  ];
+}
