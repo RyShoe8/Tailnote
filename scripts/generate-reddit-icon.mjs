@@ -23,9 +23,13 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" view
 </svg>`;
 
 const png = await sharp(Buffer.from(svg))
-  .resize(96, 96)
-  .resize(24, 24, { kernel: sharp.kernel.lanczos3 })
-  .png()
+  .ensureAlpha()
+  .resize(32, 32, {
+    fit: 'contain',
+    background: { r: 0, g: 0, b: 0, alpha: 0 },
+    kernel: sharp.kernel.lanczos3,
+  })
+  .png({ compressionLevel: 9, adaptiveFiltering: true })
   .toBuffer();
 
 writeFileSync(outPath, png);

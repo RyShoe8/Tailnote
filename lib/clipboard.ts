@@ -1,4 +1,5 @@
 import { isMobileDevice } from '@/lib/install/resolveGmailSettingsHref';
+import { inlineEmailAssetIcons } from '@/lib/inlineEmailAssetIcons';
 
 export type CopyHtmlMethod = 'html' | 'text' | 'failed';
 
@@ -118,9 +119,10 @@ export async function copyHtmlToClipboard(html: string): Promise<CopyHtmlResult>
   const trimmed = html.trim();
   if (!trimmed) return { ok: false, method: 'failed' };
 
-  const fragment = prepareSignatureHtmlForClipboard(trimmed);
-  if (!fragment) return { ok: false, method: 'failed' };
+  const prepared = prepareSignatureHtmlForClipboard(trimmed);
+  if (!prepared) return { ok: false, method: 'failed' };
 
+  const fragment = await inlineEmailAssetIcons(prepared);
   const plain = stripHtmlToPlainText(fragment);
   const pasteHtml = clipboardHtmlForPaste(fragment);
   const mobile = typeof window !== 'undefined' && isMobileDevice();

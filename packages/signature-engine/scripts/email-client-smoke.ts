@@ -47,19 +47,19 @@ assert.ok(
 
 const iconBase = `${origin}/email-assets/`;
 assert.ok(
-  htmlStandard.includes(`${iconBase}icon-linkedin.png?v=8`),
+  htmlStandard.includes(`${iconBase}icon-linkedin.png?v=9`),
   'standard: LinkedIn icon resolves to publicSiteOrigin /email-assets/ with cache-bust query'
 );
 assert.ok(
-  htmlStandard.includes(`${iconBase}icon-facebook.png?v=8`),
+  htmlStandard.includes(`${iconBase}icon-facebook.png?v=9`),
   'standard: Facebook icon resolves to publicSiteOrigin /email-assets/ with cache-bust query'
 );
 assert.ok(
-  htmlStandard.includes(`${iconBase}icon-instagram.png?v=8`),
+  htmlStandard.includes(`${iconBase}icon-instagram.png?v=9`),
   'standard: Instagram icon resolves to publicSiteOrigin /email-assets/ with cache-bust query'
 );
 assert.ok(
-  htmlStandard.includes(`${iconBase}icon-reddit.png?v=8`),
+  htmlStandard.includes(`${iconBase}icon-reddit.png?v=9`),
   'standard: Reddit icon resolves to publicSiteOrigin /email-assets/ with cache-bust query'
 );
 
@@ -75,7 +75,7 @@ const htmlDiscord = renderSignature({
   publicSiteOrigin: origin,
 });
 assert.ok(
-  htmlDiscord.includes(`${iconBase}icon-discord.png?v=8`),
+  htmlDiscord.includes(`${iconBase}icon-discord.png?v=9`),
   'standard: Discord icon resolves to publicSiteOrigin /email-assets/ with cache-bust query'
 );
 assert.match(
@@ -920,7 +920,7 @@ assert.doesNotMatch(
   'creator: logo img avoids height:auto for Outlook'
 );
 assert.ok(htmlCreator.includes('mso-line-height-rule: exactly'), 'creator: logo cell uses MSO line-height');
-assert.ok(htmlCreator.includes(`${iconBase}icon-linkedin.png?v=8`), 'creator: hosted LinkedIn icon');
+assert.ok(htmlCreator.includes(`${iconBase}icon-linkedin.png?v=9`), 'creator: hosted LinkedIn icon');
 assert.match(
   htmlCreator,
   /icon-linkedin\.png[^>]*height="18"/,
@@ -1043,7 +1043,7 @@ assert.ok(
 assert.ok(htmlPortfolio.includes('Email Me'), 'portfolio: email contact pill');
 assert.ok(htmlPortfolio.includes('Nucleas') && htmlPortfolio.includes('Tailnote'), 'portfolio: network pills');
 assert.ok(htmlPortfolio.includes('Network Portfolio'), 'portfolio: network section label');
-assert.ok(htmlPortfolio.includes(`${iconBase}icon-linkedin.png?v=8`), 'portfolio: hosted LinkedIn icon');
+assert.ok(htmlPortfolio.includes(`${iconBase}icon-linkedin.png?v=9`), 'portfolio: hosted LinkedIn icon');
 assert.doesNotMatch(htmlPortfolio, /flaticon\.com/i, 'portfolio: no external flaticon CDN');
 assert.match(
   htmlPortfolio,
@@ -1199,7 +1199,7 @@ assert.match(
   /width="90"[^>]*height="45"/,
   'executive: logoHeightPx scales from 110px reference to 90px layout width'
 );
-assert.ok(htmlEcard.includes(`${iconBase}icon-linkedin.png?v=8`), 'ecard: hosted LinkedIn icon');
+assert.ok(htmlEcard.includes(`${iconBase}icon-linkedin.png?v=9`), 'ecard: hosted LinkedIn icon');
 assert.doesNotMatch(htmlEcard, /flaticon\.com/i, 'ecard: no external flaticon CDN');
 assert.match(htmlEcard, /width="80"/, 'ecard: 80px logo in framed box');
 assert.ok(htmlEcard.includes('width:104px'), 'ecard: logo frame width fits 80px logo plus padding');

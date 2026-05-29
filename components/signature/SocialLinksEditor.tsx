@@ -24,11 +24,11 @@ const PLATFORM_ORDER: Platform[] = ['linkedin', 'facebook', 'instagram', 'reddit
 const MAX_LINKS = PLATFORM_ORDER.length;
 
 const PLATFORM_META: Record<Platform, { name: string; bg: string; iconUrl: string }> = {
-  linkedin: { name: 'LinkedIn', bg: '#0A66C2', iconUrl: '/email-assets/icon-linkedin.png?v=8' },
-  facebook: { name: 'Facebook', bg: '#1877F2', iconUrl: '/email-assets/icon-facebook.png?v=8' },
-  instagram: { name: 'Instagram', bg: '#E1306C', iconUrl: '/email-assets/icon-instagram.png?v=8' },
-  reddit: { name: 'Reddit', bg: '#FF4500', iconUrl: '/email-assets/icon-reddit.png?v=8' },
-  discord: { name: 'Discord', bg: '#5865F2', iconUrl: '/email-assets/icon-discord.png?v=8' },
+  linkedin: { name: 'LinkedIn', bg: '#0A66C2', iconUrl: '/email-assets/icon-linkedin.png?v=9' },
+  facebook: { name: 'Facebook', bg: '#1877F2', iconUrl: '/email-assets/icon-facebook.png?v=9' },
+  instagram: { name: 'Instagram', bg: '#E1306C', iconUrl: '/email-assets/icon-instagram.png?v=9' },
+  reddit: { name: 'Reddit', bg: '#FF4500', iconUrl: '/email-assets/icon-reddit.png?v=9' },
+  discord: { name: 'Discord', bg: '#5865F2', iconUrl: '/email-assets/icon-discord.png?v=9' },
 };
 
 /** Best-effort URL → platform detection. Returns null for unrecognized hosts. */
