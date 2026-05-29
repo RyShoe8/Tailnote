@@ -20,7 +20,6 @@ type FormState = {
   publishedAt: string;
   author: string;
   category: string;
-  tags: string;
   coverImage: string;
   seoTitle: string;
   seoDescription: string;
@@ -41,7 +40,6 @@ function rowToForm(post: AdminBlogPostRow & { body?: string }): FormState {
     publishedAt: post.publishedAt.slice(0, 10),
     author: post.author,
     category: post.category,
-    tags: post.tags?.join(', ') ?? '',
     coverImage: post.coverImage ?? '',
     seoTitle: '',
     seoDescription: '',
@@ -58,7 +56,6 @@ const emptyForm = (): FormState => ({
   publishedAt: todayIso(),
   author: 'tailnote-team',
   category: BLOG_CATEGORIES[0] ?? 'email-signatures',
-  tags: '',
   coverImage: '',
   seoTitle: '',
   seoDescription: '',
@@ -159,11 +156,6 @@ export function AdminBlogPostForm({ mode, postId, initial }: AdminBlogPostFormPr
   }
 
   function buildPayload() {
-    const tags = form.tags
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
-
     return {
       title: form.title.trim(),
       slug: form.slug.trim().toLowerCase(),
@@ -172,7 +164,6 @@ export function AdminBlogPostForm({ mode, postId, initial }: AdminBlogPostFormPr
       updatedAt: todayIso(),
       author: form.author,
       category: form.category,
-      tags,
       coverImage: form.coverImage.trim() || undefined,
       seoTitle: form.seoTitle.trim() || undefined,
       seoDescription: form.seoDescription.trim() || undefined,
@@ -323,15 +314,6 @@ export function AdminBlogPostForm({ mode, postId, initial }: AdminBlogPostFormPr
                 </option>
               ))}
             </select>
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="tags">Tags (comma-separated)</Label>
-            <Input
-              id="tags"
-              value={form.tags}
-              onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
-              placeholder="spf, dkim, dmarc"
-            />
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="coverImage">Cover image</Label>

@@ -9,12 +9,6 @@ import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha/config';
 import { useRecaptcha } from '@/lib/recaptcha/client';
 import { cn } from '@/lib/utils';
 
-const TOPIC_OPTIONS = [
-  { id: 'email-signatures', label: 'Email signatures' },
-  { id: 'deliverability', label: 'Deliverability' },
-  { id: 'team-branding', label: 'Team branding' },
-] as const;
-
 type NewsletterSignupProps = {
   variant?: 'compact' | 'full';
   signupPage?: string;
@@ -29,15 +23,10 @@ export function NewsletterSignup({
   const { getToken, enabled: recaptchaEnabled } = useRecaptcha(RECAPTCHA_ACTIONS.newsletter);
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
-  const [topics, setTopics] = useState<string[]>([]);
   const [honeypot, setHoneypot] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
-  function toggleTopic(id: string) {
-    setTopics((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -62,7 +51,6 @@ export function NewsletterSignup({
         body: JSON.stringify({
           email: email.trim(),
           firstName: firstName.trim() || undefined,
-          tags: topics,
           source: 'blog',
           signupPage,
           company: honeypot,
@@ -76,7 +64,6 @@ export function NewsletterSignup({
         setSuccess(true);
         setEmail('');
         setFirstName('');
-        setTopics([]);
         return;
       }
 
@@ -163,28 +150,6 @@ export function NewsletterSignup({
             />
           </div>
         </div>
-
-        {!isCompact ? (
-          <fieldset>
-            <legend className="mb-2 text-sm font-medium text-foreground">Topics of interest</legend>
-            <div className="flex flex-wrap gap-3">
-              {TOPIC_OPTIONS.map((opt) => (
-                <label
-                  key={opt.id}
-                  className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground"
-                >
-                  <input
-                    type="checkbox"
-                    checked={topics.includes(opt.id)}
-                    onChange={() => toggleTopic(opt.id)}
-                    className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
-                  />
-                  {opt.label}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-        ) : null}
 
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
 

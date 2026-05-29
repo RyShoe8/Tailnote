@@ -37,39 +37,45 @@ export function BlogPostLayout({ post, content, headings, relatedPosts }: BlogPo
         </div>
       ) : null}
 
-      <header className="container py-10 sm:py-14">
-        <div className="mx-auto max-w-3xl">
-          <CategoryPill category={post.category} />
-          <h1 className="mt-4 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-            {post.title}
-          </h1>
-          <p className="mt-4 text-pretty text-lg text-muted-foreground">{post.description}</p>
-          <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-            <time dateTime={post.publishedAt}>Published {formatDate(post.publishedAt)}</time>
-            {post.updatedAt ? (
-              <time dateTime={post.updatedAt}>Updated {formatDate(post.updatedAt)}</time>
-            ) : null}
-            <ReadingTimeBadge readingTime={post.readingTime} />
-          </div>
-          <div className="mt-6">
-            <ShareButtons title={post.title} path={path} />
-          </div>
-        </div>
-      </header>
-
       <div className="container pb-16 sm:pb-20">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,1fr)_240px] lg:gap-12">
-          <div className="min-w-0">
-            <div className="blog-prose mx-auto max-w-3xl">{content}</div>
-            <div className="mx-auto mt-12 max-w-3xl">
+          <div className="min-w-0 max-w-3xl">
+            <header className="py-10 sm:py-14">
+              <CategoryPill category={post.category} />
+              <h1 className="mt-4 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                {post.title}
+              </h1>
+              <p className="mt-4 text-pretty text-lg text-muted-foreground">{post.description}</p>
+              {post.coverImage ? (
+                <div className="mt-8 overflow-hidden rounded-2xl border border-slate-200/80">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={post.coverImage}
+                    alt=""
+                    className="aspect-[16/9] w-full object-cover"
+                  />
+                </div>
+              ) : null}
+              <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                <time dateTime={post.publishedAt}>Published {formatDate(post.publishedAt)}</time>
+                {post.updatedAt ? (
+                  <time dateTime={post.updatedAt}>Updated {formatDate(post.updatedAt)}</time>
+                ) : null}
+                <ReadingTimeBadge readingTime={post.readingTime} />
+              </div>
+              <div className="mt-6">
+                <ShareButtons title={post.title} path={path} />
+              </div>
+            </header>
+
+            <div className="blog-prose">{content}</div>
+            <div className="mt-12">
               <AuthorCard authorId={post.author} />
             </div>
-            <div className="mx-auto mt-12 max-w-3xl">
+            <div className="mt-12">
               <NewsletterSignup variant="full" signupPage={path} />
             </div>
-            <div className="mx-auto max-w-3xl">
-              <RelatedPosts posts={relatedPosts} />
-            </div>
+            <RelatedPosts posts={relatedPosts} />
           </div>
           <aside className="hidden lg:block">
             <TableOfContents headings={headings} />

@@ -6,7 +6,6 @@ import { NewsletterSignup } from '@/components/blog/NewsletterSignup';
 import { JsonLd } from '@/components/seo/JsonLd';
 import {
   getAllCategories,
-  getAllTags,
   getFeaturedPost,
   getPublishedPosts,
   toListItem,
@@ -21,7 +20,6 @@ export default async function BlogIndexPage() {
   const featured = await getFeaturedPost();
   const featuredItem = featured ? toListItem(featured) : null;
   const categories = await getAllCategories();
-  const tags = await getAllTags();
 
   return (
     <>
@@ -46,7 +44,6 @@ export default async function BlogIndexPage() {
       <BlogIndexClient
         posts={posts}
         categories={categories}
-        tags={tags}
         featuredSlug={featuredItem?.slug}
       />
       <div className="container pb-16">
