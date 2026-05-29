@@ -4,6 +4,10 @@ import { SubscriptionPlanModel } from '../models/SubscriptionPlan';
 /** Idempotent seed for Basic/Pro yearly plans (amounts match marketing defaults; edit in admin). */
 export async function ensureDefaultSubscriptionPlans(): Promise<void> {
   await connectBillingDb();
+  await SubscriptionPlanModel.updateMany(
+    { listOnPricingPage: { $exists: false } },
+    { $set: { listOnPricingPage: true } }
+  );
   const basic = await SubscriptionPlanModel.findOne({ slug: 'basic', version: 1 });
   if (!basic) {
     await SubscriptionPlanModel.create({
@@ -19,6 +23,7 @@ export async function ensureDefaultSubscriptionPlans(): Promise<void> {
       version: 1,
       maxSubscriptionSlots: 0,
       archived: false,
+      listOnPricingPage: true,
     });
   }
   const pro = await SubscriptionPlanModel.findOne({ slug: 'pro', version: 1 });
@@ -36,6 +41,7 @@ export async function ensureDefaultSubscriptionPlans(): Promise<void> {
       version: 1,
       maxSubscriptionSlots: 0,
       archived: false,
+      listOnPricingPage: true,
     });
   }
 }

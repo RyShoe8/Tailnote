@@ -36,6 +36,14 @@ function slotsLabel(p: PlanRow) {
   return `${used} / ${max}${p.soldOut ? ' (sold out)' : ''}`;
 }
 
+function publicPricingExclusionReasons(p: PlanRow): string[] {
+  const reasons: string[] = [];
+  if (!p.active) reasons.push('inactive');
+  if (p.paused) reasons.push('paused');
+  if (p.listOnPricingPage === false) reasons.push('hidden from pricing');
+  return reasons;
+}
+
 export function AdminPlansTable({
   initialPlans,
   mode,
@@ -166,11 +174,14 @@ export function AdminPlansTable({
                   <td className="p-3 font-medium">
                     {p.name}
                     <span className="block text-xs text-muted-foreground">v{p.version}</span>
-                    {p.listOnPricingPage === false ? (
-                      <span className="mt-1 inline-block rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                        Hidden from pricing
+                    {publicPricingExclusionReasons(p).map((reason) => (
+                      <span
+                        key={reason}
+                        className="mt-1 mr-1 inline-block rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
+                      >
+                        Not on pricing: {reason}
                       </span>
-                    ) : null}
+                    ))}
                   </td>
                   <td className="p-3">{p.interval}</td>
                   <td className="p-3">{fmtMoney(p.basePriceCents)}</td>

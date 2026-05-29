@@ -32,7 +32,7 @@ export async function getPublicPricingPlans(): Promise<PublicPricingPlan[]> {
     active: true,
     paused: false,
     archived: false,
-    listOnPricingPage: true,
+    listOnPricingPage: { $ne: false },
   })
     .sort({ slug: 1, version: -1 })
     .lean<SubscriptionPlanDoc[]>();

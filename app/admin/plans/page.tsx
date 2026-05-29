@@ -30,6 +30,7 @@ export default async function AdminPlansPage() {
         active: Boolean(p.active),
         paused: Boolean(p.paused),
         archived: Boolean(p.archived),
+        listOnPricingPage: p.listOnPricingPage !== false,
         version: Number(p.version ?? 1),
         stripeBasePriceId: p.stripeBasePriceId ? String(p.stripeBasePriceId) : '',
         maxSubscriptionSlots: Number(p.maxSubscriptionSlots ?? 0),
