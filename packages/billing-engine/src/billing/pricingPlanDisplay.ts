@@ -65,3 +65,9 @@ export function planFeatureBullets(plan: PublicPricingPlan): string[] {
 export function isRecommendedPlan(plan: PublicPricingPlan): boolean {
   return plan.badge.trim().toLowerCase() === 'popular';
 }
+
+export function trialSummaryLine(plan: PublicPricingPlan): string | null {
+  if (plan.interval === 'lifetime' || plan.trialDays <= 0) return null;
+  const n = plan.trialDays;
+  return `${n}-day free trial`;
+}

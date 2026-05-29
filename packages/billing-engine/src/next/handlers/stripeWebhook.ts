@@ -17,6 +17,8 @@ import {
   organizationPlanForStripeStatus,
 } from '../../billing/subscriptionAccess';
 import { notifyOrganizationBilling } from '../../billing/notifyOrganizationBilling';
+import { isCheckoutSessionPayable } from '../../billing/checkoutSessionPayable';
+import { trialEndsAtFromStripeSubscription } from '../../billing/stripeTrialEnd';
 
 async function resolveSubscriptionPlanMongoId(
   stripe: Stripe,
@@ -111,7 +113,7 @@ export async function POST(request: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
         const orgId = session.metadata?.organizationId;
         if (!orgId || !session.customer || !validObjectId(orgId)) break;
-        if (session.payment_status !== 'paid') break;
+        if (!isCheckoutSessionPayable(session)) break;
 
         const customerId = String(session.customer);
         const planDocId = await resolveSubscriptionPlanMongoId(stripe, session);
@@ -142,6 +144,7 @@ export async function POST(request: Request) {
               typeof sub.current_period_end === 'number'
                 ? new Date(sub.current_period_end * 1000)
                 : undefined;
+            const trialEndsAt = trialEndsAtFromStripeSubscription(sub);
 
             await OrganizationSubscriptionModel.findOneAndUpdate(
               { organizationId: orgObjId },
@@ -155,6 +158,7 @@ export async function POST(request: Request) {
                   startedAt: new Date(),
                   renewsAt,
                   cancelAtPeriodEnd: sub.cancel_at_period_end === true,
+                  ...(trialEndsAt ? { trialEndsAt } : {}),
                 },
               },
               { upsert: true }
@@ -238,6 +242,10 @@ export async function POST(request: Request) {
         };
         if (typeof sub.current_period_end === 'number') {
           orgSubPatch.renewsAt = new Date(sub.current_period_end * 1000);
+        }
+        const trialEndsAt = trialEndsAtFromStripeSubscription(sub);
+        if (trialEndsAt) {
+          orgSubPatch.trialEndsAt = trialEndsAt;
         }
 
         const orgSub = await OrganizationSubscriptionModel.findOneAndUpdate(

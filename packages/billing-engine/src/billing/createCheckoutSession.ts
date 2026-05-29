@@ -10,6 +10,7 @@ import {
   isPlanOfferable,
   PlanSubscriptionCapError,
 } from './planSubscriptionCap';
+import { resolveCheckoutTrialDays } from './resolveCheckoutTrialDays';
 import { getBillingContext } from '../context';
 
 export class CheckoutSessionError extends Error {
@@ -147,6 +148,12 @@ export async function createCheckoutSessionForOrganization(
 
   if (checkoutMode === 'subscription') {
     params.subscription_data = { metadata: meta };
+    if (dbPlanForSeats) {
+      const trialDays = await resolveCheckoutTrialDays(orgId, dbPlanForSeats);
+      if (trialDays) {
+        params.subscription_data.trial_period_days = trialDays;
+      }
+    }
   }
 
   if (input.org.stripeCustomerId) {

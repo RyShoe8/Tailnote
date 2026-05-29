@@ -23,6 +23,8 @@ const SubscriptionPlanSchema = new Schema(
     archived: { type: Boolean, default: false, index: true },
     /** When false, plan is assignable in admin but omitted from marketing pricing UI */
     listOnPricingPage: { type: Boolean, default: true, index: true },
+    /** Free trial length in days for first Stripe subscription checkout; 0 = no trial. Subscription plans only. */
+    trialDays: { type: Number, default: 0, min: 0, max: 730 },
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } }
 );

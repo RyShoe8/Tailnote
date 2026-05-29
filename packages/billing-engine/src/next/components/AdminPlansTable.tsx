@@ -20,6 +20,7 @@ export type PlanRow = {
   version: number;
   stripeBasePriceId?: string;
   maxSubscriptionSlots?: number;
+  trialDays?: number;
   subscriptionCount?: number;
   soldOut?: boolean;
 };
@@ -143,6 +144,7 @@ export function AdminPlansTable({
               <th className="p-3 font-medium">Name</th>
               <th className="p-3 font-medium">Interval</th>
               <th className="p-3 font-medium">Base</th>
+              <th className="p-3 font-medium">Trial</th>
               <th className="p-3 font-medium">Slots</th>
               <th className="p-3 font-medium">Active</th>
               <th className="p-3 font-medium">Paused</th>
@@ -154,7 +156,7 @@ export function AdminPlansTable({
           <tbody>
             {plans.length === 0 ? (
               <tr>
-                <td colSpan={9} className="p-6 text-center text-muted-foreground">
+                <td colSpan={10} className="p-6 text-center text-muted-foreground">
                   {mode === 'archived' ? 'No archived plans.' : 'No active plans.'}
                 </td>
               </tr>
@@ -172,6 +174,9 @@ export function AdminPlansTable({
                   </td>
                   <td className="p-3">{p.interval}</td>
                   <td className="p-3">{fmtMoney(p.basePriceCents)}</td>
+                  <td className="p-3">
+                    {p.interval === 'lifetime' ? '—' : (p.trialDays ?? 0) > 0 ? `${p.trialDays}d` : '—'}
+                  </td>
                   <td className="p-3">{slotsLabel(p)}</td>
                   <td className="p-3">{p.active ? 'Yes' : 'No'}</td>
                   <td className="p-3">{p.paused ? 'Yes' : 'No'}</td>

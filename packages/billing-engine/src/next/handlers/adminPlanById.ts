@@ -19,6 +19,7 @@ const PatchSchema = z.object({
   maxSubscriptionSlots: z.number().int().nonnegative().optional(),
   archived: z.boolean().optional(),
   listOnPricingPage: z.boolean().optional(),
+  trialDays: z.number().int().min(0).max(730).optional(),
 });
 
 type Params = { params: Promise<{ id: string }> };

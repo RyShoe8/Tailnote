@@ -4,6 +4,8 @@ import { isActiveSubscriptionStatus, isOrganizationPaid } from '../billing/subsc
 
 export type OrganizationBillingSummary = {
   renewsAt: string | null;
+  trialEndsAt: string | null;
+  isTrialing: boolean;
   cancelAtPeriodEnd: boolean;
   subscriptionStatus: string;
   canCancel: boolean;
@@ -21,6 +23,7 @@ type OrgLike = {
 
 type OrgSubLike = {
   renewsAt?: Date | string | null;
+  trialEndsAt?: Date | string | null;
   cancelAtPeriodEnd?: boolean | null;
 };
 
@@ -60,6 +63,14 @@ export function buildOrganizationBillingSummary(
     if (!Number.isNaN(d.getTime())) renewsAt = d.toISOString();
   }
 
+  let trialEndsAt: string | null = null;
+  if (orgSub?.trialEndsAt) {
+    const d = orgSub.trialEndsAt instanceof Date ? orgSub.trialEndsAt : new Date(orgSub.trialEndsAt);
+    if (!Number.isNaN(d.getTime())) trialEndsAt = d.toISOString();
+  }
+
+  const isTrialing = org?.subscriptionStatus === 'trialing';
+
   const alternates = otherOfferablePlans(currentPlan, availablePlans);
   const canChangePlan = isOwner && alternates.length > 0;
 
@@ -81,6 +92,8 @@ export function buildOrganizationBillingSummary(
 
   return {
     renewsAt,
+    trialEndsAt,
+    isTrialing,
     cancelAtPeriodEnd,
     subscriptionStatus: String(org?.subscriptionStatus ?? 'none'),
     canCancel: isOwner && hasSubscription && active && !cancelAtPeriodEnd,

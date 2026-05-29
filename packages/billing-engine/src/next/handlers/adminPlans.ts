@@ -21,6 +21,7 @@ const CreateSchema = z.object({
   maxSubscriptionSlots: z.number().int().nonnegative().optional(),
   archived: z.boolean().optional(),
   listOnPricingPage: z.boolean().optional(),
+  trialDays: z.number().int().min(0).max(730).optional(),
 });
 
 async function enrichPlans(plans: SubscriptionPlanDoc[]) {

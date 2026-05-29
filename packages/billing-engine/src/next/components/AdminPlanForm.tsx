@@ -19,6 +19,7 @@ const empty = {
   badge: '',
   maxSubscriptionSlots: 0,
   listOnPricingPage: true,
+  trialDays: 0,
 };
 
 export function AdminPlanForm({
@@ -50,6 +51,7 @@ export function AdminPlanForm({
         badge: form.badge,
         maxSubscriptionSlots: Number(form.maxSubscriptionSlots),
         listOnPricingPage: form.listOnPricingPage,
+        trialDays: form.interval === 'lifetime' ? 0 : Number(form.trialDays),
       };
       const url = mode === 'create' ? '/api/admin/plans' : `/api/admin/plans/${planId}`;
       const res = await fetch(url, {
@@ -160,6 +162,25 @@ export function AdminPlanForm({
               Promo cap: every org signup uses a slot permanently (cancel does not free a slot).
             </p>
           </div>
+          {form.interval !== 'lifetime' ? (
+            <div className="space-y-2">
+              <Label htmlFor="trialDays">Trial days (0 = none)</Label>
+              <Input
+                id="trialDays"
+                type="number"
+                min={0}
+                max={730}
+                value={form.trialDays}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setForm((f) => ({ ...f, trialDays: Number(e.target.value) }))
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Applied on first Stripe subscription checkout only. Card is collected up front; billing
+                starts after the trial unless the customer cancels.
+              </p>
+            </div>
+          ) : null}
           <div className="space-y-2">
             <Label htmlFor="badge">Badge (optional)</Label>
             <Input

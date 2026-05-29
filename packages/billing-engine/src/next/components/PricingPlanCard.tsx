@@ -8,6 +8,7 @@ import {
   planFeatureBullets,
   primaryPriceLine,
   subscriptionCap,
+  trialSummaryLine,
 } from '../../billing/pricingPlanDisplay';
 import { SubscriptionAvailabilityCallout } from './SubscriptionAvailabilityCallout';
 import { cn } from '../../ui/cn';
@@ -32,6 +33,7 @@ export function PricingPlanCard({
   const hasCap = subscriptionCap(plan) !== null;
   const recommended = isRecommendedPlan(plan);
   const isCurrent = variant === 'current';
+  const trialLine = trialSummaryLine(plan);
 
   return (
     <Card
@@ -77,6 +79,9 @@ export function PricingPlanCard({
           <p className={cn('font-semibold tracking-tight', compact ? 'text-2xl' : 'text-4xl')}>
             {primaryPriceLine(plan)}
           </p>
+          {trialLine ? (
+            <p className="mt-1 text-sm font-medium text-primary">{trialLine}</p>
+          ) : null}
           <p className="mt-2 text-base font-medium text-foreground">{includedUsersSummary(plan)}</p>
           <p className="mt-0.5 text-sm text-muted-foreground">Per subscription</p>
         </div>

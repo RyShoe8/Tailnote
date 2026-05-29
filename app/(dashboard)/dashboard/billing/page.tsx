@@ -19,6 +19,8 @@ import { formatUsd, intervalSuffix } from 'billing-engine/pricing-display';
 
 type BillingSummary = {
   renewsAt?: string | null;
+  trialEndsAt?: string | null;
+  isTrialing?: boolean;
   cancelAtPeriodEnd?: boolean;
   subscriptionStatus?: string;
   canCancel?: boolean;
@@ -245,12 +247,20 @@ function BillingPageInner() {
           <CardTitle>Subscription</CardTitle>
           <CardDescription>
             Status: {loadError ? '—' : billing?.subscriptionStatus ?? '—'}
-            {billing?.renewsAt && !loadError
-              ? ` · ${billing.cancelAtPeriodEnd ? 'Access until' : 'Renews'} ${formatBillingDate(billing.renewsAt)}`
-              : ''}
+            {billing?.isTrialing && billing.trialEndsAt && !loadError
+              ? ` · Trial ends ${formatBillingDate(billing.trialEndsAt)}`
+              : billing?.renewsAt && !loadError
+                ? ` · ${billing.cancelAtPeriodEnd ? 'Access until' : 'Renews'} ${formatBillingDate(billing.renewsAt)}`
+                : ''}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {billing?.isTrialing && billing.trialEndsAt && !loadError ? (
+            <p className="text-sm text-muted-foreground rounded-md border border-border bg-muted/40 px-3 py-2">
+              Your free trial ends on {formatBillingDate(billing.trialEndsAt)}. Billing starts
+              automatically unless you cancel before then.
+            </p>
+          ) : null}
           {billing?.cancelAtPeriodEnd && billing.renewsAt && !loadError ? (
             <p className="text-sm text-muted-foreground rounded-md border border-border bg-muted/40 px-3 py-2">
               Your subscription is scheduled to cancel on {formatBillingDate(billing.renewsAt)}.

@@ -33,7 +33,20 @@ Host `Organization` documents should include:
 
 - `plan`, `subscriptionStatus`, `stripeCustomerId`, `stripeSubscriptionId`
 
-Canonical subscription data lives in `OrganizationSubscription` (package model).
+Canonical subscription data lives in `OrganizationSubscription` (package model), including optional `trialEndsAt`.
+
+## Plan trials
+
+Set `trialDays` (0–730) on `SubscriptionPlan` in admin. On **first** Stripe subscription checkout only:
+
+- Checkout passes `subscription_data.trial_period_days` to Stripe
+- Webhooks set org `subscriptionStatus` to `trialing` and persist `trialEndsAt`
+- `trialing` counts as paid access via `isOrganizationPaid()`
+- After trial, Stripe charges the card; failed payment sets `past_due` and locks dashboard access
+
+Re-subscribe after cancel does not receive another trial. Lifetime plans ignore `trialDays`.
+
+Trial length is configured on the plan document, not synced to Stripe Price objects (edit trial days without re-syncing prices).
 
 ## Environment variables
 
