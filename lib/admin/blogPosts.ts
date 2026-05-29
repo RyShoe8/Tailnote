@@ -16,7 +16,7 @@ function toIsoDate(value: string | Date | undefined | null): string | undefined 
 }
 
 function docToMeta(doc: BlogPostDoc, bodyForReadingTime?: string): BlogPostMeta {
-  const body = bodyForReadingTime ?? doc.body;
+  const body = bodyForReadingTime ?? doc.body ?? '';
   const updatedAt = doc.contentUpdatedAt?.trim() || undefined;
 
   return {
