@@ -71,10 +71,10 @@ export function BlogPostLayout({ post, content, headings, relatedPosts }: BlogPo
 
             <div className="blog-prose">{content}</div>
             <div className="mt-12">
-              <AuthorCard authorId={post.author} />
+              <NewsletterSignup variant="full" signupPage={path} />
             </div>
             <div className="mt-12">
-              <NewsletterSignup variant="full" signupPage={path} />
+              <AuthorCard authorId={post.author} />
             </div>
             <RelatedPosts posts={relatedPosts} />
           </div>
