@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { connectMongoose } from '@/lib/mongoose';
 import { getServerSession } from '@/lib/auth/session';
 import { SignatureClickEventModel } from '@/models/SignatureClickEvent';
+import { SignatureOpenEventModel } from '@/models/SignatureOpenEvent';
 import { EmployeeModel } from '@/models/Employee';
 import { resolveViewerEmployeeId } from '@/lib/analytics/resolveViewerEmployee';
 import mongoose from 'mongoose';
@@ -76,6 +77,9 @@ export async function GET(request: Request) {
         scope: 'self',
         byKind: {},
         byDay: [],
+        opensTotal: 0,
+        opensByDay: [],
+        activityByDay: [],
         employees: [],
       });
     }
@@ -90,7 +94,7 @@ export async function GET(request: Request) {
     match.employeeId = filterEmployeeId;
   }
 
-  const [byKindAgg, byDayAgg, employees] = await Promise.all([
+  const [byKindAgg, byDayAgg, opensByDayAgg, opensTotal, employees] = await Promise.all([
     SignatureClickEventModel.aggregate<{ _id: string; count: number }>([
       { $match: match },
       { $group: { _id: '$kind', count: { $sum: 1 } } },
@@ -105,6 +109,17 @@ export async function GET(request: Request) {
       },
       { $sort: { _id: 1 } },
     ]),
+    SignatureOpenEventModel.aggregate<{ _id: string; count: number }>([
+      { $match: match },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]),
+    SignatureOpenEventModel.countDocuments(match),
     isOwnerOrAdmin
       ? EmployeeModel.find({ organizationId: oid })
           .select('firstName lastName email')
@@ -119,6 +134,20 @@ export async function GET(request: Request) {
   }
 
   const byDay = byDayAgg.map((row) => ({ date: row._id, count: row.count }));
+  const opensByDay = opensByDayAgg.map((row) => ({ date: row._id, count: row.count }));
+
+  const daySet = new Set<string>();
+  for (const row of byDay) daySet.add(row.date);
+  for (const row of opensByDay) daySet.add(row.date);
+  const clicksByDate = new Map(byDay.map((r) => [r.date, r.count]));
+  const opensByDate = new Map(opensByDay.map((r) => [r.date, r.count]));
+  const activityByDay = [...daySet]
+    .sort()
+    .map((date) => ({
+      date,
+      clicks: clicksByDate.get(date) ?? 0,
+      opens: opensByDate.get(date) ?? 0,
+    }));
 
   return NextResponse.json({
     from: from.toISOString(),
@@ -127,6 +156,9 @@ export async function GET(request: Request) {
     employeeId: filterEmployeeId?.toString(),
     byKind,
     byDay,
+    opensTotal,
+    opensByDay,
+    activityByDay,
     employees: employees.map((e) => ({
       id: String(e._id),
       name: [e.firstName, e.lastName].filter(Boolean).join(' ').trim() || e.email,

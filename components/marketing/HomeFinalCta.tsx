@@ -22,8 +22,8 @@ export function HomeFinalCta() {
           Ready to market in every email your team sends?
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-pretty text-base text-white/80 sm:text-lg">
-          Join teams using Tailnote to promote offers, track clicks, and keep every outbound message
-          on-brand.
+          Join teams using Tailnote to promote offers, track clicks and opens, and keep every
+          outbound message on-brand.
         </p>
         <Button
           asChild

@@ -31,7 +31,7 @@ export const aboutContent = {
         'Curated templates designed for email client compatibility—not drag-and-drop chaos.',
         'Organization-wide control over branding, employees, and templates.',
         'Subscription billing with flexible plans and seat-based pricing.',
-        'Hosted signature previews and optional click analytics when you enable tracking.',
+        'Hosted signature previews and optional click and open analytics when you enable tracking.',
       ],
     },
     {
@@ -62,7 +62,7 @@ export const privacyContent = {
         'Organization and employee data: company name, job titles, contact fields, social links, signature content, and template preferences you enter in the dashboard.',
         'Uploaded assets: logos and images you upload for signatures (stored via Vercel Blob).',
         'Billing information: subscription and payment details processed by Stripe. We do not store full payment card numbers on our servers.',
-        'Signature analytics (optional): when your organization enables click tracking, we log clicks on tracked links in signatures (for example, link URL and timestamp).',
+        'Signature analytics (optional): when your organization enables click tracking, we log clicks on tracked links in signatures (for example, link URL and timestamp). When you separately enable open tracking, we log loads of a small tracking image in signatures you copy from Tailnote.',
         'Usage and technical data: IP address, browser type, device information, and pages visited, including through analytics tools described below.',
       ],
     },

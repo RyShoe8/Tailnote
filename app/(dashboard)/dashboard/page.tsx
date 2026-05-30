@@ -7,6 +7,7 @@ import { connectMongoose } from '@/lib/mongoose';
 import { getEmployeeLimitsForOrganization } from 'billing-engine';
 import { SignatureTemplateModel } from '@/models/SignatureTemplate';
 import { SignatureClickEventModel } from '@/models/SignatureClickEvent';
+import { SignatureOpenEventModel } from '@/models/SignatureOpenEvent';
 import { OrganizationModel } from '@/models/Organization';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { OverviewOrganizationCard } from '@/components/dashboard/OverviewOrganizationCard';
@@ -49,7 +50,9 @@ export default async function DashboardHomePage() {
     }
   }
 
-  const [seatLimits, templates, clickAgg, orgDoc, promoSlots] = await Promise.all([
+  const openMatch = { ...clickMatch };
+
+  const [seatLimits, templates, clickAgg, openCount, orgDoc, promoSlots] = await Promise.all([
     getEmployeeLimitsForOrganization(user.organizationId),
     SignatureTemplateModel.countDocuments({
       organizationId: user.organizationId,
@@ -59,6 +62,7 @@ export default async function DashboardHomePage() {
       { $match: clickMatch },
       { $group: { _id: '$kind', count: { $sum: 1 } } },
     ]),
+    SignatureOpenEventModel.countDocuments(openMatch),
     OrganizationModel.findById(user.organizationId),
     getOrgEnabledPromoBlockSlots(user.organizationId),
   ]);
@@ -69,6 +73,7 @@ export default async function DashboardHomePage() {
 
   const canEdit = user.role === 'owner' || user.role === 'admin';
   const trackingOn = orgDoc.signatureClickTrackingEnabled !== false;
+  const openTrackingOn = orgDoc.signatureOpenTrackingEnabled === true;
 
   const byKind: Record<string, number> = {};
   for (const row of clickAgg) {
@@ -168,15 +173,30 @@ export default async function DashboardHomePage() {
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold tracking-tight mb-1">Signature clicks (last 30 days)</h2>
+        <h2 className="text-lg font-semibold tracking-tight mb-1">Signature activity (last 30 days)</h2>
         <p className="text-sm text-muted-foreground mb-4">
           {isOwnerOrAdmin
-            ? 'Organization-wide counts when recipients follow links in sent signatures.'
-            : 'Your signature link clicks when recipients follow tracked links.'}{' '}
+            ? 'Organization-wide link clicks and optional opens when recipients view tracked signatures.'
+            : 'Your signature link clicks and opens when tracking is enabled.'}{' '}
           <Link href="/dashboard/analytics" className="underline underline-offset-4">
             View analytics
           </Link>
         </p>
+        <div className="mb-4 grid gap-4 sm:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Opens</CardTitle>
+              <CardDescription>
+                {openTrackingOn
+                  ? 'Email views that loaded the tracking pixel'
+                  : 'Enable open tracking in Organization settings below'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-semibold tabular-nums">{openCount}</p>
+            </CardContent>
+          </Card>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader>
@@ -241,6 +261,7 @@ export default async function DashboardHomePage() {
         organizationId={orgDoc._id.toString()}
         initialName={String(orgDoc.name ?? '')}
         initialSignatureClickTrackingEnabled={trackingOn}
+        initialSignatureOpenTrackingEnabled={openTrackingOn}
         initialUtmEnabled={orgDoc.utmEnabled !== false}
         canEdit={canEdit}
       />

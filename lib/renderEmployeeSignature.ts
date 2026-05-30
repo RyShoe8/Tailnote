@@ -7,7 +7,10 @@ import type { SignatureTemplateDoc } from '@/models/SignatureTemplate';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
 import { isOrganizationPaid } from 'billing-engine';
 import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
-import { appendSignatureClickTrackingIfEnabled } from '@/lib/signatureTrackingHtml';
+import {
+  appendSignatureClickTrackingIfEnabled,
+  appendSignatureOpenTrackingPixelIfEnabled,
+} from '@/lib/signatureTrackingHtml';
 import { vcardDownloadUrl } from '@/lib/vcard/vcardDownloadUrl';
 
 /** Default UTM parameters for Tailnote signatures. */
@@ -129,6 +132,13 @@ export function renderSignatureForEmployee(
     organizationId: String(org._id),
     employeeId: String(emp._id),
     input: renderInput,
+    baseUrl: publicSiteOrigin,
+  });
+  html = appendSignatureOpenTrackingPixelIfEnabled({
+    html,
+    org,
+    organizationId: String(org._id),
+    employeeId: String(emp._id),
     baseUrl: publicSiteOrigin,
   });
   return html;

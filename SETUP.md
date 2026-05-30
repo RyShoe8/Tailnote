@@ -87,7 +87,8 @@ Enable **Customer Portal** cancellation so `customer.subscription.updated` / `cu
 
 - **Paid access** requires `Organization.subscriptionStatus` of `active` or `trialing` (see `lib/billing/subscriptionAccess.ts`). `past_due`, `canceled`, and `incomplete` lock out paid features immediately.
 - **Webhooks** sync Stripe → MongoDB (`Organization` + `OrganizationSubscription`). `invoice.paid` restores access; `invoice.payment_failed` sets `past_due` and emails the org owner; subscription end/cancel emails the owner (one email per Stripe event id).
-- **Signature serving (Tailnote-controlled):** public preview `/p/[token]`, tracked links `/api/track/signature`, and dashboard copy/export are blocked when unpaid.
+- **Signature serving (Tailnote-controlled):** public preview `/p/[token]`, tracked links `/api/track/signature`, open pixel `/api/track/signature/open`, and dashboard copy/export are blocked when unpaid.
+- **Signature analytics:** Click tracking is on by default (`signatureClickTrackingEnabled`). Open tracking is opt-in (`signatureOpenTrackingEnabled`); when enabled, rendered signatures include a 1×1 pixel. Users must re-copy signatures after enabling opens. Opens require recipients to load images; counts are approximate.
 - **Limitation:** HTML already pasted into Gmail or Outlook cannot be removed remotely. Direct image URLs (e.g. Vercel Blob) in old signatures may still load. Tracked links are the main enforcement lever for links in deployed signatures.
 
 ### Subscription plans (source of truth)

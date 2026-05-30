@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, BarChart3, CalendarRange, Filter, LineChart } from 'lucide-react';
+import { ArrowRight, BarChart3, CalendarRange, Eye, Filter, LineChart } from 'lucide-react';
 import { FloatingOrbs } from '@/components/marketing/FloatingOrbs';
 import { HomeFinalCta } from '@/components/marketing/HomeFinalCta';
 import { MarketingAnalyticsShowcase } from '@/components/marketing/MarketingAnalyticsShowcase';
@@ -27,12 +27,18 @@ const FEATURES = [
   {
     icon: Filter,
     title: 'Per-employee or team-wide',
-    description: 'Owners see org-wide clicks; managers can drill into individual senders when needed.',
+    description: 'Owners see org-wide clicks and opens; managers can drill into individual senders when needed.',
+  },
+  {
+    icon: Eye,
+    title: 'Optional open tracking',
+    description:
+      'Turn on open tracking per organization when you want visibility into signature views. Re-copy signatures after enabling so the tracking pixel is included.',
   },
   {
     icon: LineChart,
-    title: 'Clicks over time',
-    description: 'Daily charts show whether interest is building — perfect after launching a new promo block.',
+    title: 'Activity over time',
+    description: 'Daily click and open charts show whether interest is building — perfect after launching a new promo block.',
   },
   {
     icon: BarChart3,
@@ -65,12 +71,12 @@ export default function AnalyticsMarketingPage() {
         <RevealOnScroll className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-wider text-primary">Analytics</p>
           <h1 className="mt-3 text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
-            Know which signatures <span className="tn-grad-text">drive clicks</span>
+            Know which signatures <span className="tn-grad-text">get opened and clicked</span>
           </h1>
           <p className="mt-4 text-pretty text-base text-muted-foreground sm:text-lg">
-            Tailnote tracks clicks on signature links — including every promotional block — so you can
-            see what resonates. Pair it with automatic UTM parameters for full-funnel attribution in
-            Google Analytics.
+            Tailnote tracks clicks on signature links and optional opens when recipients load images —
+            including every promotional block — so you can see what resonates. Pair it with automatic
+            UTM parameters for full-funnel attribution in Google Analytics.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg" className="gap-2 shadow-card">
@@ -96,7 +102,8 @@ export default function AnalyticsMarketingPage() {
             Measure what your team promotes
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Built for marketers and founders who want proof that email signatures pull their weight.
+            Built for marketers and founders who want proof that email signatures get opened, clicked,
+            and remembered—not just sent.
           </p>
         </div>
         <div className="mt-12 grid gap-6 sm:grid-cols-2">
@@ -117,7 +124,7 @@ export default function AnalyticsMarketingPage() {
       <div className="container pb-16 sm:pb-20">
         <RevealOnScroll delayMs={40}>
           <p className="mb-6 text-center text-sm font-medium text-muted-foreground">
-            See which promos outperform social and website links
+            Compare clicks by link type alongside total opens for the same period
           </p>
           <MarketingAnalyticsShowcase variant="chartDetail" />
         </RevealOnScroll>
@@ -129,12 +136,12 @@ export default function AnalyticsMarketingPage() {
           <p className="mt-3 max-w-3xl text-sm text-muted-foreground sm:text-base">
             Every tracked link in your signature can include UTM parameters automatically — source,
             medium, and campaign — so visits show up in GA alongside the rest of your marketing. Use
-            Tailnote click analytics for quick checks, and GA for deeper funnel analysis.
+            Tailnote for quick click and open checks in the dashboard, and GA for deeper funnel analysis.
           </p>
         </RevealOnScroll>
 
         <p className="mt-10 text-center text-xs text-muted-foreground">
-          We only record clicks on links you enable for tracking. See our{' '}
+          We record clicks on tracked links and opens only when you enable open tracking separately. See our{' '}
           <Link href="/privacy" className="underline underline-offset-4 hover:text-foreground">
             Privacy Policy
           </Link>{' '}

@@ -44,6 +44,8 @@ const OrganizationSchema = new Schema(
     },
     /** When true, signature links are rewritten through /api/track/signature for click analytics. */
     signatureClickTrackingEnabled: { type: Boolean, default: true },
+    /** When true, a 1×1 tracking pixel is appended to rendered signatures for open analytics. */
+    signatureOpenTrackingEnabled: { type: Boolean, default: false },
     /** UTM tracking appended to http/https links in rendered signatures (default on). */
     utmEnabled: { type: Boolean, default: true },
     /** When true, invited employees may edit organization brand fields in the dashboard. */

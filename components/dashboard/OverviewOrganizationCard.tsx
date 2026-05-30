@@ -10,6 +10,7 @@ export type OverviewOrganizationCardProps = {
   organizationId: string;
   initialName: string;
   initialSignatureClickTrackingEnabled: boolean;
+  initialSignatureOpenTrackingEnabled: boolean;
   initialUtmEnabled: boolean;
   canEdit: boolean;
 };
@@ -18,12 +19,16 @@ export function OverviewOrganizationCard({
   organizationId,
   initialName,
   initialSignatureClickTrackingEnabled,
+  initialSignatureOpenTrackingEnabled,
   initialUtmEnabled,
   canEdit,
 }: OverviewOrganizationCardProps) {
   const [name, setName] = useState(initialName);
   const [signatureClickTrackingEnabled, setSignatureClickTrackingEnabled] = useState(
     initialSignatureClickTrackingEnabled
+  );
+  const [signatureOpenTrackingEnabled, setSignatureOpenTrackingEnabled] = useState(
+    initialSignatureOpenTrackingEnabled
   );
   const [utmEnabled, setUtmEnabled] = useState(initialUtmEnabled);
   const [message, setMessage] = useState<string | null>(null);
@@ -35,7 +40,12 @@ export function OverviewOrganizationCard({
     const res = await fetch('/api/dashboard/organization', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, signatureClickTrackingEnabled, utmEnabled }),
+      body: JSON.stringify({
+        name,
+        signatureClickTrackingEnabled,
+        signatureOpenTrackingEnabled,
+        utmEnabled,
+      }),
     });
     if (res.ok) setMessage('Saved');
     else {
@@ -83,6 +93,26 @@ export function OverviewOrganizationCard({
                 On by default for new organizations. Uncheck to opt out. When enabled, links in rendered signatures use
                 a signed redirect that records counts by link type (logo, website, email, phone, social). Signing uses
                 the same app secret as authentication—no extra configuration.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-md border p-3">
+            <input
+              id="signatureOpenTrackingEnabled"
+              type="checkbox"
+              className="mt-1 h-4 w-4 rounded border-input disabled:opacity-50"
+              checked={signatureOpenTrackingEnabled}
+              onChange={(e) => setSignatureOpenTrackingEnabled(e.target.checked)}
+              disabled={!canEdit}
+            />
+            <div className="space-y-1">
+              <Label htmlFor="signatureOpenTrackingEnabled" className="cursor-pointer font-normal leading-snug">
+                Log signature opens (analytics)
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Off by default. When enabled, a small tracking image is added to signatures you copy from
+                Tailnote. Recipients must allow images in their mail client; counts are approximate. Re-copy
+                your signature after enabling so the pixel is included.
               </p>
             </div>
           </div>

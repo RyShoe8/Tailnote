@@ -28,8 +28,8 @@ export function HomeHero() {
             </h1>
             <p className="mt-5 text-pretty text-base text-muted-foreground sm:text-lg">
               Tailnote pairs on-brand signatures with promotional content blocks, built-in UTM
-              tracking, and click analytics. Polished layouts that hold up in Gmail, Outlook, and
-              everywhere in between.
+              tracking, and signature analytics—link clicks plus optional open tracking. Polished
+              layouts that hold up in Gmail, Outlook, and everywhere in between.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <Button asChild size="lg" className="gap-2 shadow-card">

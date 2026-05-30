@@ -16,6 +16,7 @@
     "verify:blog": "npx tsx scripts/blog-smoke.ts",
     "migrate:blog": "npx tsx scripts/migrate-blog-mdx-to-mongo.ts",
     "verify:list-tracking": "npx tsx scripts/signature-tracking-list-smoke.ts",
+    "verify:open-tracking": "npx tsx scripts/signature-open-tracking-smoke.ts",
     "icons:reddit": "node scripts/generate-reddit-icon.mjs",
     "optimize:email-assets": "node scripts/optimize-email-assets.mjs"
   },

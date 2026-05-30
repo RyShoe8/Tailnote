@@ -30,3 +30,11 @@ export const ANALYTICS_DEMO_BY_KIND = [
 ];
 
 export const ANALYTICS_DEMO_TOTAL = ANALYTICS_DEMO_BY_KIND.reduce((sum, row) => sum + row.count, 0);
+
+export const ANALYTICS_DEMO_OPENS_TOTAL = 186;
+
+export const ANALYTICS_DEMO_ACTIVITY_BY_DAY = ANALYTICS_DEMO_BY_DAY.map((row, i) => ({
+  date: row.date,
+  clicks: row.count,
+  opens: Math.max(4, Math.round(row.count * (0.85 + (i % 5) * 0.05))),
+}));

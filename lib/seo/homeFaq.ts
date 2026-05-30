@@ -8,8 +8,8 @@ export const HOME_FAQS = [
     a: 'No. Pick a template, add your logo and brand color, and Tailnote handles the layout, fonts, and spacing. Promotional blocks are filled in with simple forms; buttons, offer lists, blog feeds, or image banners.',
   },
   {
-    q: 'Can I track clicks from email signatures?',
-    a: 'Yes. Every link in your signature can get UTM parameters appended automatically so visits show up in Google Analytics. You can also see per-template click analytics inside Tailnote.',
+    q: 'Can I track clicks and opens from email signatures?',
+    a: 'Yes. Every link can get UTM parameters automatically so visits show up in Google Analytics. Inside Tailnote, click analytics are on by default; you can optionally enable open tracking to see when recipients load images in your signature (counts are approximate when mail clients block images).',
   },
   {
     q: 'What happens if I cancel?',

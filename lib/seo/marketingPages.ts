@@ -33,14 +33,14 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     path: '/',
     title: SITE_TAGLINE,
     description:
-      `${SITE_TAGLINE}. Promotional content blocks, built-in UTM tracking, and polished signature templates for Gmail and Outlook.`,
+      `${SITE_TAGLINE}. Promotional content blocks, built-in UTM tracking, click and open analytics, and polished signature templates for Gmail and Outlook.`,
   },
   {
     key: 'pricing',
     path: '/pricing',
     title: 'Email signature pricing',
     description:
-      'Simple per-organization plans with included users, monthly and annual subscriptions, optional Lifetime one-time plans, promotional signature blocks, UTM tracking, and click analytics.',
+      'Simple per-organization plans with included users, monthly and annual subscriptions, optional Lifetime one-time plans, promotional signature blocks, UTM tracking, and click and open analytics.',
   },
   {
     key: 'templates',
@@ -59,9 +59,9 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
   {
     key: 'analytics',
     path: '/analytics',
-    title: 'Email signature click analytics',
+    title: 'Email signature click and open analytics',
     description:
-      'Track signature link clicks by day, team member, and link type. See which promotional blocks and CTAs drive engagement, with UTM support for Google Analytics.',
+      'Track signature link clicks and optional opens by day and team member. Break down engagement by link type and see activity over time, with UTM support for Google Analytics.',
   },
   {
     key: 'emailHealth',

@@ -36,6 +36,7 @@ const PATCHABLE_FIELDS = [
   'zip',
   'animation',
   'signatureClickTrackingEnabled',
+  'signatureOpenTrackingEnabled',
   'utmEnabled',
 ] as const;
 

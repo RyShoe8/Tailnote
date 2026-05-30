@@ -18,7 +18,10 @@ import { resolveEmployeeContentBlocks } from '@/lib/org/resolveEmployeeContentBl
 import { engineTemplateFromStoredConfig, type TemplatePresetId } from '@/lib/email/templatePresets';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
 import { assertOrganizationSubscriptionPaid } from '@/lib/dashboard/subscriptionRequired';
-import { appendSignatureClickTrackingIfEnabled } from '@/lib/signatureTrackingHtml';
+import {
+  appendSignatureClickTrackingIfEnabled,
+  appendSignatureOpenTrackingPixelIfEnabled,
+} from '@/lib/signatureTrackingHtml';
 import {
   isAllowedOrgLogoUrl,
   orgLogoUrlValidationMessage,
@@ -272,6 +275,13 @@ export async function POST(request: Request) {
     organizationId: String(org._id),
     employeeId: employeeIdForTracking,
     input: renderInput,
+    baseUrl: publicSiteOrigin,
+  });
+  html = appendSignatureOpenTrackingPixelIfEnabled({
+    html,
+    org: org as never,
+    organizationId: String(org._id),
+    employeeId: employeeIdForTracking,
     baseUrl: publicSiteOrigin,
   });
 

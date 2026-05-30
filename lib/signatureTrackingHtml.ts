@@ -3,6 +3,7 @@ import { mergeRenderContext, type RenderSignatureInput } from 'emailsignature-en
 import type { OrganizationDoc } from '@/models/Organization';
 import type { SignatureClickKind } from '@/models/SignatureClickEvent';
 import { createSignatureTrackingToken } from '@/lib/signatureTrackingToken';
+import { createSignatureOpenToken } from '@/lib/signatureOpenToken';
 import { getSignatureTrackingSecret } from '@/lib/signatureTrackingSecret';
 import { normalizePromoUrl } from '@/lib/urls/normalizePromoUrl';
 
@@ -211,4 +212,31 @@ export function appendSignatureClickTrackingIfEnabled(args: {
     input: args.input,
     baseUrl: args.baseUrl,
   });
+}
+
+export function appendSignatureOpenTrackingPixelIfEnabled(args: {
+  html: string;
+  org: OrganizationDoc & { signatureOpenTrackingEnabled?: boolean };
+  organizationId: string;
+  employeeId?: string;
+  baseUrl: string;
+}): string {
+  if (!args.org.signatureOpenTrackingEnabled || !args.html.trim()) return args.html;
+  const secret = getSignatureTrackingSecret();
+  if (!secret) return args.html;
+
+  let token: string;
+  try {
+    token = createSignatureOpenToken(
+      { organizationId: args.organizationId, employeeId: args.employeeId },
+      secret
+    );
+  } catch {
+    return args.html;
+  }
+
+  const root = stripTrailingSlash(args.baseUrl.trim());
+  const trackUrl = `${root}/api/track/signature/open?t=${encodeURIComponent(token)}`;
+  const pixel = `<img src="${trackUrl}" width="1" height="1" alt="" style="display:block;width:1px;height:1px;border:0;" />`;
+  return `${args.html}${pixel}`;
 }

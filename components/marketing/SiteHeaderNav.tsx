@@ -13,8 +13,8 @@ export const PRODUCT_NAV = [
   { href: '/templates', label: 'Templates' },
   { href: '/promotional-blocks', label: 'Promotional Blocks' },
   { href: '/analytics', label: 'Analytics' },
-  { href: '/blog', label: 'Blog' },
   { href: '/pricing', label: 'Pricing' },
+  { href: '/blog', label: 'Blog' },
   { href: '/email-health', label: 'Email Health', title: EMAIL_HEALTH_NAV_TITLE },
 ] as const;
 

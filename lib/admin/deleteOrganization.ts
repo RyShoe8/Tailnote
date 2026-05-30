@@ -11,6 +11,7 @@ import { OrganizationModel, type OrganizationDoc } from '@/models/Organization';
 import { OrganizationSubscriptionModel } from '@/models/OrganizationSubscription';
 import { OrganizationUserInviteModel } from '@/models/OrganizationUserInvite';
 import { SignatureClickEventModel } from '@/models/SignatureClickEvent';
+import { SignatureOpenEventModel } from '@/models/SignatureOpenEvent';
 import { SignatureTemplateModel } from '@/models/SignatureTemplate';
 
 export class DeleteOrganizationError extends Error {
@@ -69,6 +70,7 @@ export async function deleteOrganization(organizationId: string): Promise<void> 
   await OrganizationSubscriptionModel.deleteMany({ organizationId: orgId });
   await OrganizationUserInviteModel.deleteMany({ organizationId: orgId });
   await SignatureClickEventModel.deleteMany({ organizationId: orgId });
+  await SignatureOpenEventModel.deleteMany({ organizationId: orgId });
   await FeedbackSubmissionModel.deleteMany({ organizationId: organizationId });
 
   await OrganizationModel.findByIdAndDelete(orgId);

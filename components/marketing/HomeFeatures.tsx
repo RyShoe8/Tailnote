@@ -22,9 +22,9 @@ const FEATURES = [
   },
   {
     icon: BarChart3,
-    title: 'Click analytics',
+    title: 'Click and open analytics',
     description:
-      'See which promos, logos, and CTAs get clicks so you can refine what you promote in every outbound email.',
+      'Track link clicks by type and optional opens when recipients load images—see which promos, logos, and CTAs actually get attention.',
   },
   {
     icon: Mail,
@@ -49,8 +49,8 @@ export function HomeFeatures() {
           A marketing channel in every send
         </h2>
         <p className="mt-4 text-pretty text-muted-foreground">
-          Tailnote combines on-brand email signatures with promotional blocks and measurable links,
-          so every employee email promotes your business without extra tools.
+          Tailnote combines on-brand email signatures with promotional blocks, measurable links, and
+          optional open tracking—so every employee email promotes your business without extra tools.
         </p>
       </div>
       <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
