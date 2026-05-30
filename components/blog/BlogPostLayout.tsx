@@ -38,8 +38,9 @@ export function BlogPostLayout({ post, content, headings, relatedPosts }: BlogPo
       ) : null}
 
       <div className="container pb-16 sm:pb-20">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,1fr)_240px] lg:gap-12">
-          <div className="min-w-0 max-w-3xl">
+        <div className="mx-auto grid max-w-6xl lg:grid-cols-[1fr_minmax(0,48rem)_1fr] lg:gap-x-12">
+          <div className="hidden lg:block" aria-hidden="true" />
+          <div className="min-w-0">
             <header className="py-10 sm:py-14">
               <CategoryPill category={post.category} />
               <h1 className="mt-4 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
@@ -77,7 +78,7 @@ export function BlogPostLayout({ post, content, headings, relatedPosts }: BlogPo
             </div>
             <RelatedPosts posts={relatedPosts} />
           </div>
-          <aside className="hidden lg:block">
+          <aside className="hidden min-w-0 lg:block">
             <TableOfContents headings={headings} />
           </aside>
         </div>
@@ -89,9 +90,11 @@ export function BlogPostLayout({ post, content, headings, relatedPosts }: BlogPo
       <StickyCTA />
 
       <nav className="container border-t border-slate-200/80 py-8 text-sm text-muted-foreground">
-        <Link href="/blog" className="font-medium text-primary hover:underline">
-          ← Back to blog
-        </Link>
+        <div className="mx-auto max-w-3xl">
+          <Link href="/blog" className="font-medium text-primary hover:underline">
+            ← Back to blog
+          </Link>
+        </div>
       </nav>
     </article>
   );
