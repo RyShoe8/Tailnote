@@ -26,6 +26,13 @@ export function CopySignatureButton({
     const result = await copyHtmlToClipboard(html);
     onCopyResult?.(result.ok, result.method);
     if (result.ok) {
+      if (result.method === 'html' || result.method === 'text') {
+        void fetch('/api/track/signature/copy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ method: result.method }),
+        }).catch(() => {});
+      }
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2500);
     }

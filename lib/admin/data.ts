@@ -1,7 +1,11 @@
 import mongoose from 'mongoose';
 import { connectMongoose, getMongoDb } from '@/lib/mongoose';
 import { AUTH_USER_COLLECTION } from '@/lib/auth/platformAdmin';
+import { EmployeeModel } from '@/models/Employee';
 import { OrganizationModel } from '@/models/Organization';
+import { SignatureClickEventModel } from '@/models/SignatureClickEvent';
+import { SignatureCopyEventModel } from '@/models/SignatureCopyEvent';
+import { SignatureOpenEventModel } from '@/models/SignatureOpenEvent';
 import { OrganizationSubscriptionModel } from '@/models/OrganizationSubscription';
 import { SubscriptionPlanModel, type SubscriptionPlanDoc } from '@/models/SubscriptionPlan';
 
@@ -142,6 +146,65 @@ export async function listOrganizationsWithUserCounts(): Promise<AdminOrgRow[]> 
     });
   }
   return out;
+}
+
+export type AdminAnalyticsSummary = {
+  totalOrganizations: number;
+  totalUsers: number;
+  mrrCents: number;
+  arrCents: number;
+  totalSignatureCopies: number;
+  totalSignatureClicks: number;
+  totalSignatureOpens: number;
+};
+
+function recurringMonthlyCentsForSubscription(
+  sub: { seats?: number },
+  plan: Pick<SubscriptionPlanDoc, 'interval' | 'basePriceCents' | 'additionalUserPriceCents' | 'includedUsers'>
+): number {
+  if (plan.interval === 'lifetime') return 0;
+  const seats = Math.max(1, Number(sub.seats ?? 1));
+  const included = Math.max(1, Number(plan.includedUsers ?? 1));
+  const overageSeats = Math.max(0, seats - included);
+  const seatOverageCents = overageSeats * Math.max(0, Number(plan.additionalUserPriceCents ?? 0));
+  const totalPeriodCents = Math.max(0, Number(plan.basePriceCents ?? 0)) + seatOverageCents;
+
+  if (plan.interval === 'year') {
+    return Math.round(totalPeriodCents / 12);
+  }
+  return totalPeriodCents;
+}
+
+export async function getAdminAnalyticsSummary(): Promise<AdminAnalyticsSummary> {
+  await connectMongoose();
+
+  const [totalOrganizations, totalUsers, totalSignatureCopies, totalSignatureClicks, totalSignatureOpens, activeSubs] =
+    await Promise.all([
+      OrganizationModel.countDocuments(),
+      EmployeeModel.countDocuments(),
+      SignatureCopyEventModel.countDocuments(),
+      SignatureClickEventModel.countDocuments(),
+      SignatureOpenEventModel.countDocuments(),
+      OrganizationSubscriptionModel.find({ status: { $in: ['active', 'trialing'] } })
+        .populate('subscriptionPlanId')
+        .lean<Array<{ seats?: number; subscriptionPlanId?: SubscriptionPlanDoc | null }>>(),
+    ]);
+
+  const mrrCents = activeSubs.reduce((sum, sub) => {
+    const plan = sub.subscriptionPlanId;
+    if (!plan) return sum;
+    return sum + recurringMonthlyCentsForSubscription(sub, plan);
+  }, 0);
+
+  return {
+    totalOrganizations,
+    totalUsers,
+    mrrCents,
+    arrCents: mrrCents * 12,
+    totalSignatureCopies,
+    totalSignatureClicks,
+    totalSignatureOpens,
+  };
 }
 
 export type AdminUserRow = {

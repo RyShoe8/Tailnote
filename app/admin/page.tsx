@@ -1,17 +1,24 @@
+import { AdminAnalyticsPanel } from '@/components/admin/AdminAnalyticsPanel';
 import { AdminCreateOrganizationForm } from '@/components/admin/AdminCreateOrganizationForm';
 import { AdminOrganizationsTable } from '@/components/admin/AdminOrganizationsTable';
-import { listAssignableSubscriptionPlans, listOrganizationsWithUserCounts } from '@/lib/admin/data';
+import {
+  getAdminAnalyticsSummary,
+  listAssignableSubscriptionPlans,
+  listOrganizationsWithUserCounts,
+} from '@/lib/admin/data';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminOrganizationsPage() {
-  const [organizations, assignablePlans] = await Promise.all([
+  const [analyticsSummary, organizations, assignablePlans] = await Promise.all([
+    getAdminAnalyticsSummary(),
     listOrganizationsWithUserCounts(),
     listAssignableSubscriptionPlans(),
   ]);
 
   return (
     <div className="space-y-6">
+      <AdminAnalyticsPanel summary={analyticsSummary} />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold tracking-tight">Organizations</h2>
