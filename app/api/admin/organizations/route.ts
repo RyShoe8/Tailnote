@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requirePlatformAdminApi } from '@/lib/admin/platformAdminApi';
+import { logError } from '@/lib/logger';
 import { listOrganizationsWithUserCounts } from '@/lib/admin/data';
 import {
   ProvisionOrganizationError,
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
     if (err instanceof ProvisionOrganizationError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
     }
-    console.error('[admin] create organization', err);
+    logError('api/admin/organizations', err);
     return NextResponse.json({ error: 'Could not create organization' }, { status: 500 });
   }
 }

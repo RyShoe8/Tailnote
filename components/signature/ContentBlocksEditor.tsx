@@ -458,8 +458,7 @@ function ImageEditor({
                   if (!res.ok) throw new Error('Upload failed');
                   const data = await res.json();
                   onChange({ imageUrl: data.url });
-                } catch (err) {
-                  console.error(err);
+                } catch {
                   alert('Image upload failed. Please ensure it is < 4MB.');
                 }
               }}

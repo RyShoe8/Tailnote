@@ -5,6 +5,7 @@ import {
   deleteOrganizationUser,
 } from '@/lib/admin/deleteOrganizationUser';
 import { requirePlatformAdminApi } from '@/lib/admin/platformAdminApi';
+import { logError } from '@/lib/logger';
 import { AUTH_USER_COLLECTION, authUserDbFilterBySessionId } from '@/lib/auth/platformAdmin';
 import { connectMongoose, getMongoDb } from '@/lib/mongoose';
 
@@ -74,7 +75,7 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
     if (err instanceof DeleteOrganizationUserError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
     }
-    console.error('[admin] delete user', err);
+    logError('api/admin/users/[id]', err);
     return NextResponse.json({ error: 'Could not delete user' }, { status: 500 });
   }
 }

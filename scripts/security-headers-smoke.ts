@@ -46,4 +46,18 @@ assert.ok(
   'site security headers still include same-origin CORP'
 );
 
+const env = process.env as Record<string, string | undefined>;
+const prevNodeEnv = env.NODE_ENV;
+const prevAppUrl = env.NEXT_PUBLIC_APP_URL;
+env.NODE_ENV = 'production';
+env.NEXT_PUBLIC_APP_URL = 'https://tailnote.io';
+assert.ok(
+  getSecurityHeaders().some((h) => h.key === 'Strict-Transport-Security'),
+  'production HTTPS site includes HSTS'
+);
+if (prevNodeEnv === undefined) delete env.NODE_ENV;
+else env.NODE_ENV = prevNodeEnv;
+if (prevAppUrl === undefined) delete env.NEXT_PUBLIC_APP_URL;
+else env.NEXT_PUBLIC_APP_URL = prevAppUrl;
+
 console.log('security-headers-smoke: ok');

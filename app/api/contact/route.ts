@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
+import { logError } from '@/lib/logger';
 import { connectMongoose } from '@/lib/mongoose';
 import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha/config';
 import { verifyRecaptchaToken } from '@/lib/recaptcha/verify';
+import { isRateLimited } from '@/lib/security/rateLimit';
 import { SecureImageUploadError, uploadSecureImage } from '@/lib/uploads/secureImageUpload';
 import { FeedbackSubmissionModel } from '@/models/FeedbackSubmission';
 
@@ -15,38 +17,13 @@ const MAX_EMAIL = 254;
 const MAX_SUBJECT = 200;
 const MAX_DETAILS = 5000;
 
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT_MAX = 5;
+const CONTACT_RATE_LIMIT = { windowMs: 10 * 60 * 1000, max: 5 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-const rateBuckets = new Map<string, number[]>();
 
 function trimField(value: FormDataEntryValue | null, maxLen: number): string {
   if (typeof value !== 'string') return '';
   return value.trim().slice(0, maxLen);
-}
-
-function ipFromHeaders(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for') ?? '';
-  const first = forwarded.split(',')[0]?.trim();
-  if (first) return first;
-  const realIp = request.headers.get('x-real-ip')?.trim();
-  return realIp || 'unknown';
-}
-
-function takeRateSlot(ip: string): boolean {
-  const now = Date.now();
-  const windowStart = now - RATE_LIMIT_WINDOW_MS;
-  const existing = rateBuckets.get(ip) ?? [];
-  const recent = existing.filter((ts) => ts > windowStart);
-  if (recent.length >= RATE_LIMIT_MAX) {
-    rateBuckets.set(ip, recent);
-    return false;
-  }
-  recent.push(now);
-  rateBuckets.set(ip, recent);
-  return true;
 }
 
 export async function POST(request: Request) {
@@ -62,8 +39,7 @@ export async function POST(request: Request) {
     return new NextResponse(null, { status: 204 });
   }
 
-  const ip = ipFromHeaders(request);
-  if (!takeRateSlot(ip)) {
+  if (isRateLimited(request, CONTACT_RATE_LIMIT)) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
@@ -107,7 +83,7 @@ export async function POST(request: Request) {
       if (e instanceof SecureImageUploadError) {
         return NextResponse.json({ error: e.message }, { status: e.status });
       }
-      console.error('Contact image upload failed:', e);
+      logError('api/contact', e);
       return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
     }
   }

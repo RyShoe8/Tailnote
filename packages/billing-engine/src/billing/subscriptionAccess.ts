@@ -16,6 +16,11 @@ export function stripeBillingEnabled(): boolean {
   return Boolean(process.env.STRIPE_SECRET_KEY);
 }
 
+/** Dev-only bypass when Stripe is not configured; production always enforces subscription status. */
+function stripeDevBypass(): boolean {
+  return !stripeBillingEnabled() && process.env.NODE_ENV !== 'production';
+}
+
 export function isActiveSubscriptionStatus(
   status: OrganizationSubscriptionStatus | string | null | undefined
 ): boolean {
@@ -26,7 +31,7 @@ export function isOrganizationPaid(
   org: { subscriptionStatus?: string | null } | null | undefined
 ): boolean {
   if (!org) return false;
-  if (!stripeBillingEnabled()) return true;
+  if (stripeDevBypass()) return true;
   return isActiveSubscriptionStatus(org.subscriptionStatus);
 }
 
@@ -45,7 +50,7 @@ export function getOrganizationPlanTier(org: PlanLike | null | undefined): Organ
   if (!org) return 'free';
   const tierFromSlug = planTierFromPlanSlug(org.plan);
   if (tierFromSlug === 'free') return 'free';
-  if (!stripeBillingEnabled()) return tierFromSlug;
+  if (stripeDevBypass()) return tierFromSlug;
   return isOrganizationPaid(org) ? tierFromSlug : 'free';
 }
 

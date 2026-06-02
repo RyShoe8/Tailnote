@@ -3,15 +3,13 @@ import { z } from 'zod';
 import { subscribeToBrevoNewsletter } from '@/lib/email/brevoNewsletter';
 import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha/config';
 import { verifyRecaptchaToken } from '@/lib/recaptcha/verify';
+import { isRateLimited } from '@/lib/security/rateLimit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT_MAX = 5;
+const NEWSLETTER_RATE_LIMIT = { windowMs: 10 * 60 * 1000, max: 5 };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-const rateBuckets = new Map<string, number[]>();
 
 const BodySchema = z.object({
   email: z.string().trim().min(1).max(254),
@@ -22,27 +20,6 @@ const BodySchema = z.object({
   company: z.string().max(200).optional(),
   recaptchaToken: z.string().max(4096).optional(),
 });
-
-function ipFromHeaders(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for') ?? '';
-  const first = forwarded.split(',')[0]?.trim();
-  if (first) return first;
-  return request.headers.get('x-real-ip')?.trim() || 'unknown';
-}
-
-function takeRateSlot(ip: string): boolean {
-  const now = Date.now();
-  const windowStart = now - RATE_LIMIT_WINDOW_MS;
-  const existing = rateBuckets.get(ip) ?? [];
-  const recent = existing.filter((ts) => ts > windowStart);
-  if (recent.length >= RATE_LIMIT_MAX) {
-    rateBuckets.set(ip, recent);
-    return false;
-  }
-  recent.push(now);
-  rateBuckets.set(ip, recent);
-  return true;
-}
 
 export async function POST(request: Request) {
   let json: unknown;
@@ -63,8 +40,7 @@ export async function POST(request: Request) {
     return new NextResponse(null, { status: 204 });
   }
 
-  const ip = ipFromHeaders(request);
-  if (!takeRateSlot(ip)) {
+  if (isRateLimited(request, NEWSLETTER_RATE_LIMIT)) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 

@@ -24,6 +24,9 @@ export async function connectMongoose(): Promise<typeof mongoose> {
   }
   g.mongooseConn!.conn = await g.mongooseConn!.promise;
 
+  const { runProductionEnvChecks } = await import('@/lib/env/productionChecks');
+  runProductionEnvChecks();
+
   const { ensureStartupMigrations } = await import('@/lib/migrations/startup');
   await ensureStartupMigrations();
 

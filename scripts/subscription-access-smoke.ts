@@ -1,12 +1,40 @@
 import {
+  getOrganizationPlanTier,
+  hasAnalytics,
+  hasBrandingRemoval,
   isActiveSubscriptionStatus,
+  isFreePlan,
   isOrganizationPaid,
+  isPaidPlan,
   mapSubscriptionStatus,
   organizationPlanForStripeStatus,
 } from '../lib/billing/subscriptionAccess';
 
 function assert(cond: boolean, msg: string) {
   if (!cond) throw new Error(msg);
+}
+
+const procEnv = process.env as Record<string, string | undefined>;
+const prevNodeEnv = procEnv.NODE_ENV;
+const prevStripeKey = procEnv.STRIPE_SECRET_KEY;
+
+function withEnv(
+  patch: { NODE_ENV?: string; STRIPE_SECRET_KEY?: string },
+  fn: () => void
+) {
+  if (patch.NODE_ENV !== undefined) procEnv.NODE_ENV = patch.NODE_ENV;
+  if (patch.STRIPE_SECRET_KEY !== undefined) {
+    if (patch.STRIPE_SECRET_KEY) procEnv.STRIPE_SECRET_KEY = patch.STRIPE_SECRET_KEY;
+    else delete procEnv.STRIPE_SECRET_KEY;
+  }
+  try {
+    fn();
+  } finally {
+    if (prevNodeEnv === undefined) delete procEnv.NODE_ENV;
+    else procEnv.NODE_ENV = prevNodeEnv;
+    if (prevStripeKey === undefined) delete procEnv.STRIPE_SECRET_KEY;
+    else procEnv.STRIPE_SECRET_KEY = prevStripeKey;
+  }
 }
 
 assert(isActiveSubscriptionStatus('active'), 'active');
@@ -21,9 +49,29 @@ assert(organizationPlanForStripeStatus('canceled') === 'none', 'plan canceled');
 assert(mapSubscriptionStatus('past_due') === 'past_due', 'map past_due');
 assert(mapSubscriptionStatus('unpaid') === 'canceled', 'map unpaid');
 
-assert(
-  isOrganizationPaid({ subscriptionStatus: 'active' }),
-  'paid when active and stripe env assumed in CI may vary'
-);
+withEnv({ NODE_ENV: 'production', STRIPE_SECRET_KEY: '' }, () => {
+  const inactivePro = { plan: 'pro', subscriptionStatus: 'none' as const };
+  assert(!isOrganizationPaid(inactivePro), 'production without Stripe: inactive pro not paid');
+  assert(isFreePlan(inactivePro), 'production without Stripe: inactive pro is free tier');
+  assert(!hasAnalytics(inactivePro), 'production without Stripe: no analytics');
+  assert(!hasBrandingRemoval(inactivePro), 'production without Stripe: no branding removal');
+  assert(
+    getOrganizationPlanTier(inactivePro) === 'free',
+    'production without Stripe: tier from status not slug'
+  );
+
+  const activePro = { plan: 'pro', subscriptionStatus: 'active' as const };
+  assert(isOrganizationPaid(activePro), 'production without Stripe: active still paid');
+  assert(isPaidPlan(activePro), 'production without Stripe: active is paid plan');
+});
+
+withEnv({ NODE_ENV: 'development', STRIPE_SECRET_KEY: '' }, () => {
+  const inactivePro = { plan: 'pro', subscriptionStatus: 'none' as const };
+  assert(isOrganizationPaid(inactivePro), 'dev without Stripe: permissive paid bypass');
+  assert(
+    getOrganizationPlanTier(inactivePro) === 'team',
+    'dev without Stripe: tier from slug'
+  );
+});
 
 console.log('subscription-access-smoke: all checks passed.');

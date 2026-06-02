@@ -2,6 +2,7 @@ import '@/lib/billing-engine';
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { z } from 'zod';
+import { logError } from '@/lib/logger';
 import { connectMongoose } from '@/lib/mongoose';
 import { getServerSession } from '@/lib/auth/session';
 import { OrganizationModel } from '@/models/Organization';
@@ -148,7 +149,7 @@ export async function POST(request: Request) {
 
       return NextResponse.json({ organization: org.toObject(), checkoutUrl });
     } catch (err) {
-      console.error('[onboarding] organization setup failed', err);
+      logError('api/onboarding/organization', err);
       await rollbackOrg(org._id);
       const legacySlug = mapLegacyOrganizationSlugIndexError(err);
       const message = legacySlug
@@ -166,7 +167,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: message }, { status });
     }
   } catch (err) {
-    console.error('[onboarding] unhandled error', err);
+    logError('api/onboarding/organization', err);
     const legacySlug = mapLegacyOrganizationSlugIndexError(err);
     if (legacySlug) {
       return NextResponse.json({ error: legacyOrganizationSlugIndexMessage() }, { status: 503 });

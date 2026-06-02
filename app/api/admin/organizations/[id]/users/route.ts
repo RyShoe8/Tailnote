@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requirePlatformAdminApi } from '@/lib/admin/platformAdminApi';
+import { logError } from '@/lib/logger';
 import {
   CreateOrganizationUserInviteError,
   createOrganizationUserInvite,
@@ -86,7 +87,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     if (err instanceof CreateOrganizationUserInviteError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
     }
-    console.error('[admin] create organization user invite', err);
+    logError('api/admin/organizations/[id]/users', err);
     return NextResponse.json({ error: 'Could not send invitation' }, { status: 500 });
   }
 }

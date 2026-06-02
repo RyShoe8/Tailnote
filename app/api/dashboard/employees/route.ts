@@ -2,6 +2,7 @@ import '@/lib/billing-engine';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { randomBytes } from 'crypto';
+import { logError } from '@/lib/logger';
 import { connectMongoose } from '@/lib/mongoose';
 import { getServerSession } from '@/lib/auth/session';
 import { OrganizationModel } from '@/models/Organization';
@@ -150,7 +151,7 @@ export async function POST(request: Request) {
     org
   );
   if (!inviteResult.ok) {
-    console.error('[employees] invite email failed', inviteResult.error);
+    logError('api/dashboard/employees', inviteResult.error);
   }
 
   return NextResponse.json({

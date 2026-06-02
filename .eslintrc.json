@@ -1,3 +1,31 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "no-console": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["scripts/**/*", "packages/**/src/**/*.test.ts"],
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
+      "files": ["lib/logger.ts", "lib/env/**/*.ts", "lib/migrations/**/*.ts"],
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
+      "files": [
+        "lib/**/*.ts",
+        "lib/billing-engine.ts",
+        "app/**/error.tsx",
+        "app/global-error.tsx"
+      ],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
 }

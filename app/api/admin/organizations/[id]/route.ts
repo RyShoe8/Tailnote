@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { assignOrganizationPlan } from '@/lib/admin/assignOrganizationPlan';
 import { DeleteOrganizationError, deleteOrganization } from '@/lib/admin/deleteOrganization';
 import { requirePlatformAdminApi } from '@/lib/admin/platformAdminApi';
+import { logError } from '@/lib/logger';
 import { isValidObjectIdString } from '@/lib/admin/data';
 import { connectMongoose } from '@/lib/mongoose';
 import { OrganizationModel } from '@/models/Organization';
@@ -127,7 +128,7 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
     if (err instanceof DeleteOrganizationError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
     }
-    console.error('[admin] delete organization', err);
+    logError('api/admin/organizations/[id]', err);
     return NextResponse.json({ error: 'Could not delete organization' }, { status: 500 });
   }
 }

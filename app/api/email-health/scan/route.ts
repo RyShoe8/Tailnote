@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { logError } from '@/lib/logger';
 import { DomainValidationError, parseDomainInput } from '@/lib/email-health/domain';
+import { ipFromRequestHeaders, isRateLimited } from '@/lib/security/rateLimit';
 import { isScanFresh } from '@/lib/email-health/cache';
 import { persistEmailHealthScan } from '@/lib/email-health/persist';
 import { runEmailHealthScan } from '@/lib/email-health/runScan';
@@ -16,34 +18,10 @@ const bodySchema = z.object({
   force: z.boolean().optional(),
 });
 
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT_MAX = 10;
-const rateBuckets = new Map<string, number[]>();
-
-function ipFromHeaders(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for') ?? '';
-  const first = forwarded.split(',')[0]?.trim();
-  if (first) return first;
-  return request.headers.get('x-real-ip')?.trim() || 'unknown';
-}
-
-function takeRateSlot(ip: string): boolean {
-  const now = Date.now();
-  const windowStart = now - RATE_LIMIT_WINDOW_MS;
-  const existing = rateBuckets.get(ip) ?? [];
-  const recent = existing.filter((ts) => ts > windowStart);
-  if (recent.length >= RATE_LIMIT_MAX) {
-    rateBuckets.set(ip, recent);
-    return false;
-  }
-  recent.push(now);
-  rateBuckets.set(ip, recent);
-  return true;
-}
+const EMAIL_HEALTH_RATE_LIMIT = { windowMs: 10 * 60 * 1000, max: 10 };
 
 export async function POST(request: Request) {
-  const ip = ipFromHeaders(request);
-  if (!takeRateSlot(ip)) {
+  if (isRateLimited(request, EMAIL_HEALTH_RATE_LIMIT)) {
     return NextResponse.json(
       { error: 'Too many scans. Please wait a few minutes and try again.' },
       { status: 429 }
@@ -92,7 +70,7 @@ export async function POST(request: Request) {
   try {
     const report = await runEmailHealthScan(domain);
     const userAgent = request.headers.get('user-agent') ?? undefined;
-    await persistEmailHealthScan(report, { ip, userAgent });
+    await persistEmailHealthScan(report, { ip: ipFromRequestHeaders(request), userAgent });
 
     return NextResponse.json({
       cached: false,
@@ -103,7 +81,7 @@ export async function POST(request: Request) {
       scannedAt: report.scannedAt,
     });
   } catch (err) {
-    console.error('[email-health] scan failed', err);
+    logError('api/email-health/scan', err);
     return NextResponse.json(
       { error: 'Scan failed. Please try again in a moment.' },
       { status: 500 }

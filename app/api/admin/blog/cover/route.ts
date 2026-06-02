@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requirePlatformAdminApi } from '@/lib/admin/platformAdminApi';
+import { logError } from '@/lib/logger';
 import { SecureImageUploadError, uploadSecureImage } from '@/lib/uploads/secureImageUpload';
 
 export const dynamic = 'force-dynamic';
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
     if (e instanceof SecureImageUploadError) {
       return NextResponse.json({ error: e.message }, { status: e.status });
     }
-    console.error('Blog cover upload failed:', e);
+    logError('api/admin/blog/cover', e);
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }

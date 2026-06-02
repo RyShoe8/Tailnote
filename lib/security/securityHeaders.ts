@@ -81,8 +81,16 @@ const PERMISSIONS_POLICY = [
   'usb=()',
 ].join(', ');
 
+function productionHttpsSite(): boolean {
+  return (
+    process.env.NODE_ENV === 'production' &&
+    !process.env.NEXT_PUBLIC_APP_URL?.includes('localhost') &&
+    !process.env.NEXT_PUBLIC_APP_URL?.includes('127.0.0.1')
+  );
+}
+
 export function getSecurityHeaders(): SecurityHeader[] {
-  return [
+  const headers: SecurityHeader[] = [
     { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
     { key: 'X-Content-Type-Options', value: 'nosniff' },
     { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
@@ -92,6 +100,13 @@ export function getSecurityHeaders(): SecurityHeader[] {
     { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
     { key: 'Content-Security-Policy', value: buildContentSecurityPolicy() },
   ];
+  if (productionHttpsSite()) {
+    headers.push({
+      key: 'Strict-Transport-Security',
+      value: 'max-age=63072000; includeSubDomains; preload',
+    });
+  }
+  return headers;
 }
 
 /** Public static files embedded cross-origin in email signatures (Gmail, Outlook). */

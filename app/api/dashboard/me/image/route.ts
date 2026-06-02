@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logError } from '@/lib/logger';
 import { connectMongoose } from '@/lib/mongoose';
 import { getServerSession } from '@/lib/auth/session';
 import { SecureImageUploadError, uploadSecureImage } from '@/lib/uploads/secureImageUpload';
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
     if (e instanceof SecureImageUploadError) {
       return NextResponse.json({ error: e.message }, { status: e.status });
     }
-    console.error('Image upload failed:', e);
+    logError('api/dashboard/me/image', e);
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }

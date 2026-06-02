@@ -11,9 +11,6 @@ let posthogInitialized = false;
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    if (process.env.NODE_ENV === 'production' && !key) {
-      console.warn('[analytics] NEXT_PUBLIC_POSTHOG_KEY is not set in production.');
-    }
     if (!key || posthogInitialized) return;
     posthogInitialized = true;
     posthog.init(key, {
