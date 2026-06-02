@@ -16,6 +16,7 @@ import { PricingPlanCard } from 'billing-engine/next/components';
 import type { PublicPricingPlan } from 'billing-engine';
 import type { EmployeeLimitInfo } from 'billing-engine';
 import { formatUsd, intervalSuffix } from 'billing-engine/pricing-display';
+import { hasBrandingRemoval } from 'billing-engine';
 
 type BillingSummary = {
   renewsAt?: string | null;
@@ -114,12 +115,21 @@ function BillingPageInner() {
   }, [loadBilling]);
 
   const isOwner = viewerRole === 'owner';
+  const freePlan = !hasBrandingRemoval({
+    plan: typeof org?.plan === 'string' ? org.plan : '',
+    subscriptionStatus: typeof org?.subscriptionStatus === 'string' ? org.subscriptionStatus : '',
+  });
 
   const changePlanOptions = useMemo(() => {
-    if (!currentPlan) return availablePlans.filter((p) => !p.soldOut);
-    return availablePlans.filter(
+    const candidates = !currentPlan
+      ? availablePlans.filter((p) => !p.soldOut)
+      : availablePlans.filter(
       (p) => p.id !== currentPlan.id && p.slug !== currentPlan.slug && !p.soldOut
     );
+    if (currentPlan && currentPlan.basePriceCents > 0) {
+      return candidates.filter((p) => p.basePriceCents > 0);
+    }
+    return candidates;
   }, [availablePlans, currentPlan]);
 
   async function cancelSubscription() {
@@ -205,6 +215,19 @@ function BillingPageInner() {
           Manage your subscription, plan, and team seats.
         </p>
       </div>
+      {freePlan ? (
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">
+              Upgrade to remove Tailnote branding and unlock analytics.{' '}
+              <Link href="/dashboard/upgrade" className="underline underline-offset-4">
+                View upgrade options
+              </Link>
+              .
+            </p>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {loadError ? (
         <p className="text-sm text-destructive" role="alert">

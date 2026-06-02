@@ -4,6 +4,7 @@ import { isValidObjectIdString } from '../utils/objectId';
 import {
   CheckoutSessionError,
   createCheckoutSessionForOrganization,
+  isFreeSubscriptionPlan,
   validatePlanForCheckout,
 } from './createCheckoutSession';
 import { getEffectiveSeatCount } from './employeeLimits';
@@ -44,6 +45,28 @@ export async function changeStripeSubscriptionPlan(args: {
   const targetPlan = await SubscriptionPlanModel.findById(planId).lean<SubscriptionPlanDoc>();
   if (!targetPlan || targetPlan.archived) {
     throw new ChangePlanError('Plan not found', 404);
+  }
+
+  if (isFreeSubscriptionPlan(targetPlan)) {
+    const OrganizationModel = getOrganizationModel();
+    await OrganizationSubscriptionModel.findOneAndUpdate(
+      { organizationId: args.org._id },
+      {
+        $set: {
+          subscriptionPlanId: new mongoose.Types.ObjectId(String(targetPlan._id)),
+          status: 'incomplete',
+        },
+      },
+      { upsert: true }
+    );
+    await OrganizationModel.findByIdAndUpdate(args.org._id, {
+      $set: { plan: 'free', subscriptionStatus: 'none', stripeSubscriptionId: '' },
+    });
+    return {
+      mode: 'updated',
+      subscriptionPlanId: String(targetPlan._id),
+      planSlug: 'free',
+    };
   }
 
   const orgId = args.org._id;

@@ -6,7 +6,6 @@ import { getServerSession } from '@/lib/auth/session';
 import { connectMongoose } from '@/lib/mongoose';
 import { getPublicPricingPlans } from 'billing-engine';
 import { OrganizationModel } from '@/models/Organization';
-import { isOrganizationPaid } from 'billing-engine';
 import { findPendingInviteByEmail } from '@/lib/employees/findPendingInviteByEmail';
 
 export const dynamic = 'force-dynamic';
@@ -35,18 +34,6 @@ async function OnboardingContent() {
   if (user.organizationId) {
     await connectMongoose();
     const org = await OrganizationModel.findById(user.organizationId);
-    if (org && isOrganizationPaid(org)) {
-      redirect('/dashboard');
-    }
-    if (org && user.role === 'owner') {
-      return (
-        <OnboardingForm
-          plans={plans}
-          resumeMode
-          organizationName={String(org.name ?? org.companyName ?? '')}
-        />
-      );
-    }
     if (org) {
       redirect('/dashboard');
     }

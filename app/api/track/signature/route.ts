@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { isOrganizationPaid } from 'billing-engine';
+import { hasAnalytics } from 'billing-engine';
 import { connectMongoose } from '@/lib/mongoose';
 import { OrganizationModel } from '@/models/Organization';
 import { verifySignatureTrackingToken, isAllowedTrackingDestination } from '@/lib/signatureTrackingToken';
@@ -30,8 +31,11 @@ export async function GET(request: Request) {
 
   await connectMongoose();
   const org = await OrganizationModel.findById(payload.oid)
-    .select('subscriptionStatus')
-    .lean<{ subscriptionStatus?: string }>();
+    .select('plan subscriptionStatus')
+    .lean<{ plan?: string; subscriptionStatus?: string }>();
+  if (!hasAnalytics(org)) {
+    return NextResponse.redirect(payload.d, 302);
+  }
   if (!isOrganizationPaid(org)) {
     const billingUrl = new URL('/dashboard/billing', url.origin).toString();
     return NextResponse.redirect(billingUrl, 302);

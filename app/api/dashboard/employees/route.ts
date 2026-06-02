@@ -7,7 +7,6 @@ import { getServerSession } from '@/lib/auth/session';
 import { OrganizationModel } from '@/models/Organization';
 import { EmployeeModel } from '@/models/Employee';
 import { SignatureTemplateModel } from '@/models/SignatureTemplate';
-import { canUsePaidFeatures } from '@/lib/orgAccess';
 import { getDefaultTemplateForOrg } from '@/lib/seedOrgTemplates';
 import { findOrgTemplateWithAvailablePreset } from '@/lib/templates/validateOrgTemplate';
 import { syncStripeSubscriptionSeatsForOrganization } from 'billing-engine';
@@ -32,9 +31,6 @@ async function requireOrg() {
   await connectMongoose();
   const org = await OrganizationModel.findById(user.organizationId);
   if (!org) return { error: NextResponse.json({ error: 'Organization not found' }, { status: 404 }) };
-  if (!canUsePaidFeatures(org)) {
-    return { error: NextResponse.json({ error: 'Subscription required' }, { status: 402 }) };
-  }
   return { org, user };
 }
 

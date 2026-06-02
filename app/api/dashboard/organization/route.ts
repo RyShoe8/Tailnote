@@ -3,6 +3,7 @@ import { connectMongoose } from '@/lib/mongoose';
 import { getServerSession } from '@/lib/auth/session';
 import { OrganizationModel } from '@/models/Organization';
 import { unsetLegacyOrgAddressFields } from '@/lib/org/unsetLegacyOrgAddressFields';
+import { hasAnalytics } from 'billing-engine';
 import {
   isAllowedOrgLogoUrl,
   orgLogoUrlValidationMessage,
@@ -179,6 +180,19 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'logoShape must be rectangle or circle' }, { status: 400 });
     }
     $set.logoShape = shape;
+  }
+
+  const analyticsEnabled = hasAnalytics({
+    plan: String(org.plan ?? ''),
+    subscriptionStatus: String(org.subscriptionStatus ?? ''),
+  });
+  if (!analyticsEnabled) {
+    if ($set.signatureClickTrackingEnabled !== undefined) {
+      $set.signatureClickTrackingEnabled = false;
+    }
+    if ($set.signatureOpenTrackingEnabled !== undefined) {
+      $set.signatureOpenTrackingEnabled = false;
+    }
   }
 
   if (Object.keys($set).length === 0) {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { isOrganizationPaid } from 'billing-engine';
+import { hasAnalytics } from 'billing-engine';
 import { connectMongoose } from '@/lib/mongoose';
 import { OrganizationModel } from '@/models/Organization';
 import { SignatureOpenEventModel } from '@/models/SignatureOpenEvent';
@@ -42,9 +43,9 @@ export async function GET(request: Request) {
 
   await connectMongoose();
   const org = await OrganizationModel.findById(payload.oid)
-    .select('subscriptionStatus signatureOpenTrackingEnabled')
-    .lean<{ subscriptionStatus?: string; signatureOpenTrackingEnabled?: boolean }>();
-  if (!org || !isOrganizationPaid(org) || !org.signatureOpenTrackingEnabled) {
+    .select('plan subscriptionStatus signatureOpenTrackingEnabled')
+    .lean<{ plan?: string; subscriptionStatus?: string; signatureOpenTrackingEnabled?: boolean }>();
+  if (!org || !hasAnalytics(org) || !isOrganizationPaid(org) || !org.signatureOpenTrackingEnabled) {
     return pixelResponse();
   }
 

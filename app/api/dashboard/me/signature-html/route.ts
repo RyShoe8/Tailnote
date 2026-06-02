@@ -17,7 +17,6 @@ import {
 import { resolveEmployeeContentBlocks } from '@/lib/org/resolveEmployeeContentBlocks';
 import { engineTemplateFromStoredConfig, type TemplatePresetId } from '@/lib/email/templatePresets';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
-import { assertOrganizationSubscriptionPaid } from '@/lib/dashboard/subscriptionRequired';
 import {
   appendSignatureClickTrackingIfEnabled,
   appendSignatureOpenTrackingPixelIfEnabled,
@@ -27,6 +26,7 @@ import {
   orgLogoUrlValidationMessage,
 } from '@/lib/org/validateOrgLogoUrl';
 import { vcardDownloadUrl } from '@/lib/vcard/vcardDownloadUrl';
+import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 
 export const dynamic = 'force-dynamic';
 
@@ -110,8 +110,6 @@ export async function POST(request: Request) {
   if (!org) {
     return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
   }
-  const subErr = assertOrganizationSubscriptionPaid(org);
-  if (subErr) return subErr;
 
   const tmpl = await SignatureTemplateModel.findOne({
     _id: parsed.data.templateId,
@@ -276,6 +274,10 @@ export async function POST(request: Request) {
     employeeId: employeeIdForTracking,
     input: renderInput,
     baseUrl: publicSiteOrigin,
+  });
+  html = appendSignatureAttributionIfNeeded({
+    html,
+    org,
   });
   html = appendSignatureOpenTrackingPixelIfEnabled({
     html,

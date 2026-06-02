@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {
   renderSignature,
@@ -34,7 +35,8 @@ import { CopySignatureButton } from '@/components/signature/CopySignatureButton'
 import { SignatureInstallPanel } from '@/components/signature/SignatureInstallPanel';
 import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
-import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
+import { hasAnalytics, hasBrandingRemoval } from '@/lib/billing/subscriptionAccess';
+import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 
 type OrgResponse = {
   companyName?: string;
@@ -270,11 +272,20 @@ export function SignatureWorkspace() {
 
   const html = useMemo(() => {
     if (!engineTemplate) return '';
-    return renderSignature({
+    const rendered = renderSignature({
       profile,
       brand: { ...brand, contentBlocks },
       template: engineTemplate,
       publicSiteOrigin: getSignatureAssetOrigin(),
+    });
+    return appendSignatureAttributionIfNeeded({
+      html: rendered,
+      org: org
+        ? {
+            plan: org.plan,
+            subscriptionStatus: org.subscriptionStatus,
+          }
+        : null,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- assetOriginNonce forces post-mount recompute so preview URLs use window origin, not SSR fallback
   }, [profile, brand, engineTemplate, assetOriginNonce]);
@@ -282,7 +293,15 @@ export function SignatureWorkspace() {
   const contentBlocksHash = useMemo(() => JSON.stringify(contentBlocks), [contentBlocks]);
 
   useEffect(() => {
-    if (!org?.signatureClickTrackingEnabled || !selectedTemplateId || !engineTemplate) {
+    if (
+      !org?.signatureClickTrackingEnabled ||
+      !hasAnalytics({
+        plan: org?.plan,
+        subscriptionStatus: org?.subscriptionStatus,
+      }) ||
+      !selectedTemplateId ||
+      !engineTemplate
+    ) {
       setTrackedHtml(null);
       return;
     }
@@ -381,21 +400,13 @@ export function SignatureWorkspace() {
 
   const previewHtml = trackedHtml ?? html;
 
-  const canCopy =
-    isOrganizationPaid(
-      org
-        ? {
-            subscriptionStatus: org.subscriptionStatus as
-              | 'none'
-              | 'active'
-              | 'trialing'
-              | 'past_due'
-              | 'canceled'
-              | 'incomplete',
-          }
-        : null
-    ) &&
-    Boolean(profile.firstName.trim() && profile.lastName.trim() && profile.email.trim() && engineTemplate);
+  const canCopy = Boolean(
+    profile.firstName.trim() && profile.lastName.trim() && profile.email.trim() && engineTemplate
+  );
+  const showUpgradeNotice = !hasBrandingRemoval({
+    plan: org?.plan,
+    subscriptionStatus: org?.subscriptionStatus,
+  });
 
   const patchSignatureProfile = async (opts?: { includeBlocks?: boolean; includeTemplate?: boolean }) => {
     const includeBlocks = opts?.includeBlocks === true;
@@ -618,6 +629,15 @@ export function SignatureWorkspace() {
     >
       {showEditColumn ? (
       <div className="lg:col-span-5 xl:col-span-4 space-y-6 min-w-0">
+        {showUpgradeNotice ? (
+          <div className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
+            Upgrade to remove Tailnote branding and unlock analytics.{' '}
+            <Link href="/dashboard/upgrade" className="underline underline-offset-4">
+              View upgrade options
+            </Link>
+            .
+          </div>
+        ) : null}
         <div className="flex gap-2 pb-2 overflow-x-auto border-b hide-scrollbar">
           {canSeeBrandTab ? (
             <button onClick={() => setActiveTab('brand')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'brand' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Brand</button>
@@ -914,7 +934,10 @@ export function SignatureWorkspace() {
         <Card className="shadow-xl border-primary/10 max-w-full min-w-0">
         <CardHeader>
           <CardTitle>Live preview</CardTitle>
-          <CardDescription>See your changes in real time.</CardDescription>
+          <CardDescription>
+            See your changes in real time.
+            {showUpgradeNotice ? ' Free plans include Powered by Tailnote attribution.' : ''}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 max-w-full min-w-0 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain">
           <div className="min-w-0 overflow-hidden select-all [&_.signature-email-preview]:select-all">

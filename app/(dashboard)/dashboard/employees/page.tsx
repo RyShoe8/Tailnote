@@ -4,8 +4,9 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from '@/lib/auth/session';
 import { connectMongoose } from '@/lib/mongoose';
 import { EmployeeModel } from '@/models/Employee';
+import { OrganizationModel } from '@/models/Organization';
 import { Button } from '@/components/ui/button';
-import { getEmployeeLimitsForOrganization } from 'billing-engine';
+import { getEmployeeLimitsForOrganization, hasBrandingRemoval } from 'billing-engine';
 import { EmployeesList, type EmployeeListItem } from '@/components/dashboard/EmployeesList';
 
 export default async function EmployeesPage() {
@@ -14,18 +15,23 @@ export default async function EmployeesPage() {
   const user = session.user as { organizationId?: string; role?: string };
   if (!user.organizationId) redirect('/onboarding');
   await connectMongoose();
-  const [employees, limits] = await Promise.all([
+  const [employees, limits, org] = await Promise.all([
     EmployeeModel.find({ organizationId: user.organizationId })
       .sort({ createdAt: -1 })
       .lean(),
     getEmployeeLimitsForOrganization(user.organizationId),
+    OrganizationModel.findById(user.organizationId)
+      .select('plan subscriptionStatus')
+      .lean<{ plan?: string; subscriptionStatus?: string } | null>(),
   ]);
 
   const canManage = user.role === 'owner' || user.role === 'admin';
 
+  const freePlan = !hasBrandingRemoval(org);
+
   const limitMessage =
     !limits.canAddMore && limits.maxEmployees !== null
-      ? `Your plan includes ${limits.maxEmployees} user${limits.maxEmployees === 1 ? '' : 's'}. Choose a plan with additional users on Billing to add more.`
+      ? `Your plan includes ${limits.maxEmployees} user${limits.maxEmployees === 1 ? '' : 's'}. Upgrade to a paid plan to add more.`
       : null;
 
   const list: EmployeeListItem[] = employees.map((e) => ({
@@ -55,7 +61,18 @@ export default async function EmployeesPage() {
         )}
       </div>
       {limitMessage ? (
-        <p className="text-sm text-muted-foreground rounded-md border border-dashed p-3">{limitMessage}</p>
+        <p className="text-sm text-muted-foreground rounded-md border border-dashed p-3">
+          {limitMessage}{' '}
+          <Link href="/dashboard/upgrade" className="underline underline-offset-4">
+            Upgrade now
+          </Link>
+          .
+        </p>
+      ) : null}
+      {freePlan ? (
+        <p className="text-xs text-muted-foreground">
+          Free plans support one user. Upgrade to unlock team management and analytics.
+        </p>
       ) : null}
       <div className="border rounded-lg divide-y overflow-hidden">
         <EmployeesList employees={list} canManage={canManage} />

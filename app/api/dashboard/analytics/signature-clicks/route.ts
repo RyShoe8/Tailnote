@@ -5,6 +5,8 @@ import { SignatureClickEventModel } from '@/models/SignatureClickEvent';
 import { SignatureOpenEventModel } from '@/models/SignatureOpenEvent';
 import { EmployeeModel } from '@/models/Employee';
 import { resolveViewerEmployeeId } from '@/lib/analytics/resolveViewerEmployee';
+import { OrganizationModel } from '@/models/Organization';
+import { requireAnalytics } from '@/lib/dashboard/analyticsRequired';
 import mongoose from 'mongoose';
 
 export const dynamic = 'force-dynamic';
@@ -49,6 +51,25 @@ export async function GET(request: Request) {
 
   await connectMongoose();
   const oid = new mongoose.Types.ObjectId(user.organizationId);
+  const org = await OrganizationModel.findById(user.organizationId)
+    .select('plan subscriptionStatus')
+    .lean<{ plan?: string; subscriptionStatus?: string } | null>();
+  if (requireAnalytics(org)) {
+    return NextResponse.json({
+      from: from.toISOString(),
+      to: to.toISOString(),
+      scope: 'upgrade',
+      byKind: {},
+      byDay: [],
+      opensTotal: 0,
+      opensByDay: [],
+      activityByDay: [],
+      employees: [],
+      canFilterByEmployee: false,
+      gated: true,
+      upgradeUrl: '/dashboard/upgrade',
+    });
+  }
 
   let filterEmployeeId: mongoose.Types.ObjectId | undefined;
 

@@ -17,6 +17,7 @@ import {
 } from '@/lib/admin/mongoErrors';
 import {
   createCheckoutSessionForOrganization,
+  isFreeSubscriptionPlan,
   validatePlanForCheckout,
   CheckoutSessionError,
 } from 'billing-engine';
@@ -39,10 +40,6 @@ async function rollbackOrg(orgId: mongoose.Types.ObjectId) {
 
 export async function POST(request: Request) {
   try {
-    if (!stripeBillingEnabled()) {
-      return NextResponse.json({ error: 'Billing is not configured' }, { status: 503 });
-    }
-
     const session = await getServerSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -81,13 +78,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
     }
 
-    try {
-      await validatePlanForCheckout(dbPlan);
-    } catch (e) {
-      if (e instanceof CheckoutSessionError) {
-        return NextResponse.json({ error: e.message }, { status: e.status });
+    if (!isFreeSubscriptionPlan(dbPlan)) {
+      if (!stripeBillingEnabled()) {
+        return NextResponse.json({ error: 'Billing is not configured' }, { status: 503 });
       }
-      throw e;
+      try {
+        await validatePlanForCheckout(dbPlan);
+      } catch (e) {
+        if (e instanceof CheckoutSessionError) {
+          return NextResponse.json({ error: e.message }, { status: e.status });
+        }
+        throw e;
+      }
     }
 
     let org;
@@ -95,7 +97,8 @@ export async function POST(request: Request) {
       org = await OrganizationModel.create({
         name: parsed.data.name,
         companyName: parsed.data.name,
-        subscriptionStatus: 'incomplete',
+        subscriptionStatus: isFreeSubscriptionPlan(dbPlan) ? 'none' : 'incomplete',
+        plan: isFreeSubscriptionPlan(dbPlan) ? 'free' : 'none',
       });
     } catch (err) {
       const legacySlug = mapLegacyOrganizationSlugIndexError(err);
@@ -131,13 +134,17 @@ export async function POST(request: Request) {
       }
 
       const base = getAppBaseUrl();
-      const { url: checkoutUrl } = await createCheckoutSessionForOrganization({
-        org,
-        userEmail: user.email,
-        subscriptionPlanId: planId,
-        successUrl: `${base}/dashboard?checkout=success`,
-        cancelUrl: `${base}/onboarding?checkout=cancelled`,
-      });
+      const checkoutUrl = isFreeSubscriptionPlan(dbPlan)
+        ? `${base}/dashboard`
+        : (
+            await createCheckoutSessionForOrganization({
+              org,
+              userEmail: user.email,
+              subscriptionPlanId: planId,
+              successUrl: `${base}/dashboard?checkout=success`,
+              cancelUrl: `${base}/onboarding?checkout=cancelled`,
+            })
+          ).url;
 
       return NextResponse.json({ organization: org.toObject(), checkoutUrl });
     } catch (err) {

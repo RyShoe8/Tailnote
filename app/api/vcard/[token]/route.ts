@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { connectMongoose } from '@/lib/mongoose';
 import { EmployeeModel, type EmployeeDoc } from '@/models/Employee';
 import { OrganizationModel } from '@/models/Organization';
-import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
 import { buildVcardFromEmployee, vcardFilenameForEmployee } from '@/lib/vcard/buildVcardFromEmployee';
 
 export const dynamic = 'force-dynamic';
@@ -26,7 +25,7 @@ export async function GET(
   const org = await OrganizationModel.findById(employee.organizationId).lean<{
     subscriptionStatus?: string;
   } | null>();
-  if (!org || !isOrganizationPaid(org)) {
+  if (!org) {
     return new NextResponse('Not found', { status: 404 });
   }
 

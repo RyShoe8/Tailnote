@@ -8,6 +8,24 @@ export async function ensureDefaultSubscriptionPlans(): Promise<void> {
     { listOnPricingPage: { $exists: false } },
     { $set: { listOnPricingPage: true } }
   );
+  const free = await SubscriptionPlanModel.findOne({ slug: 'free', version: 1 });
+  if (!free) {
+    await SubscriptionPlanModel.create({
+      name: 'Free',
+      slug: 'free',
+      active: true,
+      paused: false,
+      interval: 'month',
+      basePriceCents: 0,
+      additionalUserPriceCents: 0,
+      includedUsers: 1,
+      description: 'Core signature generation with Tailnote branding',
+      version: 1,
+      maxSubscriptionSlots: 0,
+      archived: false,
+      listOnPricingPage: true,
+    });
+  }
   const basic = await SubscriptionPlanModel.findOne({ slug: 'basic', version: 1 });
   if (!basic) {
     await SubscriptionPlanModel.create({

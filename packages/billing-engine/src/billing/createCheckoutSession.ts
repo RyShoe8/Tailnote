@@ -13,6 +13,12 @@ import {
 import { resolveCheckoutTrialDays } from './resolveCheckoutTrialDays';
 import { getBillingContext } from '../context';
 
+export function isFreeSubscriptionPlan(
+  plan: Pick<SubscriptionPlanDoc, 'slug' | 'basePriceCents'>
+): boolean {
+  return String(plan.slug ?? '').trim().toLowerCase() === 'free' || Number(plan.basePriceCents ?? 0) === 0;
+}
+
 export class CheckoutSessionError extends Error {
   constructor(
     message: string,
@@ -29,6 +35,9 @@ export async function validatePlanForCheckout(
 ): Promise<void> {
   if (!isPlanOfferable(dbPlan)) {
     throw new CheckoutSessionError('Plan not available', 400);
+  }
+  if (isFreeSubscriptionPlan(dbPlan)) {
+    return;
   }
   if (!dbPlan.stripeBasePriceId) {
     throw new CheckoutSessionError('Plan not synced to Stripe yet', 400);
@@ -80,6 +89,9 @@ export async function createCheckoutSessionForOrganization(
     if (!dbPlan) {
       throw new CheckoutSessionError('Plan not found', 404);
     }
+    if (isFreeSubscriptionPlan(dbPlan)) {
+      throw new CheckoutSessionError('Free plan does not require checkout', 400);
+    }
     await validatePlanForCheckout(dbPlan, orgId);
 
     priceId = dbPlan.stripeBasePriceId;
@@ -98,6 +110,9 @@ export async function createCheckoutSessionForOrganization(
       .lean<SubscriptionPlanDoc>();
 
     if (slugPlan?.stripeBasePriceId) {
+      if (isFreeSubscriptionPlan(slugPlan)) {
+        throw new CheckoutSessionError('Free plan does not require checkout', 400);
+      }
       await validatePlanForCheckout(slugPlan, orgId);
       priceId = slugPlan.stripeBasePriceId;
       subscriptionPlanIdMeta = String(slugPlan._id);

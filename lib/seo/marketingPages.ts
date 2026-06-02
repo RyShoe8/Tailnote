@@ -9,6 +9,7 @@ import { absoluteUrl, SITE_TAGLINE } from '@/lib/seo/site';
 export type MarketingPageKey =
   | 'home'
   | 'pricing'
+  | 'signatures'
   | 'templates'
   | 'promotionalBlocks'
   | 'analytics'
@@ -41,6 +42,13 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     title: 'Email signature pricing',
     description:
       'Simple per-organization plans with included users, monthly and annual subscriptions, optional Lifetime one-time plans, promotional signature blocks, UTM tracking, and click and open analytics.',
+  },
+  {
+    key: 'signatures',
+    path: '/signatures',
+    title: 'Email signatures by Tailnote',
+    description:
+      'Tailnote helps teams create professional email signatures with optional tracking and analytics. See examples, pricing, and create your own signature.',
   },
   {
     key: 'templates',

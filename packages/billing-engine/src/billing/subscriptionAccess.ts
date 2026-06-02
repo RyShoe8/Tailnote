@@ -5,6 +5,13 @@ export type OrganizationSubscriptionStatus = NonNullable<
   OrganizationBillingFields['subscriptionStatus']
 >;
 
+export type OrganizationPlanTier = 'free' | 'solo' | 'team';
+
+type PlanLike = {
+  plan?: string | null;
+  subscriptionStatus?: string | null;
+};
+
 export function stripeBillingEnabled(): boolean {
   return Boolean(process.env.STRIPE_SECRET_KEY);
 }
@@ -21,6 +28,41 @@ export function isOrganizationPaid(
   if (!org) return false;
   if (!stripeBillingEnabled()) return true;
   return isActiveSubscriptionStatus(org.subscriptionStatus);
+}
+
+function normalizePlanSlug(plan: string | null | undefined): string {
+  return (plan || '').trim().toLowerCase();
+}
+
+export function planTierFromPlanSlug(plan: string | null | undefined): OrganizationPlanTier {
+  const slug = normalizePlanSlug(plan);
+  if (slug === 'team' || slug === 'pro') return 'team';
+  if (slug === 'solo' || slug === 'basic') return 'solo';
+  return 'free';
+}
+
+export function getOrganizationPlanTier(org: PlanLike | null | undefined): OrganizationPlanTier {
+  if (!org) return 'free';
+  const tierFromSlug = planTierFromPlanSlug(org.plan);
+  if (tierFromSlug === 'free') return 'free';
+  if (!stripeBillingEnabled()) return tierFromSlug;
+  return isOrganizationPaid(org) ? tierFromSlug : 'free';
+}
+
+export function isFreePlan(org: PlanLike | null | undefined): boolean {
+  return getOrganizationPlanTier(org) === 'free';
+}
+
+export function isPaidPlan(org: PlanLike | null | undefined): boolean {
+  return !isFreePlan(org);
+}
+
+export function hasAnalytics(org: PlanLike | null | undefined): boolean {
+  return isPaidPlan(org);
+}
+
+export function hasBrandingRemoval(org: PlanLike | null | undefined): boolean {
+  return isPaidPlan(org);
 }
 
 /** Legacy org.plan slug from Stripe subscription status (paid statuses only). */
@@ -72,12 +114,13 @@ export type OrganizationSubscriptionAccess = {
 };
 
 export function getOrganizationSubscriptionAccess(
-  org: Pick<OrganizationBillingFields, 'subscriptionStatus'> | null | undefined
+  org: Pick<OrganizationBillingFields, 'plan' | 'subscriptionStatus'> | null | undefined
 ): OrganizationSubscriptionAccess {
-  const isPaid = isOrganizationPaid(org);
+  const isPaid = isPaidPlan(org);
+  const hasOrg = Boolean(org);
   return {
     isPaid,
-    canServeSignatures: isPaid,
-    canExportSignatures: isPaid,
+    canServeSignatures: hasOrg,
+    canExportSignatures: hasOrg,
   };
 }

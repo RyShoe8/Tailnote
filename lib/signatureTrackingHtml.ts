@@ -6,6 +6,7 @@ import { createSignatureTrackingToken } from '@/lib/signatureTrackingToken';
 import { createSignatureOpenToken } from '@/lib/signatureOpenToken';
 import { getSignatureTrackingSecret } from '@/lib/signatureTrackingSecret';
 import { normalizePromoUrl } from '@/lib/urls/normalizePromoUrl';
+import { hasAnalytics } from 'billing-engine';
 
 function decodeHtmlEntities(s: string): string {
   return s
@@ -203,6 +204,7 @@ export function appendSignatureClickTrackingIfEnabled(args: {
   input: RenderSignatureInput;
   baseUrl: string;
 }): string {
+  if (!hasAnalytics(args.org)) return args.html;
   if (!args.org.signatureClickTrackingEnabled) return args.html;
   if (!getSignatureTrackingSecret()) return args.html;
   return appendSignatureClickTracking({
@@ -214,6 +216,36 @@ export function appendSignatureClickTrackingIfEnabled(args: {
   });
 }
 
+export function generateSignatureLink(args: {
+  org: Pick<OrganizationDoc, 'plan' | 'subscriptionStatus'> & { signatureClickTrackingEnabled?: boolean };
+  organizationId: string;
+  employeeId?: string;
+  kind: SignatureClickKind;
+  destination: string;
+  baseUrl: string;
+}): string {
+  const fallback = decodeHtmlEntities(args.destination).trim();
+  if (!fallback) return '';
+  if (!hasAnalytics(args.org) || !args.org.signatureClickTrackingEnabled) return fallback;
+  const secret = getSignatureTrackingSecret();
+  if (!secret) return fallback;
+  try {
+    const token = createSignatureTrackingToken(
+      {
+        organizationId: args.organizationId,
+        employeeId: args.employeeId,
+        kind: args.kind,
+        destination: fallback,
+      },
+      secret
+    );
+    const root = stripTrailingSlash(args.baseUrl.trim());
+    return `${root}/api/track/signature?t=${encodeURIComponent(token)}`;
+  } catch {
+    return fallback;
+  }
+}
+
 export function appendSignatureOpenTrackingPixelIfEnabled(args: {
   html: string;
   org: OrganizationDoc & { signatureOpenTrackingEnabled?: boolean };
@@ -221,6 +253,7 @@ export function appendSignatureOpenTrackingPixelIfEnabled(args: {
   employeeId?: string;
   baseUrl: string;
 }): string {
+  if (!hasAnalytics(args.org)) return args.html;
   if (!args.org.signatureOpenTrackingEnabled || !args.html.trim()) return args.html;
   const secret = getSignatureTrackingSecret();
   if (!secret) return args.html;

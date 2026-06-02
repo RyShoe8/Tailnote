@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import mongoose from 'mongoose';
 import { getServerSession } from '@/lib/auth/session';
 import { connectMongoose } from '@/lib/mongoose';
-import { getEmployeeLimitsForOrganization } from 'billing-engine';
+import { getEmployeeLimitsForOrganization, hasAnalytics, hasBrandingRemoval } from 'billing-engine';
 import { SignatureTemplateModel } from '@/models/SignatureTemplate';
 import { SignatureClickEventModel } from '@/models/SignatureClickEvent';
 import { SignatureOpenEventModel } from '@/models/SignatureOpenEvent';
@@ -74,6 +74,8 @@ export default async function DashboardHomePage() {
   const canEdit = user.role === 'owner' || user.role === 'admin';
   const trackingOn = orgDoc.signatureClickTrackingEnabled !== false;
   const openTrackingOn = orgDoc.signatureOpenTrackingEnabled === true;
+  const analyticsEnabled = hasAnalytics(orgDoc);
+  const freePlan = !hasBrandingRemoval(orgDoc);
 
   const byKind: Record<string, number> = {};
   for (const row of clickAgg) {
@@ -182,6 +184,15 @@ export default async function DashboardHomePage() {
             View analytics
           </Link>
         </p>
+        {!analyticsEnabled ? (
+          <p className="mb-4 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+            Upgrade to remove Tailnote branding and unlock analytics.{' '}
+            <Link href="/dashboard/upgrade" className="underline underline-offset-4">
+              Upgrade now
+            </Link>
+            .
+          </p>
+        ) : null}
         <div className="mb-4 grid gap-4 sm:grid-cols-2">
           <Card>
             <CardHeader>
@@ -265,6 +276,11 @@ export default async function DashboardHomePage() {
         initialUtmEnabled={orgDoc.utmEnabled !== false}
         canEdit={canEdit}
       />
+      {freePlan ? (
+        <p className="text-xs text-muted-foreground">
+          Free plan active: signatures include Powered by Tailnote attribution.
+        </p>
+      ) : null}
     </div>
   );
 }

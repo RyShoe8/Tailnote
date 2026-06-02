@@ -4,7 +4,6 @@ import { getServerSession } from '@/lib/auth/session';
 import { OrganizationModel } from '@/models/Organization';
 import { EmployeeModel } from '@/models/Employee';
 import { SignatureTemplateModel } from '@/models/SignatureTemplate';
-import { assertOrganizationSubscriptionPaid } from '@/lib/dashboard/subscriptionRequired';
 import { renderSignatureForEmployeeResolved } from '@/lib/renderEmployeeSignature';
 
 type SessionUser = { organizationId?: string };
@@ -33,8 +32,6 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   if (!org) {
     return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
   }
-  const subErr = assertOrganizationSubscriptionPaid(org);
-  if (subErr) return subErr;
 
   const tmpl = await SignatureTemplateModel.findOne({
     _id: employee.templateId,

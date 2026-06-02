@@ -8,6 +8,7 @@ import { validObjectId } from '../../utils/validObjectId';
 import {
   checkoutErrorToResponse,
   createCheckoutSessionForOrganization,
+  isFreeSubscriptionPlan,
   validatePlanForCheckout,
   CheckoutSessionError,
 } from '../../billing/createCheckoutSession';
@@ -21,10 +22,6 @@ const BodySchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    if (!stripeBillingEnabled()) {
-      return NextResponse.json({ error: 'Billing is not configured' }, { status: 503 });
-    }
-
     const session = await getBillingContext().auth.getSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -64,6 +61,29 @@ export async function POST(request: Request) {
     const dbPlan = await SubscriptionPlanModel.findById(planId).lean<SubscriptionPlanDoc>();
     if (!dbPlan) {
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
+    }
+
+    if (isFreeSubscriptionPlan(dbPlan)) {
+      const OrganizationModel = getOrganizationModel();
+      await OrganizationModel.findByIdAndUpdate(org._id, {
+        $set: { plan: 'free', subscriptionStatus: 'none', stripeSubscriptionId: '' },
+      });
+      await OrganizationSubscriptionModel.findOneAndUpdate(
+        { organizationId: org._id },
+        {
+          $set: {
+            subscriptionPlanId: new mongoose.Types.ObjectId(planId),
+            status: 'incomplete',
+          },
+        },
+        { upsert: true }
+      );
+      const base = getBillingContext().billing.getAppBaseUrl();
+      return NextResponse.json({ checkoutUrl: `${base}/dashboard` });
+    }
+
+    if (!stripeBillingEnabled()) {
+      return NextResponse.json({ error: 'Billing is not configured' }, { status: 503 });
     }
 
     try {

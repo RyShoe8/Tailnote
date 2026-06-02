@@ -5,7 +5,6 @@ import { connectMongoose } from '@/lib/mongoose';
 import { EmployeeModel, type EmployeeDoc } from '@/models/Employee';
 import { OrganizationModel } from '@/models/Organization';
 import { SignatureTemplateModel, type SignatureTemplateDoc } from '@/models/SignatureTemplate';
-import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
 import { isTemplatePresetId, TEMPLATE_PRESET_META } from '@/lib/email/templatePresets';
 import { renderSignatureForEmployeeResolved } from '@/lib/renderEmployeeSignature';
 import { getRequestSiteOrigin, getSignatureAssetOrigin } from '@/lib/siteOrigin';
@@ -47,7 +46,6 @@ export default async function PublicSignaturePage({ params, searchParams }: Page
     organizationId: employee.organizationId,
   }).lean<SignatureTemplateDoc | null>();
   if (!org || !tmpl) notFound();
-  if (!isOrganizationPaid(org as { subscriptionStatus?: string })) notFound();
 
   const presetOverride =
     presetParam && isTemplatePresetId(presetParam) ? presetParam : undefined;

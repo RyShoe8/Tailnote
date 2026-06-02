@@ -14,8 +14,8 @@ const OrganizationSchema = new Schema(
     primaryColor: { type: String, default: '#0a0a0a' },
     secondaryColor: { type: String, default: '' },
     website: { type: String, default: '' },
-    /** Legacy slug mirror of pinned SubscriptionPlan; use OrganizationSubscription for canonical plan. */
-    plan: { type: String, default: 'none', trim: true, lowercase: true },
+    /** Legacy slug mirror of pinned SubscriptionPlan; defaults to FREE tier. */
+    plan: { type: String, default: 'free', trim: true, lowercase: true },
     stripeCustomerId: { type: String, default: '' },
     stripeSubscriptionId: { type: String, default: '' },
     subscriptionStatus: {

@@ -1,5 +1,5 @@
 import type { OrganizationDoc } from '@/models/Organization';
-import { isOrganizationPaid } from '@/lib/billing/subscriptionAccess';
+import { isPaidPlan } from '@/lib/billing/subscriptionAccess';
 
 /** Matches the four built-in presets (minimal, stacked, corporate, professional). */
 const MAX_TEMPLATES_BASIC = 4;
@@ -15,7 +15,7 @@ const FULL_MAX_TEMPLATES = 10;
 export function getBillingEntitlements(
   org: Pick<OrganizationDoc, 'plan' | 'subscriptionStatus'> | null | undefined
 ): BillingEntitlements {
-  const paid = isOrganizationPaid(org);
+  const paid = isPaidPlan(org);
   if (!paid) {
     return {
       isPro: false,

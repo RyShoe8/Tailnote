@@ -80,7 +80,13 @@ export default function NewEmployeePage() {
         </CardHeader>
         <CardContent>
           {limitMessage ? (
-            <p className="mb-4 text-sm text-muted-foreground rounded-md border border-dashed p-3">{limitMessage}</p>
+            <p className="mb-4 text-sm text-muted-foreground rounded-md border border-dashed p-3">
+              {limitMessage}{' '}
+              <Link href="/dashboard/upgrade" className="underline underline-offset-4">
+                Upgrade now
+              </Link>
+              .
+            </p>
           ) : null}
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-2">

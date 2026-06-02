@@ -1,11 +1,11 @@
 import type { OrganizationDoc } from '@/models/Organization';
 import { getBillingEntitlements } from '@/lib/billing/entitlements';
-import { isOrganizationPaid } from 'billing-engine';
+import { isPaidPlan } from 'billing-engine';
 
 export function canUsePaidFeatures(org: OrganizationDoc | null): boolean {
-  return isOrganizationPaid(org);
+  return Boolean(org);
 }
 
 export function isProPlan(org: OrganizationDoc | null): boolean {
-  return getBillingEntitlements(org).isPro;
+  return isPaidPlan(org) && getBillingEntitlements(org).isPro;
 }

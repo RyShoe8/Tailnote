@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { connectMongoose } from '@/lib/mongoose';
 import { getServerSession } from '@/lib/auth/session';
 import { OrganizationModel } from '@/models/Organization';
-import { canUsePaidFeatures } from '@/lib/orgAccess';
 
 type SessionUser = {
   organizationId?: string;
@@ -25,9 +24,6 @@ export async function requireOrgAdmin() {
   const org = await OrganizationModel.findById(user.organizationId);
   if (!org) {
     return { error: NextResponse.json({ error: 'Organization not found' }, { status: 404 }) };
-  }
-  if (!canUsePaidFeatures(org)) {
-    return { error: NextResponse.json({ error: 'Subscription required' }, { status: 402 }) };
   }
   return { org, user };
 }

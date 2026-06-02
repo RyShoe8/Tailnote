@@ -58,6 +58,13 @@ function baseFeatureBullets(): readonly string[] {
 }
 
 export function planFeatureBullets(plan: PublicPricingPlan): string[] {
+  if (plan.slug.trim().toLowerCase() === 'free' || plan.basePriceCents === 0) {
+    return [
+      'Core signature generation for one user',
+      'Powered by Tailnote attribution included',
+      'No click/open analytics on free',
+    ];
+  }
   const seats = seatPolicyLine(plan);
   return [...baseFeatureBullets(), ...(seats ? [seats] : [])];
 }

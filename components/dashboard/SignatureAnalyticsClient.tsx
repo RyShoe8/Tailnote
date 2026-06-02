@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 type AnalyticsPayload = {
   from: string;
@@ -30,6 +31,8 @@ type AnalyticsPayload = {
   activityByDay: { date: string; clicks: number; opens: number }[];
   employees: { id: string; name: string; email: string }[];
   canFilterByEmployee: boolean;
+  gated?: boolean;
+  upgradeUrl?: string;
 };
 
 function defaultFromDate(): string {
@@ -169,6 +172,20 @@ export function SignatureAnalyticsClient() {
 
       {loading && !data ? (
         <p className="text-sm text-muted-foreground">Loading analytics…</p>
+      ) : data?.gated ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Analytics on paid plans</CardTitle>
+            <CardDescription>
+              Upgrade to remove Tailnote branding and unlock click and campaign analytics.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href={data.upgradeUrl || '/dashboard/upgrade'}>Upgrade now</Link>
+            </Button>
+          </CardContent>
+        </Card>
       ) : data ? (
         <>
           <div className="grid gap-4 sm:grid-cols-2">

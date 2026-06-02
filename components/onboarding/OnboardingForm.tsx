@@ -85,6 +85,8 @@ export function OnboardingForm({ plans, resumeMode = false, organizationName }: 
   const [loading, setLoading] = useState(false);
 
   const offerablePlans = plans.filter((p) => !p.soldOut);
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId);
+  const selectedPlanIsFree = Boolean(selectedPlan && selectedPlan.basePriceCents === 0);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -143,11 +145,11 @@ export function OnboardingForm({ plans, resumeMode = false, organizationName }: 
               {cancelled ? (
                 <span className="text-destructive">Payment was cancelled. </span>
               ) : null}
-              Choose a plan and continue to Stripe Checkout to activate Tailnote
+              Choose a plan to activate Tailnote
               {organizationName ? ` for ${organizationName}` : ''}.
             </>
           ) : (
-            'Enter your company name and choose a plan. You will complete payment on the next step.'
+            'Enter your company name and choose a plan to create your workspace.'
           )}
         </CardDescription>
       </CardHeader>
@@ -248,7 +250,13 @@ export function OnboardingForm({ plans, resumeMode = false, organizationName }: 
             className="w-full"
             disabled={loading || offerablePlans.length === 0 || !selectedPlanId}
           >
-            {loading ? 'Redirecting to checkout…' : 'Continue to payment'}
+            {loading
+              ? selectedPlanIsFree
+                ? 'Setting up workspace…'
+                : 'Redirecting to checkout…'
+              : selectedPlanIsFree
+                ? 'Continue with Free'
+                : 'Continue to payment'}
           </Button>
         </form>
       </CardContent>
