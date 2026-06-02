@@ -158,6 +158,22 @@ export type AdminAnalyticsSummary = {
   totalSignatureOpens: number;
 };
 
+export type AdminAnalyticsMetric =
+  | 'organizations'
+  | 'users'
+  | 'mrr'
+  | 'arr'
+  | 'copies'
+  | 'clicks'
+  | 'opens';
+
+export type AdminAnalyticsGroupBy = 'day' | 'week' | 'month';
+
+export type AdminAnalyticsSeriesPoint = {
+  date: string;
+  value: number;
+};
+
 function recurringMonthlyCentsForSubscription(
   sub: { seats?: number },
   plan: Pick<SubscriptionPlanDoc, 'interval' | 'basePriceCents' | 'additionalUserPriceCents' | 'includedUsers'>
@@ -173,6 +189,70 @@ function recurringMonthlyCentsForSubscription(
     return Math.round(totalPeriodCents / 12);
   }
   return totalPeriodCents;
+}
+
+function bucketStart(d: Date, groupBy: AdminAnalyticsGroupBy): Date {
+  const date = new Date(d);
+  date.setHours(0, 0, 0, 0);
+  if (groupBy === 'day') return date;
+  if (groupBy === 'month') {
+    date.setDate(1);
+    return date;
+  }
+  const day = date.getDay();
+  const diff = (day + 6) % 7;
+  date.setDate(date.getDate() - diff);
+  return date;
+}
+
+function bucketKey(d: Date, groupBy: AdminAnalyticsGroupBy): string {
+  const start = bucketStart(d, groupBy);
+  if (groupBy === 'month') return start.toISOString().slice(0, 7);
+  return start.toISOString().slice(0, 10);
+}
+
+function nextBucket(d: Date, groupBy: AdminAnalyticsGroupBy): Date {
+  const out = new Date(d);
+  if (groupBy === 'day') out.setDate(out.getDate() + 1);
+  else if (groupBy === 'week') out.setDate(out.getDate() + 7);
+  else out.setMonth(out.getMonth() + 1, 1);
+  return out;
+}
+
+function fillEmptyBuckets(
+  byBucket: Map<string, number>,
+  from: Date,
+  to: Date,
+  groupBy: AdminAnalyticsGroupBy
+): AdminAnalyticsSeriesPoint[] {
+  const points: AdminAnalyticsSeriesPoint[] = [];
+  let cursor = bucketStart(from, groupBy);
+  const end = bucketStart(to, groupBy);
+  while (cursor <= end) {
+    const key = bucketKey(cursor, groupBy);
+    points.push({ date: key, value: byBucket.get(key) ?? 0 });
+    cursor = nextBucket(cursor, groupBy);
+  }
+  return points;
+}
+
+function clampRange(args: { from: Date; to: Date; maxDays?: number }): { from: Date; to: Date } {
+  const maxDays = args.maxDays ?? 365;
+  let from = new Date(args.from);
+  let to = new Date(args.to);
+  if (Number.isNaN(from.getTime())) from = new Date(Date.now() - 30 * 864e5);
+  if (Number.isNaN(to.getTime())) to = new Date();
+  if (from > to) {
+    const tmp = from;
+    from = to;
+    to = tmp;
+  }
+  const span = to.getTime() - from.getTime();
+  const maxSpan = maxDays * 864e5;
+  if (span > maxSpan) {
+    from = new Date(to.getTime() - maxSpan);
+  }
+  return { from, to };
 }
 
 export async function getAdminAnalyticsSummary(): Promise<AdminAnalyticsSummary> {
@@ -205,6 +285,90 @@ export async function getAdminAnalyticsSummary(): Promise<AdminAnalyticsSummary>
     totalSignatureClicks,
     totalSignatureOpens,
   };
+}
+
+export async function getAdminAnalyticsSeries(args: {
+  metric: AdminAnalyticsMetric;
+  from: Date;
+  to: Date;
+  groupBy: AdminAnalyticsGroupBy;
+}): Promise<AdminAnalyticsSeriesPoint[]> {
+  await connectMongoose();
+  const { from, to } = clampRange({ from: args.from, to: args.to });
+  const groupBy = args.groupBy;
+  const byBucket = new Map<string, number>();
+
+  const match = { createdAt: { $gte: from, $lte: to } };
+
+  if (args.metric === 'organizations') {
+    const rows = await OrganizationModel.find(match).select('createdAt').lean<{ createdAt?: Date }[]>();
+    for (const row of rows) {
+      if (!row.createdAt) continue;
+      const key = bucketKey(new Date(row.createdAt), groupBy);
+      byBucket.set(key, (byBucket.get(key) ?? 0) + 1);
+    }
+    return fillEmptyBuckets(byBucket, from, to, groupBy);
+  }
+
+  if (args.metric === 'users') {
+    const rows = await EmployeeModel.find(match).select('createdAt').lean<{ createdAt?: Date }[]>();
+    for (const row of rows) {
+      if (!row.createdAt) continue;
+      const key = bucketKey(new Date(row.createdAt), groupBy);
+      byBucket.set(key, (byBucket.get(key) ?? 0) + 1);
+    }
+    return fillEmptyBuckets(byBucket, from, to, groupBy);
+  }
+
+  if (args.metric === 'copies') {
+    const rows = await SignatureCopyEventModel.find(match).select('createdAt').lean<{ createdAt?: Date }[]>();
+    for (const row of rows) {
+      if (!row.createdAt) continue;
+      const key = bucketKey(new Date(row.createdAt), groupBy);
+      byBucket.set(key, (byBucket.get(key) ?? 0) + 1);
+    }
+    return fillEmptyBuckets(byBucket, from, to, groupBy);
+  }
+
+  if (args.metric === 'clicks') {
+    const rows = await SignatureClickEventModel.find(match).select('createdAt').lean<{ createdAt?: Date }[]>();
+    for (const row of rows) {
+      if (!row.createdAt) continue;
+      const key = bucketKey(new Date(row.createdAt), groupBy);
+      byBucket.set(key, (byBucket.get(key) ?? 0) + 1);
+    }
+    return fillEmptyBuckets(byBucket, from, to, groupBy);
+  }
+
+  if (args.metric === 'opens') {
+    const rows = await SignatureOpenEventModel.find(match).select('createdAt').lean<{ createdAt?: Date }[]>();
+    for (const row of rows) {
+      if (!row.createdAt) continue;
+      const key = bucketKey(new Date(row.createdAt), groupBy);
+      byBucket.set(key, (byBucket.get(key) ?? 0) + 1);
+    }
+    return fillEmptyBuckets(byBucket, from, to, groupBy);
+  }
+
+  const subs = await OrganizationSubscriptionModel.find({
+    status: { $in: ['active', 'trialing'] },
+    ...match,
+  })
+    .populate('subscriptionPlanId')
+    .lean<Array<{ createdAt?: Date; seats?: number; subscriptionPlanId?: SubscriptionPlanDoc | null }>>();
+
+  for (const sub of subs) {
+    if (!sub.createdAt || !sub.subscriptionPlanId) continue;
+    const key = bucketKey(new Date(sub.createdAt), groupBy);
+    const mrrCents = recurringMonthlyCentsForSubscription(sub, sub.subscriptionPlanId);
+    byBucket.set(key, (byBucket.get(key) ?? 0) + mrrCents);
+  }
+
+  const points = fillEmptyBuckets(byBucket, from, to, groupBy);
+  if (args.metric === 'arr') {
+    return points.map((p) => ({ ...p, value: p.value * 12 }));
+  }
+  return points;
 }
 
 export type AdminUserRow = {
