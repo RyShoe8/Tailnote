@@ -16,7 +16,7 @@ import { AccountSecurityCard } from '@/components/dashboard/AccountSecurityCard'
 import { PricingPlanCard } from 'billing-engine/next/components';
 import type { PublicPricingPlan } from 'billing-engine';
 import type { EmployeeLimitInfo } from 'billing-engine';
-import { formatUsd, intervalSuffix } from 'billing-engine/pricing-display';
+import { formatUsd, intervalSuffix, isRecommendedPlan } from 'billing-engine/pricing-display';
 import { hasBrandingRemoval } from '@/lib/billing/subscriptionAccess';
 
 function isPaidSelectablePlan(p: PublicPricingPlan): boolean {
@@ -373,7 +373,7 @@ function BillingPageInner() {
       </Card>
 
       <Sheet open={changePlanOpen} onOpenChange={setChangePlanOpen}>
-        <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
+        <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl">
           <SheetHeader>
             <SheetTitle>{freePlan ? 'Choose a paid plan' : 'Change plan'}</SheetTitle>
             <SheetDescription>
@@ -390,8 +390,8 @@ function BillingPageInner() {
                 <PricingPlanCard
                   key={plan.id}
                   plan={plan}
-                  variant="selectable"
-                  compact
+                  variant="marketing"
+                  className={isRecommendedPlan(plan) ? 'ring-2 ring-primary/40' : undefined}
                   footer={
                     <Button
                       type="button"

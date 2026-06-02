@@ -41,14 +41,14 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     path: '/pricing',
     title: 'Email signature pricing',
     description:
-      'Simple per-organization plans with included users, monthly and annual subscriptions, optional Lifetime one-time plans, promotional signature blocks, UTM tracking, and click and open analytics.',
+      'Free plan for core signatures with Tailnote branding, plus paid plans with branding removal, team seats, promotional blocks, UTM tracking, and click and open analytics.',
   },
   {
     key: 'signatures',
     path: '/signatures',
     title: 'Email signatures by Tailnote',
     description:
-      'Tailnote helps teams create professional email signatures with optional tracking and analytics. See examples, pricing, and create your own signature.',
+      'You found Tailnote from a signature link. Learn why free plans include attribution, what paid plans unlock, and how to create your own professional email signature.',
   },
   {
     key: 'templates',

@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
-import { Check } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../ui/card';
 import type { PublicPricingPlan } from '../../billing/getPublicPricingPlans';
 import {
   includedUsersSummary,
   isRecommendedPlan,
+  planExcludedFeatureBullets,
   planFeatureBullets,
   primaryPriceLine,
   subscriptionCap,
@@ -30,6 +31,7 @@ export function PricingPlanCard({
 }: PricingPlanCardProps) {
   const description = plan.description.trim();
   const features = planFeatureBullets(plan);
+  const excludedFeatures = planExcludedFeatureBullets(plan);
   const hasCap = subscriptionCap(plan) !== null;
   const recommended = isRecommendedPlan(plan);
   const isCurrent = variant === 'current';
@@ -86,14 +88,31 @@ export function PricingPlanCard({
           <p className="mt-0.5 text-sm text-muted-foreground">Per subscription</p>
         </div>
         {!compact ? (
-          <ul className="space-y-2.5">
-            {features.map((line: string) => (
-              <li key={line} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
-                <span>{line}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="space-y-4">
+            <ul className="space-y-2.5">
+              {features.map((line: string) => (
+                <li key={line} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+            {excludedFeatures.length > 0 ? (
+              <div className="space-y-2.5 border-t border-border pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Not included
+                </p>
+                <ul className="space-y-2.5">
+                  {excludedFeatures.map((line: string) => (
+                    <li key={line} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                      <X className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/70" aria-hidden />
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
         ) : null}
       </CardContent>
       {footer ? <CardFooter className="mt-auto">{footer}</CardFooter> : null}
