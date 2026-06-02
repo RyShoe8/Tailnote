@@ -8,6 +8,7 @@ import { OrganizationModel } from '@/models/Organization';
 import { Button } from '@/components/ui/button';
 import { getEmployeeLimitsForOrganization, hasBrandingRemoval } from 'billing-engine';
 import { EmployeesList, type EmployeeListItem } from '@/components/dashboard/EmployeesList';
+import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
 
 export default async function EmployeesPage() {
   const session = await getServerSession();
@@ -63,7 +64,7 @@ export default async function EmployeesPage() {
       {limitMessage ? (
         <p className="text-sm text-muted-foreground rounded-md border border-dashed p-3">
           {limitMessage}{' '}
-          <Link href="/dashboard/upgrade" className="underline underline-offset-4">
+          <Link href={DASHBOARD_UPGRADE_HREF} className="underline underline-offset-4">
             Upgrade now
           </Link>
           .

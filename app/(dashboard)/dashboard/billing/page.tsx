@@ -1,7 +1,8 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -17,6 +18,10 @@ import type { PublicPricingPlan } from 'billing-engine';
 import type { EmployeeLimitInfo } from 'billing-engine';
 import { formatUsd, intervalSuffix } from 'billing-engine/pricing-display';
 import { hasBrandingRemoval } from 'billing-engine';
+
+function isPaidSelectablePlan(p: PublicPricingPlan): boolean {
+  return p.slug.trim().toLowerCase() !== 'free' && p.basePriceCents > 0 && !p.soldOut;
+}
 
 type BillingSummary = {
   renewsAt?: string | null;
@@ -71,12 +76,15 @@ function seatUsageLine(
 }
 
 function BillingPageInner() {
+  const searchParams = useSearchParams();
+  const upgradeSheetOpened = useRef(false);
   const [org, setOrg] = useState<Record<string, unknown> | null>(null);
   const [billing, setBilling] = useState<BillingSummary | null>(null);
   const [currentPlan, setCurrentPlan] = useState<PublicPricingPlan | null>(null);
   const [availablePlans, setAvailablePlans] = useState<PublicPricingPlan[]>([]);
   const [seatLimits, setSeatLimits] = useState<EmployeeLimitInfo | null>(null);
   const [viewerRole, setViewerRole] = useState<string>('member');
+  const [billingLoaded, setBillingLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [cancelPending, setCancelPending] = useState(false);
@@ -97,15 +105,18 @@ function BillingPageInner() {
     setAvailablePlans(data.availablePlans ?? []);
     setSeatLimits(data.seatLimits ?? null);
     setViewerRole(data.viewer?.role ?? 'member');
+    setBillingLoaded(true);
   }, []);
 
   useEffect(() => {
     let cancelled = false;
+    setBillingLoaded(false);
     loadBilling().catch((e: unknown) => {
       if (!cancelled) {
         setOrg(null);
         setBilling(null);
         setCurrentPlan(null);
+        setBillingLoaded(false);
         setLoadError(e instanceof Error ? e.message : 'Could not load billing status');
       }
     });
@@ -121,16 +132,20 @@ function BillingPageInner() {
   });
 
   const changePlanOptions = useMemo(() => {
-    const candidates = !currentPlan
-      ? availablePlans.filter((p) => !p.soldOut)
-      : availablePlans.filter(
-      (p) => p.id !== currentPlan.id && p.slug !== currentPlan.slug && !p.soldOut
-    );
-    if (currentPlan && currentPlan.basePriceCents > 0) {
-      return candidates.filter((p) => p.basePriceCents > 0);
-    }
-    return candidates;
+    const paid = availablePlans.filter(isPaidSelectablePlan);
+    if (!currentPlan) return paid;
+    return paid.filter((p) => p.id !== currentPlan.id && p.slug !== currentPlan.slug);
   }, [availablePlans, currentPlan]);
+
+  const canPickPaidPlan = isOwner && changePlanOptions.length > 0;
+
+  useEffect(() => {
+    if (!billingLoaded || loadError || upgradeSheetOpened.current) return;
+    if (searchParams.get('upgrade') !== '1') return;
+    if (!freePlan || !isOwner || changePlanOptions.length === 0) return;
+    upgradeSheetOpened.current = true;
+    setChangePlanOpen(true);
+  }, [billingLoaded, loadError, searchParams, freePlan, isOwner, changePlanOptions.length]);
 
   async function cancelSubscription() {
     const endsLabel = formatBillingDate(billing?.renewsAt ?? null);
@@ -215,16 +230,29 @@ function BillingPageInner() {
           Manage your subscription, plan, and team seats.
         </p>
       </div>
-      {freePlan ? (
+      {freePlan && !loadError ? (
         <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">
-              Upgrade to remove Tailnote branding and unlock analytics.{' '}
-              <Link href="/dashboard/upgrade" className="underline underline-offset-4">
-                View upgrade options
-              </Link>
-              .
-            </p>
+          <CardHeader>
+            <CardTitle>Upgrade plan</CardTitle>
+            <CardDescription>
+              Remove Tailnote branding and unlock analytics, team seats, and full platform features.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {canPickPaidPlan ? (
+              <Button type="button" onClick={() => setChangePlanOpen(true)}>
+                Choose a paid plan
+              </Button>
+            ) : isOwner ? (
+              <p className="text-sm text-muted-foreground">
+                Paid plans are not available right now. If this persists, contact support — your
+                administrator may need to sync plans to Stripe.
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Contact your organization owner to upgrade.
+              </p>
+            )}
           </CardContent>
         </Card>
       ) : null}
@@ -256,9 +284,11 @@ function BillingPageInner() {
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground">
                 No active plan on file.{' '}
-                {isOwner && billing?.canChangePlan
-                  ? 'Choose a plan below to subscribe.'
-                  : 'Contact your organization owner to subscribe.'}
+                {canPickPaidPlan
+                  ? 'Choose a paid plan to subscribe.'
+                  : isOwner
+                    ? 'Paid plans are not available right now.'
+                    : 'Contact your organization owner to subscribe.'}
               </p>
             </CardContent>
           </Card>
@@ -293,9 +323,9 @@ function BillingPageInner() {
 
           {isOwner && !loadError ? (
             <div className="flex flex-wrap gap-2">
-              {billing?.canChangePlan ? (
+              {canPickPaidPlan ? (
                 <Button type="button" variant="secondary" onClick={() => setChangePlanOpen(true)}>
-                  Change plan
+                  {freePlan ? 'Choose a paid plan' : 'Change plan'}
                 </Button>
               ) : null}
               {billing?.canAddSeats && billing.addSeatsHref ? (
@@ -345,10 +375,11 @@ function BillingPageInner() {
       <Sheet open={changePlanOpen} onOpenChange={setChangePlanOpen}>
         <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
           <SheetHeader>
-            <SheetTitle>Change plan</SheetTitle>
+            <SheetTitle>{freePlan ? 'Choose a paid plan' : 'Change plan'}</SheetTitle>
             <SheetDescription>
-              Select a plan. You may be redirected to Stripe checkout for new subscriptions or
-              one-time plans. Recurring plan changes are prorated on your current subscription.
+              {freePlan
+                ? 'Select a plan to continue to Stripe checkout and activate your subscription.'
+                : 'Select a plan. You may be redirected to Stripe checkout for new subscriptions or one-time plans. Recurring plan changes are prorated on your current subscription.'}
             </SheetDescription>
           </SheetHeader>
           <div className="mt-6 space-y-4">

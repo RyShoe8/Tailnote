@@ -27,12 +27,17 @@ type OrgSubLike = {
   cancelAtPeriodEnd?: boolean | null;
 };
 
+function isPaidOfferablePlan(p: PublicPricingPlan): boolean {
+  return p.slug.trim().toLowerCase() !== 'free' && p.basePriceCents > 0;
+}
+
 function otherOfferablePlans(
   currentPlan: PublicPricingPlan | null,
   availablePlans: PublicPricingPlan[]
 ): PublicPricingPlan[] {
   return availablePlans.filter((p) => {
     if (p.soldOut) return false;
+    if (!isPaidOfferablePlan(p)) return false;
     if (!currentPlan) return true;
     return p.id !== currentPlan.id && p.slug !== currentPlan.slug;
   });

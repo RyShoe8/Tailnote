@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { OverviewOrganizationCard } from '@/components/dashboard/OverviewOrganizationCard';
 import { getOrgEnabledPromoBlockSlots } from '@/lib/signatureContentBlockAnalytics';
 import { getEnabledPresetIds } from '@/lib/templates/getEnabledPresets';
+import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
 import { resolveViewerEmployeeId } from '@/lib/analytics/resolveViewerEmployee';
 
 function sumKinds(byKind: Record<string, number>, keys: string[]) {
@@ -187,7 +188,7 @@ export default async function DashboardHomePage() {
         {!analyticsEnabled ? (
           <p className="mb-4 rounded-md border border-dashed p-3 text-sm text-muted-foreground">
             Upgrade to remove Tailnote branding and unlock analytics.{' '}
-            <Link href="/dashboard/upgrade" className="underline underline-offset-4">
+            <Link href={DASHBOARD_UPGRADE_HREF} className="underline underline-offset-4">
               Upgrade now
             </Link>
             .

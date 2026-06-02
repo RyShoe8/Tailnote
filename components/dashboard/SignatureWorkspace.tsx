@@ -35,6 +35,7 @@ import { CopySignatureButton } from '@/components/signature/CopySignatureButton'
 import { SignatureInstallPanel } from '@/components/signature/SignatureInstallPanel';
 import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
+import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
 import { hasAnalytics, hasBrandingRemoval } from '@/lib/billing/subscriptionAccess';
 import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 
@@ -134,6 +135,7 @@ export function SignatureWorkspace() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [profile, setProfile] = useState<SignatureProfile>(defaultProfile);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
@@ -146,15 +148,27 @@ export function SignatureWorkspace() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [oRes, tRes, pRes] = await Promise.all([
         fetch('/api/dashboard/organization', { credentials: 'include' }),
         fetch('/api/dashboard/templates', { credentials: 'include' }),
         fetch('/api/dashboard/me/signature-profile', { credentials: 'include' }),
       ]);
-      const oJson = await oRes.json();
-      const tJson = await tRes.json();
+      const oJson = await oRes.json().catch(() => ({}));
+      const tJson = await tRes.json().catch(() => ({}));
       const pJson = await pRes.json().catch(() => ({}));
+
+      if (!oRes.ok) {
+        const msg =
+          typeof oJson.error === 'string'
+            ? oJson.error
+            : 'Could not load organization settings';
+        setLoadError(msg);
+        setOrg(null);
+        return;
+      }
+
       if (typeof oJson.viewer?.role === 'string') {
         setViewerRole(oJson.viewer.role);
       }
@@ -171,11 +185,22 @@ export function SignatureWorkspace() {
           employeesCanEditPromoBlocks: o.employeesCanEditPromoBlocks === true,
         });
       }
-      if (oJson.organization) {
-        const o = oJson.organization as OrgResponse;
-        setOrg(o);
-        setOrgName(String(o.name || ''));
+      if (!oJson.organization) {
+        setOrg(null);
+        return;
       }
+
+      const o = oJson.organization as OrgResponse;
+      setOrg(o);
+      setOrgName(String(o.name || ''));
+
+      if (!tRes.ok) {
+        setLoadError(
+          typeof tJson.error === 'string' ? tJson.error : 'Could not load signature templates'
+        );
+        return;
+      }
+
       if (typeof pJson.promoBlocksEditable === 'boolean') {
         setPromoBlocksEditable(pJson.promoBlocksEditable);
       }
@@ -260,10 +285,16 @@ export function SignatureWorkspace() {
       presetId: selectedTemplate.presetId,
       includeAnimationSlot: shouldIncludeSignatureAnimation(
         {
-          plan: org?.plan === 'pro' ? 'pro' : org?.plan === 'basic' ? 'basic' : 'none',
+          plan: org?.plan ?? 'free',
           subscriptionStatus:
-            (org?.subscriptionStatus as 'none' | 'active' | 'trialing' | 'past_due' | 'canceled' | 'incomplete') ??
-            'none',
+            (org?.subscriptionStatus as
+              | 'none'
+              | 'active'
+              | 'trialing'
+              | 'past_due'
+              | 'canceled'
+              | 'incomplete'
+              | undefined) ?? 'none',
         },
         { includeAnimationSlot: Boolean(selectedTemplate.includeAnimationSlot) }
       ),
@@ -613,8 +644,34 @@ export function SignatureWorkspace() {
     return <p className="text-sm text-muted-foreground">Loading…</p>;
   }
 
+  if (loadError) {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-destructive" role="alert">
+          {loadError}
+        </p>
+        <Button type="button" variant="secondary" onClick={() => void load()}>
+          Try again
+        </Button>
+      </div>
+    );
+  }
+
   if (!org) {
     return <p className="text-sm text-muted-foreground">Create an organization to edit signature defaults.</p>;
+  }
+
+  if (templates.length === 0) {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground">
+          Setting up signature templates for your organization…
+        </p>
+        <Button type="button" variant="secondary" onClick={() => void load()}>
+          Retry
+        </Button>
+      </div>
+    );
   }
 
     const showEditColumn = isLgUp || mobilePane === 'edit';
@@ -632,7 +689,7 @@ export function SignatureWorkspace() {
         {showUpgradeNotice ? (
           <div className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
             Upgrade to remove Tailnote branding and unlock analytics.{' '}
-            <Link href="/dashboard/upgrade" className="underline underline-offset-4">
+            <Link href={DASHBOARD_UPGRADE_HREF} className="underline underline-offset-4">
               View upgrade options
             </Link>
             .

@@ -8,6 +8,7 @@ export async function ensureDefaultSubscriptionPlans(): Promise<void> {
     { listOnPricingPage: { $exists: false } },
     { $set: { listOnPricingPage: true } }
   );
+  await SubscriptionPlanModel.updateMany({ slug: 'free' }, { $set: { listOnPricingPage: false } });
   const free = await SubscriptionPlanModel.findOne({ slug: 'free', version: 1 });
   if (!free) {
     await SubscriptionPlanModel.create({
@@ -23,7 +24,7 @@ export async function ensureDefaultSubscriptionPlans(): Promise<void> {
       version: 1,
       maxSubscriptionSlots: 0,
       archived: false,
-      listOnPricingPage: true,
+      listOnPricingPage: false,
     });
   }
   const basic = await SubscriptionPlanModel.findOne({ slug: 'basic', version: 1 });

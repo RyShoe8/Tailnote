@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
 
 type AnalyticsPayload = {
   from: string;
@@ -182,7 +183,7 @@ export function SignatureAnalyticsClient() {
           </CardHeader>
           <CardContent>
             <Button asChild>
-              <Link href={data.upgradeUrl || '/dashboard/upgrade'}>Upgrade now</Link>
+              <Link href={data.upgradeUrl || DASHBOARD_UPGRADE_HREF}>Upgrade now</Link>
             </Button>
           </CardContent>
         </Card>

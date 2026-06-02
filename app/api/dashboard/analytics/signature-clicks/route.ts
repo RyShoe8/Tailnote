@@ -7,6 +7,7 @@ import { EmployeeModel } from '@/models/Employee';
 import { resolveViewerEmployeeId } from '@/lib/analytics/resolveViewerEmployee';
 import { OrganizationModel } from '@/models/Organization';
 import { requireAnalytics } from '@/lib/dashboard/analyticsRequired';
+import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
 import mongoose from 'mongoose';
 
 export const dynamic = 'force-dynamic';
@@ -67,7 +68,7 @@ export async function GET(request: Request) {
       employees: [],
       canFilterByEmployee: false,
       gated: true,
-      upgradeUrl: '/dashboard/upgrade',
+      upgradeUrl: DASHBOARD_UPGRADE_HREF,
     });
   }
 

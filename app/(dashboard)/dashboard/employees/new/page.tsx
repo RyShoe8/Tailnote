@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
 
 export default function NewEmployeePage() {
   const router = useRouter();
@@ -82,7 +83,7 @@ export default function NewEmployeePage() {
           {limitMessage ? (
             <p className="mb-4 text-sm text-muted-foreground rounded-md border border-dashed p-3">
               {limitMessage}{' '}
-              <Link href="/dashboard/upgrade" className="underline underline-offset-4">
+              <Link href={DASHBOARD_UPGRADE_HREF} className="underline underline-offset-4">
                 Upgrade now
               </Link>
               .

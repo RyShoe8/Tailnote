@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { hasAnalytics } from 'billing-engine';
+import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
 
 export function analyticsRequiredResponse(): NextResponse {
   return NextResponse.json(
     {
       error: 'Upgrade required for analytics',
       code: 'analytics_upgrade_required',
-      upgradeUrl: '/dashboard/upgrade',
+      upgradeUrl: DASHBOARD_UPGRADE_HREF,
     },
     { status: 402 }
   );
