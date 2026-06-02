@@ -17,7 +17,7 @@ import { PricingPlanCard } from 'billing-engine/next/components';
 import type { PublicPricingPlan } from 'billing-engine';
 import type { EmployeeLimitInfo } from 'billing-engine';
 import { formatUsd, intervalSuffix } from 'billing-engine/pricing-display';
-import { hasBrandingRemoval } from 'billing-engine';
+import { hasBrandingRemoval } from '@/lib/billing/subscriptionAccess';
 
 function isPaidSelectablePlan(p: PublicPricingPlan): boolean {
   return p.slug.trim().toLowerCase() !== 'free' && p.basePriceCents > 0 && !p.soldOut;

@@ -1,4 +1,4 @@
-import { hasBrandingRemoval } from 'billing-engine';
+import { hasBrandingRemoval } from '@/lib/billing/subscriptionAccess';
 
 const ATTRIBUTION_LINK = 'https://tailnote.io/signatures';
 

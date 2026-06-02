@@ -1,29 +1,22 @@
 import '@/lib/billing-engine';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { getServerSession } from '@/lib/auth/session';
+import { getEmployeeLimitsForOrganization, hasBrandingRemoval } from 'billing-engine';
 import { connectMongoose } from '@/lib/mongoose';
 import { EmployeeModel } from '@/models/Employee';
-import { OrganizationModel } from '@/models/Organization';
 import { Button } from '@/components/ui/button';
-import { getEmployeeLimitsForOrganization, hasBrandingRemoval } from 'billing-engine';
 import { EmployeesList, type EmployeeListItem } from '@/components/dashboard/EmployeesList';
 import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
+import { getDashboardOrg, getDashboardSession } from '@/lib/dashboard/getDashboardContext';
 
 export default async function EmployeesPage() {
-  const session = await getServerSession();
-  if (!session?.user) redirect('/login');
-  const user = session.user as { organizationId?: string; role?: string };
-  if (!user.organizationId) redirect('/onboarding');
+  const { user } = await getDashboardSession();
+  const org = await getDashboardOrg(user.organizationId);
   await connectMongoose();
-  const [employees, limits, org] = await Promise.all([
+  const [employees, limits] = await Promise.all([
     EmployeeModel.find({ organizationId: user.organizationId })
       .sort({ createdAt: -1 })
       .lean(),
     getEmployeeLimitsForOrganization(user.organizationId),
-    OrganizationModel.findById(user.organizationId)
-      .select('plan subscriptionStatus')
-      .lean<{ plan?: string; subscriptionStatus?: string } | null>(),
   ]);
 
   const canManage = user.role === 'owner' || user.role === 'admin';

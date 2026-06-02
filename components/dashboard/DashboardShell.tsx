@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link, { useLinkStatus } from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Menu } from 'lucide-react';
@@ -16,6 +16,33 @@ export type DashboardNavLink = { href: string; label: string };
 const navLinkClass =
   'rounded-md px-2 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors';
 
+function DashboardNavLabel({ label }: { label: string }) {
+  const { pending } = useLinkStatus();
+  return (
+    <span className={cn(pending && 'opacity-70')}>{label}</span>
+  );
+}
+
+function DashboardNavItem({
+  href,
+  label,
+  onNavigate,
+}: {
+  href: string;
+  label: string;
+  onNavigate?: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      className={navLinkClass}
+    >
+      <DashboardNavLabel label={label} />
+    </Link>
+  );
+}
+
 function DashboardNavLinks({
   navLinks,
   onNavigate,
@@ -26,9 +53,7 @@ function DashboardNavLinks({
   return (
     <nav className="flex flex-col gap-1 text-sm">
       {navLinks.map((l) => (
-        <Link key={l.href} href={l.href} onClick={onNavigate} className={navLinkClass}>
-          {l.label}
-        </Link>
+        <DashboardNavItem key={l.href} href={l.href} label={l.label} onNavigate={onNavigate} />
       ))}
     </nav>
   );
