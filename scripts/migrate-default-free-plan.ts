@@ -1,46 +1,17 @@
 /**
- * Backfills organization plan to FREE for non-paid organizations.
- * Run: npx tsx scripts/migrate-default-free-plan.ts
+ * Manual backfill (optional). Production runs this automatically on first DB connect after deploy.
+ * Run locally only if needed: npm run migrate:default-free-plan
  */
 import mongoose from 'mongoose';
 import { connectMongoose } from '../lib/mongoose';
-import { OrganizationModel } from '../models/Organization';
+import { migrateDefaultFreePlanOrganizations } from '../lib/migrations/migrateDefaultFreePlan';
 
 async function main() {
   await connectMongoose();
-
-  const paidStatuses = ['active', 'trialing'];
-  const preservePaid = await OrganizationModel.updateMany(
-    {
-      subscriptionStatus: { $in: paidStatuses },
-      plan: { $in: [null, '', 'none'] },
-    },
-    { $set: { plan: 'team' } }
-  );
-
-  const defaultFree = await OrganizationModel.updateMany(
-    {
-      $or: [
-        { subscriptionStatus: { $exists: false } },
-        { subscriptionStatus: null },
-        { subscriptionStatus: { $nin: paidStatuses } },
-      ],
-    },
-    {
-      $set: {
-        plan: 'free',
-        subscriptionStatus: 'none',
-        signatureClickTrackingEnabled: false,
-        signatureOpenTrackingEnabled: false,
-      },
-    }
-  );
-
-  const totals = await OrganizationModel.countDocuments();
+  const result = await migrateDefaultFreePlanOrganizations();
   process.stdout.write(
-    `migrate-default-free-plan: orgs=${totals} paidPreserved=${preservePaid.modifiedCount} freeDefaulted=${defaultFree.modifiedCount}\n`
+    `migrate-default-free-plan: orgs=${result.totalOrganizations} paidPreserved=${result.paidPlanBackfilled} freeDefaulted=${result.freePlanDefaulted}\n`
   );
-
   await mongoose.disconnect();
 }
 

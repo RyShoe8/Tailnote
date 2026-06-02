@@ -23,6 +23,10 @@ export async function connectMongoose(): Promise<typeof mongoose> {
     });
   }
   g.mongooseConn!.conn = await g.mongooseConn!.promise;
+
+  const { ensureStartupMigrations } = await import('@/lib/migrations/startup');
+  await ensureStartupMigrations();
+
   return g.mongooseConn!.conn;
 }
 
