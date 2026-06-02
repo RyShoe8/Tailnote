@@ -3,6 +3,7 @@ import { Check, X } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../ui/card';
 import type { PublicPricingPlan } from '../../billing/getPublicPricingPlans';
 import {
+  additionalUsersPricingLine,
   includedUsersSummary,
   isRecommendedPlan,
   planExcludedFeatureBullets,
@@ -36,6 +37,7 @@ export function PricingPlanCard({
   const recommended = isRecommendedPlan(plan);
   const isCurrent = variant === 'current';
   const trialLine = trialSummaryLine(plan);
+  const additionalUsersLine = additionalUsersPricingLine(plan);
 
   return (
     <Card
@@ -86,6 +88,9 @@ export function PricingPlanCard({
           ) : null}
           <p className="mt-2 text-base font-medium text-foreground">{includedUsersSummary(plan)}</p>
           <p className="mt-0.5 text-sm text-muted-foreground">Per subscription</p>
+          {additionalUsersLine ? (
+            <p className="mt-1 text-sm text-muted-foreground">{additionalUsersLine}</p>
+          ) : null}
         </div>
         {!compact ? (
           <div className="space-y-4">

@@ -3,6 +3,7 @@ export {
   intervalSuffix,
   primaryPriceLine,
   includedUsersSummary,
+  additionalUsersPricingLine,
   seatPolicyLine,
   subscriptionCap,
   planFeatureBullets,

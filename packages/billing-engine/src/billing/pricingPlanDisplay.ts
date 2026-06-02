@@ -36,11 +36,16 @@ export function includedUsersSummary(plan: PublicPricingPlan): string {
   return `${n} user${n === 1 ? '' : 's'} included`;
 }
 
+/** Shown under "Per subscription" on plan cards when add-on seats are available. */
+export function additionalUsersPricingLine(plan: PublicPricingPlan): string | null {
+  if (plan.interval === 'lifetime' || plan.additionalUserPriceCents <= 0) return null;
+  return `Add more users anytime for ${formatUsd(plan.additionalUserPriceCents)} per user${intervalSuffix(plan.interval)}`;
+}
+
 export function seatPolicyLine(plan: PublicPricingPlan): string | null {
+  const addOn = additionalUsersPricingLine(plan);
+  if (addOn) return addOn;
   if (plan.interval === 'lifetime') return null;
-  if (plan.additionalUserPriceCents > 0) {
-    return `Add more users anytime for ${formatUsd(plan.additionalUserPriceCents)} per user${intervalSuffix(plan.interval)}`;
-  }
   return 'No additional seats available on this plan';
 }
 
@@ -71,8 +76,7 @@ export function planFeatureBullets(plan: PublicPricingPlan): string[] {
       'Powered by Tailnote attribution on signatures',
     ];
   }
-  const seats = seatPolicyLine(plan);
-  return [...baseFeatureBullets(), ...(seats ? [seats] : [])];
+  return [...baseFeatureBullets()];
 }
 
 export function planExcludedFeatureBullets(plan: PublicPricingPlan): string[] {
