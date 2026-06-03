@@ -79,6 +79,7 @@ export async function OverviewAnalyticsSection({
     'social_reddit',
     'social_discord',
     'social_bluesky',
+    'social_youtube',
   ]);
   const emailClicks = byKind.email ?? 0;
 

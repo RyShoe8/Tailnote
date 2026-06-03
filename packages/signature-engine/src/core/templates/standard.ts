@@ -165,6 +165,9 @@ export const STANDARD_SIGNATURE_TEMPLATE = `<style type="text/css">
         {{#if hasBluesky}}
         <td style="{{socialTdBlueskyStyle}}"><a href="{{bluesky}}" style="text-decoration:none;border:0;outline:none;display:inline-block;"><img src="{{iconBluesky}}" width="16" height="16" border="0" alt="" style="display:block;border:0;outline:none;text-decoration:none;" /></a></td>
         {{/if}}
+        {{#if hasYoutube}}
+        <td style="{{socialTdYoutubeStyle}}"><a href="{{youtube}}" style="text-decoration:none;border:0;outline:none;display:inline-block;"><img src="{{iconYoutube}}" width="16" height="16" border="0" alt="" style="display:block;border:0;outline:none;text-decoration:none;" /></a></td>
+        {{/if}}
       </tr></table>
       {{/if}}
     </td>

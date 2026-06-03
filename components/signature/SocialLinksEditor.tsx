@@ -4,6 +4,10 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, X, Link as LinkIcon } from 'lucide-react';
+import {
+  SocialPlatformEditorIcon,
+  type SocialPlatform,
+} from '@/components/signature/SocialPlatformEditorIcon';
 
 export type SocialLinksValue = {
   linkedin?: string;
@@ -12,6 +16,7 @@ export type SocialLinksValue = {
   reddit?: string;
   discord?: string;
   bluesky?: string;
+  youtube?: string;
 };
 
 type Platform = keyof SocialLinksValue;
@@ -28,16 +33,18 @@ const PLATFORM_ORDER: Platform[] = [
   'reddit',
   'discord',
   'bluesky',
+  'youtube',
 ];
 const MAX_LINKS = PLATFORM_ORDER.length;
 
-const PLATFORM_META: Record<Platform, { name: string; bg: string; iconUrl: string }> = {
-  linkedin: { name: 'LinkedIn', bg: '#0A66C2', iconUrl: '/email-assets/icon-linkedin.png?v=10' },
-  facebook: { name: 'Facebook', bg: '#1877F2', iconUrl: '/email-assets/icon-facebook.png?v=10' },
-  instagram: { name: 'Instagram', bg: '#E1306C', iconUrl: '/email-assets/icon-instagram.png?v=10' },
-  reddit: { name: 'Reddit', bg: '#FF4500', iconUrl: '/email-assets/icon-reddit.png?v=10' },
-  discord: { name: 'Discord', bg: '#5865F2', iconUrl: '/email-assets/icon-discord.png?v=10' },
-  bluesky: { name: 'Bluesky', bg: '#1185FE', iconUrl: '/email-assets/icon-bluesky.png?v=10' },
+const PLATFORM_META: Record<Platform, { name: string; bg: string }> = {
+  linkedin: { name: 'LinkedIn', bg: '#0A66C2' },
+  facebook: { name: 'Facebook', bg: '#1877F2' },
+  instagram: { name: 'Instagram', bg: '#E1306C' },
+  reddit: { name: 'Reddit', bg: '#FF4500' },
+  discord: { name: 'Discord', bg: '#5865F2' },
+  bluesky: { name: 'Bluesky', bg: '#1185FE' },
+  youtube: { name: 'YouTube', bg: '#FF0000' },
 };
 
 /** Best-effort URL → platform detection. Returns null for unrecognized hosts. */
@@ -50,6 +57,9 @@ export function detectPlatform(rawUrl: string): Platform | null {
   if (u.includes('reddit.com') || u.includes('redd.it')) return 'reddit';
   if (u.includes('discord.com') || u.includes('discord.gg')) return 'discord';
   if (u.includes('bsky.app') || u.includes('bsky.social')) return 'bluesky';
+  if (u.includes('youtube.com') || u.includes('youtu.be') || u.includes('m.youtube.com')) {
+    return 'youtube';
+  }
   return null;
 }
 
@@ -88,9 +98,6 @@ export function SocialLinksEditor({ value, onChange }: Props) {
     return initial.length > 0 ? initial : [{ id: newEntryId(), url: '' }];
   });
 
-  // Detect external resets (e.g. org reloaded) and reseed only when the stable serialized
-  // value diverges from what our entries currently represent. This avoids clobbering
-  // the user's in-flight edits while keeping the editor consistent on fresh fetches.
   const incomingKey = useMemo(() => {
     const v = value ?? {};
     return PLATFORM_ORDER.map((p) => `${p}:${(v[p] ?? '').trim()}`).join('|');
@@ -126,7 +133,6 @@ export function SocialLinksEditor({ value, onChange }: Props) {
     setEntries((es) => [...es, { id: newEntryId(), url: '' }]);
   };
 
-  // Track which platforms are already detected on other rows so we can warn about duplicates.
   const seen = new Map<Platform, number>();
   entries.forEach((e, idx) => {
     const p = detectPlatform(e.url);
@@ -144,17 +150,20 @@ export function SocialLinksEditor({ value, onChange }: Props) {
         return (
           <div key={entry.id} className="flex items-start gap-2">
             <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border bg-muted overflow-hidden"
+              className={
+                meta
+                  ? 'flex h-11 w-11 shrink-0 items-center justify-center rounded-md border text-white overflow-hidden'
+                  : 'flex h-11 w-11 shrink-0 items-center justify-center rounded-md border bg-muted overflow-hidden'
+              }
               style={meta ? { backgroundColor: meta.bg, borderColor: meta.bg } : undefined}
               aria-label={meta?.name ?? 'Unknown social network'}
               title={
                 meta?.name ??
-                'Paste a LinkedIn, Facebook, Instagram, Reddit, Discord, or Bluesky URL'
+                'Paste a LinkedIn, Facebook, Instagram, Reddit, Discord, Bluesky, or YouTube URL'
               }
             >
-              {meta ? (
-                // eslint-disable-next-line @next/next/no-img-element -- public asset, no Next.js optimization needed
-                <img src={meta.iconUrl} alt="" width={16} height={16} className="block" />
+              {meta && platform ? (
+                <SocialPlatformEditorIcon platform={platform as SocialPlatform} />
               ) : (
                 <LinkIcon className="h-4 w-4 text-muted-foreground" aria-hidden />
               )}
@@ -171,7 +180,7 @@ export function SocialLinksEditor({ value, onChange }: Props) {
               {isUnknown ? (
                 <p className="text-xs text-amber-600">
                   We don&apos;t recognize this network yet. Use a LinkedIn, Facebook, Instagram,
-                  Reddit, Discord, or Bluesky URL.
+                  Reddit, Discord, Bluesky, or YouTube URL.
                 </p>
               ) : null}
               {isDuplicate ? (

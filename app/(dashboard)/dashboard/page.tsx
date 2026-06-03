@@ -1,6 +1,4 @@
-import Link from 'next/link';
-import { Suspense } from 'react';
-import { hasBrandingRemoval } from 'billing-engine/subscriptionAccess';
+import { Suspense } from 'react';import { hasBrandingRemoval } from 'billing-engine/subscriptionAccess';
 import { OverviewOrganizationCard } from '@/components/dashboard/OverviewOrganizationCard';
 import { OverviewAnalyticsSection } from '@/components/dashboard/OverviewAnalyticsSection';
 import { OverviewAnalyticsSkeleton } from '@/components/dashboard/DashboardPageSkeleton';
@@ -17,13 +15,6 @@ export default async function DashboardHomePage() {
 
   return (
     <div className="mx-auto min-w-0 max-w-3xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
-        <p className="mt-1 text-muted-foreground">
-          Manage signatures and billing from the navigation (sidebar on desktop, menu on mobile).
-        </p>
-      </div>
-
       <Suspense fallback={<OverviewAnalyticsSkeleton />}>
         <OverviewAnalyticsSection
           organizationId={user.organizationId}

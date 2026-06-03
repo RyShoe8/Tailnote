@@ -62,6 +62,9 @@ export const DEFAULT_SIGNATURE_TEMPLATE = `<table class="sig-default-layout-tabl
         {{#if hasBluesky}}
         <td style="{{defaultSocialTdBlueskyStyle}}"><a href="{{bluesky}}" style="text-decoration: none; display: inline-block; border: 0; outline: none;"><img src="{{iconBluesky}}" alt="Bluesky" width="20" style="width: 20px; height: auto; display: block; border: 0;" /></a></td>
         {{/if}}
+        {{#if hasYoutube}}
+        <td style="{{defaultSocialTdYoutubeStyle}}"><a href="{{youtube}}" style="text-decoration: none; display: inline-block; border: 0; outline: none;"><img src="{{iconYoutube}}" alt="YouTube" width="20" style="width: 20px; height: auto; display: block; border: 0;" /></a></td>
+        {{/if}}
         </tr></table>
       </div>
       {{/if}}

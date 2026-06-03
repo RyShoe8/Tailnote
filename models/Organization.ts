@@ -34,6 +34,7 @@ const OrganizationSchema = new Schema(
       reddit: { type: String },
       discord: { type: String },
       bluesky: { type: String },
+      youtube: { type: String },
     },
     address: { type: String },
     city: { type: String },

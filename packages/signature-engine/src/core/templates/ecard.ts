@@ -73,6 +73,9 @@ export const ECARD_SIGNATURE_TEMPLATE = `<table class="sig-ecard-root" cellpaddi
                   {{#if hasBluesky}}
                   <td style="{{ecardSocialTdBlueskyStyle}}"><a href="{{bluesky}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconBluesky}}" alt="Bluesky" width="24" style="width:24px;height:auto;display:block;border:0;" /></a></td>
                   {{/if}}
+                  {{#if hasYoutube}}
+                  <td style="{{ecardSocialTdYoutubeStyle}}"><a href="{{youtube}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconYoutube}}" alt="YouTube" width="24" style="width:24px;height:auto;display:block;border:0;" /></a></td>
+                  {{/if}}
                 </tr>
               </table>
             </td>

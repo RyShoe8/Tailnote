@@ -24,6 +24,7 @@ import {
   SOCIAL_ICON_INSTAGRAM,
   SOCIAL_ICON_LINKEDIN,
   SOCIAL_ICON_REDDIT,
+  SOCIAL_ICON_YOUTUBE,
 } from './socialIcons';
 
 type ElementType = SignatureElement['type'];
@@ -644,6 +645,7 @@ function buildExecutiveSocialLineHtml(links: {
   reddit: string;
   discord: string;
   bluesky: string;
+  youtube: string;
 }): string {
   const parts: string[] = [];
   if (links.linkedin) {
@@ -674,6 +676,11 @@ function buildExecutiveSocialLineHtml(links: {
   if (links.bluesky) {
     parts.push(
       `<a href="${escapeHtml(links.bluesky)}" style="color: #666666; text-decoration: none;">Bluesky</a>`
+    );
+  }
+  if (links.youtube) {
+    parts.push(
+      `<a href="${escapeHtml(links.youtube)}" style="color: #666666; text-decoration: none;">YouTube</a>`
     );
   }
   return parts.join(' | ');
@@ -909,44 +916,20 @@ function layoutSocialTdStyles(
   reddit: string,
   discord: string,
   bluesky: string,
+  youtube: string,
   gap: string
 ): Record<string, string> {
-  let li = '';
-  let fb = '';
-  let ig = '';
-  let rd = '';
-  let dc = '';
-  let bs = '';
-  if (linkedin) {
-    li =
-      facebook || instagram || reddit || discord || bluesky
-        ? `padding: 0 ${gap} 0 0; vertical-align: middle;`
-        : 'padding: 0; vertical-align: middle;';
-  }
-  if (facebook) {
-    fb = instagram || reddit || discord || bluesky
+  const keys = ['li', 'fb', 'ig', 'rd', 'dc', 'bs', 'yt'] as const;
+  const values = [linkedin, facebook, instagram, reddit, discord, bluesky, youtube];
+  const result: Record<string, string> = { li: '', fb: '', ig: '', rd: '', dc: '', bs: '', yt: '' };
+  for (let i = 0; i < values.length; i += 1) {
+    if (!values[i]) continue;
+    const hasMore = values.slice(i + 1).some(Boolean);
+    result[keys[i]!] = hasMore
       ? `padding: 0 ${gap} 0 0; vertical-align: middle;`
       : 'padding: 0; vertical-align: middle;';
   }
-  if (instagram) {
-    ig = reddit || discord || bluesky
-      ? `padding: 0 ${gap} 0 0; vertical-align: middle;`
-      : 'padding: 0; vertical-align: middle;';
-  }
-  if (reddit) {
-    rd = discord || bluesky
-      ? `padding: 0 ${gap} 0 0; vertical-align: middle;`
-      : 'padding: 0; vertical-align: middle;';
-  }
-  if (discord) {
-    dc = bluesky
-      ? `padding: 0 ${gap} 0 0; vertical-align: middle;`
-      : 'padding: 0; vertical-align: middle;';
-  }
-  if (bluesky) {
-    bs = 'padding: 0; vertical-align: middle;';
-  }
-  return { li, fb, ig, rd, dc, bs };
+  return result;
 }
 
 /**
@@ -1073,6 +1056,10 @@ export function mergeRenderContext(
     hasSocial && brand.socialLinks.bluesky?.trim()
       ? brand.socialLinks.bluesky.trim()
       : '';
+  const youtube =
+    hasSocial && brand.socialLinks.youtube?.trim()
+      ? brand.socialLinks.youtube.trim()
+      : '';
 
   const addressLine =
     hasAddressEl && brand.address?.trim() ? brand.address.trim() : '';
@@ -1080,7 +1067,7 @@ export function mergeRenderContext(
   const stateLine = hasAddressEl && brand.state?.trim() ? brand.state.trim() : '';
   const zipLine = hasAddressEl && brand.zip?.trim() ? brand.zip.trim() : '';
 
-  const showSocialBlock = hasSocial && Boolean(linkedin || facebook || instagram || reddit || discord || bluesky);
+  const showSocialBlock = hasSocial && Boolean(linkedin || facebook || instagram || reddit || discord || bluesky || youtube);
 
   let socialTdLiStyle = '';
   let socialTdFbStyle = '';
@@ -1088,34 +1075,40 @@ export function mergeRenderContext(
   let socialTdRedditStyle = '';
   let socialTdDiscordStyle = '';
   let socialTdBlueskyStyle = '';
+  let socialTdYoutubeStyle = '';
   if (linkedin) {
     socialTdLiStyle =
-      facebook || instagram || reddit || discord || bluesky
+      facebook || instagram || reddit || discord || bluesky || youtube
         ? 'padding:0 6px 0 0;vertical-align:middle;'
         : 'padding:0;vertical-align:middle;';
   }
   if (facebook) {
-    socialTdFbStyle = instagram || reddit || discord || bluesky
+    socialTdFbStyle = instagram || reddit || discord || bluesky || youtube
       ? 'padding:0 6px 0 0;vertical-align:middle;'
       : 'padding:0;vertical-align:middle;';
   }
   if (instagram) {
-    socialTdIgStyle = reddit || discord || bluesky
+    socialTdIgStyle = reddit || discord || bluesky || youtube
       ? 'padding:0 6px 0 0;vertical-align:middle;'
       : 'padding:0;vertical-align:middle;';
   }
   if (reddit) {
-    socialTdRedditStyle = discord || bluesky
+    socialTdRedditStyle = discord || bluesky || youtube
       ? 'padding:0 6px 0 0;vertical-align:middle;'
       : 'padding:0;vertical-align:middle;';
   }
   if (discord) {
-    socialTdDiscordStyle = bluesky
+    socialTdDiscordStyle = bluesky || youtube
       ? 'padding:0 6px 0 0;vertical-align:middle;'
       : 'padding:0;vertical-align:middle;';
   }
   if (bluesky) {
-    socialTdBlueskyStyle = 'padding:0;vertical-align:middle;';
+    socialTdBlueskyStyle = youtube
+      ? 'padding:0 6px 0 0;vertical-align:middle;'
+      : 'padding:0;vertical-align:middle;';
+  }
+  if (youtube) {
+    socialTdYoutubeStyle = 'padding:0;vertical-align:middle;';
   }
 
   const showAddressBlock = hasAddressEl && Boolean(addressLine || cityLine || stateLine || zipLine);
@@ -1199,34 +1192,40 @@ export function mergeRenderContext(
   let defaultSocialTdRedditStyle = '';
   let defaultSocialTdDiscordStyle = '';
   let defaultSocialTdBlueskyStyle = '';
+  let defaultSocialTdYoutubeStyle = '';
   if (isDefaultLayout && linkedin) {
     defaultSocialTdLiStyle =
-      facebook || instagram || reddit || discord || bluesky
+      facebook || instagram || reddit || discord || bluesky || youtube
         ? 'padding: 0 8px 0 0; vertical-align: middle;'
         : 'padding: 0; vertical-align: middle;';
   }
   if (isDefaultLayout && facebook) {
-    defaultSocialTdFbStyle = instagram || reddit || discord || bluesky
+    defaultSocialTdFbStyle = instagram || reddit || discord || bluesky || youtube
       ? 'padding: 0 8px 0 0; vertical-align: middle;'
       : 'padding: 0; vertical-align: middle;';
   }
   if (isDefaultLayout && instagram) {
-    defaultSocialTdIgStyle = reddit || discord || bluesky
+    defaultSocialTdIgStyle = reddit || discord || bluesky || youtube
       ? 'padding: 0 8px 0 0; vertical-align: middle;'
       : 'padding: 0; vertical-align: middle;';
   }
   if (isDefaultLayout && reddit) {
-    defaultSocialTdRedditStyle = discord || bluesky
+    defaultSocialTdRedditStyle = discord || bluesky || youtube
       ? 'padding: 0 8px 0 0; vertical-align: middle;'
       : 'padding: 0; vertical-align: middle;';
   }
   if (isDefaultLayout && discord) {
-    defaultSocialTdDiscordStyle = bluesky
+    defaultSocialTdDiscordStyle = bluesky || youtube
       ? 'padding: 0 8px 0 0; vertical-align: middle;'
       : 'padding: 0; vertical-align: middle;';
   }
   if (isDefaultLayout && bluesky) {
-    defaultSocialTdBlueskyStyle = 'padding: 0; vertical-align: middle;';
+    defaultSocialTdBlueskyStyle = youtube
+      ? 'padding: 0 8px 0 0; vertical-align: middle;'
+      : 'padding: 0; vertical-align: middle;';
+  }
+  if (isDefaultLayout && youtube) {
+    defaultSocialTdYoutubeStyle = 'padding: 0; vertical-align: middle;';
   }
 
   const creatorTagline =
@@ -1254,8 +1253,8 @@ export function mergeRenderContext(
   const hasCreatorPromoPills = Boolean(creatorPromoPillsHtml);
 
   const creatorSocial = isCreatorLayout
-    ? layoutSocialTdStyles(linkedin, facebook, instagram, reddit, discord, bluesky, '4px')
-    : { li: '', fb: '', ig: '', rd: '', dc: '', bs: '' };
+    ? layoutSocialTdStyles(linkedin, facebook, instagram, reddit, discord, bluesky, youtube, '4px')
+    : { li: '', fb: '', ig: '', rd: '', dc: '', bs: '', yt: '' };
 
   const executiveRoleLine =
     isExecutiveLayout && (hasTitle || brand.companyName.trim())
@@ -1278,7 +1277,7 @@ export function mergeRenderContext(
   const hasExecutiveContactLine = Boolean(executiveContactLineHtml);
   const executiveSocialLineHtml =
     isExecutiveLayout && showSocialBlock
-      ? buildExecutiveSocialLineHtml({ linkedin, facebook, instagram, reddit, discord, bluesky })
+      ? buildExecutiveSocialLineHtml({ linkedin, facebook, instagram, reddit, discord, bluesky, youtube })
       : '';
   const hasExecutiveSocialLine = Boolean(executiveSocialLineHtml);
   const executivePromoRowsHtml = isExecutiveLayout
@@ -1314,8 +1313,8 @@ export function mergeRenderContext(
   const hasPortfolioNetworkSection = Boolean(portfolioNetworkSectionHtml);
 
   const portfolioSocial = isPortfolioLayout
-    ? layoutSocialTdStyles(linkedin, facebook, instagram, reddit, discord, bluesky, '10px')
-    : { li: '', fb: '', ig: '', rd: '', dc: '', bs: '' };
+    ? layoutSocialTdStyles(linkedin, facebook, instagram, reddit, discord, bluesky, youtube, '10px')
+    : { li: '', fb: '', ig: '', rd: '', dc: '', bs: '', yt: '' };
 
   const ecardRoleLine =
     isEcardLayout && (hasTitle || brand.companyName.trim())
@@ -1348,8 +1347,8 @@ export function mergeRenderContext(
   const hasEcardVcardUrl = isEcardLayout && Boolean(ecardVcardUrlTrimmed);
   const hasEcardFooter = isEcardLayout && (hasEcardPortfolioSection || showSocialBlock);
   const ecardSocial = isEcardLayout
-    ? layoutSocialTdStyles(linkedin, facebook, instagram, reddit, discord, bluesky, '8px')
-    : { li: '', fb: '', ig: '', rd: '', dc: '', bs: '' };
+    ? layoutSocialTdStyles(linkedin, facebook, instagram, reddit, discord, bluesky, youtube, '8px')
+    : { li: '', fb: '', ig: '', rd: '', dc: '', bs: '', yt: '' };
 
   /** Standard layout: optional third column for blocks (stacked keeps blocks below). */
   const sideColumnContentBlocks =
@@ -1376,6 +1375,7 @@ export function mergeRenderContext(
     hasReddit: Boolean(reddit),
     hasDiscord: Boolean(discord),
     hasBluesky: Boolean(bluesky),
+    hasYoutube: Boolean(youtube),
     hasLogoSizedHeight,
     hasLogoAutoHeight,
     hasContentBlocks,
@@ -1435,6 +1435,7 @@ export function mergeRenderContext(
     reddit: escapeHtml(reddit),
     discord: escapeHtml(discord),
     bluesky: escapeHtml(bluesky),
+    youtube: escapeHtml(youtube),
     addressBlockHtml,
     iconLinkedin: normalizeImageUrl(ensureAbsolutePublicUrl(SOCIAL_ICON_LINKEDIN, origin)),
     iconFacebook: normalizeImageUrl(ensureAbsolutePublicUrl(SOCIAL_ICON_FACEBOOK, origin)),
@@ -1442,12 +1443,14 @@ export function mergeRenderContext(
     iconReddit: normalizeImageUrl(ensureAbsolutePublicUrl(SOCIAL_ICON_REDDIT, origin)),
     iconDiscord: normalizeImageUrl(ensureAbsolutePublicUrl(SOCIAL_ICON_DISCORD, origin)),
     iconBluesky: normalizeImageUrl(ensureAbsolutePublicUrl(SOCIAL_ICON_BLUESKY, origin)),
+    iconYoutube: normalizeImageUrl(ensureAbsolutePublicUrl(SOCIAL_ICON_YOUTUBE, origin)),
     socialTdLiStyle,
     socialTdFbStyle,
     socialTdIgStyle,
     socialTdRedditStyle,
     socialTdDiscordStyle,
     socialTdBlueskyStyle,
+    socialTdYoutubeStyle,
     contentBlocksHtml,
     contentBlocksHtmlStacked,
     signatureRootColspan,
@@ -1459,6 +1462,7 @@ export function mergeRenderContext(
     defaultSocialTdRedditStyle,
     defaultSocialTdDiscordStyle,
     defaultSocialTdBlueskyStyle,
+    defaultSocialTdYoutubeStyle,
     creatorTagline,
     creatorContactTableHtml,
     creatorPromoPillsHtml,
@@ -1468,6 +1472,7 @@ export function mergeRenderContext(
     creatorSocialTdRedditStyle: creatorSocial.rd,
     creatorSocialTdDiscordStyle: creatorSocial.dc,
     creatorSocialTdBlueskyStyle: creatorSocial.bs,
+    creatorSocialTdYoutubeStyle: creatorSocial.yt,
     executiveRoleLine,
     executiveContactLineHtml,
     executiveSocialLineHtml,
@@ -1481,6 +1486,7 @@ export function mergeRenderContext(
     portfolioSocialTdRedditStyle: portfolioSocial.rd,
     portfolioSocialTdDiscordStyle: portfolioSocial.dc,
     portfolioSocialTdBlueskyStyle: portfolioSocial.bs,
+    portfolioSocialTdYoutubeStyle: portfolioSocial.yt,
     ecardRoleLine,
     ecardContactTableHtml,
     ecardPortfolioSectionsHtml,
@@ -1492,6 +1498,7 @@ export function mergeRenderContext(
     ecardSocialTdRedditStyle: ecardSocial.rd,
     ecardSocialTdDiscordStyle: ecardSocial.dc,
     ecardSocialTdBlueskyStyle: ecardSocial.bs,
+    ecardSocialTdYoutubeStyle: ecardSocial.yt,
   };
 
   return { evalCtx, stringCtx };

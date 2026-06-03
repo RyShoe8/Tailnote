@@ -49,7 +49,7 @@ type OrgResponse = {
   primaryColor?: string;
   secondaryColor?: string;
   fontFamily?: string;
-  socialLinks?: { linkedin?: string; facebook?: string; instagram?: string; reddit?: string; discord?: string; bluesky?: string };
+  socialLinks?: { linkedin?: string; facebook?: string; instagram?: string; reddit?: string; discord?: string; bluesky?: string; youtube?: string };
   address?: string;
   city?: string;
   state?: string;
@@ -96,6 +96,7 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
       reddit: sl.reddit?.trim(),
       discord: sl.discord?.trim(),
       bluesky: sl.bluesky?.trim(),
+      youtube: sl.youtube?.trim(),
     },
     address: org.address?.trim(),
     city: org.city?.trim(),
@@ -419,6 +420,7 @@ export function SignatureWorkspace() {
     brand.socialLinks?.reddit,
     brand.socialLinks?.discord,
     brand.socialLinks?.bluesky,
+    brand.socialLinks?.youtube,
     brand.address,
     brand.city,
     brand.state,

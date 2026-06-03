@@ -47,19 +47,19 @@ assert.ok(
 
 const iconBase = `${origin}/email-assets/`;
 assert.ok(
-  htmlStandard.includes(`${iconBase}icon-linkedin.png?v=10`),
+  htmlStandard.includes(`${iconBase}icon-linkedin.png?v=11`),
   'standard: LinkedIn icon resolves to publicSiteOrigin /email-assets/ with cache-bust query'
 );
 assert.ok(
-  htmlStandard.includes(`${iconBase}icon-facebook.png?v=10`),
+  htmlStandard.includes(`${iconBase}icon-facebook.png?v=11`),
   'standard: Facebook icon resolves to publicSiteOrigin /email-assets/ with cache-bust query'
 );
 assert.ok(
-  htmlStandard.includes(`${iconBase}icon-instagram.png?v=10`),
+  htmlStandard.includes(`${iconBase}icon-instagram.png?v=11`),
   'standard: Instagram icon resolves to publicSiteOrigin /email-assets/ with cache-bust query'
 );
 assert.ok(
-  htmlStandard.includes(`${iconBase}icon-reddit.png?v=10`),
+  htmlStandard.includes(`${iconBase}icon-reddit.png?v=11`),
   'standard: Reddit icon resolves to publicSiteOrigin /email-assets/ with cache-bust query'
 );
 
@@ -75,7 +75,7 @@ const htmlDiscord = renderSignature({
   publicSiteOrigin: origin,
 });
 assert.ok(
-  htmlDiscord.includes(`${iconBase}icon-discord.png?v=10`),
+  htmlDiscord.includes(`${iconBase}icon-discord.png?v=11`),
   'standard: Discord icon resolves to publicSiteOrigin /email-assets/ with cache-bust query'
 );
 assert.match(
@@ -101,7 +101,7 @@ const htmlBluesky = renderSignature({
   publicSiteOrigin: origin,
 });
 assert.ok(
-  htmlBluesky.includes(`${iconBase}icon-bluesky.png?v=10`),
+  htmlBluesky.includes(`${iconBase}icon-bluesky.png?v=11`),
   'standard: Bluesky icon resolves to publicSiteOrigin /email-assets/ with cache-bust query'
 );
 assert.match(
@@ -113,6 +113,31 @@ assert.doesNotMatch(
   htmlStandard,
   /icon-bluesky\.png/,
   'standard: Bluesky cell is omitted when no Bluesky URL is provided'
+);
+// YouTube support: when a YouTube URL is supplied, the icon row should include the
+// YouTube asset and the brand href.
+const htmlYoutube = renderSignature({
+  profile,
+  brand: {
+    ...mockSignatureBrand,
+    socialLinks: { ...mockSignatureBrand.socialLinks, youtube: 'https://youtube.com/@example' },
+  },
+  template: mockSignatureTemplate('standard'),
+  publicSiteOrigin: origin,
+});
+assert.ok(
+  htmlYoutube.includes(`${iconBase}icon-youtube.png?v=11`),
+  'standard: YouTube icon resolves to publicSiteOrigin /email-assets/ with cache-bust query'
+);
+assert.match(
+  htmlYoutube,
+  /href="https:\/\/youtube\.com\/@example[^"]*"/,
+  'standard: YouTube URL renders inside the social row'
+);
+assert.doesNotMatch(
+  htmlStandard,
+  /icon-youtube\.png/,
+  'standard: YouTube cell is omitted when no YouTube URL is provided'
 );
 assert.doesNotMatch(htmlStandard, /\/api\/image-proxy/i, 'standard: no image proxy URLs in img src');
 assert.doesNotMatch(htmlStandard, /src="http:\/\//i, 'standard: no non-HTTPS image URLs');
@@ -945,7 +970,7 @@ assert.doesNotMatch(
   'creator: logo img avoids height:auto for Outlook'
 );
 assert.ok(htmlCreator.includes('mso-line-height-rule: exactly'), 'creator: logo cell uses MSO line-height');
-assert.ok(htmlCreator.includes(`${iconBase}icon-linkedin.png?v=10`), 'creator: hosted LinkedIn icon');
+assert.ok(htmlCreator.includes(`${iconBase}icon-linkedin.png?v=11`), 'creator: hosted LinkedIn icon');
 assert.match(
   htmlCreator,
   /icon-linkedin\.png[^>]*height="18"/,
@@ -1068,7 +1093,7 @@ assert.ok(
 assert.ok(htmlPortfolio.includes('Email Me'), 'portfolio: email contact pill');
 assert.ok(htmlPortfolio.includes('Nucleas') && htmlPortfolio.includes('Tailnote'), 'portfolio: network pills');
 assert.ok(htmlPortfolio.includes('Network Portfolio'), 'portfolio: network section label');
-assert.ok(htmlPortfolio.includes(`${iconBase}icon-linkedin.png?v=10`), 'portfolio: hosted LinkedIn icon');
+assert.ok(htmlPortfolio.includes(`${iconBase}icon-linkedin.png?v=11`), 'portfolio: hosted LinkedIn icon');
 assert.doesNotMatch(htmlPortfolio, /flaticon\.com/i, 'portfolio: no external flaticon CDN');
 assert.match(
   htmlPortfolio,
@@ -1224,7 +1249,7 @@ assert.match(
   /width="90"[^>]*height="45"/,
   'executive: logoHeightPx scales from 110px reference to 90px layout width'
 );
-assert.ok(htmlEcard.includes(`${iconBase}icon-linkedin.png?v=10`), 'ecard: hosted LinkedIn icon');
+assert.ok(htmlEcard.includes(`${iconBase}icon-linkedin.png?v=11`), 'ecard: hosted LinkedIn icon');
 assert.doesNotMatch(htmlEcard, /flaticon\.com/i, 'ecard: no external flaticon CDN');
 assert.match(htmlEcard, /width="80"/, 'ecard: 80px logo in framed box');
 assert.ok(htmlEcard.includes('width:104px'), 'ecard: logo frame width fits 80px logo plus padding');

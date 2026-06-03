@@ -12,6 +12,7 @@ const KINDS = [
   'social_reddit',
   'social_discord',
   'social_bluesky',
+  'social_youtube',
   'content_block_1',
   'content_block_2',
   'save_contact',

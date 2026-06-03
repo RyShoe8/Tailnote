@@ -179,6 +179,9 @@ export const CORPORATE_SIGNATURE_TEMPLATE = `<style type="text/css">
               {{#if hasBluesky}}
               <td style="{{socialTdBlueskyStyle}}"><a href="{{bluesky}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconBluesky}}" alt="Bluesky" width="20" height="20" style="display:block;width:20px;height:20px;border:0;outline:none;text-decoration:none;" /></a></td>
               {{/if}}
+              {{#if hasYoutube}}
+              <td style="{{socialTdYoutubeStyle}}"><a href="{{youtube}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconYoutube}}" alt="YouTube" width="20" height="20" style="display:block;width:20px;height:20px;border:0;outline:none;text-decoration:none;" /></a></td>
+              {{/if}}
             </tr></table>
             {{/if}}
           </td>

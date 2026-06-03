@@ -64,6 +64,7 @@ export type SignatureBrand = {
     reddit?: string;
     discord?: string;
     bluesky?: string;
+    youtube?: string;
   };
   address?: string;
   city?: string;

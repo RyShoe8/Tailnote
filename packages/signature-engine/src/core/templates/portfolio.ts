@@ -61,6 +61,9 @@ export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" c
                 {{#if hasBluesky}}
                 <td style="{{portfolioSocialTdBlueskyStyle}}"><a href="{{bluesky}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconBluesky}}" alt="Bluesky" width="18" style="width:18px;height:auto;display:block;border:0;" /></a></td>
                 {{/if}}
+                {{#if hasYoutube}}
+                <td style="{{portfolioSocialTdYoutubeStyle}}"><a href="{{youtube}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconYoutube}}" alt="YouTube" width="18" style="width:18px;height:auto;display:block;border:0;" /></a></td>
+                {{/if}}
               </tr>
             </table>
           </td>

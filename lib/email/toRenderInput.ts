@@ -23,6 +23,7 @@ export type OrgBrandInput = {
     reddit?: string;
     discord?: string;
     bluesky?: string;
+    youtube?: string;
   };
   address?: string;
   city?: string;
@@ -59,6 +60,7 @@ export function toSignatureBrand(input: OrgBrandInput): SignatureBrand {
       reddit: input.socialLinks.reddit?.trim() || undefined,
       discord: input.socialLinks.discord?.trim() || undefined,
       bluesky: input.socialLinks.bluesky?.trim() || undefined,
+      youtube: input.socialLinks.youtube?.trim() || undefined,
     },
     address: input.address?.trim() || undefined,
     city: input.city?.trim() || undefined,
