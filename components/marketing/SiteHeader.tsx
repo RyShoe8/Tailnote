@@ -17,11 +17,11 @@ export function SiteHeader({ isLoggedIn = false }: SiteHeaderProps) {
         <div className="flex min-w-0 flex-1 items-center gap-4 lg:gap-6 xl:gap-8">
           <Link
             href="/"
-            className="flex shrink-0 items-center leading-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="flex shrink-0 items-center overflow-visible leading-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <TailnoteLogo
               heightClass="block h-14 sm:h-16 md:h-20 lg:h-24"
-              className="-my-2 sm:-my-1"
+              className="max-sm:origin-left max-sm:scale-[1.2] sm:scale-100"
               priority
             />
           </Link>

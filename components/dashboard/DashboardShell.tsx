@@ -106,7 +106,7 @@ export function DashboardShell({ email, navLinks, showPlatformAdmin, children }:
           href="/dashboard"
           className="flex min-w-0 shrink-0 items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
         >
-          <TailnoteLogo heightClass="h-9" />
+          <TailnoteLogo heightClass="h-12" />
         </Link>
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
@@ -124,7 +124,7 @@ export function DashboardShell({ email, navLinks, showPlatformAdmin, children }:
                 onClick={closeMobile}
                 className="block rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <TailnoteLogo heightClass="h-10" />
+                <TailnoteLogo heightClass="h-11" />
               </Link>
               {email ? <p className="mt-2 truncate text-xs text-muted-foreground">{email}</p> : null}
             </div>
