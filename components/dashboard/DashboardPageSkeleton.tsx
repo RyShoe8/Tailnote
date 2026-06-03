@@ -11,20 +11,7 @@ export function DashboardPageSkeleton({ className }: { className?: string }) {
         <Bone className="h-8 w-40" />
         <Bone className="h-4 w-full max-w-md" />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Bone className="h-36 w-full" />
-        <Bone className="h-36 w-full" />
-      </div>
       <Bone className="h-48 w-full" />
-    </div>
-  );
-}
-
-export function OverviewStatsSkeleton() {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <Bone className="h-36 w-full" />
-      <Bone className="h-36 w-full" />
     </div>
   );
 }

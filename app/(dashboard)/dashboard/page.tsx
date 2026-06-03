@@ -3,11 +3,7 @@ import { Suspense } from 'react';
 import { hasBrandingRemoval } from 'billing-engine/subscriptionAccess';
 import { OverviewOrganizationCard } from '@/components/dashboard/OverviewOrganizationCard';
 import { OverviewAnalyticsSection } from '@/components/dashboard/OverviewAnalyticsSection';
-import { OverviewStatsSection } from '@/components/dashboard/OverviewStatsSection';
-import {
-  OverviewAnalyticsSkeleton,
-  OverviewStatsSkeleton,
-} from '@/components/dashboard/DashboardPageSkeleton';
+import { OverviewAnalyticsSkeleton } from '@/components/dashboard/DashboardPageSkeleton';
 import { getDashboardOrg, getDashboardSession } from '@/lib/dashboard/getDashboardContext';
 
 export default async function DashboardHomePage() {
@@ -27,10 +23,6 @@ export default async function DashboardHomePage() {
           Manage signatures and billing from the navigation (sidebar on desktop, menu on mobile).
         </p>
       </div>
-
-      <Suspense fallback={<OverviewStatsSkeleton />}>
-        <OverviewStatsSection organizationId={user.organizationId} />
-      </Suspense>
 
       <Suspense fallback={<OverviewAnalyticsSkeleton />}>
         <OverviewAnalyticsSection

@@ -4,6 +4,7 @@ import { getEmployeeLimitsForOrganization, hasBrandingRemoval } from 'billing-en
 import { connectMongoose } from '@/lib/mongoose';
 import { EmployeeModel } from '@/models/Employee';
 import { Button } from '@/components/ui/button';
+import { EmployeesSeatSummaryCard } from '@/components/dashboard/EmployeesSeatSummaryCard';
 import { EmployeesList, type EmployeeListItem } from '@/components/dashboard/EmployeesList';
 import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
 import { getDashboardOrg, getDashboardSession } from '@/lib/dashboard/getDashboardContext';
@@ -54,6 +55,7 @@ export default async function EmployeesPage() {
           </Button>
         )}
       </div>
+      <EmployeesSeatSummaryCard organizationId={user.organizationId} />
       {limitMessage ? (
         <p className="text-sm text-muted-foreground rounded-md border border-dashed p-3">
           {limitMessage}{' '}

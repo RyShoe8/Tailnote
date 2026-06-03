@@ -9,10 +9,10 @@ export const dynamic = 'force-dynamic';
 
 const links = [
   { href: '/dashboard', label: 'Overview' },
-  { href: '/dashboard/analytics', label: 'Analytics' },
-  { href: '/dashboard/email-health', label: 'Email Health' },
-  { href: '/dashboard/employees', label: 'Employees' },
   { href: '/dashboard/signature', label: 'Signature' },
+  { href: '/dashboard/analytics', label: 'Analytics' },
+  { href: '/dashboard/employees', label: 'Employees' },
+  { href: '/dashboard/email-health', label: 'Email Health' },
   { href: '/dashboard/billing', label: 'Billing' },
 ];
 

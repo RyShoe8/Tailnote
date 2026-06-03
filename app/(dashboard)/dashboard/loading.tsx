@@ -1,7 +1,4 @@
-import {
-  OverviewAnalyticsSkeleton,
-  OverviewStatsSkeleton,
-} from '@/components/dashboard/DashboardPageSkeleton';
+import { OverviewAnalyticsSkeleton } from '@/components/dashboard/DashboardPageSkeleton';
 
 function Bone({ className }: { className?: string }) {
   return <div className={`animate-pulse rounded-md bg-muted ${className ?? ''}`} />;
@@ -14,7 +11,6 @@ export default function DashboardHomeLoading() {
         <Bone className="h-8 w-40" />
         <Bone className="h-4 w-full max-w-md" />
       </div>
-      <OverviewStatsSkeleton />
       <OverviewAnalyticsSkeleton />
       <Bone className="h-64 w-full" />
     </div>
