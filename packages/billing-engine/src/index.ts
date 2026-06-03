@@ -12,6 +12,7 @@ export { setBillingContext, getBillingContext, connectBillingDb, getOrganization
 export * from './models';
 
 export * from './billing/subscriptionAccess';
+export * from './billing/planFreemium';
 export * from './billing/employeeLimits';
 export * from './billing/createCheckoutSession';
 export * from './billing/changeStripeSubscriptionPlan';

@@ -8,7 +8,14 @@ export async function ensureDefaultSubscriptionPlans(): Promise<void> {
     { listOnPricingPage: { $exists: false } },
     { $set: { listOnPricingPage: true } }
   );
-  await SubscriptionPlanModel.updateMany({ slug: 'free' }, { $set: { listOnPricingPage: true } });
+  await SubscriptionPlanModel.updateMany(
+    { slug: 'free' },
+    { $set: { listOnPricingPage: true, isFreemium: true } }
+  );
+  await SubscriptionPlanModel.updateMany(
+    { basePriceCents: 0, slug: { $ne: 'free' }, isFreemium: { $ne: true } },
+    { $set: { isFreemium: false } }
+  );
   const free = await SubscriptionPlanModel.findOne({ slug: 'free', version: 1 });
   if (!free) {
     await SubscriptionPlanModel.create({
@@ -25,6 +32,7 @@ export async function ensureDefaultSubscriptionPlans(): Promise<void> {
       maxSubscriptionSlots: 0,
       archived: false,
       listOnPricingPage: true,
+      isFreemium: true,
     });
   }
   const basic = await SubscriptionPlanModel.findOne({ slug: 'basic', version: 1 });

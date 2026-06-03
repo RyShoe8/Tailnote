@@ -1,6 +1,7 @@
 import type { PublicPricingPlan } from './getPublicPricingPlans';
 import { getBillingContext } from '../context';
 import { DEFAULT_PLAN_FEATURE_BULLETS } from './defaultPlanFeatureBullets';
+import { isFreemiumPricingPlan } from './planFreemium';
 
 export function formatUsd(cents: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
@@ -19,12 +20,8 @@ export function intervalSuffix(interval: PublicPricingPlan['interval']): string 
   }
 }
 
-function isFreePricingPlan(plan: PublicPricingPlan): boolean {
-  return plan.slug.trim().toLowerCase() === 'free' || plan.basePriceCents === 0;
-}
-
 export function primaryPriceLine(plan: PublicPricingPlan): string {
-  if (isFreePricingPlan(plan)) return 'Free';
+  if (isFreemiumPricingPlan(plan)) return 'Free';
   if (plan.interval === 'lifetime') {
     return `${formatUsd(plan.basePriceCents)} one-time`;
   }
@@ -68,7 +65,7 @@ function baseFeatureBullets(): readonly string[] {
 }
 
 export function planFeatureBullets(plan: PublicPricingPlan): string[] {
-  if (isFreePricingPlan(plan)) {
+  if (isFreemiumPricingPlan(plan)) {
     return [
       'Core signature generation and copy-paste install (Gmail and Outlook)',
       'Layout presets (up to 4)',
@@ -80,7 +77,7 @@ export function planFeatureBullets(plan: PublicPricingPlan): string[] {
 }
 
 export function planExcludedFeatureBullets(plan: PublicPricingPlan): string[] {
-  if (!isFreePricingPlan(plan)) return [];
+  if (!isFreemiumPricingPlan(plan)) return [];
   return [
     'Remove Tailnote branding',
     'Click and open analytics',

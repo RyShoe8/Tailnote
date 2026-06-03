@@ -1,12 +1,16 @@
 import mongoose from 'mongoose';
 import type Stripe from 'stripe';
 import { isValidObjectIdString } from '../utils/objectId';
+import { assignOrganizationPlan } from '../admin/assignOrganizationPlan';
 import {
   CheckoutSessionError,
   createCheckoutSessionForOrganization,
-  isFreeSubscriptionPlan,
   validatePlanForCheckout,
 } from './createCheckoutSession';
+import {
+  isFreemiumSubscriptionPlan,
+  shouldAssignPlanWithoutCheckout,
+} from './planFreemium';
 import { getEffectiveSeatCount } from './employeeLimits';
 import { isActiveSubscriptionStatus } from './subscriptionAccess';
 import { connectBillingDb, getBillingContext, getOrganizationModel } from '../context';
@@ -47,7 +51,7 @@ export async function changeStripeSubscriptionPlan(args: {
     throw new ChangePlanError('Plan not found', 404);
   }
 
-  if (isFreeSubscriptionPlan(targetPlan)) {
+  if (isFreemiumSubscriptionPlan(targetPlan)) {
     const OrganizationModel = getOrganizationModel();
     await OrganizationSubscriptionModel.findOneAndUpdate(
       { organizationId: args.org._id },
@@ -66,6 +70,19 @@ export async function changeStripeSubscriptionPlan(args: {
       mode: 'updated',
       subscriptionPlanId: String(targetPlan._id),
       planSlug: 'free',
+    };
+  }
+
+  if (shouldAssignPlanWithoutCheckout(targetPlan)) {
+    await assignOrganizationPlan(
+      args.org._id,
+      new mongoose.Types.ObjectId(String(targetPlan._id)),
+      'active'
+    );
+    return {
+      mode: 'updated',
+      subscriptionPlanId: String(targetPlan._id),
+      planSlug: String(targetPlan.slug),
     };
   }
 

@@ -17,6 +17,7 @@ export type PlanRow = {
   paused: boolean;
   archived?: boolean;
   listOnPricingPage?: boolean;
+  isFreemium?: boolean;
   version: number;
   stripeBasePriceId?: string;
   maxSubscriptionSlots?: number;
@@ -174,6 +175,11 @@ export function AdminPlansTable({
                   <td className="p-3 font-medium">
                     {p.name}
                     <span className="block text-xs text-muted-foreground">v{p.version}</span>
+                    {p.isFreemium ? (
+                      <span className="mt-1 mr-1 inline-block rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800 dark:text-amber-200">
+                        Freemium
+                      </span>
+                    ) : null}
                     {publicPricingExclusionReasons(p).map((reason) => (
                       <span
                         key={reason}

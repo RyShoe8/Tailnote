@@ -48,10 +48,17 @@ export function planTierFromPlanSlug(plan: string | null | undefined): Organizat
 
 export function getOrganizationPlanTier(org: PlanLike | null | undefined): OrganizationPlanTier {
   if (!org) return 'free';
-  const tierFromSlug = planTierFromPlanSlug(org.plan);
-  if (tierFromSlug === 'free') return 'free';
-  if (stripeDevBypass()) return tierFromSlug;
-  return isOrganizationPaid(org) ? tierFromSlug : 'free';
+  const slug = normalizePlanSlug(org.plan);
+  if (slug === 'free') return 'free';
+  if (stripeDevBypass()) {
+    if (slug === 'team' || slug === 'pro') return 'team';
+    if (slug === 'solo' || slug === 'basic') return 'solo';
+    return 'team';
+  }
+  if (!isOrganizationPaid(org)) return 'free';
+  if (slug === 'team' || slug === 'pro') return 'team';
+  if (slug === 'solo' || slug === 'basic') return 'solo';
+  return 'team';
 }
 
 export function isFreePlan(org: PlanLike | null | undefined): boolean {

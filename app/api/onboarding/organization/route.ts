@@ -17,8 +17,10 @@ import {
   mapLegacyOrganizationSlugIndexError,
 } from '@/lib/admin/mongoErrors';
 import {
+  assignOrganizationPlan,
   createCheckoutSessionForOrganization,
-  isFreeSubscriptionPlan,
+  isFreemiumSubscriptionPlan,
+  shouldAssignPlanWithoutCheckout,
   validatePlanForCheckout,
   CheckoutSessionError,
 } from 'billing-engine';
@@ -79,7 +81,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
     }
 
-    if (!isFreeSubscriptionPlan(dbPlan)) {
+    const assignWithoutCheckout = shouldAssignPlanWithoutCheckout(dbPlan);
+    const isFreemium = isFreemiumSubscriptionPlan(dbPlan);
+
+    if (!assignWithoutCheckout) {
       if (!stripeBillingEnabled()) {
         return NextResponse.json({ error: 'Billing is not configured' }, { status: 503 });
       }
@@ -98,8 +103,8 @@ export async function POST(request: Request) {
       org = await OrganizationModel.create({
         name: parsed.data.name,
         companyName: parsed.data.name,
-        subscriptionStatus: isFreeSubscriptionPlan(dbPlan) ? 'none' : 'incomplete',
-        plan: isFreeSubscriptionPlan(dbPlan) ? 'free' : 'none',
+        subscriptionStatus: isFreemium ? 'none' : assignWithoutCheckout ? 'active' : 'incomplete',
+        plan: isFreemium ? 'free' : assignWithoutCheckout ? String(dbPlan.slug) : 'none',
       });
     } catch (err) {
       const legacySlug = mapLegacyOrganizationSlugIndexError(err);
@@ -134,8 +139,12 @@ export async function POST(request: Request) {
         });
       }
 
+      if (assignWithoutCheckout && !isFreemium) {
+        await assignOrganizationPlan(org._id, new mongoose.Types.ObjectId(planId), 'active');
+      }
+
       const base = getAppBaseUrl();
-      const checkoutUrl = isFreeSubscriptionPlan(dbPlan)
+      const checkoutUrl = assignWithoutCheckout
         ? `${base}/dashboard`
         : (
             await createCheckoutSessionForOrganization({

@@ -5,13 +5,17 @@ import { connectBillingDb, getBillingContext, getOrganizationModel } from '../..
 import { OrganizationSubscriptionModel } from '../../models/OrganizationSubscription';
 import { SubscriptionPlanModel, type SubscriptionPlanDoc } from '../../models/SubscriptionPlan';
 import { validObjectId } from '../../utils/validObjectId';
+import { assignOrganizationPlan } from '../../admin/assignOrganizationPlan';
 import {
   checkoutErrorToResponse,
   createCheckoutSessionForOrganization,
-  isFreeSubscriptionPlan,
   validatePlanForCheckout,
   CheckoutSessionError,
 } from '../../billing/createCheckoutSession';
+import {
+  isFreemiumSubscriptionPlan,
+  shouldAssignPlanWithoutCheckout,
+} from '../../billing/planFreemium';
 import { stripeBillingEnabled } from '../../billing/subscriptionAccess';
 
 export const dynamic = 'force-dynamic';
@@ -63,21 +67,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
     }
 
-    if (isFreeSubscriptionPlan(dbPlan)) {
-      const OrganizationModel = getOrganizationModel();
-      await OrganizationModel.findByIdAndUpdate(org._id, {
-        $set: { plan: 'free', subscriptionStatus: 'none', stripeSubscriptionId: '' },
-      });
-      await OrganizationSubscriptionModel.findOneAndUpdate(
-        { organizationId: org._id },
-        {
-          $set: {
-            subscriptionPlanId: new mongoose.Types.ObjectId(planId),
-            status: 'incomplete',
+    if (shouldAssignPlanWithoutCheckout(dbPlan)) {
+      if (isFreemiumSubscriptionPlan(dbPlan)) {
+        const OrganizationModel = getOrganizationModel();
+        await OrganizationModel.findByIdAndUpdate(org._id, {
+          $set: { plan: 'free', subscriptionStatus: 'none', stripeSubscriptionId: '' },
+        });
+        await OrganizationSubscriptionModel.findOneAndUpdate(
+          { organizationId: org._id },
+          {
+            $set: {
+              subscriptionPlanId: new mongoose.Types.ObjectId(planId),
+              status: 'incomplete',
+            },
           },
-        },
-        { upsert: true }
-      );
+          { upsert: true }
+        );
+      } else {
+        await assignOrganizationPlan(org._id, new mongoose.Types.ObjectId(planId), 'active');
+      }
       const base = getBillingContext().billing.getAppBaseUrl();
       return NextResponse.json({ checkoutUrl: `${base}/dashboard` });
     }

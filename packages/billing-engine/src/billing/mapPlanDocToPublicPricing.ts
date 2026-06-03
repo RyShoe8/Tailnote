@@ -1,6 +1,7 @@
 import type { SubscriptionPlanDoc } from '../models/SubscriptionPlan';
 import type { PublicPricingPlan } from '../billing/getPublicPricingPlans';
 import { getPlanSubscriptionCapUsage } from '../billing/planSubscriptionCap';
+import { isFreemiumSubscriptionPlan } from '../billing/planFreemium';
 
 export async function mapPlanDocToPublicPricing(
   plan: SubscriptionPlanDoc
@@ -21,5 +22,6 @@ export async function mapPlanDocToPublicPricing(
     subscriptionCount: usage.used,
     soldOut: usage.soldOut,
     trialDays: Math.max(0, Number(plan.trialDays ?? 0)),
+    isFreemium: isFreemiumSubscriptionPlan(plan),
   };
 }

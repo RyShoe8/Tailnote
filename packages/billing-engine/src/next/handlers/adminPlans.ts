@@ -22,6 +22,7 @@ const CreateSchema = z.object({
   archived: z.boolean().optional(),
   listOnPricingPage: z.boolean().optional(),
   trialDays: z.number().int().min(0).max(730).optional(),
+  isFreemium: z.boolean().optional(),
 });
 
 async function enrichPlans(plans: SubscriptionPlanDoc[]) {

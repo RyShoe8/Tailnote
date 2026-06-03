@@ -28,7 +28,7 @@ type OrgSubLike = {
 };
 
 function isPaidOfferablePlan(p: PublicPricingPlan): boolean {
-  return p.slug.trim().toLowerCase() !== 'free' && p.basePriceCents > 0;
+  return !p.isFreemium;
 }
 
 function otherOfferablePlans(

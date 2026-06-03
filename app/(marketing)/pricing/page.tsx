@@ -7,6 +7,7 @@ import { FloatingOrbs } from '@/components/marketing/FloatingOrbs';
 import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
 import { getPublicPricingPlans } from 'billing-engine';
 import { isRecommendedPlan } from 'billing-engine/pricing-display';
+import { isFreemiumPricingPlan } from 'billing-engine';
 import type { PublicPricingPlan } from 'billing-engine';
 import {
   marketingBreadcrumbJsonLd,
@@ -26,10 +27,6 @@ export const metadata = createPageMetadata({
   description: pricingPage.description,
   path: pricingPage.path,
 });
-
-function isFreePricingPlan(plan: PublicPricingPlan): boolean {
-  return plan.slug.trim().toLowerCase() === 'free' || plan.basePriceCents === 0;
-}
 
 export default async function PricingPage() {
   const plans = await getPublicPricingPlans();
@@ -82,7 +79,7 @@ export default async function PricingPage() {
                       <Button className="w-full" disabled>
                         Sold out
                       </Button>
-                    ) : isFreePricingPlan(plan) ? (
+                    ) : isFreemiumPricingPlan(plan) ? (
                       <Button asChild className="w-full shadow-card">
                         <Link href="/signup">Get started free</Link>
                       </Button>

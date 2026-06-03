@@ -1,4 +1,5 @@
 import { migrateDefaultFreePlanOrganizations } from '@/lib/migrations/migrateDefaultFreePlan';
+import { migrateFreemiumPlanFlag } from '@/lib/migrations/migrateFreemiumPlanFlag';
 
 type GlobalMigrations = typeof globalThis & {
   tailnoteStartupMigrationsDone?: boolean;
@@ -19,13 +20,23 @@ export async function ensureStartupMigrations(): Promise<void> {
   }
 
   g.tailnoteStartupMigrationsPromise = (async () => {
-    const result = await migrateDefaultFreePlanOrganizations();
-    if (result.paidPlanBackfilled > 0 || result.freePlanDefaulted > 0) {
+    const [orgResult, planResult] = await Promise.all([
+      migrateDefaultFreePlanOrganizations(),
+      migrateFreemiumPlanFlag(),
+    ]);
+    if (orgResult.paidPlanBackfilled > 0 || orgResult.freePlanDefaulted > 0) {
       console.info(
         '[startup migrations] default free plan:',
-        `orgs=${result.totalOrganizations}`,
-        `paidBackfilled=${result.paidPlanBackfilled}`,
-        `freeDefaulted=${result.freePlanDefaulted}`
+        `orgs=${orgResult.totalOrganizations}`,
+        `paidBackfilled=${orgResult.paidPlanBackfilled}`,
+        `freeDefaulted=${orgResult.freePlanDefaulted}`
+      );
+    }
+    if (planResult.freePlansMarked > 0 || planResult.complimentaryPlansCleared > 0) {
+      console.info(
+        '[startup migrations] freemium plan flag:',
+        `freeMarked=${planResult.freePlansMarked}`,
+        `complimentaryCleared=${planResult.complimentaryPlansCleared}`
       );
     }
     g.tailnoteStartupMigrationsDone = true;

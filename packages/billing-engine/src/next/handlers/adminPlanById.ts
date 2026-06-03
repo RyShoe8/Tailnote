@@ -20,6 +20,7 @@ const PatchSchema = z.object({
   archived: z.boolean().optional(),
   listOnPricingPage: z.boolean().optional(),
   trialDays: z.number().int().min(0).max(730).optional(),
+  isFreemium: z.boolean().optional(),
 });
 
 type Params = { params: Promise<{ id: string }> };

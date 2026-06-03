@@ -86,7 +86,7 @@ export function OnboardingForm({ plans, resumeMode = false, organizationName }: 
 
   const offerablePlans = plans.filter((p) => !p.soldOut);
   const selectedPlan = plans.find((p) => p.id === selectedPlanId);
-  const selectedPlanIsFree = Boolean(selectedPlan && selectedPlan.basePriceCents === 0);
+  const selectedPlanIsFree = Boolean(selectedPlan?.isFreemium);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -12,12 +12,19 @@ import {
 } from './planSubscriptionCap';
 import { resolveCheckoutTrialDays } from './resolveCheckoutTrialDays';
 import { getBillingContext } from '../context';
+import {
+  isComplimentaryZeroPricePlan,
+  isFreemiumSubscriptionPlan,
+} from './planFreemium';
 
+/** @deprecated Use isFreemiumSubscriptionPlan */
 export function isFreeSubscriptionPlan(
-  plan: Pick<SubscriptionPlanDoc, 'slug' | 'basePriceCents'>
+  plan: Pick<SubscriptionPlanDoc, 'slug' | 'isFreemium'>
 ): boolean {
-  return String(plan.slug ?? '').trim().toLowerCase() === 'free' || Number(plan.basePriceCents ?? 0) === 0;
+  return isFreemiumSubscriptionPlan(plan);
 }
+
+export { isFreemiumSubscriptionPlan } from './planFreemium';
 
 export class CheckoutSessionError extends Error {
   constructor(
@@ -36,7 +43,10 @@ export async function validatePlanForCheckout(
   if (!isPlanOfferable(dbPlan)) {
     throw new CheckoutSessionError('Plan not available', 400);
   }
-  if (isFreeSubscriptionPlan(dbPlan)) {
+  if (isFreemiumSubscriptionPlan(dbPlan)) {
+    return;
+  }
+  if (isComplimentaryZeroPricePlan(dbPlan) && !String(dbPlan.stripeBasePriceId ?? '').trim()) {
     return;
   }
   if (!dbPlan.stripeBasePriceId) {
@@ -89,8 +99,11 @@ export async function createCheckoutSessionForOrganization(
     if (!dbPlan) {
       throw new CheckoutSessionError('Plan not found', 404);
     }
-    if (isFreeSubscriptionPlan(dbPlan)) {
+    if (isFreemiumSubscriptionPlan(dbPlan)) {
       throw new CheckoutSessionError('Free plan does not require checkout', 400);
+    }
+    if (isComplimentaryZeroPricePlan(dbPlan) && !String(dbPlan.stripeBasePriceId ?? '').trim()) {
+      throw new CheckoutSessionError('This plan does not require checkout', 400);
     }
     await validatePlanForCheckout(dbPlan, orgId);
 
@@ -110,8 +123,14 @@ export async function createCheckoutSessionForOrganization(
       .lean<SubscriptionPlanDoc>();
 
     if (slugPlan?.stripeBasePriceId) {
-      if (isFreeSubscriptionPlan(slugPlan)) {
+      if (isFreemiumSubscriptionPlan(slugPlan)) {
         throw new CheckoutSessionError('Free plan does not require checkout', 400);
+      }
+      if (
+        isComplimentaryZeroPricePlan(slugPlan) &&
+        !String(slugPlan.stripeBasePriceId ?? '').trim()
+      ) {
+        throw new CheckoutSessionError('This plan does not require checkout', 400);
       }
       await validatePlanForCheckout(slugPlan, orgId);
       priceId = slugPlan.stripeBasePriceId;

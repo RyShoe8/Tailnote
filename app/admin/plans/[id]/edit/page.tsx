@@ -27,6 +27,7 @@ export default async function EditAdminPlanPage({ params }: Props) {
     maxSubscriptionSlots: Number(p.maxSubscriptionSlots ?? 0),
     listOnPricingPage: p.listOnPricingPage !== false,
     trialDays: Number(p.trialDays ?? 0),
+    isFreemium: p.isFreemium === true,
   };
 
   const backHref = p.archived ? '/admin/plans/archived' : '/admin/plans';

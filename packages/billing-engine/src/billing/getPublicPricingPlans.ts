@@ -19,6 +19,7 @@ export type PublicPricingPlan = {
   subscriptionCount: number;
   soldOut: boolean;
   trialDays: number;
+  isFreemium: boolean;
 };
 
 /**

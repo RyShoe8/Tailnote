@@ -9,6 +9,7 @@ import {
   mapSubscriptionStatus,
   organizationPlanForStripeStatus,
 } from '../lib/billing/subscriptionAccess';
+import { isFreemiumSubscriptionPlan } from 'billing-engine';
 
 function assert(cond: boolean, msg: string) {
   if (!cond) throw new Error(msg);
@@ -63,7 +64,33 @@ withEnv({ NODE_ENV: 'production', STRIPE_SECRET_KEY: '' }, () => {
   const activePro = { plan: 'pro', subscriptionStatus: 'active' as const };
   assert(isOrganizationPaid(activePro), 'production without Stripe: active still paid');
   assert(isPaidPlan(activePro), 'production without Stripe: active is paid plan');
+
+  const friendsActive = { plan: 'friends-family', subscriptionStatus: 'active' as const };
+  assert(isPaidPlan(friendsActive), 'friends-family active is paid');
+  assert(hasBrandingRemoval(friendsActive), 'friends-family active has branding removal');
+  assert(hasAnalytics(friendsActive), 'friends-family active has analytics');
+  assert(
+    getOrganizationPlanTier(friendsActive) === 'team',
+    'friends-family active maps to team tier'
+  );
+
+  const friendsInactive = { plan: 'friends-family', subscriptionStatus: 'none' as const };
+  assert(isFreePlan(friendsInactive), 'lapsed friends-family is freemium tier');
+  assert(!hasBrandingRemoval(friendsInactive), 'lapsed friends-family has no branding removal');
 });
+
+assert(
+  !isFreemiumSubscriptionPlan({ slug: 'friends-family', isFreemium: false }),
+  'complimentary $0 plan is not freemium'
+);
+assert(
+  isFreemiumSubscriptionPlan({ slug: 'friends-family', isFreemium: true }),
+  'explicit isFreemium flag'
+);
+assert(
+  isFreemiumSubscriptionPlan({ slug: 'free', isFreemium: false }),
+  'slug free back-compat'
+);
 
 withEnv({ NODE_ENV: 'development', STRIPE_SECRET_KEY: '' }, () => {
   const inactivePro = { plan: 'pro', subscriptionStatus: 'none' as const };

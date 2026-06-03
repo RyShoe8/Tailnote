@@ -20,6 +20,7 @@ const empty = {
   maxSubscriptionSlots: 0,
   listOnPricingPage: true,
   trialDays: 0,
+  isFreemium: false,
 };
 
 export function AdminPlanForm({
@@ -52,6 +53,7 @@ export function AdminPlanForm({
         maxSubscriptionSlots: Number(form.maxSubscriptionSlots),
         listOnPricingPage: form.listOnPricingPage,
         trialDays: form.interval === 'lifetime' ? 0 : Number(form.trialDays),
+        isFreemium: form.isFreemium,
       };
       const url = mode === 'create' ? '/api/admin/plans' : `/api/admin/plans/${planId}`;
       const res = await fetch(url, {
@@ -201,6 +203,24 @@ export function AdminPlanForm({
               }
             />
           </div>
+          <div className="flex items-center gap-2">
+            <input
+              id="isFreemium"
+              type="checkbox"
+              className="h-4 w-4 rounded border border-input"
+              checked={form.isFreemium}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setForm((f) => ({ ...f, isFreemium: e.target.checked }))
+              }
+            />
+            <Label htmlFor="isFreemium" className="font-normal cursor-pointer">
+              Freemium tier (apply product restrictions)
+            </Label>
+          </div>
+          <p className="text-xs text-muted-foreground -mt-2">
+            Only the public free plan should use this. Complimentary $0 plans (e.g. friends &amp; family)
+            should stay unchecked for full premium features.
+          </p>
           <div className="flex items-center gap-2">
             <input
               id="listOnPricingPage"
