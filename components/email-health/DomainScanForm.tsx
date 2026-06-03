@@ -10,9 +10,15 @@ import { Input } from '@/components/ui/input';
 type Props = {
   initialDomain?: string;
   size?: 'default' | 'large';
+  /** Where to navigate after a successful scan (default public marketing path). */
+  resultBasePath?: string;
 };
 
-export function DomainScanForm({ initialDomain = '', size = 'default' }: Props) {
+export function DomainScanForm({
+  initialDomain = '',
+  size = 'default',
+  resultBasePath = '/email-health',
+}: Props) {
   const router = useRouter();
   const [domain, setDomain] = useState(initialDomain);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +56,8 @@ export function DomainScanForm({ initialDomain = '', size = 'default' }: Props) 
       });
 
       if (data.slug) {
-        router.push(`/email-health/${data.slug}`);
+        const base = resultBasePath.replace(/\/$/, '');
+        router.push(`${base}/${data.slug}`);
       }
     } catch {
       setError('Network error. Please try again.');

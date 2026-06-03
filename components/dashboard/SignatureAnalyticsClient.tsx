@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
+import { resolveSignatureClickKindLabel } from '@/lib/signatureContentBlockAnalytics';
 
 type AnalyticsPayload = {
   from: string;
@@ -34,6 +35,7 @@ type AnalyticsPayload = {
   canFilterByEmployee: boolean;
   gated?: boolean;
   upgradeUrl?: string;
+  promoKindLabels?: Record<string, string>;
 };
 
 function defaultFromDate(): string {
@@ -43,14 +45,6 @@ function defaultFromDate(): string {
 
 function defaultToDate(): string {
   return new Date().toISOString().slice(0, 10);
-}
-
-function kindLabel(kind: string): string {
-  return kind
-    .replace(/^social_/, '')
-    .replace(/^content_block_/, 'Promo ')
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function useIsSm(): boolean {
@@ -105,7 +99,10 @@ export function SignatureAnalyticsClient() {
   const kindChartData = useMemo(() => {
     if (!data) return [];
     return Object.entries(data.byKind)
-      .map(([kind, count]) => ({ kind: kindLabel(kind), count }))
+      .map(([kind, count]) => ({
+        kind: resolveSignatureClickKindLabel(kind, data.promoKindLabels),
+        count,
+      }))
       .sort((a, b) => b.count - a.count);
   }, [data]);
 

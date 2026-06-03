@@ -8,6 +8,7 @@ import { resolveViewerEmployeeId } from '@/lib/analytics/resolveViewerEmployee';
 import { OrganizationModel } from '@/models/Organization';
 import { requireAnalytics } from '@/lib/dashboard/analyticsRequired';
 import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
+import { buildPromoKindLabelMap } from '@/lib/signatureContentBlockAnalytics';
 import mongoose from 'mongoose';
 
 export const dynamic = 'force-dynamic';
@@ -69,8 +70,11 @@ export async function GET(request: Request) {
       canFilterByEmployee: false,
       gated: true,
       upgradeUrl: DASHBOARD_UPGRADE_HREF,
+      promoKindLabels: {},
     });
   }
+
+  const promoKindLabels = await buildPromoKindLabelMap(user.organizationId);
 
   let filterEmployeeId: mongoose.Types.ObjectId | undefined;
 
@@ -103,6 +107,7 @@ export async function GET(request: Request) {
         opensByDay: [],
         activityByDay: [],
         employees: [],
+        promoKindLabels,
       });
     }
     filterEmployeeId = viewerEmpId;
@@ -187,5 +192,6 @@ export async function GET(request: Request) {
       email: e.email,
     })),
     canFilterByEmployee: isOwnerOrAdmin,
+    promoKindLabels,
   });
 }

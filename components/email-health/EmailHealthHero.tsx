@@ -4,7 +4,11 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { DomainScanForm } from '@/components/email-health/DomainScanForm';
 import { EMAIL_HEALTH_HERO } from '@/lib/email-health/seoCopy';
 
-export function EmailHealthHero() {
+type Props = {
+  resultBasePath?: string;
+};
+
+export function EmailHealthHero({ resultBasePath }: Props) {
   const reduceMotion = useReducedMotion();
 
   return (
@@ -28,7 +32,7 @@ export function EmailHealthHero() {
       </motion.div>
 
       <div className="mx-auto mt-10 max-w-xl">
-        <DomainScanForm size="large" />
+        <DomainScanForm size="large" resultBasePath={resultBasePath} />
       </div>
     </>
   );
