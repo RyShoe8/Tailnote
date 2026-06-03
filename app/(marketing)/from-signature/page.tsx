@@ -74,7 +74,7 @@ const STEPS = [
 
 const FREE_INCLUDED = [
   'Core signature for one user',
-  'Layout presets (up to 4)',
+  'All signature layout presets',
   'Promotional content blocks',
   'Gmail and Outlook install',
   'Domain email health checker (SPF, DKIM, DMARC, BIMI)',
@@ -89,7 +89,7 @@ const FREE_EXCLUDED = [
 const PAID_HIGHLIGHTS = [
   'Remove Powered by Tailnote attribution',
   'Click and open analytics',
-  'More seats and full preset library',
+  'Additional team seats',
   'Signature animation slot',
 ] as const;
 

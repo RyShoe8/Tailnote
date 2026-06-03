@@ -71,7 +71,7 @@ export function planFeatureBullets(plan: PublicPricingPlan): string[] {
   if (isFreemiumPricingPlan(plan)) {
     return [
       'Core signature generation and copy-paste install (Gmail and Outlook)',
-      'Layout presets (up to 4)',
+      'All signature layout presets',
       'Promotional content blocks',
       FREEMIUM_EMAIL_HEALTH_BULLET,
       'Powered by Tailnote attribution on signatures',
@@ -86,7 +86,7 @@ export function planExcludedFeatureBullets(plan: PublicPricingPlan): string[] {
     'Remove Tailnote branding',
     'Click and open analytics',
     'Additional team seats',
-    'Signature animation slot and full preset library',
+    'Signature animation slot',
   ];
 }
 
