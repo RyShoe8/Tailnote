@@ -64,12 +64,16 @@ function baseFeatureBullets(): readonly string[] {
   return DEFAULT_PLAN_FEATURE_BULLETS;
 }
 
+const FREEMIUM_EMAIL_HEALTH_BULLET =
+  'Domain email health checker (SPF, DKIM, DMARC, BIMI) in your dashboard';
+
 export function planFeatureBullets(plan: PublicPricingPlan): string[] {
   if (isFreemiumPricingPlan(plan)) {
     return [
       'Core signature generation and copy-paste install (Gmail and Outlook)',
       'Layout presets (up to 4)',
       'Promotional content blocks',
+      FREEMIUM_EMAIL_HEALTH_BULLET,
       'Powered by Tailnote attribution on signatures',
     ];
   }

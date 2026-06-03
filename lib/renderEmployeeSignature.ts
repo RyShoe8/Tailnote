@@ -18,7 +18,7 @@ const DEFAULT_UTM = { source: 'Tailnote', medium: 'Email', campaign: 'Footer' };
 
 export function orgToBrandInput(org: OrganizationDoc, contentBlocks?: ContentBlockData[]): OrgBrandInput {
   const sl = org.socialLinks as
-    | { linkedin?: string; facebook?: string; instagram?: string; reddit?: string; discord?: string }
+    | { linkedin?: string; facebook?: string; instagram?: string; reddit?: string; discord?: string; bluesky?: string }
     | undefined;
   return {
     companyName: (org.companyName || org.name || '').trim(),
@@ -35,6 +35,7 @@ export function orgToBrandInput(org: OrganizationDoc, contentBlocks?: ContentBlo
       instagram: sl?.instagram,
       reddit: sl?.reddit,
       discord: sl?.discord,
+      bluesky: sl?.bluesky,
     },
     address: org.address ?? undefined,
     city: org.city ?? undefined,

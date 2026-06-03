@@ -41,6 +41,9 @@ export const CREATOR_SIGNATURE_TEMPLATE = `<table class="sig-creator-root" cellp
                 {{#if hasDiscord}}
                 <td style="{{creatorSocialTdDiscordStyle}}"><a href="{{discord}}" style="text-decoration: none; display: block; border: 0; outline: none;"><img src="{{iconDiscord}}" alt="Discord" width="18" height="18" border="0" style="width: 18px; height: 18px; display: block; border: 0;" /></a></td>
                 {{/if}}
+                {{#if hasBluesky}}
+                <td style="{{creatorSocialTdBlueskyStyle}}"><a href="{{bluesky}}" style="text-decoration: none; display: block; border: 0; outline: none;"><img src="{{iconBluesky}}" alt="Bluesky" width="18" height="18" border="0" style="width: 18px; height: 18px; display: block; border: 0;" /></a></td>
+                {{/if}}
               </tr>
             </table>
             {{/if}}

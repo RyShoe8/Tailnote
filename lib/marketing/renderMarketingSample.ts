@@ -272,6 +272,7 @@ function demoBrand(origin: string, presetId: TemplatePresetId): SignatureBrand {
           linkedin: 'https://www.linkedin.com/company/example',
           reddit: 'https://www.reddit.com/user/example',
           discord: 'https://discord.gg/example',
+          bluesky: 'https://bsky.app/profile/example.bsky.social',
         }
       : {
           linkedin: 'https://www.linkedin.com/company/example',

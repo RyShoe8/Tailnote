@@ -16,7 +16,7 @@ export const aboutContent = {
     {
       title: 'What we do',
       paragraphs: [
-        'Tailnote is a SaaS platform built for modern teams that need consistent branding in every email. You choose from curated signature templates, set brand colors and logos, manage employees, and publish signatures that work in real inboxes—including optional hosted preview pages and copy-paste install for Gmail and Outlook.',
+        'Tailnote is a SaaS platform built for modern teams that need consistent branding in every email. You choose from curated signature layouts, set brand colors and logos, manage employees, and publish signatures that work in real inboxes—including optional hosted preview pages and copy-paste install for Gmail and Outlook.',
       ],
     },
     {
@@ -28,8 +28,8 @@ export const aboutContent = {
     {
       title: 'Why teams choose Tailnote',
       listItems: [
-        'Curated templates designed for email client compatibility—not drag-and-drop chaos.',
-        'Organization-wide control over branding, employees, and templates.',
+        'Curated signature layouts designed for email client compatibility—not drag-and-drop chaos.',
+        'Organization-wide control over branding, employees, and signature layouts.',
         'Subscription billing with flexible plans and seat-based pricing.',
         'Hosted signature previews and optional click and open analytics when you enable tracking.',
       ],
@@ -59,7 +59,7 @@ export const privacyContent = {
       paragraphs: ['We collect information you provide and information generated through your use of the Service:'],
       listItems: [
         'Account information: name, email address, and credentials managed through our authentication provider (Better Auth).',
-        'Organization and employee data: company name, job titles, contact fields, social links, signature content, and template preferences you enter in the dashboard.',
+        'Organization and employee data: company name, job titles, contact fields, social links, signature content, and layout preferences you enter in the dashboard.',
         'Uploaded assets: logos and images you upload for signatures (stored via Vercel Blob).',
         'Billing information: subscription and payment details processed by Stripe. We do not store full payment card numbers on our servers.',
         'Signature analytics (optional): when your organization enables click tracking, we log clicks on tracked links in signatures (for example, link URL and timestamp). When you separately enable open tracking, we log loads of a small tracking image in signatures you copy from Tailnote.',

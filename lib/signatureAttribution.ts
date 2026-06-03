@@ -1,6 +1,6 @@
 import { hasBrandingRemoval } from '@/lib/billing/subscriptionAccess';
 
-const ATTRIBUTION_LINK = 'https://tailnote.io/signatures';
+const ATTRIBUTION_LINK = 'https://tailnote.io/from-signature';
 
 export function shouldIncludeTailnoteAttribution(
   org: { plan?: string | null; subscriptionStatus?: string | null } | null | undefined

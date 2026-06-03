@@ -35,7 +35,7 @@ function CarouselPrevButton({
       variant="outline"
       size="icon"
       className="shrink-0"
-      aria-label="Previous template"
+      aria-label="Previous signature"
       disabled={activeIndex <= 0}
       onClick={onPrev}
     >
@@ -59,7 +59,7 @@ function CarouselNextButton({
       variant="outline"
       size="icon"
       className="shrink-0"
-      aria-label="Next template"
+      aria-label="Next signature"
       disabled={activeIndex >= presetsLength - 1}
       onClick={onNext}
     >
@@ -83,7 +83,7 @@ function CarouselDots({
     <div
       className={className ?? 'flex flex-wrap items-center justify-center gap-2'}
       role="tablist"
-      aria-label="Template slides"
+      aria-label="Signature slides"
     >
       {presets.map((preset, index) => (
         <button
@@ -91,7 +91,7 @@ function CarouselDots({
           type="button"
           role="tab"
           aria-selected={index === activeIndex}
-          aria-label={`Show ${preset.name} template`}
+          aria-label={`Show ${preset.name} signature`}
           className={`h-2.5 rounded-full transition-all ${
             index === activeIndex ? 'w-8 bg-primary' : 'w-2.5 bg-slate-300 hover:bg-slate-400'
           }`}
@@ -250,7 +250,7 @@ export function HomeTemplateCarousel({ presets }: Props) {
       style={reserveMinHeight != null ? { minHeight: reserveMinHeight } : undefined}
       role="region"
       aria-roledescription="carousel"
-      aria-label="Signature template previews"
+      aria-label="Signature previews"
     >
       <div ref={chromeRef} data-templates-carousel-chrome>
         <div className="mb-4 flex items-center justify-center gap-3">

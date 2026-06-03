@@ -1,6 +1,6 @@
 # Tailnote
 
-> Tailnote — Turn every email into a marketing moment. Email signature software for teams: on-brand signatures, promotional content blocks in every email, UTM link tracking, click analytics, curated templates, and copy-paste install for Gmail and Outlook.
+> Tailnote — Turn every email into a marketing moment. Email signature software for teams: on-brand signatures, promotional content blocks in every email, UTM link tracking, click analytics, curated signature layouts, and copy-paste install for Gmail and Outlook.
 
 Canonical site: https://tailnote.com
 
@@ -8,7 +8,7 @@ Canonical site: https://tailnote.com
 
 - [Home](https://tailnote.com/)
 - [Pricing](https://tailnote.com/pricing)
-- [Templates](https://tailnote.com/templates)
+- [Signatures](https://tailnote.com/signatures)
 - [Promotional Blocks](https://tailnote.com/promotional-blocks)
 - [Analytics](https://tailnote.com/analytics)
 - [Email Health — SPF, DKIM, DMARC & BIMI checker](https://tailnote.com/email-health): free email deliverability audit with SPF checker, DKIM checker, DMARC checker, BIMI checker, 0–100 email trust score, and domain email health report. Helps answer why emails go to spam.
@@ -21,7 +21,7 @@ Canonical site: https://tailnote.com
 
 - Organization-wide email signature management for employees
 - Promotional blocks (buttons, offers, blog feeds, banners) inside signatures
-- Templates designed for Gmail, Outlook, and common email clients
+- Signature layouts designed for Gmail, Outlook, and common email clients
 - Built-in UTM parameters and optional per-link click analytics
 - Stripe billing: monthly, annual, and Lifetime (one-time) plans
 - Free Email Health tool at /email-health: SPF checker, DKIM checker, DMARC checker, BIMI checker, email trust score, domain email health, email deliverability audit, and guidance on why emails go to spam

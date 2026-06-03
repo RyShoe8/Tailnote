@@ -103,6 +103,7 @@ function buildClassificationContext(input: RenderSignatureInput) {
     [stringCtx.instagram, 'social_instagram'],
     [stringCtx.reddit, 'social_reddit'],
     [stringCtx.discord, 'social_discord'],
+    [stringCtx.bluesky, 'social_bluesky'],
   ] as const) {
     const v = dec(val);
     if (v) socialByHref.set(normalizeHref(v), kind);

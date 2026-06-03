@@ -13,7 +13,7 @@ export function MarketingSignaturePreview({ html, imageSrc, alt, className }: Pr
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageSrc}
-          alt={alt ?? 'Signature template example'}
+          alt={alt ?? 'Email signature example'}
           className="block h-auto w-full"
           loading="lazy"
           decoding="async"

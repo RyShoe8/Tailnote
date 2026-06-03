@@ -58,6 +58,9 @@ export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" c
                 {{#if hasDiscord}}
                 <td style="{{portfolioSocialTdDiscordStyle}}"><a href="{{discord}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconDiscord}}" alt="Discord" width="18" style="width:18px;height:auto;display:block;border:0;" /></a></td>
                 {{/if}}
+                {{#if hasBluesky}}
+                <td style="{{portfolioSocialTdBlueskyStyle}}"><a href="{{bluesky}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconBluesky}}" alt="Bluesky" width="18" style="width:18px;height:auto;display:block;border:0;" /></a></td>
+                {{/if}}
               </tr>
             </table>
           </td>

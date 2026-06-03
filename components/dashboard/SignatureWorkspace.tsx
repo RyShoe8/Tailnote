@@ -49,7 +49,7 @@ type OrgResponse = {
   primaryColor?: string;
   secondaryColor?: string;
   fontFamily?: string;
-  socialLinks?: { linkedin?: string; facebook?: string; instagram?: string; reddit?: string; discord?: string };
+  socialLinks?: { linkedin?: string; facebook?: string; instagram?: string; reddit?: string; discord?: string; bluesky?: string };
   address?: string;
   city?: string;
   state?: string;
@@ -95,6 +95,7 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
       instagram: sl.instagram?.trim(),
       reddit: sl.reddit?.trim(),
       discord: sl.discord?.trim(),
+      bluesky: sl.bluesky?.trim(),
     },
     address: org.address?.trim(),
     city: org.city?.trim(),
@@ -196,7 +197,7 @@ export function SignatureWorkspace() {
 
       if (!tRes.ok) {
         setLoadError(
-          typeof tJson.error === 'string' ? tJson.error : 'Could not load signature templates'
+          typeof tJson.error === 'string' ? tJson.error : 'Could not load signature layouts'
         );
         return;
       }
@@ -417,6 +418,7 @@ export function SignatureWorkspace() {
     brand.socialLinks?.instagram,
     brand.socialLinks?.reddit,
     brand.socialLinks?.discord,
+    brand.socialLinks?.bluesky,
     brand.address,
     brand.city,
     brand.state,
@@ -665,7 +667,7 @@ export function SignatureWorkspace() {
     return (
       <div className="space-y-3">
         <p className="text-sm text-muted-foreground">
-          Setting up signature templates for your organization…
+          Setting up signature layouts for your organization…
         </p>
         <Button type="button" variant="secondary" onClick={() => void load()}>
           Retry
@@ -728,7 +730,7 @@ export function SignatureWorkspace() {
             <div className="space-y-3">
               <p className="text-sm font-medium">Address</p>
               <p className="text-xs text-muted-foreground">
-                Optional. Shown on the Corporate and Professional templates when filled in.
+                Optional. Shown on the Corporate and Professional layouts when filled in.
               </p>
               <div className="space-y-2">
                 <Label htmlFor="org-address">Street address</Label>
@@ -850,7 +852,7 @@ export function SignatureWorkspace() {
                 onChange={(primaryColor) => setOrg((o) => ({ ...(o || {}), primaryColor }))}
               />
               <p className="text-xs text-muted-foreground">
-                Portfolio and Creator use this for the card background. Other templates use it for
+                Portfolio and Creator use this for the card background. Other layouts use it for
                 borders, headers, and link accents.
               </p>
             </div>
@@ -887,7 +889,7 @@ export function SignatureWorkspace() {
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Preview template</Label>
+              <Label>Signature layout</Label>
               <select
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
                 value={selectedTemplateId}
@@ -924,7 +926,7 @@ export function SignatureWorkspace() {
               <div className="mb-2">
                 <h3 className="text-lg font-medium">Promotional Blocks</h3>
                 <p className="text-sm text-muted-foreground">
-                  Blocks appear in a row beneath your signature on every template, so they stay readable on phone-sized inboxes.
+                  Blocks appear in a row beneath your signature on every layout, so they stay readable on phone-sized inboxes.
                 </p>
               </div>
               <ContentBlocksEditor value={contentBlocks} onChange={setContentBlocks} />

@@ -2,6 +2,7 @@ import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
 import type { TemplatePresetId } from '@/lib/email/templatePresets';
 
 export const HOME_TEMPLATE_SHOWCASE_ORDER = [
+  'ecard',
   'default',
   'creator',
   'professional',
@@ -10,7 +11,6 @@ export const HOME_TEMPLATE_SHOWCASE_ORDER = [
   'stacked',
   'minimal',
   'portfolio',
-  'ecard',
 ] as const satisfies readonly TemplatePresetId[];
 
 export type HomeShowcasePresetId = (typeof HOME_TEMPLATE_SHOWCASE_ORDER)[number];

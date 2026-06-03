@@ -120,7 +120,7 @@ export function PromoBlocksShowcase({ showHeader = true, className = '' }: Props
             Beyond a signature. <span className="tn-grad-text">A promotional tool</span>
           </h2>
           <p className="mt-4 text-pretty text-muted-foreground">
-            Each Tailnote template can carry one or more promotional blocks beside the signature. Mix
+            Each Tailnote signature layout can carry one or more promotional blocks beside the signature. Mix
             and match four ready-made types to turn routine email into a marketing channel.
           </p>
         </div>

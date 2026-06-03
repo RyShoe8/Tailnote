@@ -11,7 +11,7 @@ async function main() {
   const assetsDir = join(process.cwd(), 'public/email-assets');
   const icons = readdirSync(assetsDir).filter((f) => /^icon-.*\.png$/i.test(f));
 
-  assert.ok(icons.length >= 5, 'expected icon-*.png files');
+  assert.ok(icons.length >= 6, 'expected icon-*.png files');
 
   for (const name of icons) {
     const path = join(assetsDir, name);
@@ -23,13 +23,13 @@ async function main() {
   }
 
   const html =
-    '<img src="https://app.example.com/email-assets/icon-linkedin.png?v=9" width="18" height="18">';
+    '<img src="https://app.example.com/email-assets/icon-linkedin.png?v=10" width="18" height="18">';
   const noop = await inlineEmailAssetIcons(html);
   assert.equal(noop, html, 'inline: no-op without browser fetch');
 
   assert.equal(
-    resolveEmailAssetIconUrl('/email-assets/icon-linkedin.png?v=9', 'https://app.example.com'),
-    'https://app.example.com/email-assets/icon-linkedin.png?v=9'
+    resolveEmailAssetIconUrl('/email-assets/icon-linkedin.png?v=10', 'https://app.example.com'),
+    'https://app.example.com/email-assets/icon-linkedin.png?v=10'
   );
   assert.equal(
     resolveEmailAssetIconUrl(

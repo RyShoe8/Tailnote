@@ -50,7 +50,7 @@ const freeAttributed = appendSignatureAttributionIfNeeded({
   org: { plan: 'free', subscriptionStatus: 'none' },
 });
 assert.match(freeAttributed, /Powered by/);
-assert.match(freeAttributed, /tailnote\.io\/signatures/);
+assert.match(freeAttributed, /tailnote\.io\/from-signature/);
 
 const paidAttributed = appendSignatureAttributionIfNeeded({
   html: raw,

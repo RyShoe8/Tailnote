@@ -11,6 +11,7 @@ export type SocialLinksValue = {
   instagram?: string;
   reddit?: string;
   discord?: string;
+  bluesky?: string;
 };
 
 type Platform = keyof SocialLinksValue;
@@ -20,15 +21,23 @@ type Props = {
   onChange: (next: SocialLinksValue) => void;
 };
 
-const PLATFORM_ORDER: Platform[] = ['linkedin', 'facebook', 'instagram', 'reddit', 'discord'];
+const PLATFORM_ORDER: Platform[] = [
+  'linkedin',
+  'facebook',
+  'instagram',
+  'reddit',
+  'discord',
+  'bluesky',
+];
 const MAX_LINKS = PLATFORM_ORDER.length;
 
 const PLATFORM_META: Record<Platform, { name: string; bg: string; iconUrl: string }> = {
-  linkedin: { name: 'LinkedIn', bg: '#0A66C2', iconUrl: '/email-assets/icon-linkedin.png?v=9' },
-  facebook: { name: 'Facebook', bg: '#1877F2', iconUrl: '/email-assets/icon-facebook.png?v=9' },
-  instagram: { name: 'Instagram', bg: '#E1306C', iconUrl: '/email-assets/icon-instagram.png?v=9' },
-  reddit: { name: 'Reddit', bg: '#FF4500', iconUrl: '/email-assets/icon-reddit.png?v=9' },
-  discord: { name: 'Discord', bg: '#5865F2', iconUrl: '/email-assets/icon-discord.png?v=9' },
+  linkedin: { name: 'LinkedIn', bg: '#0A66C2', iconUrl: '/email-assets/icon-linkedin.png?v=10' },
+  facebook: { name: 'Facebook', bg: '#1877F2', iconUrl: '/email-assets/icon-facebook.png?v=10' },
+  instagram: { name: 'Instagram', bg: '#E1306C', iconUrl: '/email-assets/icon-instagram.png?v=10' },
+  reddit: { name: 'Reddit', bg: '#FF4500', iconUrl: '/email-assets/icon-reddit.png?v=10' },
+  discord: { name: 'Discord', bg: '#5865F2', iconUrl: '/email-assets/icon-discord.png?v=10' },
+  bluesky: { name: 'Bluesky', bg: '#1185FE', iconUrl: '/email-assets/icon-bluesky.png?v=10' },
 };
 
 /** Best-effort URL → platform detection. Returns null for unrecognized hosts. */
@@ -40,6 +49,7 @@ export function detectPlatform(rawUrl: string): Platform | null {
   if (u.includes('instagram.com') || u.includes('instagr.am')) return 'instagram';
   if (u.includes('reddit.com') || u.includes('redd.it')) return 'reddit';
   if (u.includes('discord.com') || u.includes('discord.gg')) return 'discord';
+  if (u.includes('bsky.app') || u.includes('bsky.social')) return 'bluesky';
   return null;
 }
 
@@ -137,7 +147,10 @@ export function SocialLinksEditor({ value, onChange }: Props) {
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border bg-muted overflow-hidden"
               style={meta ? { backgroundColor: meta.bg, borderColor: meta.bg } : undefined}
               aria-label={meta?.name ?? 'Unknown social network'}
-              title={meta?.name ?? 'Paste a LinkedIn, Facebook, Instagram, Reddit, or Discord URL'}
+              title={
+                meta?.name ??
+                'Paste a LinkedIn, Facebook, Instagram, Reddit, Discord, or Bluesky URL'
+              }
             >
               {meta ? (
                 // eslint-disable-next-line @next/next/no-img-element -- public asset, no Next.js optimization needed
@@ -157,7 +170,8 @@ export function SocialLinksEditor({ value, onChange }: Props) {
               />
               {isUnknown ? (
                 <p className="text-xs text-amber-600">
-                  We don&apos;t recognize this network yet. Use a LinkedIn, Facebook, Instagram, Reddit, or Discord URL.
+                  We don&apos;t recognize this network yet. Use a LinkedIn, Facebook, Instagram,
+                  Reddit, Discord, or Bluesky URL.
                 </p>
               ) : null}
               {isDuplicate ? (

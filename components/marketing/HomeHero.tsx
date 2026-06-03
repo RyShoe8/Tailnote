@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmailClientMock } from '@/components/marketing/EmailClientMock';
+import type { TemplatePresetId } from '@/lib/email/templatePresets';
 import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
 import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
 import { SITE_TAGLINE, SITE_TAGLINE_GRADIENT_SUFFIX } from '@/lib/seo/site';
@@ -10,8 +11,10 @@ const taglinePrefix = SITE_TAGLINE.endsWith(SITE_TAGLINE_GRADIENT_SUFFIX)
   ? SITE_TAGLINE.slice(0, -SITE_TAGLINE_GRADIENT_SUFFIX.length)
   : `${SITE_TAGLINE} `;
 
+const HERO_PRESET_ID: TemplatePresetId = 'executive_minimalist';
+
 export function HomeHero() {
-  const signatureHtml = stripSignaturePreviewLinks(renderMarketingSample('default'));
+  const signatureHtml = stripSignaturePreviewLinks(renderMarketingSample(HERO_PRESET_ID));
 
   return (
     <section className="relative isolate overflow-hidden bg-white">
@@ -48,7 +51,7 @@ export function HomeHero() {
           </div>
 
           <div className="tn-rise tn-rise-delay-2 min-w-0">
-            <EmailClientMock signatureHtml={signatureHtml} />
+            <EmailClientMock signatureHtml={signatureHtml} presetId={HERO_PRESET_ID} />
           </div>
         </div>
       </div>

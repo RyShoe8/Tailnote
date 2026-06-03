@@ -48,7 +48,17 @@ async function main() {
   assert((await getAllTags()).length >= 1, 'at least one tag');
 
   const sitemap = [...marketingSitemapEntries(), ...(await blogSitemapEntries())];
-  assert(sitemap.some((e) => e.url.includes('/blog')), 'sitemap includes /blog');
+
+  const isBlogIndexUrl = (url: string) => {
+    try {
+      const path = new URL(url).pathname.replace(/\/$/, '') || '/';
+      return path === '/blog';
+    } catch {
+      return false;
+    }
+  };
+  const blogIndexCount = sitemap.filter((e) => isBlogIndexUrl(e.url)).length;
+  assert(blogIndexCount === 1, `sitemap has exactly one /blog index (got ${blogIndexCount})`);
   assert(
     posts.every((p) => sitemap.some((e) => e.url.endsWith(`/blog/${p.slug}`))),
     'sitemap includes all published posts'

@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return getNextHeaderRules();
   },
+  async redirects() {
+    return [
+      { source: '/templates', destination: '/signatures', permanent: true },
+      { source: '/templates/:path*', destination: '/signatures/:path*', permanent: true },
+      { source: '/admin/templates', destination: '/admin/signatures', permanent: true },
+      { source: '/admin/templates/:path*', destination: '/admin/signatures/:path*', permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

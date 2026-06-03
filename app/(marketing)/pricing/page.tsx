@@ -57,9 +57,9 @@ export default async function PricingPage() {
             Simple plans, <span className="tn-grad-text">measurable email impact</span>
           </h1>
           <p className="mt-4 text-pretty text-base text-muted-foreground sm:text-lg">
-            Choose Free for core signature generation or upgrade to paid plans for branding removal,
-            team analytics, and tracking. Each plan includes a set number of users for your
-            organization.
+            Choose Free for core signature generation and domain email health checks, or upgrade to
+            paid plans for branding removal, team analytics, and tracking. Each plan includes a set
+            number of users for your organization.
           </p>
         </div>
         {plans.length === 0 ? (

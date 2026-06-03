@@ -33,6 +33,7 @@ const OrganizationSchema = new Schema(
       instagram: { type: String },
       reddit: { type: String },
       discord: { type: String },
+      bluesky: { type: String },
     },
     address: { type: String },
     city: { type: String },

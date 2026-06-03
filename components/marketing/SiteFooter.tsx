@@ -6,7 +6,7 @@ const MEDIA_SHOP_URL = 'https://themediashop.co';
 
 const FOOTER_LINKS = {
   product: [
-    { href: '/templates', label: 'Templates' },
+    { href: '/signatures', label: 'Signatures' },
     { href: '/promotional-blocks', label: 'Promotional Blocks' },
     { href: '/analytics', label: 'Analytics' },
     { href: '/pricing', label: 'Pricing' },

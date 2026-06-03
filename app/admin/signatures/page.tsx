@@ -29,7 +29,7 @@ function isCatalogPresetId(id: string): id is CatalogPresetId {
   );
 }
 
-export default async function AdminTemplatesPage() {
+export default async function AdminSignaturesPage() {
   await connectMongoose();
   await ensurePresetCatalog();
   const rows = await getFullCatalogPresets();
@@ -61,7 +61,7 @@ export default async function AdminTemplatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold tracking-tight">Signature templates</h2>
+        <h2 className="text-xl font-semibold tracking-tight">Signatures</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Enable, disable, or remove layout presets globally. Organizations only see enabled presets in
           signature and employee pickers.

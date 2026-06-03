@@ -116,7 +116,7 @@ export function softwareApplicationJsonLd(): JsonLd {
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
     url: getSiteUrl(),
-    description: `${SITE_TAGLINE} — team email signatures with promotional content blocks, UTM tracking, templates, and copy-paste install for Gmail and Outlook.`,
+    description: `${SITE_TAGLINE} — team email signatures with promotional content blocks, UTM tracking, signature layouts, and copy-paste install for Gmail and Outlook.`,
     offers: {
       '@type': 'Offer',
       url: absoluteUrl('/pricing'),

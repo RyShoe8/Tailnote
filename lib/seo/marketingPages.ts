@@ -10,11 +10,10 @@ export type MarketingPageKey =
   | 'home'
   | 'pricing'
   | 'signatures'
-  | 'templates'
+  | 'fromSignature'
   | 'promotionalBlocks'
   | 'analytics'
   | 'emailHealth'
-  | 'blog'
   | 'about'
   | 'contact'
   | 'privacy'
@@ -34,7 +33,7 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     path: '/',
     title: SITE_TAGLINE,
     description:
-      `${SITE_TAGLINE}. Promotional content blocks, built-in UTM tracking, click and open analytics, and polished signature templates for Gmail and Outlook.`,
+      `${SITE_TAGLINE}. Promotional content blocks, built-in UTM tracking, click and open analytics, and polished email signatures for Gmail and Outlook.`,
   },
   {
     key: 'pricing',
@@ -46,16 +45,16 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
   {
     key: 'signatures',
     path: '/signatures',
+    title: 'Email signatures for teams',
+    description:
+      'Curated professional email signatures with built-in promotional blocks — book-a-call buttons, offer lists, blog feeds, and image banners that work in Gmail and Outlook.',
+  },
+  {
+    key: 'fromSignature',
+    path: '/from-signature',
     title: 'Email signatures by Tailnote',
     description:
       'You found Tailnote from a signature link. Learn why free plans include attribution, what paid plans unlock, and how to create your own professional email signature.',
-  },
-  {
-    key: 'templates',
-    path: '/templates',
-    title: 'Email signature templates',
-    description:
-      'Curated email signature templates with built-in promotional blocks — book-a-call buttons, offer lists, blog feeds, and image banners that work in real inboxes.',
   },
   {
     key: 'promotionalBlocks',
@@ -78,18 +77,11 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     description: EMAIL_HEALTH_PAGE_DESCRIPTION,
   },
   {
-    key: 'blog',
-    path: '/blog',
-    title: 'Blog',
-    description:
-      'Guides on email signatures, SPF, DKIM, DMARC, BIMI, deliverability, and branded outbound email for solo founders and SMB teams.',
-  },
-  {
     key: 'about',
     path: '/about',
     title: 'About Us',
     description:
-      'Tailnote helps teams create, manage, and deploy professional email signatures with consistent branding, templates, and copy-paste install for Gmail and Outlook.',
+      'Tailnote helps teams create, manage, and deploy professional email signatures with consistent branding, signature layouts, and copy-paste install for Gmail and Outlook.',
   },
   {
     key: 'contact',

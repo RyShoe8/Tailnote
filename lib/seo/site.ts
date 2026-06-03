@@ -19,7 +19,7 @@ export const DEFAULT_OG_IMAGE_PATH = '/opengraph-image';
 /** Organization logo for JSON-LD (not the social preview card). */
 export const ORGANIZATION_LOGO_PATH = '/images/tailnote-logo.png';
 
-export const DEFAULT_DESCRIPTION = `${SITE_TAGLINE} — on-brand signatures, promotional blocks, UTM tracking, and templates for Gmail and Outlook.`;
+export const DEFAULT_DESCRIPTION = `${SITE_TAGLINE} — on-brand signatures, promotional blocks, UTM tracking, and signature layouts for Gmail and Outlook.`;
 
 /** Page title for subpages: `Page title | Tailnote`. */
 export function formatPageTitle(pageTitle: string): string {

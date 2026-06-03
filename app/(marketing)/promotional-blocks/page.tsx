@@ -94,7 +94,7 @@ export default function PromotionalBlocksPage() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href="/templates">Browse templates</Link>
+              <Link href="/signatures">Browse signatures</Link>
             </Button>
           </div>
         </RevealOnScroll>

@@ -10,7 +10,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { EMAIL_HEALTH_NAV_TITLE } from '@/lib/email-health/seoCopy';
 
 export const PRODUCT_NAV = [
-  { href: '/templates', label: 'Templates' },
+  { href: '/signatures', label: 'Signatures' },
   { href: '/promotional-blocks', label: 'Promotional Blocks' },
   { href: '/analytics', label: 'Analytics' },
   { href: '/pricing', label: 'Pricing' },

@@ -28,10 +28,10 @@ export function EmailHealthTailnoteCta() {
         </Button>
         <Button asChild variant="outline">
           <Link
-            href="/templates"
-            onClick={() => capturePostHogEvent('email_health_cta_clicked', { target: 'templates' })}
+            href="/signatures"
+            onClick={() => capturePostHogEvent('email_health_cta_clicked', { target: 'signatures' })}
           >
-            View templates
+            View signatures
           </Link>
         </Button>
       </div>

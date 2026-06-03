@@ -17,18 +17,17 @@ export function HomeTemplateShowcase({ presets }: Props) {
     <section className="container py-16 sm:py-20 lg:pt-24 lg:pb-8">
       <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0 max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Templates</p>
+          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Signatures</p>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
             Layouts built for signatures <span className="tn-grad-text">and</span> promos
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Take a look at our templates so you can see how Tailnote turns email into a marketing
-            channel.
+            Browse our signature layouts to see how Tailnote turns email into a marketing channel.
           </p>
         </div>
         <Button asChild variant="outline" className="shrink-0 self-start gap-2 sm:self-auto">
-          <Link href="/templates">
-            View all templates
+          <Link href="/signatures">
+            View all signatures
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </Button>

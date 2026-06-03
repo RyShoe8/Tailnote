@@ -12,9 +12,9 @@ type BlogTailnoteCtaProps = {
 const CTA_COPY = {
   signatures: {
     title: 'Try Tailnote to turn every employee email into a branded touchpoint.',
-    body: 'Build consistent signatures for your team with templates, promotional blocks, and one-click install for Gmail and Outlook.',
+    body: 'Build consistent signatures for your team with signature layouts, promotional blocks, and one-click install for Gmail and Outlook.',
     primary: { href: '/signup', label: 'Get started free' },
-    secondary: { href: '/templates', label: 'Browse templates' },
+    secondary: { href: '/signatures', label: 'Browse signatures' },
   },
   team: {
     title: 'Build consistent signatures for your team.',

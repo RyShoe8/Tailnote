@@ -12,7 +12,7 @@ To confirm a build before merging, open the **Pull Request** on GitHub and use t
 
 If copied signatures must turn relative **`/images/...`** paths into absolute URLs, set **`NEXT_PUBLIC_SITE_URL`** on Vercel to the same public origin as the app (see `.env.example`).
 
-Auth is **Better Auth** (`/api/auth/*`). Marketing routes: `/`, `/pricing`, `/templates`. App shell: `/dashboard/*`.
+Auth is **Better Auth** (`/api/auth/*`). Marketing routes: `/`, `/pricing`, `/signatures`. App shell: `/dashboard/*`.
 
 ## Scripts (optional, DB maintenance)
 

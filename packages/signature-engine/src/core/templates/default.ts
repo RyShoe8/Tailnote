@@ -59,6 +59,9 @@ export const DEFAULT_SIGNATURE_TEMPLATE = `<table class="sig-default-layout-tabl
         {{#if hasDiscord}}
         <td style="{{defaultSocialTdDiscordStyle}}"><a href="{{discord}}" style="text-decoration: none; display: inline-block; border: 0; outline: none;"><img src="{{iconDiscord}}" alt="Discord" width="20" style="width: 20px; height: auto; display: block; border: 0;" /></a></td>
         {{/if}}
+        {{#if hasBluesky}}
+        <td style="{{defaultSocialTdBlueskyStyle}}"><a href="{{bluesky}}" style="text-decoration: none; display: inline-block; border: 0; outline: none;"><img src="{{iconBluesky}}" alt="Bluesky" width="20" style="width: 20px; height: auto; display: block; border: 0;" /></a></td>
+        {{/if}}
         </tr></table>
       </div>
       {{/if}}

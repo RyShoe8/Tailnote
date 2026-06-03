@@ -16,9 +16,9 @@ const FEATURES = [
   },
   {
     icon: LayoutTemplate,
-    title: 'Curated templates',
+    title: 'Curated signatures',
     description:
-      'We feature varying, high quality templates designed for real inboxes with no broken HTML.',
+      'We feature varying, high-quality signature layouts designed for real inboxes with no broken HTML.',
   },
   {
     icon: BarChart3,

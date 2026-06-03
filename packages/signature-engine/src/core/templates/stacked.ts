@@ -91,6 +91,9 @@ export const STACKED_SIGNATURE_TEMPLATE = `<table class="sig-stacked-root" cellp
         {{#if hasDiscord}}
         <td style="{{socialTdDiscordStyle}}"><a href="{{discord}}" style="text-decoration:none;border:0;outline:none;display:inline-block;"><img src="{{iconDiscord}}" width="16" height="16" border="0" alt="" style="display:block;border:0;outline:none;text-decoration:none;" /></a></td>
         {{/if}}
+        {{#if hasBluesky}}
+        <td style="{{socialTdBlueskyStyle}}"><a href="{{bluesky}}" style="text-decoration:none;border:0;outline:none;display:inline-block;"><img src="{{iconBluesky}}" width="16" height="16" border="0" alt="" style="display:block;border:0;outline:none;text-decoration:none;" /></a></td>
+        {{/if}}
       </tr></table>
       {{/if}}
     </td>

@@ -174,6 +174,9 @@ export const PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
               {{#if hasDiscord}}
               <td style="{{socialTdDiscordStyle}}"><a href="{{discord}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconDiscord}}" alt="Discord" width="20" height="20" style="display:block;width:20px;height:20px;border:0;outline:none;text-decoration:none;" /></a></td>
               {{/if}}
+              {{#if hasBluesky}}
+              <td style="{{socialTdBlueskyStyle}}"><a href="{{bluesky}}" style="text-decoration:none;display:inline-block;border:0;outline:none;"><img src="{{iconBluesky}}" alt="Bluesky" width="20" height="20" style="display:block;width:20px;height:20px;border:0;outline:none;text-decoration:none;" /></a></td>
+              {{/if}}
             </tr></table>
               </td>
             </tr></table>
