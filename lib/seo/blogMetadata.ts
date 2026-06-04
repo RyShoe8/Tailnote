@@ -19,7 +19,12 @@ export function createBlogIndexMetadata(): Metadata {
   return {
     title,
     description,
-    alternates: { canonical: absoluteUrl(path) },
+    alternates: {
+      canonical: absoluteUrl(path),
+      types: {
+        'application/rss+xml': [{ url: absoluteUrl('/rss.xml'), title: `${SITE_NAME} Blog` }],
+      },
+    },
     robots: { index: true, follow: true },
     openGraph: {
       type: 'website',

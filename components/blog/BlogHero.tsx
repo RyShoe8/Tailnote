@@ -1,3 +1,5 @@
+import Link from 'next/link';
+import { Rss } from 'lucide-react';
 import { FloatingOrbs } from '@/components/marketing/FloatingOrbs';
 import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
 
@@ -15,6 +17,15 @@ export function BlogHero() {
           <p className="mt-4 max-w-2xl text-pretty text-lg text-muted-foreground">
             Practical guides for solo founders and SMB teams — SPF, DKIM, DMARC, signature best
             practices, and branded outbound email.
+          </p>
+          <p className="mt-5">
+            <Link
+              href="/rss.xml"
+              className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline underline-offset-4"
+            >
+              <Rss className="h-4 w-4" aria-hidden />
+              Subscribe via RSS
+            </Link>
           </p>
         </RevealOnScroll>
       </div>

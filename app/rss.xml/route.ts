@@ -14,6 +14,22 @@ function toRfc822(date: string): string {
   return new Date(date).toUTCString();
 }
 
+function imageEnclosureMimeType(url: string): string | null {
+  const path = url.split('?')[0]?.toLowerCase() ?? '';
+  if (path.endsWith('.jpg') || path.endsWith('.jpeg')) return 'image/jpeg';
+  if (path.endsWith('.webp')) return 'image/webp';
+  if (path.endsWith('.gif')) return 'image/gif';
+  if (path.endsWith('.png')) return 'image/png';
+  return null;
+}
+
+function buildEnclosure(coverImage: string): string {
+  const url = coverImage.startsWith('http') ? coverImage : absoluteUrl(coverImage);
+  const mime = imageEnclosureMimeType(url);
+  const typeAttr = mime ? ` type="${mime}"` : '';
+  return `<enclosure url="${escapeXml(url)}"${typeAttr} />`;
+}
+
 export async function GET() {
   const posts = (await getPublishedPosts()).slice(0, 20);
   const feedUrl = absoluteUrl('/rss.xml');
@@ -23,9 +39,7 @@ export async function GET() {
     .map((post) => {
       const link = absoluteUrl(`/blog/${post.slug}`);
       const pubDate = toRfc822(post.publishedAt);
-      const enclosure = post.coverImage
-        ? `<enclosure url="${escapeXml(post.coverImage.startsWith('http') ? post.coverImage : absoluteUrl(post.coverImage))}" type="image/png" />`
-        : '';
+      const enclosure = post.coverImage ? buildEnclosure(post.coverImage) : '';
 
       return `    <item>
       <title>${escapeXml(post.title)}</title>
