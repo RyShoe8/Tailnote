@@ -180,18 +180,7 @@ export async function buildPromoKindLabelMap(
   return map;
 }
 
-export function resolveSignatureClickKindLabel(
-  kind: string,
-  promoKindLabels?: Record<string, string>
-): string {
-  const custom = promoKindLabels?.[kind]?.trim();
-  if (custom) return custom;
-  return kind
-    .replace(/^social_/, '')
-    .replace(/^content_block_/, 'Promo ')
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
+export { resolveSignatureClickKindLabel } from './signatureClickKindLabels';
 
 /**
  * Slots to show on Overview analytics when any employee or workspace profile has that block enabled,

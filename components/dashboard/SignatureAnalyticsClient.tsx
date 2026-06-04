@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
-import { resolveSignatureClickKindLabel } from '@/lib/signatureContentBlockAnalytics';
+import { resolveSignatureClickKindLabel } from '@/lib/signatureClickKindLabels';
 
 type AnalyticsPayload = {
   from: string;
