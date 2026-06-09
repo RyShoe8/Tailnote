@@ -10,6 +10,7 @@ import {
   blogSitemapEntries,
 } from '../lib/blog/loadPosts';
 import { marketingSitemapEntries } from '../lib/seo/marketingPages';
+import { truncateBlogDescription } from '../lib/blog/truncateDescription';
 
 function assert(condition: boolean, message: string): void {
   if (!condition) {
@@ -21,6 +22,12 @@ function assert(condition: boolean, message: string): void {
 }
 
 async function main() {
+  const longText = 'word '.repeat(60).trim();
+  const truncated = truncateBlogDescription(longText);
+  assert(truncated.length <= 200, `truncated description is at most 200 chars (got ${truncated.length})`);
+  assert(truncated.endsWith('...'), 'truncated description ends with ellipsis');
+  assert(truncateBlogDescription('Short description.') === 'Short description.', 'short description unchanged');
+
   if (!process.env.MONGODB_URI?.trim()) {
     console.log('SKIP: MONGODB_URI not set — blog smoke checks require MongoDB after migrate:blog');
     return;

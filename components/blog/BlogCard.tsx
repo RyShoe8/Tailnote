@@ -50,7 +50,7 @@ export function BlogCard({ post }: BlogCardProps) {
             {post.title}
           </Link>
         </h2>
-        <p className="mt-2 line-clamp-3 flex-1 text-sm text-muted-foreground">{post.description}</p>
+        <p className="mt-2 flex-1 text-sm text-muted-foreground">{post.description}</p>
         <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
           <ReadingTimeBadge readingTime={post.readingTime} />

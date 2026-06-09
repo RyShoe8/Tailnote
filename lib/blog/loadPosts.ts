@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { connectMongoose } from '@/lib/mongoose';
 import { computeReadingTime } from '@/lib/blog/readingTime';
+import { truncateBlogDescription } from '@/lib/blog/truncateDescription';
 import type { BlogPostListItem, BlogPostMeta, BlogPostWithBody } from '@/lib/blog/types';
 import { BlogPostModel, type BlogPostDoc } from '@/models/BlogPost';
 import { absoluteUrl } from '@/lib/seo/site';
@@ -130,7 +131,7 @@ export function toListItem(post: BlogPostMeta): BlogPostListItem {
   return {
     slug: post.slug,
     title: post.title,
-    description: post.description,
+    description: truncateBlogDescription(post.description),
     publishedAt: post.publishedAt,
     updatedAt: post.updatedAt,
     author: post.author,
