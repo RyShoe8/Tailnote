@@ -46,7 +46,6 @@ export function BlogPostLayout({ post, content, headings, relatedPosts }: BlogPo
               <h1 className="mt-4 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
                 {post.title}
               </h1>
-              <p className="mt-4 text-pretty text-lg text-muted-foreground">{post.description}</p>
               {post.coverImage ? (
                 <div className="mt-8 overflow-hidden rounded-2xl border border-slate-200/80">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
