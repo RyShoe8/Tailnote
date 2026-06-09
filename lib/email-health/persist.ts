@@ -16,6 +16,7 @@ export async function persistEmailHealthScan(
       issues: report.issues,
       mailProvider: report.mailProvider,
       scannedAt: report.scannedAt,
+      bimiDetailJson: report.bimiDetail ?? undefined,
       ip: meta.ip,
       userAgent: meta.userAgent,
     },

@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { logError } from '@/lib/logger';
+import { getServerSession } from '@/lib/auth/session';
+import { connectMongoose } from '@/lib/mongoose';
 import { DomainValidationError, parseDomainInput } from '@/lib/email-health/domain';
-import { ipFromRequestHeaders, isRateLimited } from '@/lib/security/rateLimit';
 import { isScanFresh } from '@/lib/email-health/cache';
 import { persistEmailHealthScan } from '@/lib/email-health/persist';
 import { persistBimiScanResult } from '@/lib/email-health/persistBimi';
 import { runEmailHealthScan } from '@/lib/email-health/runScan';
-import { connectMongoose } from '@/lib/mongoose';
 import { EmailHealthScanModel } from '@/models/EmailHealthScan';
+import { logError } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -19,15 +19,14 @@ const bodySchema = z.object({
   force: z.boolean().optional(),
 });
 
-const EMAIL_HEALTH_RATE_LIMIT = { windowMs: 10 * 60 * 1000, max: 10 };
+type SessionUser = { organizationId?: string };
 
 export async function POST(request: Request) {
-  if (isRateLimited(request, EMAIL_HEALTH_RATE_LIMIT)) {
-    return NextResponse.json(
-      { error: 'Too many scans. Please wait a few minutes and try again.' },
-      { status: 429 }
-    );
+  const session = await getServerSession();
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const user = session.user as SessionUser;
 
   let body: unknown;
   try {
@@ -70,26 +69,26 @@ export async function POST(request: Request) {
 
   try {
     const report = await runEmailHealthScan(domain);
-    const userAgent = request.headers.get('user-agent') ?? undefined;
-    await persistEmailHealthScan(report, { ip: ipFromRequestHeaders(request), userAgent });
+    await persistEmailHealthScan(report, {});
 
     if (report.bimiDetail) {
-      await persistBimiScanResult({ domain, result: report.bimiDetail, organizationId: null });
+      await persistBimiScanResult({
+        domain,
+        result: report.bimiDetail,
+        organizationId: user.organizationId ?? null,
+      });
     }
 
     return NextResponse.json({
       cached: false,
-      slug: report.domainSlug,
-      domain: report.domain,
+      slug: domainSlug,
+      domain,
       score: report.score,
       statusLabel: report.statusLabel,
       scannedAt: report.scannedAt,
     });
   } catch (err) {
-    logError('api/email-health/scan', err);
-    return NextResponse.json(
-      { error: 'Scan failed. Please try again in a moment.' },
-      { status: 500 }
-    );
+    logError('api/dashboard/brand-trust/scan', err);
+    return NextResponse.json({ error: 'Scan failed. Please try again.' }, { status: 500 });
   }
 }

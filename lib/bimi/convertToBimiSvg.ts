@@ -1,0 +1,102 @@
+import { randomUUID } from 'crypto';
+import { put } from '@vercel/blob';
+import sharp from 'sharp';
+import { optimize } from 'svgo';
+import { ALLOWED_IMAGE_MIMES, SecureImageUploadError } from '@/lib/uploads/secureImageUpload';
+import { buildBimiSuggestedRecord } from '@/lib/brandTrust/domainFromOrg';
+
+const MAX_INPUT_BYTES = 4 * 1024 * 1024;
+const BIMI_TARGET_BYTES = 32 * 1024;
+const RASTER_SIZE = 512;
+
+export type BimiSvgConversionResult = {
+  url: string;
+  byteSize: number;
+  suggestedRecord: string;
+  warnings: string[];
+};
+
+function sanitizeSvg(svg: string): { svg: string; warnings: string[] } {
+  const warnings: string[] = [];
+  let out = svg.replace(/<script[\s\S]*?<\/script>/gi, '');
+  if (/<script[\s>]/i.test(svg)) {
+    warnings.push('Scripts were removed from the SVG for BIMI safety.');
+  }
+  try {
+    const result = optimize(out, {
+      multipass: true,
+      plugins: ['preset-default', 'removeDimensions'],
+    });
+    out = result.data;
+  } catch {
+    warnings.push('SVG could not be fully optimized — verify the file manually.');
+  }
+  return { svg: out, warnings };
+}
+
+async function rasterToSquareSvg(buffer: Buffer): Promise<{ svg: string; warnings: string[] }> {
+  const warnings = [
+    'PNG/JPEG logos are embedded in SVG — vector artwork works best for strict BIMI validators.',
+  ];
+  const meta = await sharp(buffer).metadata();
+  const size = Math.min(RASTER_SIZE, Math.max(meta.width ?? RASTER_SIZE, meta.height ?? RASTER_SIZE));
+  const png = await sharp(buffer)
+    .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png({ compressionLevel: 9, palette: true })
+    .toBuffer();
+  const b64 = png.toString('base64');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${size} ${size}"><image width="${size}" height="${size}" xlink:href="data:image/png;base64,${b64}"/></svg>`;
+  return { svg, warnings };
+}
+
+export async function convertToBimiSvg(args: {
+  file: File;
+  organizationId: string;
+}): Promise<BimiSvgConversionResult> {
+  const mime = (args.file.type || '').toLowerCase();
+  if (!ALLOWED_IMAGE_MIMES.has(mime) && mime !== 'image/svg+xml') {
+    throw new SecureImageUploadError('Unsupported file type. Use PNG, JPEG, WebP, or SVG.', 400);
+  }
+
+  const buffer = Buffer.from(await args.file.arrayBuffer());
+  if (buffer.length > MAX_INPUT_BYTES) {
+    throw new SecureImageUploadError('File too large (max 4 MB).', 400);
+  }
+
+  let svgRaw: string;
+  let warnings: string[] = [];
+
+  if (mime === 'image/svg+xml' || args.file.name.toLowerCase().endsWith('.svg')) {
+    svgRaw = buffer.toString('utf-8');
+  } else {
+    const converted = await rasterToSquareSvg(buffer);
+    svgRaw = converted.svg;
+    warnings = converted.warnings;
+  }
+
+  const sanitized = sanitizeSvg(svgRaw);
+  warnings.push(...sanitized.warnings);
+
+  let finalSvg = sanitized.svg;
+  if (finalSvg.length > BIMI_TARGET_BYTES) {
+    warnings.push(
+      `SVG is ${Math.round(finalSvg.length / 1024)}KB — aim for under 32KB for best BIMI compatibility.`
+    );
+    const reoptimized = optimize(finalSvg, { multipass: true, plugins: ['preset-default'] });
+    finalSvg = reoptimized.data;
+  }
+
+  const pathname = `tailnote/orgs/${args.organizationId}/bimi/${randomUUID()}.svg`;
+  const blob = await put(pathname, finalSvg, {
+    access: 'public',
+    contentType: 'image/svg+xml',
+    addRandomSuffix: false,
+  });
+
+  return {
+    url: blob.url,
+    byteSize: Buffer.byteLength(finalSvg, 'utf8'),
+    suggestedRecord: buildBimiSuggestedRecord(blob.url),
+    warnings,
+  };
+}

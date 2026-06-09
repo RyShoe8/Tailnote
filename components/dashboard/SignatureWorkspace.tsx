@@ -37,6 +37,7 @@ import { getSignatureAssetOrigin } from '@/lib/siteOrigin';
 import { shouldIncludeSignatureAnimation } from '@/lib/billing/entitlements';
 import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
 import { hasAnalytics, hasBrandingRemoval } from '@/lib/billing/subscriptionAccess';
+import { SignatureBimiTab } from '@/components/dashboard/SignatureBimiTab';
 import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 
 type OrgResponse = {
@@ -122,7 +123,7 @@ export function SignatureWorkspace() {
   const [org, setOrg] = useState<OrgResponse | null>(null);
   const [orgName, setOrgName] = useState('');
   const [contentBlocks, setContentBlocks] = useState<ContentBlockData[]>([]);
-  const [activeTab, setActiveTab] = useState<'brand' | 'blocks' | 'details' | 'install'>('brand');
+  const [activeTab, setActiveTab] = useState<'brand' | 'bimi' | 'blocks' | 'details' | 'install'>('brand');
   const [mobilePane, setMobilePane] = useState<MobileSignaturePane>('edit');
   const isLgUp = useIsLgUp();
   const isMobileInstall = useIsMobileInstallContext();
@@ -703,6 +704,7 @@ export function SignatureWorkspace() {
           {canSeeBrandTab ? (
             <button onClick={() => setActiveTab('brand')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'brand' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Brand</button>
           ) : null}
+          <button onClick={() => setActiveTab('bimi')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'bimi' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Brand logo</button>
           {canSeeBlocksTab ? (
             <button onClick={() => setActiveTab('blocks')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'blocks' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Blocks</button>
           ) : null}
@@ -922,6 +924,9 @@ export function SignatureWorkspace() {
             </Button>
           </CardContent>
         </Card>
+          )}
+          {activeTab === 'bimi' && (
+            <SignatureBimiTab />
           )}
           {activeTab === 'blocks' && (
             <div className="space-y-4">

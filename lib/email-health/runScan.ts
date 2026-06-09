@@ -27,14 +27,18 @@ export async function runEmailHealthScan(rawDomain: string): Promise<EmailHealth
   const { domain, domainSlug } = parseDomainInput(rawDomain);
   const scannedAt = new Date();
 
-  const [spf, dkim, dmarc, bimi, mx, https] = await Promise.all([
+  const [spf, dkim, dmarc, mx, https] = await Promise.all([
     withTimeout(scanSpf(domain), 'SPF'),
     withTimeout(scanDkim(domain), 'DKIM'),
     withTimeout(scanDmarc(domain), 'DMARC'),
-    withTimeout(scanBimi(domain), 'BIMI'),
     withTimeout(scanMx(domain), 'MX'),
     withTimeout(scanHttps(domain), 'HTTPS'),
   ]);
+
+  const bimi = await withTimeout(
+    scanBimi(domain, { dmarcRecord: dmarc.record }),
+    'BIMI'
+  );
 
   let tls;
   try {
@@ -74,5 +78,6 @@ export async function runEmailHealthScan(rawDomain: string): Promise<EmailHealth
     issues,
     mailProvider: mx.mailProvider,
     scannedAt,
+    bimiDetail: bimi.bimiDetail,
   };
 }

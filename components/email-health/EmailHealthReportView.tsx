@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BimiReadinessPanel } from '@/components/email-health/BimiReadinessPanel';
 import { CategoryBreakdown } from '@/components/email-health/CategoryBreakdown';
 import { DnsRecordCopy } from '@/components/email-health/DnsRecordCopy';
 import { EmailHealthRescanButton } from '@/components/email-health/EmailHealthRescanButton';
@@ -62,7 +63,7 @@ export function EmailHealthReportView({
           <li aria-hidden="true">/</li>
           <li>
             <Link href={indexHref} className="transition-colors hover:text-foreground">
-              Email Health
+              {indexHref.includes('brand-trust') ? 'Brand Trust Center' : 'Email Health'}
             </Link>
           </li>
           <li aria-hidden="true">/</li>
@@ -93,6 +94,10 @@ export function EmailHealthReportView({
 
         <div className="min-w-0 space-y-10">
           <ScoreGuide statusLabel={scan.statusLabel} />
+
+          {scan.bimiDetail ? (
+            <BimiReadinessPanel bimi={scan.bimiDetail} showPaidCta={showSignupCta} />
+          ) : null}
 
           <section>
             <h2 className="text-lg font-semibold tracking-tight">Category breakdown</h2>

@@ -54,6 +54,11 @@ const OrganizationSchema = new Schema(
     employeesCanEditBrand: { type: Boolean, default: false },
     /** When true, invited employees may edit their promotional blocks; when false, owner blocks apply org-wide. */
     employeesCanEditPromoBlocks: { type: Boolean, default: false },
+    /** Hosted BIMI SVG logo URL (paid feature). */
+    bimiLogoUrl: { type: String, default: '' },
+    bimiLogoUploadedAt: { type: Date },
+    /** Suggested v=BIMI1; l=... TXT value for copy-paste. */
+    bimiSuggestedRecord: { type: String, default: '' },
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } }
 );

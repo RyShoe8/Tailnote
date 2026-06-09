@@ -8,6 +8,7 @@ export type BillingEntitlements = {
   isPro: boolean;
   maxTemplates: number;
   canUseTemplateAnimationSlot: boolean;
+  canUseBimiLogoHosting: boolean;
 };
 
 const FULL_MAX_TEMPLATES = 10;
@@ -21,12 +22,14 @@ export function getBillingEntitlements(
       isPro: false,
       maxTemplates: MAX_TEMPLATES_BASIC,
       canUseTemplateAnimationSlot: false,
+      canUseBimiLogoHosting: false,
     };
   }
   return {
     isPro: true,
     maxTemplates: FULL_MAX_TEMPLATES,
     canUseTemplateAnimationSlot: true,
+    canUseBimiLogoHosting: true,
   };
 }
 

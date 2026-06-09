@@ -6,6 +6,7 @@ export const CORE_PRODUCT_FEATURE_BULLETS = [
   'Every layout we offer; Minimal, Stacked, Corporate, Professional, and more',
   'Promotional content blocks: book-a-call, offers, blog feeds, and image banners beside every signature',
   'Built-in UTM codes on signature links. Measure email-driven traffic in Google Analytics',
+  'Brand Trust Center with BIMI readiness checks and paid BIMI logo conversion and hosting',
   'One brand look and one marketing message across your whole team',
   'Copy-paste install for Gmail and Outlook—no OAuth required',
   EMAIL_HEALTH_FEATURE_BULLET,

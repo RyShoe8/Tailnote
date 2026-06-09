@@ -1,4 +1,4 @@
-import { flattenTxt, resolveTxtRecords } from '@/lib/email-health/dns';
+import { fetchDmarcRecord, parseDmarcRecord, parseDmarcTag } from '@/lib/email-health/dmarc';
 import { buildCategoryResult } from '@/lib/email-health/scoring';
 import type { CategoryResult, DomainIssue } from '@/lib/email-health/types';
 
@@ -6,18 +6,14 @@ export type DmarcScanResult = {
   category: CategoryResult;
   issues: DomainIssue[];
   policy?: string;
+  record?: string;
 };
-
-function parseDmarcTag(record: string, tag: string): string | undefined {
-  const match = record.match(new RegExp(`(?:^|;)\\s*${tag}\\s*=\\s*([^;]+)`, 'i'));
-  return match?.[1]?.trim();
-}
 
 export async function scanDmarc(domain: string): Promise<DmarcScanResult> {
   const issues: DomainIssue[] = [];
   const host = `_dmarc.${domain}`;
-  const txt = flattenTxt(await resolveTxtRecords(host));
-  const dmarc = txt.find((r) => r.toLowerCase().startsWith('v=dmarc1'));
+  const parsed = await fetchDmarcRecord(domain);
+  const dmarc = parsed?.record;
 
   if (!dmarc) {
     issues.push({
@@ -50,10 +46,10 @@ export async function scanDmarc(domain: string): Promise<DmarcScanResult> {
     };
   }
 
-  const policy = parseDmarcTag(dmarc, 'p')?.toLowerCase() ?? 'none';
-  const pct = parseDmarcTag(dmarc, 'pct');
-  const rua = parseDmarcTag(dmarc, 'rua');
-  const ruf = parseDmarcTag(dmarc, 'ruf');
+  const policy = parsed?.policy ?? 'none';
+  const pct = parsed?.pct;
+  const rua = parsed?.rua;
+  const ruf = parsed?.ruf;
 
   let status: 'pass' | 'warn' | 'fail' = 'pass';
   let summary = `DMARC policy: ${policy}`;
@@ -162,5 +158,8 @@ export async function scanDmarc(domain: string): Promise<DmarcScanResult> {
     category: buildCategoryResult('dmarc', status, summary),
     issues,
     policy,
+    record: dmarc,
   };
 }
+
+export { parseDmarcRecord, parseDmarcTag, fetchDmarcRecord };

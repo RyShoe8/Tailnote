@@ -47,6 +47,7 @@ export type EmailHealthReport = {
   issues: DomainIssue[];
   mailProvider?: string;
   scannedAt: Date;
+  bimiDetail?: import('@/lib/email-health/bimiTypes').BIMIResult;
 };
 
 export const CATEGORY_WEIGHTS: Record<EmailHealthCategory, number> = {

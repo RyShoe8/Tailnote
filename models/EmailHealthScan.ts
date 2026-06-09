@@ -56,6 +56,7 @@ const EmailHealthScanSchema = new Schema(
     issues: { type: [DomainIssueSchema], default: [] },
     mailProvider: { type: String },
     scannedAt: { type: Date, required: true, index: true },
+    bimiDetailJson: { type: Schema.Types.Mixed },
     ip: { type: String },
     userAgent: { type: String },
   },
