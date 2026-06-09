@@ -238,7 +238,8 @@ export function mapBimiResultToScanOutput(result: BIMIResult): {
     technicalDetail: issue.technicalDetail,
     dnsRecords: issue.dnsRecords,
     callout: issue.callout,
-    stepsToPass: issue.severity !== 'info' ? [issue.howToFix] : undefined,
+    stepsToPass:
+      issue.severity !== 'info' && !issue.dnsRecords?.length ? [issue.howToFix] : undefined,
   }));
 
   let summary = 'BIMI not ready';

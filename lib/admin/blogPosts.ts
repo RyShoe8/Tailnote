@@ -47,11 +47,8 @@ function docToAdminRow(doc: BlogPostDoc): AdminBlogPostRow {
 
 export async function listBlogPostsAdmin(): Promise<AdminBlogPostRow[]> {
   await connectMongoose();
-  const docs = await BlogPostModel.find({})
-    .select('-body')
-    .sort({ publishedAt: -1 })
-    .lean<BlogPostDoc[]>();
-  return docs.map((doc) => docToAdminRow(doc as BlogPostDoc));
+  const docs = await BlogPostModel.find({}).sort({ publishedAt: -1 }).lean<BlogPostDoc[]>();
+  return docs.map((doc) => docToMeta(doc as BlogPostDoc, doc.body));
 }
 
 export async function getBlogPostById(id: string): Promise<BlogPostWithBody | null> {

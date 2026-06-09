@@ -53,3 +53,26 @@ export function aggregateDnsRecords(issues: DomainIssue[]) {
   }
   return records;
 }
+
+/** DNS records from info-level issues not already shown on problem cards. */
+export function aggregateDnsRecordsNotOnProblemCards(issues: DomainIssue[]) {
+  const problemCardRecords = aggregateDnsRecords(
+    issues.filter((i) => i.severity === 'warn' || i.severity === 'fail'),
+  );
+  const problemKeys = new Set(
+    problemCardRecords.map((rec) => `${rec.type}|${rec.host}|${rec.value}`),
+  );
+
+  const seen = new Set<string>();
+  const records: NonNullable<DomainIssue['dnsRecords']> = [];
+  for (const issue of issues) {
+    if (issue.severity !== 'info') continue;
+    for (const rec of issue.dnsRecords ?? []) {
+      const key = `${rec.type}|${rec.host}|${rec.value}`;
+      if (problemKeys.has(key) || seen.has(key)) continue;
+      seen.add(key);
+      records.push(rec);
+    }
+  }
+  return records;
+}

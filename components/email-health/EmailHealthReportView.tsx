@@ -4,14 +4,16 @@ import { CategoryBreakdown } from '@/components/email-health/CategoryBreakdown';
 import { DnsRecordCopy } from '@/components/email-health/DnsRecordCopy';
 import { EmailHealthDomainScanBar } from '@/components/email-health/EmailHealthDomainScanBar';
 import { EmailHealthProblemsSection } from '@/components/email-health/EmailHealthProblemsSection';
+import { EmailHealthReportShare } from '@/components/email-health/EmailHealthReportShare';
 import { EmailHealthRescanButton } from '@/components/email-health/EmailHealthRescanButton';
 import { EmailHealthScoreRing } from '@/components/email-health/EmailHealthScoreRing';
 import { EmailHealthTailnoteCta } from '@/components/email-health/EmailHealthTailnoteCta';
 import { ScoreGuide } from '@/components/email-health/ScoreGuide';
 import { buildStepsByCategory } from '@/lib/email-health/categoryGuide';
-import { aggregateDnsRecords } from '@/lib/email-health/scoring';
+import { aggregateDnsRecordsNotOnProblemCards } from '@/lib/email-health/scoring';
 import type { SerializedEmailHealthScan } from '@/lib/email-health/serialize';
-import { absoluteUrl } from '@/lib/seo/site';
+
+const AUTH_GUIDE_PATH = '/blog/spf-dkim-and-dmarc-explained-without-the-headache';
 
 export type EmailHealthReportViewProps = {
   scan: SerializedEmailHealthScan;
@@ -35,7 +37,7 @@ export function EmailHealthReportView({
   resultBasePath = '/email-health',
 }: EmailHealthReportViewProps) {
   const stepsByCategory = buildStepsByCategory(scan.issues);
-  const dnsRecords = aggregateDnsRecords(scan.issues);
+  const orphanDnsRecords = aggregateDnsRecordsNotOnProblemCards(scan.issues);
   const scannedLabel = new Date(scan.scannedAt).toLocaleString('en-US', {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -109,36 +111,54 @@ export function EmailHealthReportView({
             </div>
           </section>
 
-          <EmailHealthProblemsSection issues={scan.issues} showPricingLink={showSignupCta} />
+          <EmailHealthProblemsSection
+            issues={scan.issues}
+            showPricingLink={showSignupCta}
+            zoneDomain={scan.domain}
+          />
 
           {scan.bimiDetail ? (
             <BimiCertificateSection bimi={scan.bimiDetail} showHostingCallout={showSignupCta} />
           ) : null}
 
-          {dnsRecords.length > 0 ? (
-            <section>
-              <h2 className="text-lg font-semibold tracking-tight">DNS records to add</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Copy these into your DNS provider. Values may need customization for your host.
-              </p>
-              <div className="mt-4 space-y-3">
-                {dnsRecords.map((rec) => (
-                  <DnsRecordCopy key={`${rec.type}-${rec.host}-${rec.value}`} record={rec} />
-                ))}
+          <section>
+            <h2 className="text-lg font-semibold tracking-tight">Learn about email authentication</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              SPF, DKIM, and DMARC work together to protect your domain and improve deliverability.{' '}
+              <Link href={AUTH_GUIDE_PATH} className="font-medium text-primary underline underline-offset-4">
+                Read our plain-English guide to SPF, DKIM, and DMARC
+              </Link>
+              .
+            </p>
+
+            {orphanDnsRecords.length > 0 ? (
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-foreground">Additional DNS records</h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Paste these into your DNS provider&apos;s add-record form.
+                </p>
+                <div className="mt-3 space-y-3">
+                  {orphanDnsRecords.map((rec) => (
+                    <DnsRecordCopy
+                      key={`${rec.type}-${rec.host}-${rec.value}`}
+                      record={rec}
+                      zoneDomain={scan.domain}
+                    />
+                  ))}
+                </div>
               </div>
-            </section>
-          ) : null}
+            ) : null}
+          </section>
 
           {showSignupCta ? <EmailHealthTailnoteCta /> : null}
         </div>
       </div>
 
-      <p className="mt-12 text-center text-xs text-muted-foreground">
-        Share this report:{' '}
-        <span className="font-mono">
-          {absoluteUrl(`${sharePathPrefix}/${scan.domainSlug}`)}
-        </span>
-      </p>
+      <EmailHealthReportShare
+        domain={scan.domain}
+        domainSlug={scan.domainSlug}
+        sharePathPrefix={sharePathPrefix}
+      />
     </>
   );
 }

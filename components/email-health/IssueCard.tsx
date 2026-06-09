@@ -17,21 +17,32 @@ function severityVariant(severity: DomainIssue['severity']) {
   return 'accent' as const;
 }
 
+function technicalDetailDuplicatesDns(issue: DomainIssue): boolean {
+  if (!issue.technicalDetail || !issue.dnsRecords?.length) return false;
+  return issue.dnsRecords.some(
+    (rec) =>
+      issue.technicalDetail!.includes(rec.value) ||
+      issue.technicalDetail!.includes('Illustrative example'),
+  );
+}
+
 type Props = {
   issue: DomainIssue;
   showPricingLink?: boolean;
+  zoneDomain?: string;
 };
 
-export function IssueCard({ issue, showPricingLink = true }: Props) {
-  const showTechnical = Boolean(issue.technicalDetail);
+export function IssueCard({ issue, showPricingLink = true, zoneDomain }: Props) {
   const hasDns = (issue.dnsRecords?.length ?? 0) > 0;
   const showSteps =
     (issue.severity === 'warn' || issue.severity === 'fail') &&
-    (issue.stepsToPass?.length ?? 0) > 0;
-  const redundantSummary =
-    showSteps &&
-    issue.stepsToPass!.length === 1 &&
-    issue.stepsToPass![0] === issue.recommendation;
+    (issue.stepsToPass?.length ?? 0) > 0 &&
+    !(hasDns && issue.stepsToPass!.length === 1);
+  const showRecommendation =
+    !hasDns &&
+    ((issue.severity === 'warn' || issue.severity === 'fail') || issue.recommendation);
+  const showTechnical =
+    Boolean(issue.technicalDetail) && !technicalDetailDuplicatesDns(issue);
 
   return (
     <article className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-card">
@@ -46,27 +57,20 @@ export function IssueCard({ issue, showPricingLink = true }: Props) {
       <h3 className="mt-3 text-base font-semibold text-foreground">{issue.title}</h3>
       <p className="mt-2 text-sm text-muted-foreground">{issue.explanation}</p>
 
-      {showSteps ? (
-        <div className="mt-4">
-          <p className="text-sm font-medium text-foreground">Steps to pass</p>
-          <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
-            {issue.stepsToPass!.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ol>
+      {hasDns ? (
+        <div className="mt-4 space-y-2">
+          <p className="text-sm font-medium text-foreground">DNS record to add</p>
+          <p className="text-xs text-muted-foreground">
+            Paste these into your DNS provider&apos;s add-record form.
+          </p>
+          {issue.dnsRecords!.map((rec) => (
+            <DnsRecordCopy
+              key={`${rec.type}-${rec.host}-${rec.value}`}
+              record={rec}
+              zoneDomain={zoneDomain}
+            />
+          ))}
         </div>
-      ) : null}
-
-      {showSteps && !redundantSummary ? (
-        <p className="mt-3 text-sm text-foreground">
-          <span className="font-medium">Recommended fix: </span>
-          {issue.recommendation}
-        </p>
-      ) : !showSteps ? (
-        <p className="mt-3 text-sm text-foreground">
-          <span className="font-medium">Recommended fix: </span>
-          {issue.recommendation}
-        </p>
       ) : null}
 
       {issue.callout ? (
@@ -80,12 +84,22 @@ export function IssueCard({ issue, showPricingLink = true }: Props) {
         </div>
       ) : null}
 
-      {hasDns ? (
-        <div className="mt-4 space-y-2">
-          {issue.dnsRecords!.map((rec) => (
-            <DnsRecordCopy key={`${rec.type}-${rec.host}-${rec.value}`} record={rec} />
-          ))}
+      {showSteps ? (
+        <div className="mt-4">
+          <p className="text-sm font-medium text-foreground">Steps to pass</p>
+          <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
+            {issue.stepsToPass!.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
         </div>
+      ) : null}
+
+      {showRecommendation ? (
+        <p className="mt-3 text-sm text-foreground">
+          <span className="font-medium">Recommended fix: </span>
+          {issue.recommendation}
+        </p>
       ) : null}
 
       {showTechnical ? (

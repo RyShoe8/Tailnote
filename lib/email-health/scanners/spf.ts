@@ -24,7 +24,7 @@ export async function scanSpf(domain: string): Promise<SpfScanResult> {
       stepsToPass: [
         'List every service that sends mail for your domain (email host, CRM, marketing tools).',
         'In your DNS provider, add one TXT record at @ (root) — not multiple SPF records.',
-        'Use the sample record below or your provider’s SPF generator, including each sender with include:.',
+        'Add the DNS record on this card or use your provider’s SPF generator, including each sender with include:.',
         'End the record with ~all or -all, save, wait up to 48 hours, then rescan.',
       ],
       technicalDetail: `No TXT record starting with v=spf1 found for ${domain}.`,

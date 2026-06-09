@@ -26,7 +26,7 @@ export async function scanDmarc(domain: string): Promise<DmarcScanResult> {
         'Publish a DMARC TXT record at _dmarc.yourdomain, start with p=none for monitoring, then move to quarantine or reject.',
       stepsToPass: [
         'In DNS, create a TXT record at host _dmarc (full name: _dmarc.yourdomain).',
-        'Paste the sample record below starting with v=DMARC1; p=none and a rua= reporting address.',
+        'Add the DNS record on this card starting with v=DMARC1; p=none and a rua= reporting address.',
         'Wait 2–4 weeks while reviewing aggregate reports for spoofing and misconfigurations.',
         'Change p=none to p=quarantine, then p=reject when legitimate mail passes SPF/DKIM.',
         'Rescan after each policy change.',
@@ -66,7 +66,7 @@ export async function scanDmarc(domain: string): Promise<DmarcScanResult> {
       recommendation:
         'After reviewing aggregate reports (rua), tighten policy to p=quarantine then p=reject.',
       stepsToPass: [
-        'Confirm rua= is set so you receive DMARC aggregate reports (see sample record if missing).',
+        'Confirm rua= is set so you receive DMARC aggregate reports (add the DNS record on this card if missing).',
         'Review reports for 2–4 weeks and fix any SPF/DKIM failures from legitimate senders.',
         'Update the record to p=quarantine; pct=100; keep rua= for monitoring.',
         'After a stable period with no false positives, change p=reject for full protection.',

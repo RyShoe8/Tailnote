@@ -19,11 +19,13 @@ function problemsByCategory(issues: DomainIssue[]) {
 export type EmailHealthProblemsSectionProps = {
   issues: DomainIssue[];
   showPricingLink?: boolean;
+  zoneDomain?: string;
 };
 
 export function EmailHealthProblemsSection({
   issues,
   showPricingLink = true,
+  zoneDomain,
 }: EmailHealthProblemsSectionProps) {
   const problems = problemIssues(issues);
   const groupedProblems = problemsByCategory(issues);
@@ -34,7 +36,7 @@ export function EmailHealthProblemsSection({
     <section>
       <h2 className="text-lg font-semibold tracking-tight">Problems detected</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Follow the numbered steps on each card to move from warn or fail to pass.
+        Each card shows what to fix — copy DNS records directly into your provider when provided.
       </p>
       <div className="mt-6 space-y-8">
         {Array.from(groupedProblems.entries()).map(([category, categoryIssues]) => (
@@ -48,6 +50,7 @@ export function EmailHealthProblemsSection({
                   key={`${issue.category}-${issue.title}-${i}`}
                   issue={issue}
                   showPricingLink={showPricingLink}
+                  zoneDomain={zoneDomain}
                 />
               ))}
             </div>

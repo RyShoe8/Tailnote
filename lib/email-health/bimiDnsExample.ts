@@ -1,7 +1,5 @@
-import { BIMI_PLACEHOLDER_SVG_NOTE } from '@/lib/email-health/bimiCopy';
-
-export function exampleBimiHost(domain: string): string {
-  return `default._bimi.${domain}`;
+export function exampleBimiHost(_domain?: string): string {
+  return 'default._bimi';
 }
 
 export function exampleBimiRecordValue(domain: string): string {
@@ -9,14 +7,5 @@ export function exampleBimiRecordValue(domain: string): string {
 }
 
 export function missingBimiTechnicalDetail(domain: string): string {
-  const host = exampleBimiHost(domain);
-  const example = exampleBimiRecordValue(domain);
-  return [
-    `No v=BIMI1 record at ${host}`,
-    '',
-    'Illustrative example (will not work without a real BIMI SVG):',
-    example,
-    '',
-    BIMI_PLACEHOLDER_SVG_NOTE,
-  ].join('\n');
+  return `No v=BIMI1 record at default._bimi.${domain}`;
 }

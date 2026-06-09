@@ -55,8 +55,8 @@ async function fetchAllMeta(includeDraftsInDev: boolean): Promise<BlogPostMeta[]
       ? {}
       : { draft: { $ne: true } };
 
-  const docs = await BlogPostModel.find(query).select('-body').lean<BlogPostDoc[]>();
-  return sortByDate(docs.map((doc) => docToMeta(doc as BlogPostDoc)));
+  const docs = await BlogPostModel.find(query).lean<BlogPostDoc[]>();
+  return sortByDate(docs.map((doc) => docToMeta(doc as BlogPostDoc, doc.body)));
 }
 
 export async function getAllPosts(): Promise<BlogPostMeta[]> {
@@ -66,18 +66,16 @@ export async function getAllPosts(): Promise<BlogPostMeta[]> {
 export async function getPublishedPosts(): Promise<BlogPostMeta[]> {
   if (!(await ensureDb())) return [];
 
-  const docs = await BlogPostModel.find({ draft: { $ne: true } })
-    .select('-body')
-    .lean<BlogPostDoc[]>();
-  return sortByDate(docs.map((doc) => docToMeta(doc as BlogPostDoc)));
+  const docs = await BlogPostModel.find({ draft: { $ne: true } }).lean<BlogPostDoc[]>();
+  return sortByDate(docs.map((doc) => docToMeta(doc as BlogPostDoc, doc.body)));
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPostMeta | null> {
   if (!(await ensureDb())) return null;
 
-  const doc = await BlogPostModel.findOne({ slug }).select('-body').lean<BlogPostDoc | null>();
+  const doc = await BlogPostModel.findOne({ slug }).lean<BlogPostDoc | null>();
   if (!doc) return null;
-  return docToMeta(doc as BlogPostDoc);
+  return docToMeta(doc as BlogPostDoc, doc.body);
 }
 
 export async function getPostWithBody(slug: string): Promise<BlogPostWithBody | null> {

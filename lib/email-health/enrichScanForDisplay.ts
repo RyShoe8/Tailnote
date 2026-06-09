@@ -17,10 +17,7 @@ function enrichMissingBimiIssue(issue: DomainIssue, domain: string): DomainIssue
     return issue;
   }
 
-  const needsEnrichment =
-    !issue.technicalDetail?.includes('placeholder.svg') ||
-    !issue.dnsRecords?.length ||
-    !issue.callout;
+  const needsEnrichment = !issue.dnsRecords?.length || !issue.callout;
 
   if (!needsEnrichment) {
     return issue;

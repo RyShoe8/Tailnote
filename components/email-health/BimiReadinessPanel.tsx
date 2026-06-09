@@ -90,8 +90,9 @@ export function BimiReadinessPanel({
                 technicalDetail: issue.technicalDetail,
                 dnsRecords: issue.dnsRecords,
                 callout: issue.callout,
-                stepsToPass: [issue.howToFix],
+                stepsToPass: issue.dnsRecords?.length ? undefined : [issue.howToFix],
               }}
+              zoneDomain={bimi.domain}
             />
           ))}
         </section>
