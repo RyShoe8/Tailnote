@@ -12,12 +12,14 @@ type Props = {
   size?: 'default' | 'large';
   /** Where to navigate after a successful scan (default public marketing path). */
   resultBasePath?: string;
+  scanApiPath?: string;
 };
 
 export function DomainScanForm({
   initialDomain = '',
   size = 'default',
   resultBasePath = '/email-health',
+  scanApiPath = '/api/email-health/scan',
 }: Props) {
   const router = useRouter();
   const [domain, setDomain] = useState(initialDomain);
@@ -31,10 +33,11 @@ export function DomainScanForm({
     capturePostHogEvent('email_health_scan_started', { domain: domain.trim() });
 
     try {
-      const res = await fetch('/api/email-health/scan', {
+      const res = await fetch(scanApiPath, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ domain: domain.trim() }),
+        credentials: scanApiPath.includes('/dashboard/') ? 'include' : undefined,
       });
       const data = (await res.json()) as {
         slug?: string;

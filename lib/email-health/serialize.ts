@@ -1,4 +1,5 @@
 import type { EmailHealthScanDoc } from '@/models/EmailHealthScan';
+import { enrichScanForDisplay } from '@/lib/email-health/enrichScanForDisplay';
 import type { CategoryResult, DomainIssue, StatusLabel } from '@/lib/email-health/types';
 
 import type { BIMIResult } from '@/lib/email-health/bimiTypes';
@@ -16,7 +17,7 @@ export type SerializedEmailHealthScan = {
 };
 
 export function serializeEmailHealthScan(doc: EmailHealthScanDoc): SerializedEmailHealthScan {
-  return {
+  return enrichScanForDisplay({
     domain: doc.domain,
     domainSlug: doc.domainSlug,
     score: doc.score,
@@ -28,5 +29,5 @@ export function serializeEmailHealthScan(doc: EmailHealthScanDoc): SerializedEma
     bimiDetail: doc.bimiDetailJson
       ? (JSON.parse(JSON.stringify(doc.bimiDetailJson)) as BIMIResult)
       : undefined,
-  };
+  });
 }

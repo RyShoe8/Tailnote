@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { BimiReportEducation } from '@/components/email-health/BimiReportEducation';
+import { BimiCertificateSection } from '@/components/email-health/BimiCertificateSection';
 import { CategoryBreakdown } from '@/components/email-health/CategoryBreakdown';
 import { DnsRecordCopy } from '@/components/email-health/DnsRecordCopy';
+import { EmailHealthDomainScanBar } from '@/components/email-health/EmailHealthDomainScanBar';
 import { EmailHealthProblemsSection } from '@/components/email-health/EmailHealthProblemsSection';
 import { EmailHealthRescanButton } from '@/components/email-health/EmailHealthRescanButton';
 import { EmailHealthScoreRing } from '@/components/email-health/EmailHealthScoreRing';
@@ -18,6 +19,9 @@ export type EmailHealthReportViewProps = {
   sharePathPrefix?: string;
   showSignupCta?: boolean;
   breadcrumbRoot?: { href: string; label: string };
+  showDomainScanField?: boolean;
+  scanApiPath?: string;
+  resultBasePath?: string;
 };
 
 export function EmailHealthReportView({
@@ -26,6 +30,9 @@ export function EmailHealthReportView({
   sharePathPrefix = '/email-health',
   showSignupCta = true,
   breadcrumbRoot = { href: '/', label: 'Home' },
+  showDomainScanField = false,
+  scanApiPath = '/api/email-health/scan',
+  resultBasePath = '/email-health',
 }: EmailHealthReportViewProps) {
   const stepsByCategory = buildStepsByCategory(scan.issues);
   const dnsRecords = aggregateDnsRecords(scan.issues);
@@ -54,15 +61,24 @@ export function EmailHealthReportView({
         </ol>
       </nav>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-        <div>
+      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
           <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{scan.domain}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Last scanned {scannedLabel}
             {scan.mailProvider ? ` · Likely hosted on ${scan.mailProvider}` : ''}
           </p>
         </div>
-        <EmailHealthRescanButton domain={scan.domain} />
+        {showDomainScanField ? (
+          <EmailHealthDomainScanBar
+            defaultDomain={scan.domain}
+            currentDomainSlug={scan.domainSlug}
+            scanApiPath={scanApiPath}
+            resultBasePath={resultBasePath}
+          />
+        ) : (
+          <EmailHealthRescanButton domain={scan.domain} />
+        )}
       </div>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,280px)_1fr] lg:items-start">
@@ -81,7 +97,8 @@ export function EmailHealthReportView({
           <section>
             <h2 className="text-lg font-semibold tracking-tight">Category breakdown</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Each row shows what we measured, your points, and how to earn full credit when not passing.
+              Passing checks first, then items that still need work. Each card shows your points and
+              how to earn full credit when not passing.
             </p>
             <div className="mt-4">
               <CategoryBreakdown
@@ -94,7 +111,9 @@ export function EmailHealthReportView({
 
           <EmailHealthProblemsSection issues={scan.issues} showPricingLink={showSignupCta} />
 
-          {scan.bimiDetail ? <BimiReportEducation bimi={scan.bimiDetail} /> : null}
+          {scan.bimiDetail ? (
+            <BimiCertificateSection bimi={scan.bimiDetail} showHostingCallout={showSignupCta} />
+          ) : null}
 
           {dnsRecords.length > 0 ? (
             <section>

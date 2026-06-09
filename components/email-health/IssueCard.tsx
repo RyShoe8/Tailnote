@@ -28,6 +28,10 @@ export function IssueCard({ issue, showPricingLink = true }: Props) {
   const showSteps =
     (issue.severity === 'warn' || issue.severity === 'fail') &&
     (issue.stepsToPass?.length ?? 0) > 0;
+  const redundantSummary =
+    showSteps &&
+    issue.stepsToPass!.length === 1 &&
+    issue.stepsToPass![0] === issue.recommendation;
 
   return (
     <article className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-card">
@@ -53,10 +57,17 @@ export function IssueCard({ issue, showPricingLink = true }: Props) {
         </div>
       ) : null}
 
-      <p className="mt-3 text-sm text-foreground">
-        <span className="font-medium">{showSteps ? 'Summary: ' : 'Recommended fix: '}</span>
-        {issue.recommendation}
-      </p>
+      {showSteps && !redundantSummary ? (
+        <p className="mt-3 text-sm text-foreground">
+          <span className="font-medium">Recommended fix: </span>
+          {issue.recommendation}
+        </p>
+      ) : !showSteps ? (
+        <p className="mt-3 text-sm text-foreground">
+          <span className="font-medium">Recommended fix: </span>
+          {issue.recommendation}
+        </p>
+      ) : null}
 
       {issue.callout ? (
         <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 text-sm text-muted-foreground">

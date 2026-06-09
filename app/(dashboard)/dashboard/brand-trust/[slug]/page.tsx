@@ -23,6 +23,9 @@ export default async function DashboardBrandTrustResultPage({ params }: Props) {
         sharePathPrefix="/email-health"
         showSignupCta={false}
         breadcrumbRoot={{ href: '/dashboard', label: 'Overview' }}
+        showDomainScanField
+        scanApiPath="/api/dashboard/brand-trust/scan"
+        resultBasePath="/dashboard/brand-trust"
       />
     </div>
   );

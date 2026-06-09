@@ -69,5 +69,38 @@ export const PAID_BIMI_HOSTING_CTA =
 export const BIMI_PLACEHOLDER_SVG_NOTE =
   'placeholder.svg is an example only — inbox providers require a valid, square BIMI SVG hosted over HTTPS.';
 
+export const BIMI_PROVIDER_MATRIX = {
+  title: 'Which inboxes support your setup?',
+  intro:
+    'A BIMI DNS record and hosted logo are the baseline. Many major inboxes also require a certificate (CMC or VMC) before showing your logo.',
+  footnote:
+    'Logo display is not guaranteed. Support varies by inbox provider and may change. This table reflects current major-provider BIMI guidance.',
+  columns: {
+    dnsOnly: 'BIMI DNS + hosted SVG',
+    cmc: 'CMC certificate',
+    vmc: 'VMC certificate',
+  },
+  providers: [
+    {
+      name: 'Gmail',
+      dnsOnly: 'Unlikely — a certificate is usually required',
+      cmc: 'Logo may appear; no blue verified checkmark',
+      vmc: 'Logo + blue verified checkmark',
+    },
+    {
+      name: 'Yahoo',
+      dnsOnly: 'May work when DMARC is enforced',
+      cmc: 'Supported',
+      vmc: 'Supported',
+    },
+    {
+      name: 'Fastmail',
+      dnsOnly: 'May work when DMARC is enforced',
+      cmc: 'Supported',
+      vmc: 'Supported',
+    },
+  ],
+} as const;
+
 export const RASTER_SVG_HONESTY =
   'Logos uploaded as PNG or JPEG are converted into a compact SVG. Vector artwork works best, and some strict validators may still prefer a professionally prepared BIMI SVG.';

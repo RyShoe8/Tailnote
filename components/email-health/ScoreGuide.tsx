@@ -3,21 +3,14 @@ import {
   STATUS_LABEL_GUIDE,
   scoreBandForLabel,
 } from '@/lib/email-health/categoryGuide';
-import type { EmailHealthCategory, StatusLabel } from '@/lib/email-health/types';
+import { DISPLAY_CATEGORY_ORDER } from '@/lib/email-health/categoryDisplay';
+import type { StatusLabel } from '@/lib/email-health/types';
 
 type Props = {
   statusLabel: StatusLabel;
 };
 
-const CATEGORY_ORDER: EmailHealthCategory[] = [
-  'spf',
-  'dkim',
-  'dmarc',
-  'bimi',
-  'mx',
-  'tls',
-  'https',
-];
+const CATEGORY_ORDER = DISPLAY_CATEGORY_ORDER;
 
 export function ScoreGuide({ statusLabel }: Props) {
   return (

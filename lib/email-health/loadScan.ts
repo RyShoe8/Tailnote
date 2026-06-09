@@ -1,4 +1,5 @@
 import { slugToDomain } from '@/lib/email-health/domain';
+import { persistEmailHealthScan } from '@/lib/email-health/persist';
 import { runEmailHealthScan } from '@/lib/email-health/runScan';
 import { serializeEmailHealthScan, type SerializedEmailHealthScan } from '@/lib/email-health/serialize';
 import { connectMongoose } from '@/lib/mongoose';
@@ -19,21 +20,9 @@ export async function loadOrCreateScanBySlug(slug: string): Promise<SerializedEm
     const domain = slugToDomain(slug);
     const report = await runEmailHealthScan(domain);
     await connectMongoose();
-    const saved = await EmailHealthScanModel.findOneAndUpdate(
-      { domain: report.domain },
-      {
-        domain: report.domain,
-        domainSlug: report.domainSlug,
-        score: report.score,
-        statusLabel: report.statusLabel,
-        categories: report.categories,
-        issues: report.issues,
-        mailProvider: report.mailProvider,
-        scannedAt: report.scannedAt,
-      },
-      { upsert: true, new: true }
-    ).lean<EmailHealthScanDoc>();
-    return saved ? serializeEmailHealthScan(saved) : null;
+    const saved = await persistEmailHealthScan(report, {});
+    if (!saved) return null;
+    return serializeEmailHealthScan(saved as EmailHealthScanDoc);
   } catch {
     return null;
   }
