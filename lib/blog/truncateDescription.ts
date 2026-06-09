@@ -1,4 +1,4 @@
-const LIST_DESCRIPTION_MAX = 200;
+const LIST_DESCRIPTION_MAX = 250;
 const ELLIPSIS = '...';
 
 export function truncateBlogDescription(text: string, maxLength = LIST_DESCRIPTION_MAX): string {

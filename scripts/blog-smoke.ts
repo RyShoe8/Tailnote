@@ -24,7 +24,7 @@ function assert(condition: boolean, message: string): void {
 async function main() {
   const longText = 'word '.repeat(60).trim();
   const truncated = truncateBlogDescription(longText);
-  assert(truncated.length <= 200, `truncated description is at most 200 chars (got ${truncated.length})`);
+  assert(truncated.length <= 250, `truncated description is at most 250 chars (got ${truncated.length})`);
   assert(truncated.endsWith('...'), 'truncated description ends with ellipsis');
   assert(truncateBlogDescription('Short description.') === 'Short description.', 'short description unchanged');
 
