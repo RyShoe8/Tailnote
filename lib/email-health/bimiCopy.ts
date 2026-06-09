@@ -40,7 +40,8 @@ export const BIMI_CERTIFICATE_OPTIONS = {
 } as const;
 
 export const BIMI_INBOX_PREVIEW = {
-  caption: 'How your logo may appear in supporting inboxes (e.g. Gmail, Yahoo)',
+  caption:
+    'How your logo may appear in supporting inboxes with a correct BIMI DNS setup (e.g. Gmail, Yahoo)',
   senderName: 'Your Company',
   subject: 'Your latest update',
   preview: 'Thanks for being a customer — here is what is new…',
