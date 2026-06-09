@@ -1,31 +1,16 @@
 import Link from 'next/link';
-import { BimiReadinessPanel } from '@/components/email-health/BimiReadinessPanel';
+import { BimiReportEducation } from '@/components/email-health/BimiReportEducation';
 import { CategoryBreakdown } from '@/components/email-health/CategoryBreakdown';
 import { DnsRecordCopy } from '@/components/email-health/DnsRecordCopy';
+import { EmailHealthProblemsSection } from '@/components/email-health/EmailHealthProblemsSection';
 import { EmailHealthRescanButton } from '@/components/email-health/EmailHealthRescanButton';
 import { EmailHealthScoreRing } from '@/components/email-health/EmailHealthScoreRing';
 import { EmailHealthTailnoteCta } from '@/components/email-health/EmailHealthTailnoteCta';
-import { IssueCard } from '@/components/email-health/IssueCard';
 import { ScoreGuide } from '@/components/email-health/ScoreGuide';
-import { buildStepsByCategory, getCategoryGuide } from '@/lib/email-health/categoryGuide';
+import { buildStepsByCategory } from '@/lib/email-health/categoryGuide';
 import { aggregateDnsRecords } from '@/lib/email-health/scoring';
 import type { SerializedEmailHealthScan } from '@/lib/email-health/serialize';
-import type { DomainIssue, EmailHealthCategory } from '@/lib/email-health/types';
 import { absoluteUrl } from '@/lib/seo/site';
-
-function problemIssues(issues: DomainIssue[]) {
-  return issues.filter((i) => i.severity === 'fail' || i.severity === 'warn');
-}
-
-function problemsByCategory(issues: DomainIssue[]) {
-  const map = new Map<EmailHealthCategory, DomainIssue[]>();
-  for (const issue of problemIssues(issues)) {
-    const list = map.get(issue.category) ?? [];
-    list.push(issue);
-    map.set(issue.category, list);
-  }
-  return map;
-}
 
 export type EmailHealthReportViewProps = {
   scan: SerializedEmailHealthScan;
@@ -42,9 +27,7 @@ export function EmailHealthReportView({
   showSignupCta = true,
   breadcrumbRoot = { href: '/', label: 'Home' },
 }: EmailHealthReportViewProps) {
-  const problems = problemIssues(scan.issues);
   const stepsByCategory = buildStepsByCategory(scan.issues);
-  const groupedProblems = problemsByCategory(scan.issues);
   const dnsRecords = aggregateDnsRecords(scan.issues);
   const scannedLabel = new Date(scan.scannedAt).toLocaleString('en-US', {
     dateStyle: 'medium',
@@ -95,42 +78,23 @@ export function EmailHealthReportView({
         <div className="min-w-0 space-y-10">
           <ScoreGuide statusLabel={scan.statusLabel} />
 
-          {scan.bimiDetail ? (
-            <BimiReadinessPanel bimi={scan.bimiDetail} showPaidCta={showSignupCta} />
-          ) : null}
-
           <section>
             <h2 className="text-lg font-semibold tracking-tight">Category breakdown</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Each row shows what we measured, your points, and how to earn full credit when not passing.
             </p>
             <div className="mt-4">
-              <CategoryBreakdown categories={scan.categories} stepsByCategory={stepsByCategory} />
+              <CategoryBreakdown
+                categories={scan.categories}
+                stepsByCategory={stepsByCategory}
+                bimiDetail={scan.bimiDetail}
+              />
             </div>
           </section>
 
-          {problems.length > 0 ? (
-            <section>
-              <h2 className="text-lg font-semibold tracking-tight">Problems detected</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Follow the numbered steps on each card to move from warn or fail to pass.
-              </p>
-              <div className="mt-6 space-y-8">
-                {Array.from(groupedProblems.entries()).map(([category, categoryIssues]) => (
-                  <div key={category}>
-                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                      {getCategoryGuide(category).label}
-                    </h3>
-                    <div className="mt-3 space-y-4">
-                      {categoryIssues.map((issue, i) => (
-                        <IssueCard key={`${issue.category}-${issue.title}-${i}`} issue={issue} />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ) : null}
+          <EmailHealthProblemsSection issues={scan.issues} showPricingLink={showSignupCta} />
+
+          {scan.bimiDetail ? <BimiReportEducation bimi={scan.bimiDetail} /> : null}
 
           {dnsRecords.length > 0 ? (
             <section>

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -18,9 +19,10 @@ function severityVariant(severity: DomainIssue['severity']) {
 
 type Props = {
   issue: DomainIssue;
+  showPricingLink?: boolean;
 };
 
-export function IssueCard({ issue }: Props) {
+export function IssueCard({ issue, showPricingLink = true }: Props) {
   const showTechnical = Boolean(issue.technicalDetail);
   const hasDns = (issue.dnsRecords?.length ?? 0) > 0;
   const showSteps =
@@ -56,6 +58,17 @@ export function IssueCard({ issue }: Props) {
         {issue.recommendation}
       </p>
 
+      {issue.callout ? (
+        <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 text-sm text-muted-foreground">
+          {issue.callout}{' '}
+          {showPricingLink ? (
+            <Link href="/pricing" className="font-medium text-primary underline underline-offset-4">
+              See paid plans
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
+
       {hasDns ? (
         <div className="mt-4 space-y-2">
           {issue.dnsRecords!.map((rec) => (
@@ -70,7 +83,7 @@ export function IssueCard({ issue }: Props) {
             View technical details
             <ChevronDown className="h-4 w-4 transition-transform" aria-hidden />
           </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2 rounded-md bg-slate-50 p-3 font-mono text-xs text-muted-foreground break-all">
+          <CollapsibleContent className="mt-2 rounded-md bg-slate-50 p-3 font-mono text-xs text-muted-foreground break-all whitespace-pre-wrap">
             {issue.technicalDetail}
           </CollapsibleContent>
         </Collapsible>

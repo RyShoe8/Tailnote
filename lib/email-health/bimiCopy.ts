@@ -66,5 +66,8 @@ export const SIGNATURE_VS_INBOX_LOGO =
 export const PAID_BIMI_HOSTING_CTA =
   'On a paid Tailnote plan, we can convert and host a BIMI-ready logo for you — then give you the DNS record to copy.';
 
+export const BIMI_PLACEHOLDER_SVG_NOTE =
+  'placeholder.svg is an example only — inbox providers require a valid, square BIMI SVG hosted over HTTPS.';
+
 export const RASTER_SVG_HONESTY =
   'Logos uploaded as PNG or JPEG are converted into a compact SVG. Vector artwork works best, and some strict validators may still prefer a professionally prepared BIMI SVG.';

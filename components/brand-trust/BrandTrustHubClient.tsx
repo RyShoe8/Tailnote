@@ -4,28 +4,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { BimiLogoUpload } from '@/components/brand-trust/BimiLogoUpload';
-import { BimiReadinessPanel } from '@/components/email-health/BimiReadinessPanel';
-import { EmailHealthScoreRing } from '@/components/email-health/EmailHealthScoreRing';
+import { BimiReportEducation } from '@/components/email-health/BimiReportEducation';
+import { CategoryBreakdown } from '@/components/email-health/CategoryBreakdown';
 import { DomainScanForm } from '@/components/email-health/DomainScanForm';
+import { EmailHealthProblemsSection } from '@/components/email-health/EmailHealthProblemsSection';
+import { EmailHealthScoreRing } from '@/components/email-health/EmailHealthScoreRing';
+import { ScoreGuide } from '@/components/email-health/ScoreGuide';
+import { buildStepsByCategory } from '@/lib/email-health/categoryGuide';
 import { SIGNATURE_VS_INBOX_LOGO } from '@/lib/email-health/bimiCopy';
-import type { BIMIResult } from '@/lib/email-health/bimiTypes';
-import { vmcStatusFromResult } from '@/lib/email-health/bimiTypes';
 import type { SerializedEmailHealthScan } from '@/lib/email-health/serialize';
-import type { CategoryResult, CheckStatus } from '@/lib/email-health/types';
 import { Button } from '@/components/ui/button';
-
-function catStatus(categories: CategoryResult[], id: string): CheckStatus | 'unknown' {
-  const row = categories.find((c) => c.category === id);
-  if (!row) return 'unknown';
-  return row.status;
-}
-
-function statusIcon(status: CheckStatus | 'unknown') {
-  if (status === 'pass') return '✓';
-  if (status === 'warn') return '!';
-  if (status === 'fail') return '✗';
-  return '?';
-}
 
 type Props = {
   orgDomain: string | null;
@@ -44,7 +32,6 @@ export function BrandTrustHubClient({
 }: Props) {
   const router = useRouter();
   const [rescanning, setRescanning] = useState(false);
-  const bimi: BIMIResult | undefined = scan?.bimiDetail;
 
   async function rescan() {
     if (!orgDomain) return;
@@ -80,7 +67,7 @@ export function BrandTrustHubClient({
     );
   }
 
-  const vmc = bimi ? vmcStatusFromResult(bimi) : 'unknown';
+  const stepsByCategory = scan ? buildStepsByCategory(scan.issues) : undefined;
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
@@ -100,48 +87,47 @@ export function BrandTrustHubClient({
       <p className="text-sm text-muted-foreground">{SIGNATURE_VS_INBOX_LOGO}</p>
 
       {scan ? (
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,240px)_1fr]">
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <EmailHealthScoreRing score={scan.score} statusLabel={scan.statusLabel} />
-            <p className="mt-3 text-center text-xs text-muted-foreground">Trust score</p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Domain health
-            </p>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {[
-                ['SPF', catStatus(scan.categories, 'spf')],
-                ['DKIM', catStatus(scan.categories, 'dkim')],
-                ['DMARC', catStatus(scan.categories, 'dmarc')],
-                ['BIMI', bimi?.status ?? catStatus(scan.categories, 'bimi')],
-                ['VMC', vmc],
-              ].map(([label, st]) => (
-                <div
-                  key={String(label)}
-                  className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
-                >
-                  <span>{label}</span>
-                  <span className="font-semibold">{statusIcon(st as CheckStatus | 'unknown')}</span>
-                </div>
-              ))}
+        <>
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,240px)_1fr] lg:items-start">
+            <div className="rounded-2xl border border-border bg-card p-6 lg:sticky lg:top-24">
+              <EmailHealthScoreRing score={scan.score} statusLabel={scan.statusLabel} />
+              <p className="mt-3 text-center text-xs text-muted-foreground">Trust score</p>
             </div>
-            <div className="flex flex-wrap gap-2 pt-2">
-              <Button asChild size="sm" variant="outline">
-                <Link href={`/dashboard/brand-trust/${scan.domainSlug}#dmarc`}>Fix DMARC</Link>
-              </Button>
-              <Button asChild size="sm" variant="outline">
-                <Link href={`/dashboard/brand-trust/${scan.domainSlug}#bimi`}>Get BIMI ready</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+            <div className="min-w-0 space-y-8">
+              <ScoreGuide statusLabel={scan.statusLabel} />
 
-      {bimi ? (
-        <div id="bimi">
-          <BimiReadinessPanel bimi={bimi} showPaidCta={!canUseBimiLogoHosting} />
-        </div>
+              <section>
+                <h2 className="text-lg font-semibold tracking-tight">Category breakdown</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Each row shows what we measured, your points, and how to earn full credit when not passing.
+                </p>
+                <div className="mt-4">
+                  <CategoryBreakdown
+                    categories={scan.categories}
+                    stepsByCategory={stepsByCategory}
+                    bimiDetail={scan.bimiDetail}
+                  />
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <EmailHealthProblemsSection
+            issues={scan.issues}
+            showPricingLink={!canUseBimiLogoHosting}
+          />
+
+          {scan.bimiDetail ? <BimiReportEducation bimi={scan.bimiDetail} /> : null}
+
+          <div className="flex flex-wrap gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link href={`/dashboard/brand-trust/${scan.domainSlug}#dmarc`}>Full report: DMARC</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link href={`/dashboard/brand-trust/${scan.domainSlug}#bimi`}>Full report: BIMI</Link>
+            </Button>
+          </div>
+        </>
       ) : null}
 
       <BimiLogoUpload

@@ -7,7 +7,12 @@ import {
 } from '@/lib/email-health/dmarc';
 import { analyzeBimiCertificate, type CertificateAnalysis } from '@/lib/email-health/certificates';
 import { validateBimiSvgUrl, type SvgValidationResult } from '@/lib/email-health/svg';
-import { BIMI_IMPLEMENTATION_STEPS } from '@/lib/email-health/bimiCopy';
+import { BIMI_IMPLEMENTATION_STEPS, BIMI_PLACEHOLDER_SVG_NOTE, PAID_BIMI_HOSTING_CTA } from '@/lib/email-health/bimiCopy';
+import {
+  exampleBimiHost,
+  exampleBimiRecordValue,
+  missingBimiTechnicalDetail,
+} from '@/lib/email-health/bimiDnsExample';
 import type { BIMIResult, BimiIssue, ProviderReadinessStatus } from '@/lib/email-health/bimiTypes';
 import type { CategoryResult, CheckStatus, DomainIssue } from '@/lib/email-health/types';
 import { buildCategoryResult } from '@/lib/email-health/scoring';
@@ -105,11 +110,21 @@ export async function analyzeBimi(domain: string, options?: AnalyzeBimiOptions):
     issues.push({
       title: 'Brand logo setup is missing',
       plainEnglishExplanation:
-        'Your domain is not yet set up to show a verified brand logo in supporting inboxes.',
-      technicalDetail: `No v=BIMI1 record at ${host}`,
+        'Your domain is not yet set up to show a verified brand logo in supporting inboxes. Publishing a BIMI record alone is not enough — you also need a valid BIMI SVG hosted over HTTPS.',
+      technicalDetail: missingBimiTechnicalDetail(domain),
       severity: 'warn',
       howToFix:
         'Add a BIMI TXT record at default._bimi with v=BIMI1 and l= pointing to your HTTPS SVG logo.',
+      dnsRecords: [
+        {
+          type: 'TXT',
+          host: exampleBimiHost(domain),
+          value: exampleBimiRecordValue(domain),
+          note: BIMI_PLACEHOLDER_SVG_NOTE,
+          exampleOnly: true,
+        },
+      ],
+      callout: PAID_BIMI_HOSTING_CTA,
     });
     recommendations.push('Publish a BIMI DNS record with your logo URL.');
   } else if (!tags.l) {
@@ -221,6 +236,8 @@ export function mapBimiResultToScanOutput(result: BIMIResult): {
     explanation: issue.plainEnglishExplanation,
     recommendation: issue.howToFix,
     technicalDetail: issue.technicalDetail,
+    dnsRecords: issue.dnsRecords,
+    callout: issue.callout,
     stepsToPass: issue.severity !== 'info' ? [issue.howToFix] : undefined,
   }));
 

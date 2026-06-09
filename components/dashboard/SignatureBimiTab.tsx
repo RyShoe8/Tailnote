@@ -3,14 +3,13 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { BimiLogoUpload } from '@/components/brand-trust/BimiLogoUpload';
-import { BimiReadinessPanel } from '@/components/email-health/BimiReadinessPanel';
+import { BimiCertificateGuide } from '@/components/email-health/BimiCertificateGuide';
+import { BimiInboxPreview } from '@/components/email-health/BimiInboxPreview';
 import { SIGNATURE_VS_INBOX_LOGO } from '@/lib/email-health/bimiCopy';
-import type { BIMIResult } from '@/lib/email-health/bimiTypes';
-import type { SerializedEmailHealthScan } from '@/lib/email-health/serialize';
 
 type BrandTrustPayload = {
   orgDomain: string | null;
-  scan: SerializedEmailHealthScan | null;
+  scan: unknown;
   bimiLogoUrl?: string;
   bimiSuggestedRecord?: string;
   entitlements: { canUseBimiLogoHosting: boolean };
@@ -62,41 +61,32 @@ export function SignatureBimiTab() {
     );
   }
 
-  const bimi: BIMIResult | undefined = data.scan?.bimiDetail;
-
   return (
     <div className="space-y-6">
       <CardShell>
         <p className="text-sm text-muted-foreground">{SIGNATURE_VS_INBOX_LOGO}</p>
         <p className="mt-2 text-sm">
-          Checking domain: <span className="font-medium">{data.orgDomain}</span>
+          Domain: <span className="font-medium">{data.orgDomain}</span>
         </p>
-        <Link href="/dashboard/brand-trust" className="mt-2 inline-block text-sm font-medium text-primary underline">
-          Full Brand Trust Center
+        <Link
+          href="/dashboard/brand-trust"
+          className="mt-2 inline-block text-sm font-medium text-primary underline"
+        >
+          Full Brand Trust Center scan
         </Link>
       </CardShell>
-
-      {bimi ? (
-        <BimiReadinessPanel
-          bimi={bimi}
-          compact
-          showPaidCta={!data.entitlements.canUseBimiLogoHosting}
-        />
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          Run a scan from the{' '}
-          <Link href="/dashboard/brand-trust" className="text-primary underline">
-            Brand Trust Center
-          </Link>{' '}
-          to see BIMI checks.
-        </p>
-      )}
 
       <BimiLogoUpload
         canUseBimiLogoHosting={data.entitlements.canUseBimiLogoHosting}
         bimiLogoUrl={data.bimiLogoUrl}
         bimiSuggestedRecord={data.bimiSuggestedRecord}
       />
+
+      <BimiInboxPreview compact />
+
+      <CardShell>
+        <BimiCertificateGuide compact />
+      </CardShell>
     </div>
   );
 }

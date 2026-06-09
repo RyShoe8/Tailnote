@@ -17,6 +17,8 @@ export type DnsRecordSuggestion = {
   type: string;
   host: string;
   value: string;
+  note?: string;
+  exampleOnly?: boolean;
 };
 
 export type DomainIssue = {
@@ -28,6 +30,7 @@ export type DomainIssue = {
   stepsToPass?: string[];
   technicalDetail?: string;
   dnsRecords?: DnsRecordSuggestion[];
+  callout?: string;
 };
 
 export type CategoryResult = {

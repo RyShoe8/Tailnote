@@ -1,5 +1,4 @@
 import type { BIMIResult } from '@/lib/email-health/bimiTypes';
-import { vmcStatusFromResult } from '@/lib/email-health/bimiTypes';
 import {
   BIMI_IMPLEMENTATION_STEPS,
   BIMI_REALITY_CHECK,
@@ -8,30 +7,10 @@ import {
 } from '@/lib/email-health/bimiCopy';
 import type { CheckStatus } from '@/lib/email-health/types';
 import { BimiCertificateGuide } from '@/components/email-health/BimiCertificateGuide';
-import { BimiInboxPreview } from '@/components/email-health/BimiInboxPreview';
+import { BimiScoreBreakdown } from '@/components/email-health/BimiScoreBreakdown';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { IssueCard } from '@/components/email-health/IssueCard';
 import Link from 'next/link';
-
-function StatusPill({ status, label }: { status: CheckStatus | 'unknown'; label: string }) {
-  const styles: Record<string, string> = {
-    pass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200',
-    warn: 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200',
-    fail: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200',
-    unknown: 'bg-muted text-muted-foreground',
-  };
-  const icons: Record<string, string> = { pass: '✓', warn: '!', fail: '✗', unknown: '?' };
-  return (
-    <div className="flex items-center justify-between gap-2 rounded-lg border border-border/60 px-3 py-2 text-sm">
-      <span className="font-medium">{label}</span>
-      <span
-        className={`inline-flex min-w-[1.75rem] justify-center rounded-full px-2 py-0.5 text-xs font-semibold ${styles[status] ?? styles.unknown}`}
-      >
-        {icons[status] ?? '?'}
-      </span>
-    </div>
-  );
-}
 
 function summaryLine(result: BIMIResult): string {
   if (result.status === 'pass') {
@@ -51,6 +30,7 @@ export type BimiReadinessPanelProps = {
   showPaidCta?: boolean;
   compact?: boolean;
   showEducation?: boolean;
+  showIssueCards?: boolean;
 };
 
 export function BimiReadinessPanel({
@@ -58,8 +38,8 @@ export function BimiReadinessPanel({
   showPaidCta = false,
   compact = false,
   showEducation = true,
+  showIssueCards = true,
 }: BimiReadinessPanelProps) {
-  const vmcStatus = vmcStatusFromResult(bimi);
   const problemIssues = bimi.issues.filter((i) => i.severity === 'fail' || i.severity === 'warn');
 
   return (
@@ -70,25 +50,7 @@ export function BimiReadinessPanel({
           <CardDescription>{summaryLine(bimi)}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-2 sm:grid-cols-2">
-            <StatusPill
-              status={bimi.dmarcStatus.status === 'unknown' ? 'unknown' : bimi.dmarcStatus.status}
-              label="DMARC ready"
-            />
-            <StatusPill
-              status={
-                bimi.bimiRecordStatus.status === 'unknown' ? 'unknown' : bimi.bimiRecordStatus.status
-              }
-              label="BIMI record"
-            />
-            <StatusPill
-              status={bimi.svgStatus.status === 'unknown' ? 'unknown' : bimi.svgStatus.status}
-              label="Logo file"
-            />
-            <StatusPill status={vmcStatus} label="Certificate (VMC/CMC)" />
-          </div>
-
-          <BimiInboxPreview compact={compact} />
+          <BimiScoreBreakdown bimi={bimi} compact={compact} />
 
           {!compact ? (
             <div className="rounded-lg border border-dashed border-border/80 bg-muted/30 p-4 text-sm">
@@ -113,7 +75,7 @@ export function BimiReadinessPanel({
         </CardContent>
       </Card>
 
-      {problemIssues.length > 0 ? (
+      {showIssueCards && problemIssues.length > 0 ? (
         <section className="space-y-3">
           <h3 className="text-lg font-semibold tracking-tight">How to fix it</h3>
           {problemIssues.map((issue, idx) => (
@@ -126,6 +88,8 @@ export function BimiReadinessPanel({
                 explanation: issue.plainEnglishExplanation,
                 recommendation: issue.howToFix,
                 technicalDetail: issue.technicalDetail,
+                dnsRecords: issue.dnsRecords,
+                callout: issue.callout,
                 stepsToPass: [issue.howToFix],
               }}
             />

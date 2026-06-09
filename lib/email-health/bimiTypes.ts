@@ -1,4 +1,4 @@
-import type { CheckStatus, IssueSeverity } from '@/lib/email-health/types';
+import type { CheckStatus, DnsRecordSuggestion, IssueSeverity } from '@/lib/email-health/types';
 
 export type BimiIssue = {
   title: string;
@@ -6,6 +6,8 @@ export type BimiIssue = {
   technicalDetail?: string;
   severity: IssueSeverity;
   howToFix: string;
+  dnsRecords?: DnsRecordSuggestion[];
+  callout?: string;
 };
 
 export type ProviderReadinessStatus = CheckStatus | 'unknown';

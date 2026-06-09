@@ -1,6 +1,9 @@
-import { Badge } from '@/components/ui/badge';
+import { BimiScoreBreakdown } from '@/components/email-health/BimiScoreBreakdown';
 import { getCategoryGuide } from '@/lib/email-health/categoryGuide';
+import type { BIMIResult } from '@/lib/email-health/bimiTypes';
+import { Badge } from '@/components/ui/badge';
 import type { CategoryResult, EmailHealthCategory } from '@/lib/email-health/types';
+import { cn } from '@/lib/utils';
 
 function statusVariant(status: CategoryResult['status']) {
   if (status === 'pass') return 'accent' as const;
@@ -17,9 +20,10 @@ function statusLabel(status: CategoryResult['status']) {
 type Props = {
   categories: CategoryResult[];
   stepsByCategory?: Partial<Record<EmailHealthCategory, string[]>>;
+  bimiDetail?: BIMIResult;
 };
 
-export function CategoryBreakdown({ categories, stepsByCategory }: Props) {
+export function CategoryBreakdown({ categories, stepsByCategory, bimiDetail }: Props) {
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {categories.map((cat) => {
@@ -28,11 +32,15 @@ export function CategoryBreakdown({ categories, stepsByCategory }: Props) {
           cat.status !== 'pass'
             ? stepsByCategory?.[cat.category] ?? guide.defaultStepsToPass
             : undefined;
+        const isBimi = cat.category === 'bimi' && bimiDetail;
 
         return (
           <div
             key={cat.category}
-            className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-card"
+            className={cn(
+              'rounded-xl border border-slate-200/80 bg-white p-4 shadow-card',
+              isBimi && 'sm:col-span-2 lg:col-span-4',
+            )}
           >
             <div className="flex items-center justify-between gap-2">
               <p className="text-sm font-medium text-foreground">{guide.label}</p>
@@ -43,7 +51,14 @@ export function CategoryBreakdown({ categories, stepsByCategory }: Props) {
             <p className="mt-2 text-xs font-medium text-foreground">
               {cat.points}/{cat.maxPoints} pts
             </p>
-            {passSteps && passSteps.length > 0 ? (
+
+            {isBimi ? (
+              <div className="mt-4 border-t border-slate-100 pt-4">
+                <BimiScoreBreakdown bimi={bimiDetail} compact showInboxPreview />
+              </div>
+            ) : null}
+
+            {passSteps && passSteps.length > 0 && !isBimi ? (
               <div className="mt-3 border-t border-slate-100 pt-3">
                 <p className="text-xs font-medium text-foreground">
                   To earn full {cat.maxPoints} points:
@@ -59,6 +74,12 @@ export function CategoryBreakdown({ categories, stepsByCategory }: Props) {
                   </p>
                 ) : null}
               </div>
+            ) : null}
+
+            {isBimi && passSteps && passSteps.length > 0 ? (
+              <p className="mt-3 text-xs text-muted-foreground">
+                See problems detected below for BIMI fix steps.
+              </p>
             ) : null}
           </div>
         );

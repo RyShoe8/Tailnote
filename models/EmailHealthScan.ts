@@ -5,6 +5,8 @@ const DnsRecordSchema = new Schema(
     type: { type: String, required: true },
     host: { type: String, required: true },
     value: { type: String, required: true },
+    note: { type: String },
+    exampleOnly: { type: Boolean },
   },
   { _id: false }
 );
@@ -23,6 +25,7 @@ const DomainIssueSchema = new Schema(
     stepsToPass: { type: [String], default: undefined },
     technicalDetail: { type: String },
     dnsRecords: { type: [DnsRecordSchema], default: [] },
+    callout: { type: String },
   },
   { _id: false }
 );

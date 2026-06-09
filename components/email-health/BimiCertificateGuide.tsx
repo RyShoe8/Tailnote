@@ -26,14 +26,9 @@ function CertificateCard({
 }: CertificateCardProps) {
   return (
     <div className="flex flex-col rounded-lg border border-border/60 bg-background p-4">
-      <div className="mb-2 flex items-start justify-between gap-2">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{shortName}</p>
-          <p className={cn('font-semibold text-foreground', compact ? 'text-sm' : 'text-base')}>{name}</p>
-        </div>
-        <p className={cn('shrink-0 font-medium text-foreground', compact ? 'text-xs' : 'text-sm')}>
-          {priceLabel}
-        </p>
+      <div className="mb-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{shortName}</p>
+        <p className={cn('font-semibold text-foreground', compact ? 'text-sm' : 'text-base')}>{name}</p>
       </div>
 
       <ul className={cn('flex-1 space-y-1.5 text-muted-foreground', compact ? 'text-xs' : 'text-sm')}>
@@ -45,17 +40,20 @@ function CertificateCard({
         </li>
       </ul>
 
-      <a
-        href={purchaseUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={cn(
-          'mt-4 inline-flex items-center font-medium text-primary underline underline-offset-4 hover:text-primary/80',
-          compact ? 'text-xs' : 'text-sm',
-        )}
-      >
-        {purchaseLabel}
-      </a>
+      <div className="mt-4 border-t border-border/60 pt-3">
+        <p className={cn('font-medium text-foreground', compact ? 'text-xs' : 'text-sm')}>{priceLabel}</p>
+        <a
+          href={purchaseUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            'mt-2 inline-flex items-center font-medium text-primary underline underline-offset-4 hover:text-primary/80',
+            compact ? 'text-xs' : 'text-sm',
+          )}
+        >
+          {purchaseLabel}
+        </a>
+      </div>
     </div>
   );
 }
@@ -76,8 +74,8 @@ export function BimiCertificateGuide({ compact = false, className }: BimiCertifi
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <CertificateCard {...vmc} compact={compact} />
         <CertificateCard {...cmc} compact={compact} />
+        <CertificateCard {...vmc} compact={compact} />
       </div>
 
       <p className={cn('text-muted-foreground', compact ? 'text-[11px]' : 'text-xs')}>{pricingDisclaimer}</p>
