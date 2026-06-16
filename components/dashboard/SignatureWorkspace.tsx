@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   renderSignature,
   type SignatureBrand,
@@ -123,7 +123,7 @@ export function SignatureWorkspace() {
   const [org, setOrg] = useState<OrgResponse | null>(null);
   const [orgName, setOrgName] = useState('');
   const [contentBlocks, setContentBlocks] = useState<ContentBlockData[]>([]);
-  const [activeTab, setActiveTab] = useState<'brand' | 'bimi' | 'blocks' | 'details' | 'install'>('brand');
+  const [activeTab, setActiveTab] = useState<'brand' | 'bimi' | 'blocks' | 'details' | 'install'>('details');
   const [mobilePane, setMobilePane] = useState<MobileSignaturePane>('edit');
   const isLgUp = useIsLgUp();
   const isMobileInstall = useIsMobileInstallContext();
@@ -143,6 +143,7 @@ export function SignatureWorkspace() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [messageIsError, setMessageIsError] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   /** Server-rendered HTML with signed tracking URLs when org flag is on. */
   const [trackedHtml, setTrackedHtml] = useState<string | null>(null);
@@ -246,16 +247,18 @@ export function SignatureWorkspace() {
   }, [load]);
 
   const isOwner = viewerRole === 'owner';
+  const isAdmin = viewerRole === 'admin';
   const isMember = viewerRole === 'member';
   const canSeeBrandTab = !isMember || permissions.employeesCanEditBrand;
   const canSeeBlocksTab = !isMember || permissions.employeesCanEditPromoBlocks;
+  const canUploadOrgLogo = isOwner || isAdmin;
+  const initialTabHandled = useRef(false);
 
   useEffect(() => {
     if (loading) return;
     if (isMember) {
       if (activeTab === 'brand' && !canSeeBrandTab) setActiveTab('details');
       if (activeTab === 'blocks' && !canSeeBlocksTab) setActiveTab('details');
-      if (!canSeeBrandTab && !canSeeBlocksTab && activeTab !== 'install') setActiveTab('details');
     }
   }, [loading, isMember, canSeeBrandTab, canSeeBlocksTab, activeTab]);
 
@@ -264,14 +267,21 @@ export function SignatureWorkspace() {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (loading || typeof window === 'undefined' || initialTabHandled.current) return;
+    initialTabHandled.current = true;
     const sp = new URLSearchParams(window.location.search);
     const tab = sp.get('tab');
-    if (tab === 'install') {
-      setActiveTab('install');
+    if (tab) {
+      if (tab === 'install') setActiveTab('install');
+      else if (tab === 'brand' && canSeeBrandTab) setActiveTab('brand');
+      else if (tab === 'bimi') setActiveTab('bimi');
+      else if (tab === 'blocks' && canSeeBlocksTab) setActiveTab('blocks');
+      else if (tab === 'details') setActiveTab('details');
       window.history.replaceState({}, '', window.location.pathname);
+      return;
     }
-  }, []);
+    if (!isMember || canSeeBrandTab) setActiveTab('brand');
+  }, [loading, canSeeBrandTab, canSeeBlocksTab, isMember]);
 
   const selectedTemplate = useMemo(
     () => templates.find((t) => t._id === selectedTemplateId),
@@ -564,9 +574,10 @@ export function SignatureWorkspace() {
   };
 
   const handleSave = async () => {
-    if (!org) return;
+    if (!org || loading) return;
     setSaving(true);
     setMessage(null);
+    setMessageIsError(false);
     try {
       const res = await fetch('/api/dashboard/organization', {
         method: 'PATCH',
@@ -590,13 +601,18 @@ export function SignatureWorkspace() {
           animation: org.animation,
         }),
       });
+      const j = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        setMessage(typeof j.error === 'string' ? j.error : 'Save failed');
+        const err = typeof j.error === 'string' ? j.error : 'Save failed';
+        setMessage(err);
+        setMessageIsError(true);
         return;
       }
-      const j = await res.json();
       if (j.organization) setOrg(j.organization as OrgResponse);
+      if (typeof j.logoUrlWarning === 'string') {
+        setMessage(j.logoUrlWarning);
+        setMessageIsError(true);
+      }
 
       if (profile.firstName.trim() && profile.lastName.trim() && profile.email.trim()) {
         const pRes = await patchSignatureProfile({ includeBlocks: promoBlocksEditable, includeTemplate: promoBlocksEditable });
@@ -607,11 +623,15 @@ export function SignatureWorkspace() {
               ? `Brand saved; profile/template: ${pj.error}`
               : 'Brand saved; could not save profile or template'
           );
+          setMessageIsError(true);
           return;
         }
       }
 
-      setMessage('Saved');
+      if (!j.logoUrlWarning) {
+        setMessage('Saved');
+        setMessageIsError(false);
+      }
     } finally {
       setSaving(false);
     }
@@ -623,6 +643,7 @@ export function SignatureWorkspace() {
     if (!file || !org) return;
     setUploadingLogo(true);
     setMessage(null);
+    setMessageIsError(false);
     try {
       const fd = new FormData();
       fd.append('file', file);
@@ -634,11 +655,17 @@ export function SignatureWorkspace() {
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
         setMessage(typeof j.error === 'string' ? j.error : 'Logo upload failed');
+        setMessageIsError(true);
         return;
       }
       if (typeof j.url === 'string') {
-        setOrg((o) => ({ ...(o || {}), logoUrl: j.url }));
-        setMessage('Logo uploaded — click Save to persist with other brand fields, or Save now from the button below.');
+        setOrg((o) => ({
+          ...(o || {}),
+          logoUrl: j.url,
+          ...(typeof j.logoHeightPx === 'number' ? { logoHeightPx: j.logoHeightPx } : {}),
+        }));
+        setMessage('Logo saved.');
+        setMessageIsError(false);
       }
     } finally {
       setUploadingLogo(false);
@@ -806,13 +833,19 @@ export function SignatureWorkspace() {
                 </Button>
               </div>
               <div className="flex min-w-0 flex-wrap items-center gap-3">
-                <Input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/gif"
-                  className="w-full min-w-0 max-w-full sm:max-w-xs"
-                  onChange={handleLogoFile}
-                  disabled={uploadingLogo}
-                />
+                {canUploadOrgLogo ? (
+                  <Input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="w-full min-w-0 max-w-full sm:max-w-xs"
+                    onChange={handleLogoFile}
+                    disabled={uploadingLogo}
+                  />
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Signature logo upload is managed by your organization owner or admin.
+                  </p>
+                )}
                 {uploadingLogo ? <span className="text-xs text-muted-foreground">Uploading…</span> : null}
                 {org.logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -906,7 +939,14 @@ export function SignatureWorkspace() {
                 ))}
               </select>
             </div>
-            {message && <p className="text-sm text-muted-foreground">{message}</p>}
+            {message ? (
+              <p
+                className={`text-sm ${messageIsError ? 'text-destructive' : 'text-muted-foreground'}`}
+                role={messageIsError ? 'alert' : undefined}
+              >
+                {message}
+              </p>
+            ) : null}
             {isOwner ? (
               <label className="flex items-start gap-2 text-sm cursor-pointer">
                 <input
@@ -919,14 +959,14 @@ export function SignatureWorkspace() {
                 <span>Allow employees to edit brand</span>
               </label>
             ) : null}
-            <Button onClick={handleSave} disabled={saving}>
+            <Button onClick={handleSave} disabled={saving || loading || !org}>
               {saving ? 'Saving…' : 'Save'}
             </Button>
           </CardContent>
         </Card>
           )}
           {activeTab === 'bimi' && (
-            <SignatureBimiTab />
+            <SignatureBimiTab canManageBimiLogo={isOwner || isAdmin} />
           )}
           {activeTab === 'blocks' && (
             <div className="space-y-4">
@@ -972,7 +1012,7 @@ export function SignatureWorkspace() {
               <CardContent className="space-y-6">
                 <SignatureForm value={profile} onChange={setProfile} />
                 <div className="flex flex-wrap items-center gap-3">
-                  <Button type="button" variant="secondary" disabled={savingProfile} onClick={() => void handleSaveProfile()}>
+                  <Button type="button" disabled={savingProfile} onClick={() => void handleSaveProfile()}>
                     {savingProfile ? 'Saving…' : 'Save my details'}
                   </Button>
                   {profileMessage ? <p className="text-sm text-muted-foreground">{profileMessage}</p> : null}

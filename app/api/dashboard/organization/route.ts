@@ -166,12 +166,15 @@ export async function PATCH(request: Request) {
 
   await unsetLegacyOrgAddressFields(user.organizationId);
 
+  let logoUrlWarning: string | undefined;
   if ($set.logoUrl !== undefined) {
     const nextLogoUrl = String($set.logoUrl ?? '').trim();
     if (nextLogoUrl && !isAllowedOrgLogoUrl(nextLogoUrl, user.organizationId)) {
-      return NextResponse.json({ error: orgLogoUrlValidationMessage() }, { status: 400 });
+      delete $set.logoUrl;
+      logoUrlWarning = orgLogoUrlValidationMessage();
+    } else {
+      $set.logoUrl = nextLogoUrl;
     }
-    $set.logoUrl = nextLogoUrl;
   }
 
   if ($set.logoShape !== undefined) {
@@ -200,6 +203,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({
       organization: current,
       permissions: current ? orgPermissionFlags(current as Record<string, unknown>) : null,
+      ...(logoUrlWarning ? { logoUrlWarning } : {}),
     });
   }
 
@@ -210,5 +214,6 @@ export async function PATCH(request: Request) {
   return NextResponse.json({
     organization: updated,
     permissions: orgPermissionFlags(updated as Record<string, unknown>),
+    ...(logoUrlWarning ? { logoUrlWarning } : {}),
   });
 }

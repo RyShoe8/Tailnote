@@ -8,19 +8,22 @@ import { EmployeesSeatSummaryCard } from '@/components/dashboard/EmployeesSeatSu
 import { EmployeesList, type EmployeeListItem } from '@/components/dashboard/EmployeesList';
 import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
 import { getDashboardOrg, getDashboardSession } from '@/lib/dashboard/getDashboardContext';
+import { getOrgOwnerUser } from '@/lib/org/getOrgOwnerUser';
 
 export default async function EmployeesPage() {
   const { user } = await getDashboardSession();
   const org = await getDashboardOrg(user.organizationId);
   await connectMongoose();
-  const [employees, limits] = await Promise.all([
+  const [employees, limits, owner] = await Promise.all([
     EmployeeModel.find({ organizationId: user.organizationId })
       .sort({ createdAt: -1 })
       .lean(),
     getEmployeeLimitsForOrganization(user.organizationId),
+    getOrgOwnerUser(user.organizationId),
   ]);
 
   const canManage = user.role === 'owner' || user.role === 'admin';
+  const ownerUserId = owner?.id ?? '';
 
   const freePlan = !hasBrandingRemoval(org);
 
@@ -29,14 +32,20 @@ export default async function EmployeesPage() {
       ? `Your plan includes ${limits.maxEmployees} user${limits.maxEmployees === 1 ? '' : 's'}. Upgrade to a paid plan to add more.`
       : null;
 
-  const list: EmployeeListItem[] = employees.map((e) => ({
-    _id: String(e._id),
-    firstName: String(e.firstName ?? ''),
-    lastName: String(e.lastName ?? ''),
-    email: String(e.email ?? ''),
-    inviteSentAt: e.inviteSentAt as Date | string | null | undefined,
-    inviteAcceptedAt: e.inviteAcceptedAt as Date | string | null | undefined,
-  }));
+  const list: EmployeeListItem[] = employees.map((e) => {
+    const userId = e.userId ? String(e.userId) : undefined;
+    return {
+      _id: String(e._id),
+      firstName: String(e.firstName ?? ''),
+      lastName: String(e.lastName ?? ''),
+      email: String(e.email ?? ''),
+      userId,
+      inviteSentAt: e.inviteSentAt as Date | string | null | undefined,
+      inviteAcceptedAt: e.inviteAcceptedAt as Date | string | null | undefined,
+      inviteExpiresAt: e.inviteExpiresAt as Date | string | null | undefined,
+      isOwnerEmployee: Boolean(userId && ownerUserId && userId === ownerUserId),
+    };
+  });
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 min-w-0">

@@ -27,19 +27,16 @@ export async function sendEmployeeInvite(
   }
 
   let inviteToken = employee.inviteToken;
-  let inviteExpiresAt = employee.inviteExpiresAt;
 
   if (!inviteToken) {
     inviteToken = generateInviteToken();
-    inviteExpiresAt = inviteExpiresAtFromNow();
-    await EmployeeModel.updateOne(
-      { _id: employee._id },
-      { $set: { inviteToken, inviteExpiresAt } }
-    );
-  } else if (!inviteExpiresAt) {
-    inviteExpiresAt = inviteExpiresAtFromNow();
-    await EmployeeModel.updateOne({ _id: employee._id }, { $set: { inviteExpiresAt } });
   }
+
+  const inviteExpiresAt = inviteExpiresAtFromNow();
+  await EmployeeModel.updateOne(
+    { _id: employee._id },
+    { $set: { inviteToken, inviteExpiresAt } }
+  );
 
   const baseUrl = getAppBaseUrl();
   const inviteUrl = `${baseUrl}/invite/${inviteToken}`;

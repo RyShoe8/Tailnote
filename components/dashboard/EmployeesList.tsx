@@ -11,8 +11,11 @@ export type EmployeeListItem = {
   firstName: string;
   lastName: string;
   email: string;
+  userId?: string | null;
   inviteSentAt?: Date | string | null;
   inviteAcceptedAt?: Date | string | null;
+  inviteExpiresAt?: Date | string | null;
+  isOwnerEmployee?: boolean;
 };
 
 type Props = {
@@ -68,15 +71,18 @@ export function EmployeesList({ employees, canManage }: Props) {
             <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-end">
               <EmployeeInviteBadge
                 employee={{
+                  userId: e.userId,
                   inviteSentAt: e.inviteSentAt,
                   inviteAcceptedAt: e.inviteAcceptedAt,
+                  inviteExpiresAt: e.inviteExpiresAt,
                 }}
+                isOwnerEmployee={e.isOwnerEmployee}
               />
               <div className="flex shrink-0 items-center gap-2">
                 <Button asChild variant="ghost" size="sm">
                   <Link href={`/dashboard/employees/${e._id}`}>Edit</Link>
                 </Button>
-                {canManage ? (
+                {canManage && !e.isOwnerEmployee ? (
                   <Button
                     type="button"
                     variant="outline"

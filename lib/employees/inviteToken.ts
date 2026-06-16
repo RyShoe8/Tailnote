@@ -13,6 +13,6 @@ export function inviteExpiresAtFromNow(): Date {
 }
 
 export function isInviteExpired(expiresAt: Date | string | null | undefined): boolean {
-  if (!expiresAt) return false;
+  if (!expiresAt) return true;
   return new Date(expiresAt).getTime() < Date.now();
 }

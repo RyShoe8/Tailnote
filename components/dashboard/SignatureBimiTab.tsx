@@ -15,7 +15,7 @@ type BrandTrustPayload = {
   entitlements: { canUseBimiLogoHosting: boolean };
 };
 
-export function SignatureBimiTab() {
+export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLogo?: boolean }) {
   const [data, setData] = useState<BrandTrustPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,6 +65,12 @@ export function SignatureBimiTab() {
     <div className="space-y-6">
       <CardShell>
         <p className="text-sm text-muted-foreground">{SIGNATURE_VS_INBOX_LOGO}</p>
+        {!canManageBimiLogo ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            BIMI inbox logo upload is managed by your organization owner or admin. You can still
+            review DNS requirements and preview how your logo may appear.
+          </p>
+        ) : null}
         <p className="mt-2 text-sm">
           Domain: <span className="font-medium">{data.orgDomain}</span>
         </p>
@@ -77,7 +83,7 @@ export function SignatureBimiTab() {
       </CardShell>
 
       <BimiLogoUpload
-        canUseBimiLogoHosting={data.entitlements.canUseBimiLogoHosting}
+        canUseBimiLogoHosting={data.entitlements.canUseBimiLogoHosting && canManageBimiLogo}
         bimiLogoUrl={data.bimiLogoUrl}
         bimiSuggestedRecord={data.bimiSuggestedRecord}
       />

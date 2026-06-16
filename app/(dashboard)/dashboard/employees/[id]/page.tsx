@@ -60,6 +60,9 @@ function EmployeeDetailPageContent() {
   const [previewToken, setPreviewToken] = useState('');
   const [inviteSentAt, setInviteSentAt] = useState<string | null>(null);
   const [inviteAcceptedAt, setInviteAcceptedAt] = useState<string | null>(null);
+  const [inviteExpiresAt, setInviteExpiresAt] = useState<string | null>(null);
+  const [employeeUserId, setEmployeeUserId] = useState<string | null>(null);
+  const [isOwnerEmployee, setIsOwnerEmployee] = useState(false);
   const [inviteBusy, setInviteBusy] = useState(false);
   const [inviteMessage, setInviteMessage] = useState<string | null>(null);
   const [profile, setProfile] = useState<SignatureProfile>({
@@ -79,44 +82,57 @@ function EmployeeDetailPageContent() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const [empRes, tmplRes, orgRes] = await Promise.all([
         fetch(`/api/dashboard/employees/${id}`, { credentials: 'include' }),
         fetch('/api/dashboard/templates', { credentials: 'include' }),
         fetch('/api/dashboard/organization', { credentials: 'include' }),
       ]);
-      const empJson = await empRes.json();
-      const tmplJson = await tmplRes.json();
-      const orgJson = await orgRes.json();
-      if (!empRes.ok) {
+      const empJson = await empRes.json().catch(() => ({}));
+      const tmplJson = await tmplRes.json().catch(() => ({}));
+      const orgJson = await orgRes.json().catch(() => ({}));
+      if (!empRes.ok || !empJson?.employee || typeof empJson.employee !== 'object') {
         setError('Employee not found');
         return;
       }
-      const e = empJson.employee;
-      setFirstName(e.firstName);
-      setLastName(e.lastName);
-      setTitle(e.title || '');
-      setEmail(e.email);
-      setPhone(e.phone || '');
-      setLinkedin(e.linkedin || '');
-      setTwitter(e.twitter || '');
-      setContentBlocks((e as any).contentBlocks || []);
-      setTemplateId(String(e.templateId));
-      setPreviewToken(e.previewToken);
+      const e = empJson.employee as Record<string, unknown>;
+      setFirstName(String(e.firstName ?? ''));
+      setLastName(String(e.lastName ?? ''));
+      setTitle(typeof e.title === 'string' ? e.title : '');
+      setEmail(String(e.email ?? ''));
+      setPhone(typeof e.phone === 'string' ? e.phone : '');
+      setLinkedin(typeof e.linkedin === 'string' ? e.linkedin : '');
+      setTwitter(typeof e.twitter === 'string' ? e.twitter : '');
+      setContentBlocks(Array.isArray(e.contentBlocks) ? (e.contentBlocks as ContentBlockData[]) : []);
+      setPreviewToken(typeof e.previewToken === 'string' ? e.previewToken : '');
       setInviteSentAt(e.inviteSentAt ? String(e.inviteSentAt) : null);
       setInviteAcceptedAt(e.inviteAcceptedAt ? String(e.inviteAcceptedAt) : null);
+      setInviteExpiresAt(e.inviteExpiresAt ? String(e.inviteExpiresAt) : null);
+      const userId = e.userId ? String(e.userId) : null;
+      setEmployeeUserId(userId);
+      setIsOwnerEmployee(empJson.isOwnerEmployee === true);
+      const templateList: TemplateOption[] = Array.isArray(tmplJson.templates) ? tmplJson.templates : [];
+      let nextTemplateId = e.templateId ? String(e.templateId) : '';
+      if (!templateList.some((t) => t._id === nextTemplateId)) {
+        const defaultRow = templateList.find((t) => t.presetId === 'default') ?? templateList[0];
+        nextTemplateId = defaultRow?._id ?? '';
+      }
+      setTemplateId(nextTemplateId);
       setProfile({
-        firstName: e.firstName,
-        lastName: e.lastName,
-        title: e.title || '',
-        email: e.email,
-        officePhone: e.phone || '',
+        firstName: String(e.firstName ?? ''),
+        lastName: String(e.lastName ?? ''),
+        title: typeof e.title === 'string' ? e.title : '',
+        email: String(e.email ?? ''),
+        officePhone: typeof e.phone === 'string' ? e.phone : '',
         mobilePhone: '',
       });
-      setTemplates(tmplJson.templates || []);
-      setOrg(orgJson.organization || null);
+      setTemplates(templateList);
+      setOrg(orgJson.organization && typeof orgJson.organization === 'object' ? orgJson.organization : null);
       const role = orgJson.viewer?.role;
       setCanManage(role === 'owner' || role === 'admin');
+    } catch {
+      setError('Could not load employee');
     } finally {
       setLoading(false);
     }
@@ -321,7 +337,12 @@ function EmployeeDetailPageContent() {
     ) &&
     Boolean(profile.firstName.trim() && profile.lastName.trim() && profile.email.trim() && previewHtml.trim());
 
-  const inviteFields = { inviteSentAt, inviteAcceptedAt };
+  const inviteFields = {
+    userId: employeeUserId,
+    inviteSentAt,
+    inviteAcceptedAt,
+    inviteExpiresAt,
+  };
   const inviteStatus = getEmployeeInviteStatus(inviteFields);
   const showInviteWarning = searchParams.get('inviteWarning') === '1';
   const inviteWarningText = inviteErrorMessage(
@@ -348,6 +369,7 @@ function EmployeeDetailPageContent() {
         return;
       }
       setInviteSentAt(data.inviteSentAt ? String(data.inviteSentAt) : new Date().toISOString());
+      setInviteExpiresAt(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());
       setInviteMessage('Invitation email sent.');
     } finally {
       setInviteBusy(false);
@@ -362,7 +384,7 @@ function EmployeeDetailPageContent() {
       <Link href="/dashboard/employees" className="text-sm text-muted-foreground hover:text-foreground">
         ← Employees
       </Link>
-      {showInviteWarning && inviteStatus !== 'accepted' ? (
+      {showInviteWarning && inviteStatus !== 'accepted' && inviteStatus !== 'active' ? (
         <p className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
           {inviteWarningText}
         </p>
@@ -374,16 +396,20 @@ function EmployeeDetailPageContent() {
           <CardHeader>
             <div className="flex items-center justify-between gap-2">
               <CardTitle>Invitation</CardTitle>
-              <EmployeeInviteBadge employee={inviteFields} />
+              <EmployeeInviteBadge employee={inviteFields} isOwnerEmployee={isOwnerEmployee} />
             </div>
             <CardDescription>
-              {inviteStatus === 'accepted'
+              {inviteStatus === 'active'
+                ? 'This employee has an active account.'
+                : inviteStatus === 'accepted'
                 ? inviteAcceptedAt
                   ? `Accepted on ${new Date(inviteAcceptedAt).toLocaleDateString()}.`
                   : 'This employee has joined your organization.'
-                : inviteStatus === 'pending'
-                  ? 'Waiting for them to accept the email invitation.'
-                  : 'No invitation email has been sent yet.'}
+                : inviteStatus === 'expired'
+                  ? 'The invitation has expired. Resend to issue a new link.'
+                  : inviteStatus === 'pending'
+                    ? 'Waiting for them to accept the email invitation.'
+                    : 'No invitation email has been sent yet.'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -394,9 +420,13 @@ function EmployeeDetailPageContent() {
                 {inviteMessage}
               </p>
             ) : null}
-            {canManage && inviteStatus !== 'accepted' ? (
+            {canManage && inviteStatus !== 'accepted' && inviteStatus !== 'active' ? (
               <Button type="button" variant="secondary" disabled={inviteBusy} onClick={() => void sendInvite()}>
-                {inviteBusy ? 'Sending…' : inviteStatus === 'pending' ? 'Resend invite' : 'Send invite'}
+                {inviteBusy
+                  ? 'Sending…'
+                  : inviteStatus === 'pending' || inviteStatus === 'expired'
+                    ? 'Resend invite'
+                    : 'Send invite'}
               </Button>
             ) : null}
           </CardContent>
@@ -466,7 +496,7 @@ function EmployeeDetailPageContent() {
               <Button type="button" onClick={() => void save()}>
                 Save
               </Button>
-              {canManage ? (
+              {canManage && !isOwnerEmployee ? (
                 <Button type="button" variant="outline" onClick={() => void remove()}>
                   Delete
                 </Button>

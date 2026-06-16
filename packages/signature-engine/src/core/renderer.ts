@@ -695,16 +695,20 @@ function buildExecutiveListBlockLineHtml(block: ContentBlockData, primaryColor: 
     const labelRaw = (item.title || '').trim() || (item.url ? listItemLinkFallbackLabel(item.url) : '');
     if (!labelRaw) continue;
     const label = escapeHtml(labelRaw);
+    const itemDesc = item.description ? escapeHtml(item.description.trim()) : '';
     const url = item.url
       ? normalizePromoUrl(item.url, item.urlPrefix === 'www' ? 'www' : 'https')
       : '';
+    let itemHtml = '';
     if (url) {
-      parts.push(
-        `<a href="${escapeHtml(url)}" style="color: ${escapeHtml(primaryColor)}; text-decoration: none;">${label}</a>`
-      );
+      itemHtml = `<a href="${escapeHtml(url)}" style="color: ${escapeHtml(primaryColor)}; text-decoration: none;">${label}</a>`;
     } else {
-      parts.push(`<span style="color: ${escapeHtml(primaryColor)};">${label}</span>`);
+      itemHtml = `<span style="color: ${escapeHtml(primaryColor)};">${label}</span>`;
     }
+    if (itemDesc) {
+      itemHtml += ` <span style="color: #aaaaaa; font-weight: normal; text-transform: none;">${itemDesc}</span>`;
+    }
+    parts.push(itemHtml);
   }
   return parts.join(' | ');
 }
