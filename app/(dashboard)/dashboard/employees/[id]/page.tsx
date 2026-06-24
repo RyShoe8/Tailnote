@@ -516,13 +516,14 @@ function EmployeeDetailPageContent() {
           <CardHeader>
             <CardTitle>Install signature</CardTitle>
             <CardDescription>
-              Copy this employee&apos;s signature and paste it into their Gmail or Outlook account.
+              Copy for Gmail or Outlook, install on Apple Mail, or download HTML for this employee.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <SignatureInstallPanel
               html={previewHtml}
               disabled={!canCopy}
+              employeeId={id}
               downloadFilename={`${firstName}-${lastName}-signature.html`.replace(/\s+/g, '-').toLowerCase()}
               emailForwardNote={
                 firstName.trim() || lastName.trim()

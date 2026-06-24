@@ -55,6 +55,10 @@ export function DesktopInstallNotice({ className }: Props) {
                 <strong className="text-foreground">Outlook</strong>: Install via Outlook on the web or Outlook
                 desktop (Windows). Mobile Outlook apps cannot reliably paste full HTML signatures.
               </p>
+              <p>
+                <strong className="text-foreground">Apple Mail</strong>: Use the macOS installer on a Mac. Download
+                on any device and transfer the .command file if needed.
+              </p>
             </CollapsibleContent>
           </Collapsible>
         </div>

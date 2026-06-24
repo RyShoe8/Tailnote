@@ -8,11 +8,20 @@ import { cn } from '@/lib/utils';
 type Props = {
   html: string;
   disabled?: boolean;
+  label?: string;
+  copiedLabel?: string;
   onCopyResult?: (ok: boolean, method: CopyHtmlMethod) => void;
   className?: string;
 };
 
-export function CopyRichTextButton({ html, disabled, onCopyResult, className }: Props) {
+export function CopyRichTextButton({
+  html,
+  disabled,
+  label = 'Copy for Outlook',
+  copiedLabel = 'Copied',
+  onCopyResult,
+  className,
+}: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleClick = useCallback(async () => {
@@ -33,7 +42,7 @@ export function CopyRichTextButton({ html, disabled, onCopyResult, className }: 
       onClick={() => void handleClick()}
       disabled={disabled || !html.trim()}
     >
-      {copied ? 'Copied' : 'Copy rich text'}
+      {copied ? copiedLabel : label}
     </Button>
   );
 }

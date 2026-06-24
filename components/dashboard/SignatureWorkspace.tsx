@@ -1024,10 +1024,16 @@ export function SignatureWorkspace() {
             <Card>
               <CardHeader>
                 <CardTitle>Install your signature</CardTitle>
-                <CardDescription>Copy and paste into Gmail or Outlook — takes about a minute.</CardDescription>
+                <CardDescription>
+                  Copy for Gmail or Outlook, install on Apple Mail, or download HTML — takes about a minute.
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <SignatureInstallPanel html={previewHtml} disabled={!canCopy} />
+                <SignatureInstallPanel
+                  html={previewHtml}
+                  disabled={!canCopy}
+                  installContext={{ templateId: selectedTemplateId }}
+                />
               </CardContent>
             </Card>
           )}

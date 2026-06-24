@@ -59,7 +59,7 @@ export function OutlookInstallHelp({ disabled }: Props) {
         </li>
       </ol>
       <p className="text-xs hidden md:block">
-        Use <strong>Copy rich text</strong> for best results in Outlook, or <strong>Download HTML</strong> if your IT
+        Use <strong>Copy for Outlook</strong> for best results in Outlook, or <strong>Download HTML</strong> if your IT
         policy prefers a file. If your logo does not appear, re-upload it in Tailnote (logos are saved as PNG for
         Outlook compatibility) and paste the signature again.
       </p>
