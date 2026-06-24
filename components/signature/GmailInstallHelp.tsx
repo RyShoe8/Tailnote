@@ -1,10 +1,10 @@
 import { GmailOpenActions } from '@/components/signature/GmailOpenActions';
 
 const STEPS_DESKTOP = [
-  'Click Copy for Gmail above.',
   'Open Gmail email settings.',
   'Scroll to the Signature section on the General tab.',
-  'Paste into the signature field and save changes at the bottom of the page.',
+  'Paste your copied signature into the signature field.',
+  'Save changes at the bottom of the page.',
 ] as const;
 
 const STEPS_MOBILE_AFTER_DESKTOP = [

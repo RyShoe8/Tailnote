@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import { copyHtmlToClipboard, type CopyHtmlMethod } from '@/lib/clipboard';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 type Props = {
   html: string;
@@ -10,6 +11,9 @@ type Props = {
   label?: string;
   copiedLabel?: string;
   onCopyResult?: (ok: boolean, method: CopyHtmlMethod) => void;
+  onActivate?: () => void;
+  variant?: 'default' | 'outline' | 'secondary';
+  className?: string;
 };
 
 export function CopySignatureButton({
@@ -18,11 +22,15 @@ export function CopySignatureButton({
   label = 'Copy signature',
   copiedLabel = 'Copied',
   onCopyResult,
+  onActivate,
+  variant = 'default',
+  className,
 }: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleClick = useCallback(async () => {
     if (disabled || !html.trim()) return;
+    onActivate?.();
     const result = await copyHtmlToClipboard(html);
     onCopyResult?.(result.ok, result.method);
     if (result.ok) {
@@ -36,10 +44,16 @@ export function CopySignatureButton({
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2500);
     }
-  }, [html, disabled, onCopyResult]);
+  }, [html, disabled, onCopyResult, onActivate]);
 
   return (
-    <Button type="button" variant="default" onClick={() => void handleClick()} disabled={disabled || !html.trim()}>
+    <Button
+      type="button"
+      variant={variant}
+      className={cn(className)}
+      onClick={() => void handleClick()}
+      disabled={disabled || !html.trim()}
+    >
       {copied ? copiedLabel : label}
     </Button>
   );

@@ -38,8 +38,8 @@ export function OutlookInstallHelp({ disabled }: Props) {
       </p>
       <ol className="list-decimal pl-5 space-y-2">
         <li className="hidden md:list-item">
-          <strong>Outlook on the web:</strong> use the buttons above (work or personal account), then paste under{' '}
-          <strong>Email signature</strong>. If your tenant uses the classic settings UI, try{' '}
+          <strong>Paste your copied signature</strong> under <strong>Email signature</strong> in Outlook on the web
+          (work or personal account). If your tenant uses the classic settings UI, try{' '}
           <a
             href={OUTLOOK_WORK_LAYOUT_SETTINGS_URL}
             className="text-primary underline underline-offset-2"
@@ -51,8 +51,8 @@ export function OutlookInstallHelp({ disabled }: Props) {
           instead.
         </li>
         <li className="md:hidden">
-          <strong>On your computer:</strong> Outlook on the web or Outlook desktop → paste under{' '}
-          <strong>Email signature</strong> (or File → Options → Mail → Signatures on Windows desktop).
+          <strong>On your computer:</strong> paste under <strong>Email signature</strong> in Outlook on the web or
+          Outlook desktop (File → Options → Mail → Signatures on Windows).
         </li>
         <li className="hidden md:list-item">
           <strong>Outlook desktop (Windows):</strong> File → Options → Mail → Signatures… → paste under Edit signature.

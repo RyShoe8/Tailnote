@@ -2,25 +2,31 @@
 
 import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 type Props = {
   disabled?: boolean;
   employeeId?: string;
   templateId?: string;
-  onDownloaded?: () => void;
+  onActivate?: () => void;
+  variant?: 'default' | 'outline' | 'secondary';
+  className?: string;
 };
 
 export function AppleMailInstallButton({
   disabled,
   employeeId,
   templateId,
-  onDownloaded,
+  onActivate,
+  variant = 'outline',
+  className,
 }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleDownload = useCallback(async () => {
     if (disabled || busy) return;
+    onActivate?.();
     if (!employeeId && !templateId) {
       setError('Save your signature details before downloading the installer.');
       return;
@@ -52,18 +58,23 @@ export function AppleMailInstallButton({
       anchor.download = 'tailnote-install.command';
       anchor.click();
       URL.revokeObjectURL(objectUrl);
-      onDownloaded?.();
     } catch {
       setError('Could not generate installer');
     } finally {
       setBusy(false);
     }
-  }, [disabled, busy, employeeId, templateId, onDownloaded]);
+  }, [disabled, busy, employeeId, templateId, onActivate]);
 
   return (
     <div className="space-y-2">
-      <Button type="button" disabled={disabled || busy} onClick={() => void handleDownload()}>
-        {busy ? 'Generating…' : 'Download installer'}
+      <Button
+        type="button"
+        variant={variant}
+        className={cn(className)}
+        disabled={disabled || busy}
+        onClick={() => void handleDownload()}
+      >
+        {busy ? 'Generating…' : 'Install in Apple Mail'}
       </Button>
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>

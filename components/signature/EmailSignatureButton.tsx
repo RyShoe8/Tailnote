@@ -8,17 +8,28 @@ type Props = {
   html: string;
   disabled?: boolean;
   forwardNote?: string;
+  onActivate?: () => void;
+  variant?: 'default' | 'outline' | 'secondary';
+  className?: string;
 };
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
-export function EmailSignatureButton({ html, disabled, forwardNote }: Props) {
+export function EmailSignatureButton({
+  html,
+  disabled,
+  forwardNote,
+  onActivate,
+  variant = 'default',
+  className,
+}: Props) {
   const [status, setStatus] = useState<Status>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleClick = useCallback(async () => {
     if (disabled || !html.trim() || status === 'sending') return;
 
+    onActivate?.();
     setStatus('sending');
     setErrorMessage(null);
 
@@ -52,7 +63,7 @@ export function EmailSignatureButton({ html, disabled, forwardNote }: Props) {
       setErrorMessage('Could not send email. Try Download HTML.');
       setStatus('error');
     }
-  }, [html, disabled, forwardNote, status]);
+  }, [html, disabled, forwardNote, status, onActivate]);
 
   const label =
     status === 'sending'
@@ -65,7 +76,8 @@ export function EmailSignatureButton({ html, disabled, forwardNote }: Props) {
     <div className="space-y-1.5">
       <Button
         type="button"
-        variant="default"
+        variant={variant}
+        className={className}
         disabled={disabled || !html.trim() || status === 'sending'}
         onClick={() => void handleClick()}
       >
@@ -74,11 +86,6 @@ export function EmailSignatureButton({ html, disabled, forwardNote }: Props) {
       </Button>
       {status === 'error' && errorMessage ? (
         <p className="text-xs text-destructive">{errorMessage}</p>
-      ) : null}
-      {status === 'sent' ? (
-        <p className="text-xs text-muted-foreground">
-          Check your inbox on a computer, then copy the signature into Gmail or Outlook settings.
-        </p>
       ) : null}
     </div>
   );
