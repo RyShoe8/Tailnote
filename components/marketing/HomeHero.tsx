@@ -55,7 +55,7 @@ export function HomeHero({ presets }: Props) {
           </div>
         </div>
 
-        <div className="tn-rise tn-rise-delay-2 mx-auto mt-16 max-w-5xl sm:mt-24">
+        <div className="tn-rise tn-rise-delay-2 mx-auto mt-16 max-w-3xl sm:mt-24">
           <HeroEmailCarousel presets={carouselPresets} />
           
           <p className="mt-8 text-center text-sm text-muted-foreground sm:mt-12 font-medium">
