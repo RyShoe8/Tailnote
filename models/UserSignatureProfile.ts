@@ -11,6 +11,7 @@ const UserSignatureProfileSchema = new Schema(
     officePhone: { type: String, default: '' },
     mobilePhone: { type: String, default: '' },
     avatarUrl: { type: String, trim: true, default: '' },
+    hiddenFields: { type: [String], default: [] },
     contentBlocks: { type: Schema.Types.Mixed, default: [] },
     templateId: { type: Schema.Types.ObjectId, ref: 'SignatureTemplate', default: null },
   },

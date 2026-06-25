@@ -319,8 +319,14 @@ export function SignatureWorkspace() {
 
   const html = useMemo(() => {
     if (!engineTemplate) return '';
+    const filteredProfile = { ...profile };
+    if (profile.hiddenFields?.length) {
+      for (const field of profile.hiddenFields) {
+        (filteredProfile as any)[field] = '';
+      }
+    }
     const rendered = renderSignature({
-      profile,
+      profile: filteredProfile,
       brand: { ...brand, contentBlocks: hydratedContentBlocks },
       template: engineTemplate,
       publicSiteOrigin: getSignatureAssetOrigin(),
@@ -360,6 +366,12 @@ export function SignatureWorkspace() {
     const timer = window.setTimeout(() => {
       void (async () => {
         try {
+          const filteredProfile = { ...profile };
+          if (profile.hiddenFields?.length) {
+            for (const field of profile.hiddenFields) {
+              (filteredProfile as any)[field] = '';
+            }
+          }
           const res = await fetch('/api/dashboard/me/signature-html', {
             method: 'POST',
             credentials: 'include',
@@ -368,12 +380,13 @@ export function SignatureWorkspace() {
             body: JSON.stringify({
               templateId: selectedTemplateId,
               profile: {
-                firstName: profile.firstName,
-                lastName: profile.lastName,
-                title: profile.title,
-                email: profile.email,
-                officePhone: profile.officePhone ?? '',
-                mobilePhone: profile.mobilePhone ?? '',
+                firstName: filteredProfile.firstName,
+                lastName: filteredProfile.lastName,
+                title: filteredProfile.title,
+                email: filteredProfile.email,
+                officePhone: filteredProfile.officePhone ?? '',
+                mobilePhone: filteredProfile.mobilePhone ?? '',
+                avatarUrl: filteredProfile.avatarUrl ?? '',
                 contentBlocks,
               },
               brandOverride: {
