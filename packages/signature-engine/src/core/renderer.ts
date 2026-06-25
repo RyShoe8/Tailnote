@@ -1453,6 +1453,9 @@ export function mergeRenderContext(
   const signatureRootColspan =
     template.layout === 'standard' && hasContentBlocks ? '3' : '2';
 
+  const avatarUrlRaw = profile.avatarUrl?.trim() || '';
+  const avatarUrl = avatarUrlRaw ? normalizeImageUrl(ensureAbsolutePublicUrl(avatarUrlRaw, origin)) : '';
+
   const evalCtx: Record<string, string | boolean | undefined> = {
     hasLogo,
     hasName,
@@ -1495,6 +1498,7 @@ export function mergeRenderContext(
     hasEcardVcardUrl,
     hasEcardPortfolioSection,
     hasEcardFooter,
+    hasAvatar: Boolean(avatarUrl),
   };
 
   const stringCtx: Record<string, string> = {
@@ -1507,6 +1511,7 @@ export function mergeRenderContext(
     officePhoneTelHref: escapeHtml(officePhoneTelHref),
     mobilePhone: escapeHtml(mobilePhone),
     mobilePhoneTelHref: escapeHtml(mobilePhoneTelHref),
+    avatarUrl: escapeHtml(avatarUrl),
     logoUrl: escapeHtml(logoUrl),
     logoLink: escapeHtml(logoLinkForHref),
     logoWidth: logoWidthStr,

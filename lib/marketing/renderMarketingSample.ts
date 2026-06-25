@@ -18,13 +18,57 @@ const MARKETING_LOGO_HEIGHT_PX = Math.round(
   (MARKETING_LOGO_INTRINSIC.height / MARKETING_LOGO_INTRINSIC.width) * 110
 );
 
-const DEMO_PROFILE: SignatureProfile = {
-  firstName: 'Alex',
-  lastName: 'Morgan',
-  title: 'Founder',
-  email: 'myemail@themediashop.co',
-  officePhone: '123-456-7899',
-};
+const BRAND_DATA = [
+  {
+    companyName: 'The Media Shop',
+    website: 'themediashop.co',
+    logoFile: 'themediashop-logo.png',
+    emailDomain: 'themediashop.co',
+    primaryColor: '#9B1C31',
+  },
+  {
+    companyName: 'Nucleas',
+    website: 'nucleas.app',
+    logoFile: 'nucleas-logo.png',
+    emailDomain: 'nucleas.app',
+    primaryColor: '#4f46e5',
+  },
+  {
+    companyName: 'Tailnote',
+    website: 'tailnote.io',
+    logoFile: 'tailnote-logo-mark.png',
+    emailDomain: 'tailnote.io',
+    primaryColor: '#2563eb',
+  },
+];
+
+function getDemoBrandData(presetId: TemplatePresetId) {
+  const PRESETS = [
+    'default',
+    'creator',
+    'executive_minimalist',
+    'minimal',
+    'portfolio',
+    'ecard',
+    'professional',
+    'modern_professional',
+  ];
+  let index = PRESETS.indexOf(presetId);
+  if (index === -1) index = 0;
+  return BRAND_DATA[index % 3];
+}
+
+function demoProfile(presetId: TemplatePresetId): SignatureProfile {
+  const brand = getDemoBrandData(presetId);
+  return {
+    firstName: 'Alex',
+    lastName: 'Morgan',
+    title: 'Founder',
+    email: `alex@${brand.emailDomain}`,
+    officePhone: '123-456-7899',
+    avatarUrl: presetId === 'modern_professional' ? 'https://ui-avatars.com/api/?name=Alex+Morgan&background=0D8ABC&color=fff&size=128' : undefined,
+  };
+}
 
 function promoImageUrl(origin: string): string {
   return `${origin.replace(/\/+$/, '')}/images/tailnote-logo-mark.png`;
@@ -251,16 +295,17 @@ function marketingContentBlocks(
 }
 
 function demoBrand(origin: string, presetId: TemplatePresetId): SignatureBrand {
-  const logoUrl = promoImageUrl(origin);
+  const brandData = getDemoBrandData(presetId);
+  const logoUrl = `${origin.replace(/\/+$/, '')}/images/${brandData.logoFile}`;
   const isPortfolio = presetId === 'portfolio';
   const isEcard = presetId === 'ecard';
   return {
-    companyName: 'The Media Shop',
-    website: 'themediashop.co',
+    companyName: brandData.companyName,
+    website: brandData.website,
     logoUrl,
-    logoLink: 'https://themediashop.co',
+    logoLink: `https://${brandData.website}`,
     logoHeightPx: MARKETING_LOGO_HEIGHT_PX,
-    primaryColor: isPortfolio ? '#1A3A34' : isEcard ? '#4F46E5' : '#2563eb',
+    primaryColor: isPortfolio ? '#1A3A34' : brandData.primaryColor,
     secondaryColor: isPortfolio ? '#E29578' : '',
     logoShape: 'rectangle',
     fontFamily: 'Arial',
@@ -290,7 +335,7 @@ export function renderMarketingSample(presetId: TemplatePresetId): string {
   const vcardUrl =
     presetId === 'ecard' ? vcardDownloadUrl(origin, 'marketing-demo') : undefined;
   return renderSignature({
-    profile: DEMO_PROFILE,
+    profile: demoProfile(presetId),
     brand: demoBrand(origin, presetId),
     template: presetToEngineTemplate(presetId, `marketing-${presetId}`),
     publicSiteOrigin: origin,

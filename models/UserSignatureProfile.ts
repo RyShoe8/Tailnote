@@ -10,6 +10,7 @@ const UserSignatureProfileSchema = new Schema(
     email: { type: String, required: true, trim: true, default: '' },
     officePhone: { type: String, default: '' },
     mobilePhone: { type: String, default: '' },
+    avatarUrl: { type: String, trim: true, default: '' },
     contentBlocks: { type: Schema.Types.Mixed, default: [] },
     templateId: { type: Schema.Types.ObjectId, ref: 'SignatureTemplate', default: null },
   },

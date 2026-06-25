@@ -5,6 +5,7 @@ export type SignatureProfile = {
   email: string;
   officePhone?: string;
   mobilePhone?: string;
+  avatarUrl?: string;
 };
 
 export type PromoUrlPrefix = 'https' | 'www';

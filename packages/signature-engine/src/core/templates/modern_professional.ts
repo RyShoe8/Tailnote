@@ -97,7 +97,7 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
           {{/if}}
 
           <!-- Middle Column: Info -->
-          <td class="sig-info-col" valign="top" style="vertical-align:top;padding-right:20px;">
+          <td class="sig-info-col" valign="top" style="vertical-align:top;padding-right:24px;">
             {{#if hasLogo}}
             <div style="margin-bottom:16px;">
               <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:block;">
@@ -136,6 +136,13 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
             </div>
             {{/if}}
           </td>
+
+          <!-- Right Column: Avatar -->
+          {{#if hasAvatar}}
+          <td class="sig-avatar-col" width="80" valign="top" style="vertical-align:top;padding-right:24px;">
+            <img src="{{avatarUrl}}" width="80" height="80" style="display:block;width:80px;height:80px;border-radius:50%;object-fit:cover;border:1px solid #e5e7eb;" alt="Profile Picture" />
+          </td>
+          {{/if}}
 
           <!-- Right Column: Promo Blocks / Image -->
           {{#if hasContentBlocks}}
