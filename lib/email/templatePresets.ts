@@ -9,7 +9,8 @@ export type TemplatePresetId =
   | 'corporate'
   | 'professional'
   | 'portfolio'
-  | 'ecard';
+  | 'ecard'
+  | 'modern_professional';
 
 export const TEMPLATE_PRESET_IDS: readonly TemplatePresetId[] = [
   'default',
@@ -21,6 +22,7 @@ export const TEMPLATE_PRESET_IDS: readonly TemplatePresetId[] = [
   'professional',
   'portfolio',
   'ecard',
+  'modern_professional',
 ];
 
 export function isTemplatePresetId(value: string): value is TemplatePresetId {
@@ -85,6 +87,12 @@ export const TEMPLATE_PRESET_META: TemplatePresetMeta[] = [
     name: 'eCard',
     description:
       'Light card with primary top bar, contact rows, save contact button, framed logo, and portfolio links with social icons in the footer.',
+  },
+  {
+    id: 'modern_professional',
+    name: 'Modern Professional',
+    description:
+      'Sleek 3-column layout featuring vertical social icons, centered profile info with verification badge, and right-aligned branding.',
   },
 ];
 
@@ -238,6 +246,13 @@ export function presetToEngineTemplate(
         layout: 'ecard',
         elements: elementsEcard(),
       };
+    case 'modern_professional':
+      return {
+        id: templateDocId,
+        name: displayName ?? 'Modern Professional',
+        layout: 'modern_professional',
+        elements: elementsModernProfessional(),
+      };
     default:
       return {
         id: templateDocId,
@@ -246,6 +261,18 @@ export function presetToEngineTemplate(
         elements: elementsCorporate(),
       };
   }
+}
+
+function elementsModernProfessional(): SignatureElement[] {
+  return [
+    { type: 'logo' },
+    { type: 'name' },
+    { type: 'title' },
+    { type: 'contact' },
+    { type: 'social' },
+    { type: 'address' },
+    { type: 'contentBlocks' },
+  ];
 }
 
 export function engineTemplateFromStoredConfig(args: {

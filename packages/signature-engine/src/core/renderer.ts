@@ -15,6 +15,7 @@ import { CREATOR_SIGNATURE_TEMPLATE } from './templates/creator';
 import { EXECUTIVE_MINIMALIST_SIGNATURE_TEMPLATE } from './templates/executive_minimalist';
 import { PORTFOLIO_SIGNATURE_TEMPLATE } from './templates/portfolio';
 import { ECARD_SIGNATURE_TEMPLATE } from './templates/ecard';
+import { MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE } from './templates/modern_professional';
 import { normalizePromoUrl } from './normalizePromoUrl';
 import { adjustHexLightness } from './colorUtils';
 import {
@@ -1606,6 +1607,7 @@ function pickTemplate(layout: SignatureTemplate['layout']): string {
   if (layout === 'professional') return PROFESSIONAL_SIGNATURE_TEMPLATE;
   if (layout === 'portfolio') return PORTFOLIO_SIGNATURE_TEMPLATE;
   if (layout === 'ecard') return ECARD_SIGNATURE_TEMPLATE;
+  if (layout === 'modern_professional') return MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE;
   return STANDARD_SIGNATURE_TEMPLATE;
 }
 

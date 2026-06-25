@@ -19,7 +19,7 @@ export function HomeTemplateShowcase({ presets }: Props) {
         <div className="min-w-0 max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-wider text-primary">Signatures</p>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-            Layouts built for signatures <span className="tn-grad-text">and</span> promos
+            Signature layouts that <span className="tn-grad-text">get noticed and clicked</span>
           </h2>
           <p className="mt-3 text-muted-foreground">
             Browse our signature layouts to see how Tailnote turns email into a marketing channel.

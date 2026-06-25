@@ -44,7 +44,7 @@ export function HomePricingTeaser({ plans }: Props) {
           <div className="min-w-0 max-w-2xl space-y-4">
             <p className="text-sm font-semibold uppercase tracking-wider text-primary">Pricing</p>
             <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-              Enterprise marketing in every inbox{' '}
+              Enterprise-grade email signatures{' '}
               <span className="tn-grad-text">without enterprise pricing</span>
             </h2>
             <p className="text-pretty text-muted-foreground">
@@ -53,14 +53,19 @@ export function HomePricingTeaser({ plans }: Props) {
               fraction of what you&apos;d pay elsewhere.
             </p>
             {fallback ? (
-              <p className="text-lg font-medium text-foreground">
-                Plans from{' '}
-                <span className="tn-grad-text font-semibold">
-                  {formatUsd(fallback.basePriceCents)}
-                  {fallback.interval === 'lifetime' ? '' : ` / ${intervalLabel(fallback.interval)}`}
-                </span>{' '}
-                per subscription
-              </p>
+              <>
+                <p className="text-lg font-medium text-foreground">
+                  Plans from{' '}
+                  <span className="tn-grad-text font-semibold">
+                    {formatUsd(fallback.basePriceCents)}
+                    {fallback.interval === 'lifetime' ? '' : ` / ${intervalLabel(fallback.interval)}`}
+                  </span>{' '}
+                  per subscription
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Most competitors charge $3–5 per user per month.
+                </p>
+              </>
             ) : null}
             {plans.length > 0 ? (
               <div className="flex flex-wrap gap-2">

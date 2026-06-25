@@ -110,7 +110,8 @@ export type SignatureLayout =
   | 'creator'
   | 'executive_minimalist'
   | 'portfolio'
-  | 'ecard';
+  | 'ecard'
+  | 'modern_professional';
 
 export type SignatureTemplate = {
   id: string;

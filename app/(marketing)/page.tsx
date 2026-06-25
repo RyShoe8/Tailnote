@@ -1,5 +1,6 @@
 import '@/lib/billing-engine';
 import { HomeHero } from '@/components/marketing/HomeHero';
+import { HomeStatsBar } from '@/components/marketing/HomeStatsBar';
 import { HomeFeatures } from '@/components/marketing/HomeFeatures';
 import { HomeHowItWorks } from '@/components/marketing/HomeHowItWorks';
 import { HomePromoBlocksShowcase } from '@/components/marketing/HomePromoBlocksShowcase';
@@ -61,6 +62,7 @@ export default async function HomePage() {
         ]}
       />
       <HomeHero />
+      <HomeStatsBar />
       <HomeFeatures />
       <HomeTemplateShowcase presets={presets} />
       <HomeHowItWorks />

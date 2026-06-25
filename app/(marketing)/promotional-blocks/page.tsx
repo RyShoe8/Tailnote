@@ -44,7 +44,7 @@ const BENEFITS = [
 const STEPS = [
   {
     title: 'Add your blocks',
-    description: 'Pick book-a-call, lists, RSS, banners, or quotes from our library (or your own) — no HTML required.',
+    description: 'Pick book-a-call, lists, RSS, banners, image links, or quotes from our library (or your own) — no HTML required.',
   },
   {
     title: 'Set org defaults',
@@ -83,8 +83,8 @@ export default function PromotionalBlocksPage() {
           </h1>
           <p className="mt-4 text-pretty text-base text-muted-foreground sm:text-lg">
             Go beyond a static signature. Tailnote promotional blocks turn routine outbound mail into
-            mini campaigns — book-a-call buttons, offer lists, blog feeds, banners, and quotes from our
-            library (or your own) that work in real inboxes.
+            mini campaigns — book-a-call buttons, offer lists, blog feeds, banners, image links, and
+            quotes that drive up to 3× more website traffic.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg" className="gap-2 shadow-card">
@@ -110,7 +110,7 @@ export default function PromotionalBlocksPage() {
       <section className="container py-16 sm:py-20 lg:py-24">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-            Five block types, <span className="tn-grad-text">mix and match</span>
+            Six block types, <span className="tn-grad-text">mix and match</span>
           </h2>
           <p className="mt-4 text-muted-foreground">
             Each block is designed for real email clients — not a drag-and-drop canvas that breaks in
@@ -122,7 +122,18 @@ export default function PromotionalBlocksPage() {
         </div>
       </section>
 
-      <div className="container pb-16 sm:pb-20">
+      <section className="container py-16 sm:py-20 border-y border-slate-200/50 bg-slate-50/50">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Built-in Quote Library
+          </h2>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Not sure what to say? Tailnote includes a curated library of business, marketing, and leadership quotes that you can rotate automatically in your team's signatures. Keep your emails fresh and inspiring without writing new copy every week.
+          </p>
+        </div>
+      </section>
+
+      <div className="container py-16 sm:py-20 pb-16 sm:pb-20">
         <RevealOnScroll delayMs={60}>
           <p className="mb-6 text-center text-sm font-medium text-muted-foreground">
             Manage blocks once for your whole organization

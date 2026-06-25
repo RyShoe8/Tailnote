@@ -4,17 +4,17 @@ const STEPS = [
   {
     title: 'Set your brand',
     description:
-      'Upload your logo, pick brand colors and a signature layout, and add social links. Then add your customizable promo blocks. Tailnote builds clean, on-brand HTML once.',
+      'Upload your logo, choose brand colors and fonts, add social links. Your entire team inherits the same look.',
   },
   {
     title: 'Add your team',
     description:
-      'Invite employees and let them fill in name, title, and contact details. Brand and promo blocks stay locked to your settings.',
+      'Add employees by email. They get a pre-filled signature with their own name and title — brand settings stay locked.',
   },
   {
     title: 'Copy into your inbox',
     description:
-      'Copy your signature from Tailnote, paste into Gmail settings or Outlook, and every outbound email is on-brand.',
+      'Each employee copies their signature into Gmail, Outlook, or Apple Mail. Every outbound email now carries your brand and promos.',
   },
 ] as const;
 
@@ -22,7 +22,10 @@ export function HomeHowItWorks() {
   return (
     <section className="container py-16 sm:py-20 lg:pt-8 lg:pb-24">
       <div className="mx-auto max-w-2xl text-center">
-        <p className="text-sm font-semibold uppercase tracking-wider text-primary">How it works</p>
+        <span className="inline-block rounded-full tn-grad-bg text-white px-4 py-1.5 text-xs font-semibold tracking-wide shadow-sm">
+          Setup in under 2 minutes
+        </span>
+        <p className="mt-4 text-sm font-semibold uppercase tracking-wider text-primary">How it works</p>
         <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
           From brand to inbox in three steps
         </h2>

@@ -88,6 +88,49 @@
   .tn-grad-ring {
     background-image: var(--tn-grad-primary);
   }
+
+  /* Premium card with gradient border on hover */
+  .tn-card-premium {
+    position: relative;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .tn-card-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 101, 201, 0.10), 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Subtle glow for CTA buttons */
+  .tn-glow {
+    box-shadow: 0 0 20px rgba(0, 101, 201, 0.25), 0 0 60px rgba(12, 143, 163, 0.10);
+    transition: box-shadow 0.3s ease;
+  }
+  .tn-glow:hover {
+    box-shadow: 0 0 25px rgba(0, 101, 201, 0.35), 0 0 80px rgba(12, 143, 163, 0.15);
+  }
+
+  /* Stat number highlight */
+  .tn-stat-number {
+    background: var(--tn-grad-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Dark stats section gradient */
+  .tn-grad-stats {
+    background: linear-gradient(135deg, #0a1628 0%, #0d2847 40%, #0a3a5e 100%);
+  }
+
+  /* Subtle pulse for attention */
+  @keyframes tnPulseSubtle {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 101, 201, 0.20); }
+    50% { box-shadow: 0 0 30px rgba(0, 101, 201, 0.35), 0 0 60px rgba(12, 143, 163, 0.12); }
+  }
+  .tn-pulse-subtle {
+    animation: tnPulseSubtle 3s ease-in-out infinite;
+  }
+
   .hide-scrollbar {
     scrollbar-width: none;
   }

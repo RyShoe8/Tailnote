@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { RecaptchaNotice } from '@/components/recaptcha/RecaptchaNotice';
 import { EMAIL_HEALTH_NAV_TITLE } from '@/lib/email-health/seoCopy';
 
@@ -91,6 +93,22 @@ export function SiteFooter({ variant = 'full' }: SiteFooterProps) {
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
       />
       <div className="container">
+        <div className="border-b border-slate-200/70 pb-10 mb-10 text-center">
+          <p className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+            Ready to boost your reply rates?
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Teams using Tailnote see up to 32% more replies and 3× more website traffic.
+          </p>
+          <div className="mt-4">
+            <Button asChild size="lg" className="gap-2 shadow-card">
+              <Link href="/signup">
+                Get started free
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </Button>
+          </div>
+        </div>
         <div className="grid gap-8 sm:grid-cols-3 sm:gap-10">
           <div>
             <p className="mb-3 text-sm font-medium text-foreground">Product</p>

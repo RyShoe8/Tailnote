@@ -6,37 +6,37 @@ const FEATURES = [
     icon: Megaphone,
     title: 'Promotional content blocks',
     description:
-      'Book-a-call buttons, offer lists, blog feeds, image banners, and a curated quote library with custom quotes live next to every signature. Tailnote turns routine emails into mini campaigns.',
+      'Turn every send into a click. Add book-a-call buttons, offer lists, blog feeds, and banners below your signature — users see up to 2.4× more traffic to linked pages.',
   },
   {
     icon: Link2,
     title: 'Built-in UTM tracking',
     description:
-      'Every link gets UTM parameters automatically so you can attribute site visits and conversions to email in Google Analytics.',
+      'Know exactly which signatures generate pipeline. Every promo-block link is automatically tagged so Google Analytics shows you the real ROI of your email channel.',
   },
   {
     icon: LayoutTemplate,
     title: 'Curated signatures',
     description:
-      'We feature varying, high-quality signature layouts designed for real inboxes with no broken HTML.',
+      'Nine polished layouts — including our new Modern Professional template — designed to look sharp in Gmail, Outlook, and Apple Mail. No HTML skills needed.',
   },
   {
     icon: BarChart3,
     title: 'Click and open analytics',
     description:
-      'Track link clicks by type and optional opens when recipients load images—see which promos, logos, and CTAs actually get attention.',
+      'See who opened, what they clicked, and when. Track performance per employee or team-wide to find your top performers and optimize send times.',
   },
   {
     icon: Mail,
-    title: 'Gmail + Outlook ready',
+    title: 'Gmail, Outlook + Apple Mail ready',
     description:
-      'Copy your signature and paste into Gmail settings, or use the same HTML in Outlook and other clients.',
+      'Copy your signature and paste — it just works. Tailnote renders pixel-perfect HTML that looks great across every major email client, desktop and mobile.',
   },
   {
     icon: Users,
     title: 'Team-wide control',
     description:
-      'Set brand, offers, and social links once. Every employee sends the same on-brand marketing footprint or let each customize.',
+      'Lock brand elements org-wide while letting employees personalize their own details. One admin update rolls out to everyone on the next send.',
   },
 ] as const;
 
@@ -44,9 +44,9 @@ export function HomeFeatures() {
   return (
     <section className="container py-16 sm:py-20 lg:py-24">
       <div className="mx-auto max-w-2xl text-center">
-        <p className="text-sm font-semibold uppercase tracking-wider text-primary">Features</p>
+        <p className="text-sm font-semibold uppercase tracking-wider text-primary">Why teams choose Tailnote</p>
         <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-          A marketing channel in every send
+          Features that drive <span className="tn-grad-text">measurable results</span>
         </h2>
         <p className="mt-4 text-pretty text-muted-foreground">
           Tailnote combines on-brand email signatures with promotional blocks, measurable links, and
@@ -56,7 +56,7 @@ export function HomeFeatures() {
       <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
         {FEATURES.map(({ icon: Icon, title, description }, index) => (
           <RevealOnScroll key={title} delayMs={index * 60}>
-            <div className="group relative h-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ring">
+            <div className="tn-card-premium group relative h-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ring">
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"

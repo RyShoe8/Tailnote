@@ -56,9 +56,8 @@ export default async function SignaturesMarketingPage() {
             Professional email <span className="tn-grad-text">signatures</span>
           </h1>
           <p className="mt-4 text-pretty text-base text-muted-foreground sm:text-lg">
-            Curated signature layouts with promotional content blocks built in; book-a-call buttons,
-            offer lists, blog feeds, image banners, and quotes from the Tailnote library beside every
-            signature. No drag-and-drop chaos; HTML that works in real inboxes.
+            Browse our collection of email signature layouts, each designed to maximize click-through
+            rates and look pixel-perfect in Gmail, Outlook, and Apple Mail.
           </p>
         </div>
         {presets.length === 0 ? (

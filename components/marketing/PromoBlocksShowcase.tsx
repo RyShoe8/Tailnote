@@ -63,7 +63,7 @@ function QuoteDemo() {
       </p>
       <p className="text-[11px] text-slate-600">&mdash; Tailnote</p>
       <span className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
-        Tailnote library &middot; Marketing
+        Marketing
       </span>
     </div>
   );
@@ -82,6 +82,18 @@ function ImageDemo() {
           Spring promo
         </span>
       </div>
+    </div>
+  );
+}
+
+function ImageLinkDemo() {
+  return (
+    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+      <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
+        <ImageIcon className="h-8 w-8 text-primary" />
+      </div>
+      <p className="text-sm font-medium text-slate-700">Spring Campaign</p>
+      <p className="text-xs text-slate-500">Click to learn more →</p>
     </div>
   );
 }
@@ -122,6 +134,13 @@ const BLOCKS = [
       'Pick from the Tailnote quote library by category or write your own. Library quotes update org-wide when admins edit them; custom quotes stay yours.',
     Demo: QuoteDemo,
   },
+  {
+    icon: ImageIcon,
+    title: 'Image + link',
+    description:
+      'Upload a banner or headshot with a clickable link — great for campaigns and personal branding.',
+    Demo: ImageLinkDemo,
+  },
 ] as const;
 
 type Props = {
@@ -142,7 +161,7 @@ export function PromoBlocksShowcase({ showHeader = true, className = '' }: Props
           </h2>
           <p className="mt-4 text-pretty text-muted-foreground">
             Each Tailnote signature layout can carry one or more promotional blocks beside the signature. Mix
-            and match five ready-made types to turn routine email into a marketing channel.
+            and match six ready-made types to turn routine email into a marketing channel.
           </p>
         </div>
       ) : null}

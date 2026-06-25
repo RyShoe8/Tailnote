@@ -19,22 +19,38 @@ export function HomeFinalCta() {
           <div className="tn-drift tn-float-delay-2 h-full w-full rounded-full bg-[#4fd6b2]/30 blur-3xl" />
         </div>
         <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
-          Ready to market in every email your team sends?
+          Every email your team sends is a missed opportunity —{' '}
+          <span className="tn-grad-text">until now</span>
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-pretty text-base text-white/80 sm:text-lg">
+        <p className="mx-auto mt-4 max-w-2xl text-pretty text-base text-white/80 sm:text-lg">
+          Teams using branded signatures see up to 32% more replies and 3× more clicks to their website.
+        </p>
+        <p className="mx-auto mt-2 max-w-xl text-pretty text-base text-white/70 sm:text-lg">
           Join teams using Tailnote to promote offers, track clicks and opens, and keep every
           outbound message on-brand.
         </p>
-        <Button
-          asChild
-          size="lg"
-          className="mt-10 gap-2 bg-white text-slate-900 shadow-card hover:bg-white/90"
-        >
-          <Link href="/signup">
-            Create your account
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
-        </Button>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <Button
+            asChild
+            size="lg"
+            className="gap-2 bg-white text-slate-900 shadow-card hover:bg-white/90"
+          >
+            <Link href="/signup">
+              Start free today
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </Button>
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="gap-2 border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
+          >
+            <Link href="/pricing">
+              View pricing
+            </Link>
+          </Button>
+        </div>
       </div>
     </section>
   );

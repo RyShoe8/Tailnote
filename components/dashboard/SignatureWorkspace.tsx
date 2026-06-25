@@ -1060,6 +1060,7 @@ export function SignatureWorkspace() {
               html={previewHtml}
               variant="mobile"
               appearance="flat"
+              animationKey={org?.fontFamily}
               mobileFrameWidth={mobileFrameWidthForLayout(engineTemplate?.layout)}
             />
           </div>
