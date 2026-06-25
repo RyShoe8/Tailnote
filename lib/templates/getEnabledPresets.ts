@@ -24,7 +24,8 @@ function isCatalogPresetId(id: string): id is CatalogPresetId {
     id === 'corporate' ||
     id === 'professional' ||
     id === 'portfolio' ||
-    id === 'ecard'
+    id === 'ecard' ||
+    id === 'modern_professional'
   );
 }
 
