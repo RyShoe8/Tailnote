@@ -292,7 +292,7 @@ function quoteAttributionFontSizePx(size: ContentBlockData['quoteFontSize']): st
   }
 }
 
-function buildQuoteBlockHtml(block: ContentBlockData, primaryColor: string): string {
+function buildQuoteBlockHtml(block: ContentBlockData, primaryColor: string, isDark: boolean = false): string {
   if (block.type !== 'quote') return '';
   const text = (block.quoteResolvedText ?? block.quoteText ?? '').trim();
   if (!text) return '';
@@ -305,14 +305,17 @@ function buildQuoteBlockHtml(block: ContentBlockData, primaryColor: string): str
   const attrSize = quoteAttributionFontSizePx(block.quoteFontSize);
   const style = block.quoteStyle ?? 'standard';
   const accent = escapeHtml(primaryColor.trim() || '#333333');
+  
+  const textColor = isDark ? '#F3F4F6' : '#333333';
+  const mutedColor = isDark ? '#9CA3AF' : '#666666';
 
-  let cellStyle = `font-size:${fontSize};font-style:italic;color:#333333;line-height:1.5;padding:0;text-align:${align};`;
+  let cellStyle = `font-size:${fontSize};font-style:italic;color:${textColor};line-height:1.5;padding:0;text-align:${align};`;
   let tableStyle = 'border-collapse:collapse;margin-bottom:12px;';
 
   if (style === 'standard') {
     cellStyle += `border-left:3px solid ${accent};padding-left:10px;`;
   } else if (style === 'highlighted') {
-    tableStyle += 'background-color:#f5f5f5;';
+    tableStyle += `background-color:${isDark ? '#374151' : '#f5f5f5'};`;
     cellStyle += 'padding:10px 12px;';
   }
 
@@ -321,9 +324,9 @@ function buildQuoteBlockHtml(block: ContentBlockData, primaryColor: string): str
   if (showAttribution && attribution) {
     const attrEscaped = escapeHtml(attribution);
     const attrInner = sourceUrl
-      ? `&mdash; <a href="${escapeHtml(sourceUrl)}" style="color:#666666;text-decoration:none;">${attrEscaped}</a>`
+      ? `&mdash; <a href="${escapeHtml(sourceUrl)}" style="color:${mutedColor};text-decoration:none;">${attrEscaped}</a>`
       : `&mdash; ${attrEscaped}`;
-    attributionRow = `<tr><td style="font-size:${attrSize};color:#666666;margin-top:6px;text-align:${align};font-style:normal;padding-top:6px;">${attrInner}</td></tr>`;
+    attributionRow = `<tr><td style="font-size:${attrSize};color:${mutedColor};margin-top:6px;text-align:${align};font-style:normal;padding-top:6px;">${attrInner}</td></tr>`;
   }
 
   return `<table cellpadding="0" cellspacing="0" border="0" style="${tableStyle}" width="100%">
@@ -332,10 +335,10 @@ function buildQuoteBlockHtml(block: ContentBlockData, primaryColor: string): str
 </table>`;
 }
 
-function buildQuoteBlocksHtml(blocks: ContentBlockData[], primaryColor: string): string {
+function buildQuoteBlocksHtml(blocks: ContentBlockData[], primaryColor: string, isDark: boolean = false): string {
   const enabled = blocks.filter((b) => b.enabled && b.type === 'quote').slice(0, 2);
   if (enabled.length === 0) return '';
-  return enabled.map((b) => buildQuoteBlockHtml(b, primaryColor)).join('');
+  return enabled.map((b) => buildQuoteBlockHtml(b, primaryColor, isDark)).join('');
 }
 
 function buildContentBlockParts(
@@ -660,7 +663,7 @@ function collectFlattenedListItems(blocks: ContentBlockData[]): Array<{
 }
 
 function buildCreatorPromoPillsHtml(blocks: ContentBlockData[], panelColor: string): string {
-  const quoteHtml = buildQuoteBlocksHtml(blocks, panelColor);
+  const quoteHtml = buildQuoteBlocksHtml(blocks, panelColor, true);
   const items = collectFlattenedListItems(blocks.filter((b) => b.type !== 'quote'));
   if (items.length === 0) return quoteHtml;
 
@@ -877,7 +880,7 @@ function buildPortfolioNetworkSectionHtml(
   accentColor: string,
   panelColor: string
 ): string {
-  const quoteHtml = buildQuoteBlocksHtml(blocks, accentColor);
+  const quoteHtml = buildQuoteBlocksHtml(blocks, accentColor, true);
   const enabledLists = blocks.filter((b) => b.enabled && b.type === 'list');
   if (enabledLists.length === 0) return quoteHtml;
 

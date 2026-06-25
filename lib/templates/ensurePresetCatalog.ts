@@ -12,8 +12,8 @@ export async function ensurePresetCatalog(): Promise<void> {
     await SignaturePresetCatalogModel.updateOne(
       { presetId: meta.id },
       {
-        $set: { name: meta.name, description: meta.description },
-        $setOnInsert: { enabled: true, deletedAt: null, sortOrder: i },
+        $set: { name: meta.name, description: meta.description, sortOrder: i },
+        $setOnInsert: { enabled: true, deletedAt: null },
       },
       { upsert: true }
     );

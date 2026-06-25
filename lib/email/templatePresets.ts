@@ -17,12 +17,12 @@ export const TEMPLATE_PRESET_IDS: readonly TemplatePresetId[] = [
   'creator',
   'executive_minimalist',
   'minimal',
+  'modern_professional',
   'stacked',
   'corporate',
   'professional',
   'portfolio',
   'ecard',
-  'modern_professional',
 ];
 
 export function isTemplatePresetId(value: string): value is TemplatePresetId {
@@ -61,6 +61,12 @@ export const TEMPLATE_PRESET_META: TemplatePresetMeta[] = [
       'Logo, name, title, contact, and optional social icons when links are set. Pure simplicity',
   },
   {
+    id: 'modern_professional',
+    name: 'Modern Professional',
+    description:
+      'Sleek 3-column layout featuring vertical social icons, centered profile info with verification badge, and right-aligned branding.',
+  },
+  {
     id: 'stacked',
     name: 'Stacked',
     description: 'Stacked layout with optional social and divider.',
@@ -87,12 +93,6 @@ export const TEMPLATE_PRESET_META: TemplatePresetMeta[] = [
     name: 'eCard',
     description:
       'Light card with primary top bar, contact rows, save contact button, framed logo, and portfolio links with social icons in the footer.',
-  },
-  {
-    id: 'modern_professional',
-    name: 'Modern Professional',
-    description:
-      'Sleek 3-column layout featuring vertical social icons, centered profile info with verification badge, and right-aligned branding.',
   },
 ];
 

@@ -17,6 +17,7 @@ const SignatureTemplateSchema = new Schema(
         'professional',
         'portfolio',
         'ecard',
+        'modern_professional',
       ],
       required: true,
     },
