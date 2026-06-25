@@ -25,6 +25,7 @@ const BRAND_DATA = [
     logoFile: 'themediashop-logo.png',
     emailDomain: 'themediashop.co',
     primaryColor: '#9B1C31',
+    logoHeightPx: 57,
   },
   {
     companyName: 'Nucleas',
@@ -32,6 +33,7 @@ const BRAND_DATA = [
     logoFile: 'nucleas-logo.png',
     emailDomain: 'nucleas.app',
     primaryColor: '#4f46e5',
+    logoHeightPx: 73,
   },
   {
     companyName: 'Tailnote',
@@ -39,6 +41,7 @@ const BRAND_DATA = [
     logoFile: 'tailnote-logo-mark.png',
     emailDomain: 'tailnote.io',
     primaryColor: '#2563eb',
+    logoHeightPx: MARKETING_LOGO_HEIGHT_PX,
   },
 ];
 
@@ -66,7 +69,7 @@ function demoProfile(presetId: TemplatePresetId): SignatureProfile {
     title: 'Founder',
     email: `alex@${brand.emailDomain}`,
     officePhone: '123-456-7899',
-    avatarUrl: presetId === 'modern_professional' ? 'https://ui-avatars.com/api/?name=Alex+Morgan&background=0D8ABC&color=fff&size=128' : undefined,
+    avatarUrl: presetId === 'modern_professional' ? 'https://i.pravatar.cc/150?img=68' : undefined,
   };
 }
 
@@ -304,7 +307,7 @@ function demoBrand(origin: string, presetId: TemplatePresetId): SignatureBrand {
     website: brandData.website,
     logoUrl,
     logoLink: `https://${brandData.website}`,
-    logoHeightPx: MARKETING_LOGO_HEIGHT_PX,
+    logoHeightPx: brandData.logoHeightPx,
     primaryColor: isPortfolio ? '#1A3A34' : brandData.primaryColor,
     secondaryColor: isPortfolio ? '#E29578' : '',
     logoShape: 'rectangle',

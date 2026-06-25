@@ -112,7 +112,7 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
             {{/if}}
 
             {{#if hasName}}
-            <div style="font-size:20px; font-weight:700; color:#111827; line-height:1.2; margin-bottom:4px; letter-spacing:-0.2px;">
+            <div style="font-size:18px; font-weight:700; color:#111827; line-height:1.2; margin-bottom:4px; letter-spacing:-0.2px;">
               {{firstName}} {{lastName}}
             </div>
             {{/if}}

@@ -31,7 +31,7 @@ export const DEFAULT_SIGNATURE_TEMPLATE = `<table class="sig-default-layout-tabl
     </td>
     <td valign="top" style="padding-left: 20px;">
       {{#if hasName}}
-      <div style="font-size: 20px; font-weight: 700; color: #111111; margin-bottom: 2px;">{{fullName}}</div>
+      <div style="font-size: 18px; font-weight: 700; color: #111111; margin-bottom: 2px;">{{fullName}}</div>
       {{/if}}
       {{#if hasTitle}}
       <div style="font-size: 12px; font-weight: 600; color: {{primaryColor}}; letter-spacing: 1px; margin-bottom: 10px; text-transform: uppercase;">{{title}}</div>

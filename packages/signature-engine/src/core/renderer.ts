@@ -40,15 +40,15 @@ function logoWidthForLayout(layout: SignatureTemplate['layout'], useCircle: bool
   if (useCircle) return '110';
   switch (layout) {
     case 'default':
-      return '130';
-    case 'creator':
-      return '100';
-    case 'executive_minimalist':
-      return '90';
-    case 'professional':
-      return '105';
-    default:
       return '110';
+    case 'creator':
+      return '90';
+    case 'executive_minimalist':
+      return '80';
+    case 'professional':
+      return '95';
+    default:
+      return '100';
   }
 }
 

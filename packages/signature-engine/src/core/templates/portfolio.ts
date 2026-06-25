@@ -24,10 +24,10 @@ export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" c
       </table>
       {{/if}}
       {{#if hasName}}
-      <div style="font-size:20px;font-weight:700;color:#FFFFFF;margin-bottom:2px;letter-spacing:-0.3px;">{{fullName}}</div>
+      <div style="font-size:18px;font-weight:700;color:#FFFFFF;margin-bottom:2px;letter-spacing:-0.3px;">{{fullName}}</div>
       {{/if}}
       {{#if hasPortfolioRoleLine}}
-      <div style="font-size:12px;color:{{secondaryColor}};font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:20px;">{{portfolioRoleLine}}</div>
+      <div style="font-size:11px;color:{{secondaryColor}};font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:20px;">{{portfolioRoleLine}}</div>
       {{/if}}
       {{#if hasPortfolioContactPills}}
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin-bottom:4px;">
