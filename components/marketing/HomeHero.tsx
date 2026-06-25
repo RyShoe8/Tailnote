@@ -1,15 +1,25 @@
 import Link from 'next/link';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmailClientMock } from '@/components/marketing/EmailClientMock';
-import type { TemplatePresetId } from '@/lib/email/templatePresets';
+import { HeroEmailCarousel, type PresetData } from '@/components/marketing/HeroEmailCarousel';
 import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
 import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
+import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
+import type { TemplatePresetId } from '@/lib/email/templatePresets';
 
-const HERO_PRESET_ID: TemplatePresetId = 'modern_professional';
+type Props = {
+  presets: CatalogPresetRow[];
+};
 
-export function HomeHero() {
-  const signatureHtml = stripSignaturePreviewLinks(renderMarketingSample(HERO_PRESET_ID));
+export function HomeHero({ presets }: Props) {
+  // Generate HTML for each preset to cycle through
+  const carouselPresets: PresetData[] = presets.map((p) => {
+    const presetId = p.presetId as TemplatePresetId;
+    return {
+      presetId,
+      html: stripSignaturePreviewLinks(renderMarketingSample(presetId)),
+    };
+  });
 
   return (
     <section className="relative isolate overflow-hidden bg-white">
@@ -48,7 +58,7 @@ export function HomeHero() {
           </div>
 
           <div className="tn-rise tn-rise-delay-2 min-w-0">
-            <EmailClientMock signatureHtml={signatureHtml} presetId={HERO_PRESET_ID} />
+            <HeroEmailCarousel presets={carouselPresets} />
           </div>
         </div>
       </div>

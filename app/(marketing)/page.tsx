@@ -61,7 +61,7 @@ export default async function HomePage() {
           faqPageJsonLd(HOME_FAQS),
         ]}
       />
-      <HomeHero />
+      <HomeHero presets={presets} />
       <HomeStatsBar />
       <HomeFeatures />
       <HomeTemplateShowcase presets={presets} />
