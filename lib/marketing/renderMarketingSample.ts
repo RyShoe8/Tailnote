@@ -60,18 +60,9 @@ function marketingContentBlocks(
           enabled: true,
           listTitle: 'Business Tools',
           listItems: [
-            { title: 'Nucleas', url: 'https://www.acmecorp.com/nucleas' },
-            { title: 'The Ad Shop', url: 'https://www.acmecorp.com/ad-shop' },
-            { title: 'Tailnote', url: 'https://www.acmecorp.com/tailnote' },
-          ],
-        },
-        {
-          type: 'list',
-          enabled: true,
-          listTitle: 'Content Sites',
-          listItems: [
-            { title: 'The Frugal Gambler', url: 'https://www.acmecorp.com/frugal' },
-            { title: 'DocSpot', url: 'https://www.acmecorp.com/docspot' },
+            { title: 'Nucleas', url: 'https://nucleas.app' },
+            { title: 'The Media Shop', url: 'https://themediashop.co' },
+            { title: 'Tailnote', url: 'https://tailnote.io' },
           ],
         },
       ];
@@ -85,9 +76,9 @@ function marketingContentBlocks(
           type: 'list',
           enabled: true,
           listItems: [
-            { title: 'Nucleas', url: 'https://www.acmecorp.com/nucleas' },
-            { title: 'The Ad Shop', url: 'https://www.acmecorp.com/ad-shop' },
-            { title: 'Tailnote', url: 'https://www.acmecorp.com/tailnote' },
+            { title: 'Nucleas', url: 'https://nucleas.app' },
+            { title: 'The Media Shop', url: 'https://themediashop.co' },
+            { title: 'Tailnote', url: 'https://tailnote.io' },
           ],
         },
       ];
@@ -98,9 +89,9 @@ function marketingContentBlocks(
           enabled: true,
           listTitle: 'Featured work',
           listItems: [
-            { title: 'Nucleas', url: 'https://www.acmecorp.com/nucleas' },
-            { title: 'The Ad Shop', url: 'https://www.acmecorp.com/ad-shop' },
-            { title: 'Tailnote', url: 'https://www.acmecorp.com/tailnote' },
+            { title: 'Nucleas', url: 'https://nucleas.app' },
+            { title: 'The Media Shop', url: 'https://themediashop.co' },
+            { title: 'Tailnote', url: 'https://tailnote.io' },
           ],
         },
         marketingQuoteBlock(
@@ -114,7 +105,7 @@ function marketingContentBlocks(
           type: 'book_a_call',
           enabled: true,
           callTitle: 'See a demo',
-          callUrl: 'https://www.acmecorp.com/demo',
+          callUrl: 'https://themediashop.co/demo',
           callButtonText: 'Book a call',
         },
         {
@@ -125,11 +116,11 @@ function marketingContentBlocks(
             {
               title: 'Spring sale — 20% off',
               description: 'Ends Friday',
-              url: 'https://www.acmecorp.com/sale',
+              url: 'https://themediashop.co/sale',
             },
             {
-              title: 'Case study: Northwind',
-              url: 'https://www.acmecorp.com/customers',
+              title: 'Case study: Nucleas',
+              url: 'https://nucleas.app/customers',
             },
           ],
         },
@@ -141,7 +132,7 @@ function marketingContentBlocks(
           type: 'book_a_call',
           enabled: true,
           callTitle: 'Free workshop',
-          callUrl: 'https://www.acmecorp.com/workshop',
+          callUrl: 'https://themediashop.co/workshop',
           callButtonText: 'Save your seat',
         },
       ];
@@ -157,15 +148,15 @@ function marketingContentBlocks(
           rssItems: [
             {
               title: 'How to launch a brand refresh in 30 days',
-              url: 'https://www.acmecorp.com/blog/brand-refresh',
+              url: 'https://themediashop.co/blog/brand-refresh',
             },
             {
               title: 'Inside our Q3 customer report',
-              url: 'https://www.acmecorp.com/blog/q3-report',
+              url: 'https://themediashop.co/blog/q3-report',
             },
             {
               title: 'Why every team email is marketing',
-              url: 'https://www.acmecorp.com/blog/email-marketing',
+              url: 'https://tailnote.io/blog/email-marketing',
             },
           ],
         },
@@ -177,11 +168,9 @@ function marketingContentBlocks(
           enabled: true,
           listTitle: 'Network Portfolio',
           listItems: [
-            { title: 'Nucleas', url: 'https://www.acmecorp.com/nucleas' },
-            { title: 'The Ad Shop', url: 'https://www.acmecorp.com/ad-shop' },
-            { title: 'Tailnote', url: 'https://www.acmecorp.com/tailnote' },
-            { title: 'The Frugal Gambler', url: 'https://www.acmecorp.com/frugal' },
-            { title: 'DocSpot', url: 'https://www.acmecorp.com/docspot' },
+            { title: 'Nucleas', url: 'https://nucleas.app' },
+            { title: 'The Media Shop', url: 'https://themediashop.co' },
+            { title: 'Tailnote', url: 'https://tailnote.io' },
           ],
         },
       ];
@@ -192,11 +181,9 @@ function marketingContentBlocks(
           enabled: true,
           listTitle: 'Portfolio',
           listItems: [
-            { title: 'Nucleas', url: 'https://www.acmecorp.com/nucleas' },
-            { title: 'The Ad Shop', url: 'https://www.acmecorp.com/ad-shop' },
-            { title: 'Tailnote', url: 'https://www.acmecorp.com/tailnote' },
-            { title: 'The Frugal Gambler', url: 'https://www.acmecorp.com/frugal' },
-            { title: 'DocSpot', url: 'https://www.acmecorp.com/docspot' },
+            { title: 'Nucleas', url: 'https://nucleas.app' },
+            { title: 'The Media Shop', url: 'https://themediashop.co' },
+            { title: 'Tailnote', url: 'https://tailnote.io' },
           ],
         },
       ];
@@ -206,7 +193,7 @@ function marketingContentBlocks(
           type: 'book_a_call',
           enabled: true,
           callTitle: 'Talk to sales',
-          callUrl: 'https://www.acmecorp.com/contact',
+          callUrl: 'https://themediashop.co/contact',
           callButtonText: 'Get pricing',
         },
         {
@@ -216,12 +203,12 @@ function marketingContentBlocks(
           listItems: [
             {
               title: 'ROI calculator',
-              url: 'https://www.acmecorp.com/roi',
+              url: 'https://tailnote.io/roi',
             },
             {
               title: 'Customer stories',
               description: '12 industries',
-              url: 'https://www.acmecorp.com/stories',
+              url: 'https://nucleas.app/stories',
             },
           ],
         },
@@ -229,7 +216,26 @@ function marketingContentBlocks(
           type: 'image',
           enabled: true,
           imageUrl: img,
-          imageLinkUrl: 'https://www.acmecorp.com/spring',
+          imageLinkUrl: 'https://themediashop.co/spring',
+        },
+      ];
+    case 'modern_professional':
+      return [
+        {
+          type: 'book_a_call',
+          enabled: true,
+          callTitle: 'Let\'s Connect',
+          callUrl: 'https://themediashop.co/contact',
+          callButtonText: 'Book a meeting',
+        },
+        {
+          type: 'list',
+          enabled: true,
+          listTitle: 'Latest work',
+          listItems: [
+            { title: 'Tailnote', url: 'https://tailnote.io' },
+            { title: 'Nucleas', url: 'https://nucleas.app' },
+          ],
         },
       ];
     default:
@@ -238,7 +244,7 @@ function marketingContentBlocks(
           type: 'list',
           enabled: true,
           listTitle: 'Promotions',
-          listItems: [{ title: 'See what’s new', url: 'https://www.acmecorp.com' }],
+          listItems: [{ title: 'See what’s new', url: 'https://themediashop.co' }],
         },
       ];
   }
@@ -248,12 +254,11 @@ function demoBrand(origin: string, presetId: TemplatePresetId): SignatureBrand {
   const logoUrl = promoImageUrl(origin);
   const isPortfolio = presetId === 'portfolio';
   const isEcard = presetId === 'ecard';
-  const isMediaShop = isPortfolio || isEcard;
   return {
-    companyName: isMediaShop ? 'The Media Shop' : 'Acme Corp',
-    website: isMediaShop ? 'themediashop.co' : 'www.acmecorp.com',
+    companyName: 'The Media Shop',
+    website: 'themediashop.co',
     logoUrl,
-    logoLink: 'https://www.acmecorp.com',
+    logoLink: 'https://themediashop.co',
     logoHeightPx: MARKETING_LOGO_HEIGHT_PX,
     primaryColor: isPortfolio ? '#1A3A34' : isEcard ? '#4F46E5' : '#2563eb',
     secondaryColor: isPortfolio ? '#E29578' : '',
