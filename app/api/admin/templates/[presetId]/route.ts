@@ -5,6 +5,7 @@ import { connectMongoose } from '@/lib/mongoose';
 import {
   SignaturePresetCatalogModel,
   type CatalogPresetId,
+  CATALOG_PRESET_IDS,
 } from '@/models/SignaturePresetCatalog';
 import {
   assertPresetCanBeDisabledOrDeleted,
@@ -13,20 +14,8 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-const PRESET_IDS = [
-  'default',
-  'creator',
-  'executive_minimalist',
-  'minimal',
-  'stacked',
-  'corporate',
-  'professional',
-  'portfolio',
-  'ecard',
-] as const;
-
 function parsePresetId(raw: string): CatalogPresetId | null {
-  return PRESET_IDS.includes(raw as CatalogPresetId) ? (raw as CatalogPresetId) : null;
+  return CATALOG_PRESET_IDS.includes(raw as CatalogPresetId) ? (raw as CatalogPresetId) : null;
 }
 
 const PatchSchema = z.object({

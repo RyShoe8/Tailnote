@@ -117,7 +117,7 @@ export function MarketingEmailClientFrame({
           </div>
         </div>
       ) : (
-        <div className="home-carousel-email-stage relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-ring ring-1 ring-slate-900/5 sm:rounded-3xl">
+        <div className="home-carousel-email-stage relative overflow-visible rounded-2xl border border-slate-200/80 bg-white shadow-ring ring-1 ring-slate-900/5 sm:rounded-3xl">
           <EmailComposerChrome>{children}</EmailComposerChrome>
         </div>
       )}

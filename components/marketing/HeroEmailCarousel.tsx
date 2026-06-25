@@ -29,18 +29,29 @@ export function HeroEmailCarousel({ presets }: Props) {
 
   return (
     <MarketingEmailClientFrame layout="hero" showAmbience>
-      <div className="grid overflow-hidden mt-1">
+      <div className="grid overflow-visible mt-1 w-full relative">
         {presets.map((preset, index) => {
-          const isActive = index === activeIndex;
+          let pos = index - activeIndex;
+          if (pos < -1) pos += presets.length;
+          if (pos > presets.length - 2) pos -= presets.length;
+          
+          let transformClass = '';
+          if (pos === 0) {
+            transformClass = 'translate-x-0 opacity-100 scale-100 z-10';
+          } else if (pos === 1) {
+            transformClass = 'translate-x-[110%] opacity-40 scale-[0.85] z-0 pointer-events-none blur-[1px]';
+          } else if (pos === -1) {
+            transformClass = '-translate-x-[110%] opacity-40 scale-[0.85] z-0 pointer-events-none blur-[1px]';
+          } else if (pos > 1) {
+            transformClass = 'translate-x-[200%] opacity-0 scale-75 z-0 pointer-events-none';
+          } else {
+            transformClass = '-translate-x-[200%] opacity-0 scale-75 z-0 pointer-events-none';
+          }
           
           return (
             <div
               key={preset.presetId}
-              className={`col-start-1 row-start-1 transition-all duration-700 ease-out ${
-                isActive 
-                  ? 'opacity-100 translate-x-0 z-10' 
-                  : 'opacity-0 translate-x-8 z-0 pointer-events-none'
-              }`}
+              className={`col-start-1 row-start-1 transition-all duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${transformClass}`}
             >
               <HeroSignaturePreview html={preset.html} presetId={preset.presetId} />
             </div>
