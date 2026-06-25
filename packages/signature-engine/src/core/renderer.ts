@@ -269,6 +269,74 @@ function substituteVariables(html: string, strings: Record<string, string>): str
   });
 }
 
+function quoteFontSizePx(size: ContentBlockData['quoteFontSize']): string {
+  switch (size) {
+    case 'small':
+      return '11px';
+    case 'large':
+      return '15px';
+    default:
+      return '13px';
+  }
+}
+
+function quoteAttributionFontSizePx(size: ContentBlockData['quoteFontSize']): string {
+  switch (size) {
+    case 'small':
+      return '10px';
+    case 'large':
+      return '12px';
+    default:
+      return '11px';
+  }
+}
+
+function buildQuoteBlockHtml(block: ContentBlockData, primaryColor: string): string {
+  if (block.type !== 'quote') return '';
+  const text = (block.quoteResolvedText ?? block.quoteText ?? '').trim();
+  if (!text) return '';
+
+  const showAttribution = block.quoteShowAttribution !== false;
+  const attribution = (block.quoteResolvedAttribution ?? block.quoteAttribution ?? '').trim();
+  const sourceUrl = (block.quoteResolvedSourceUrl ?? '').trim();
+  const align = block.quoteAlignment === 'center' ? 'center' : 'left';
+  const fontSize = quoteFontSizePx(block.quoteFontSize);
+  const attrSize = quoteAttributionFontSizePx(block.quoteFontSize);
+  const style = block.quoteStyle ?? 'standard';
+  const accent = escapeHtml(primaryColor.trim() || '#333333');
+
+  let cellStyle = `font-size:${fontSize};font-style:italic;color:#333333;line-height:1.5;padding:0;text-align:${align};`;
+  let tableStyle = 'border-collapse:collapse;margin-bottom:12px;';
+
+  if (style === 'standard') {
+    cellStyle += `border-left:3px solid ${accent};padding-left:10px;`;
+  } else if (style === 'highlighted') {
+    tableStyle += 'background-color:#f5f5f5;';
+    cellStyle += 'padding:10px 12px;';
+  }
+
+  const quoteText = escapeHtml(text);
+  let attributionRow = '';
+  if (showAttribution && attribution) {
+    const attrEscaped = escapeHtml(attribution);
+    const attrInner = sourceUrl
+      ? `&mdash; <a href="${escapeHtml(sourceUrl)}" style="color:#666666;text-decoration:none;">${attrEscaped}</a>`
+      : `&mdash; ${attrEscaped}`;
+    attributionRow = `<tr><td style="font-size:${attrSize};color:#666666;margin-top:6px;text-align:${align};font-style:normal;padding-top:6px;">${attrInner}</td></tr>`;
+  }
+
+  return `<table cellpadding="0" cellspacing="0" border="0" style="${tableStyle}" width="100%">
+  <tr><td style="${cellStyle}">&ldquo;${quoteText}&rdquo;</td></tr>
+  ${attributionRow}
+</table>`;
+}
+
+function buildQuoteBlocksHtml(blocks: ContentBlockData[], primaryColor: string): string {
+  const enabled = blocks.filter((b) => b.enabled && b.type === 'quote').slice(0, 2);
+  if (enabled.length === 0) return '';
+  return enabled.map((b) => buildQuoteBlockHtml(b, primaryColor)).join('');
+}
+
 function buildContentBlockParts(
   blocks: ContentBlockData[],
   origin: string,
@@ -386,6 +454,9 @@ function buildContentBlockParts(
       if (html) {
         parts.push(`<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-bottom:12px;" width="100%">${html}</table>`);
       }
+    } else if (block.type === 'quote') {
+      const quoteHtml = buildQuoteBlockHtml(block, primaryColor);
+      if (quoteHtml) parts.push(quoteHtml);
     }
   }
 
@@ -417,11 +488,18 @@ function renderContentBlocksHtml(
 }
 
 /** Two-column footer for default layout: slot 0 left, slot 1 right. */
-function buildDefaultListFooterHtml(blocks: ContentBlockData[], origin: string): string {
+function buildDefaultListFooterHtml(
+  blocks: ContentBlockData[],
+  origin: string,
+  primaryColor: string
+): string {
   const enabled = blocks.filter((b) => b.enabled).slice(0, 2);
   if (enabled.length === 0) return '';
 
   function columnHtml(block: ContentBlockData): string {
+    if (block.type === 'quote') {
+      return buildQuoteBlockHtml(block, primaryColor);
+    }
     if (block.type !== 'list') return '';
     const title = escapeHtml((block.listTitle || '').trim());
     const items = (block.listItems || []).filter(listItemHasBody).slice(0, 4);
@@ -581,11 +659,12 @@ function collectFlattenedListItems(blocks: ContentBlockData[]): Array<{
 }
 
 function buildCreatorPromoPillsHtml(blocks: ContentBlockData[], panelColor: string): string {
-  const items = collectFlattenedListItems(blocks);
-  if (items.length === 0) return '';
+  const quoteHtml = buildQuoteBlocksHtml(blocks, panelColor);
+  const items = collectFlattenedListItems(blocks.filter((b) => b.type !== 'quote'));
+  if (items.length === 0) return quoteHtml;
 
   const panel = escapeHtml(panelColor);
-  let html = '';
+  let html = quoteHtml;
   for (const item of items) {
     const labelRaw = item.title || (item.url ? listItemLinkFallbackLabel(item.url) : '');
     if (!labelRaw) continue;
@@ -718,6 +797,13 @@ function buildExecutivePromoRowsHtml(blocks: ContentBlockData[], primaryColor: s
   const rows: string[] = [];
 
   for (const block of enabled) {
+    if (block.type === 'quote') {
+      const quoteHtml = buildQuoteBlockHtml(block, primaryColor);
+      if (quoteHtml) {
+        rows.push(`<div style="margin-bottom: 8px;">${quoteHtml}</div>`);
+      }
+      continue;
+    }
     if (block.type !== 'list') continue;
     const sectionLabel = (block.listTitle || block.customTitle || '').trim();
     const lineHtml = buildExecutiveListBlockLineHtml(block, primaryColor);
@@ -790,8 +876,9 @@ function buildPortfolioNetworkSectionHtml(
   accentColor: string,
   panelColor: string
 ): string {
+  const quoteHtml = buildQuoteBlocksHtml(blocks, accentColor);
   const enabledLists = blocks.filter((b) => b.enabled && b.type === 'list');
-  if (enabledLists.length === 0) return '';
+  if (enabledLists.length === 0) return quoteHtml;
 
   const items = collectFlattenedListItems(enabledLists);
   if (items.length === 0) return '';
@@ -813,9 +900,10 @@ function buildPortfolioNetworkSectionHtml(
       pills += `<span style="display:inline-block;background-color:${panel};color:#F4F7F6;padding:6px 12px;border-radius:12px;font-size:12px;margin:0 6px 6px 0;font-weight:500;">${label}</span>`;
     }
   }
-  if (!pills) return '';
+  if (!pills) return quoteHtml;
 
-  return `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${accent};font-weight:bold;margin-bottom:10px;text-align:left;">${escapeHtml(sectionTitle)}</div><div style="text-align:left;margin-bottom:18px;line-height:1.6;">${pills}</div>`;
+  const listSection = `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${accent};font-weight:bold;margin-bottom:10px;text-align:left;">${escapeHtml(sectionTitle)}</div><div style="text-align:left;margin-bottom:18px;line-height:1.6;">${pills}</div>`;
+  return quoteHtml ? `${quoteHtml}${listSection}` : listSection;
 }
 
 function buildEcardContactTableHtml(
@@ -895,10 +983,11 @@ function buildEcardListBlockLinksHtml(block: ContentBlockData, primaryColor: str
 
 /** One titled section per list promo block (up to two), preserving each block's listTitle. */
 function buildEcardPortfolioSectionsHtml(blocks: ContentBlockData[], primaryColor: string): string {
+  const quoteHtml = buildQuoteBlocksHtml(blocks, primaryColor);
   const enabledLists = blocks.filter((b) => b.enabled && b.type === 'list').slice(0, 2);
-  if (enabledLists.length === 0) return '';
+  if (enabledLists.length === 0) return quoteHtml;
 
-  const sections: string[] = [];
+  const sections: string[] = quoteHtml ? [quoteHtml] : [];
   for (const block of enabledLists) {
     const linksHtml = buildEcardListBlockLinksHtml(block, primaryColor);
     if (!linksHtml) continue;
@@ -1171,7 +1260,7 @@ export function mergeRenderContext(
   const contentBlocksHtmlStacked = usesCustomPromoLayout ? '' : contentBlocksRendered.stacked;
 
   const defaultListFooterHtml = isDefaultLayout
-    ? buildDefaultListFooterHtml(contentBlocks, origin)
+    ? buildDefaultListFooterHtml(contentBlocks, origin, brandPrimaryColor)
     : '';
   const hasDefaultListFooter = Boolean(defaultListFooterHtml);
 

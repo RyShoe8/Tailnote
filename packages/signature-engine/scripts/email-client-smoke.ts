@@ -1365,4 +1365,57 @@ assert.match(
   'corporate/custom: title itself is the link when URL is set and no image'
 );
 
+const quoteBlock = {
+  type: 'quote' as const,
+  enabled: true,
+  quoteSource: 'custom' as const,
+  quoteText: 'The best marketing is helpful.',
+  quoteAttribution: 'Tailnote',
+  quoteShowAttribution: true,
+  quoteAlignment: 'left' as const,
+  quoteFontSize: 'medium' as const,
+  quoteStyle: 'standard' as const,
+  quoteResolvedText: 'The best marketing is helpful.',
+  quoteResolvedAttribution: 'Tailnote',
+};
+
+const htmlQuoteCorporate = renderSignature({
+  profile,
+  brand: {
+    ...mockSignatureBrand,
+    contentBlocks: [quoteBlock],
+  },
+  template: corporateTemplate,
+  publicSiteOrigin: origin,
+});
+assert.match(
+  htmlQuoteCorporate,
+  /The best marketing is helpful\./,
+  'quote: custom quote text renders in corporate layout'
+);
+assert.match(htmlQuoteCorporate, /&mdash; Tailnote|— Tailnote/, 'quote: attribution renders');
+assert.match(htmlQuoteCorporate, /font-style:italic/, 'quote: italic quote styling');
+
+const htmlQuoteCenter = renderSignature({
+  profile,
+  brand: {
+    ...mockSignatureBrand,
+    contentBlocks: [{ ...quoteBlock, quoteAlignment: 'center' }],
+  },
+  template: corporateTemplate,
+  publicSiteOrigin: origin,
+});
+assert.match(htmlQuoteCenter, /text-align:center/, 'quote: center alignment');
+
+const htmlQuoteHighlighted = renderSignature({
+  profile,
+  brand: {
+    ...mockSignatureBrand,
+    contentBlocks: [{ ...quoteBlock, quoteStyle: 'highlighted' }],
+  },
+  template: corporateTemplate,
+  publicSiteOrigin: origin,
+});
+assert.match(htmlQuoteHighlighted, /background-color:#f5f5f5/, 'quote: highlighted style');
+
 process.stdout.write('email-client-smoke: all checks passed.\n');

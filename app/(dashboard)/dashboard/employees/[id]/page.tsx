@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { SignatureInstallPanel } from '@/components/signature/SignatureInstallPanel';
 import type { SignatureProfile, ContentBlockData } from 'emailsignature-engine';
 import { ContentBlocksEditor } from '@/components/signature/ContentBlocksEditor';
+import { useHydratedContentBlocks } from '@/components/signature/useHydratedContentBlocks';
 import { EmployeeInviteBadge } from '@/components/dashboard/EmployeeInviteBadge';
 import { getEmployeeInviteStatus } from '@/lib/employees/inviteStatus';
 import { inviteErrorMessage } from '@/lib/employees/inviteErrorMessage';
@@ -186,6 +187,8 @@ function EmployeeDetailPageContent() {
     });
   }, [org, selectedTemplate]);
 
+  const hydratedContentBlocks = useHydratedContentBlocks(contentBlocks);
+
   const html = useMemo(() => {
     if (!engineTemplate) return '';
     const renderInput = buildRenderInput({
@@ -202,10 +205,10 @@ function EmployeeDetailPageContent() {
       publicSiteOrigin: getSignatureAssetOrigin(),
     });
     // Override contentBlocks for preview
-    renderInput.brand.contentBlocks = contentBlocks;
+    renderInput.brand.contentBlocks = hydratedContentBlocks;
     return renderSignature(renderInput);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- assetOriginNonce forces post-mount recompute so preview URLs use window origin, not SSR fallback
-  }, [engineTemplate, org, profile, assetOriginNonce, linkedin, contentBlocks]);
+  }, [engineTemplate, org, profile, assetOriginNonce, linkedin, hydratedContentBlocks]);
 
   const trackingEnabled = Boolean(org && org.signatureClickTrackingEnabled);
 

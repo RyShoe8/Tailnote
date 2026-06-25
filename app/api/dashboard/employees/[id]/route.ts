@@ -14,6 +14,8 @@ import {
   memberCanEditPromoBlocks,
   orgPermissionFlags,
 } from '@/lib/org/permissions';
+import { ContentBlockSchema, sanitizeContentBlocksForSave } from '@/lib/quotes/contentBlockSchema';
+import type { ContentBlockData } from 'emailsignature-engine';
 
 type SessionUser = { organizationId?: string; id?: string; role?: string };
 
@@ -70,38 +72,6 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 }
-
-const ContentBlockListItemSchema = z.object({
-  title: z.string().optional(),
-  description: z.string().optional(),
-  url: z.string().optional(),
-  urlPrefix: z.enum(['https', 'www']).optional(),
-});
-
-const ContentBlockSchema = z.object({
-  type: z.enum(['book_a_call', 'latest_blogs', 'custom', 'list', 'image']),
-  enabled: z.boolean().optional(),
-  callTitle: z.string().optional(),
-  callUrl: z.string().optional(),
-  callButtonText: z.string().optional(),
-  rssUrl: z.string().optional(),
-  rssItems: z.array(z.object({
-    title: z.string(),
-    url: z.string(),
-    imageUrl: z.string().optional(),
-    pubDate: z.string().optional(),
-  })).optional(),
-  rssLastFetched: z.string().optional(),
-  rssRefreshInterval: z.enum(['none', 'daily', 'weekly']).optional(),
-  listTitle: z.string().optional(),
-  listItems: z.array(ContentBlockListItemSchema).max(4).optional(),
-  imageUrl: z.string().optional(),
-  imageLinkUrl: z.string().optional(),
-  customTitle: z.string().optional(),
-  customText: z.string().optional(),
-  customUrl: z.string().optional(),
-  customImageUrl: z.string().optional(),
-});
 
 const PatchSchema = z.object({
   firstName: z.string().min(1).optional(),
@@ -188,7 +158,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (data.twitter !== undefined) employee.twitter = data.twitter.trim();
   if (data.avatarUrl !== undefined) employee.avatarUrl = data.avatarUrl.trim();
   if (data.contentBlocks !== undefined && canEditPromo) {
-    (employee as unknown as { contentBlocks: unknown }).contentBlocks = data.contentBlocks.slice(0, 2);
+    const sanitized = sanitizeContentBlocksForSave(data.contentBlocks as ContentBlockData[]);
+    (employee as unknown as { contentBlocks: unknown }).contentBlocks = sanitized;
     if (!isOrgAdminRole(sessionUser.role)) {
       (employee as unknown as { promoBlocksCustomized: boolean }).promoBlocksCustomized = true;
     }

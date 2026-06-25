@@ -43,6 +43,13 @@ export function contentBlockDisplayLabel(block: ContentBlockData, slotIndex: num
     '';
   if (title) return title;
 
+  if (block.type === 'quote') {
+    const text =
+      (block.quoteResolvedText ?? block.quoteText ?? '').trim();
+    if (text) return text.length > 48 ? `${text.slice(0, 47)}…` : text;
+    return 'Quote';
+  }
+
   switch (block.type) {
     case 'book_a_call':
       return 'Book a call';
@@ -67,6 +74,10 @@ export function contentBlockClickDescription(block: ContentBlockData): string {
       return 'Blog item link clicks in this block';
     case 'image':
       return 'Promo image link clicks';
+    case 'quote':
+      return block.quoteResolvedSourceUrl?.trim()
+        ? 'Quote source link clicks'
+        : 'Quote block (no trackable links)';
     case 'list':
     case 'custom':
       return 'List item and promo link clicks in this block';

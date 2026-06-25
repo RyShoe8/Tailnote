@@ -1,5 +1,6 @@
 import { migrateDefaultFreePlanOrganizations } from '@/lib/migrations/migrateDefaultFreePlan';
 import { migrateFreemiumPlanFlag } from '@/lib/migrations/migrateFreemiumPlanFlag';
+import { seedQuoteLibrary } from '@/lib/migrations/seedQuoteLibrary';
 
 type GlobalMigrations = typeof globalThis & {
   tailnoteStartupMigrationsDone?: boolean;
@@ -20,9 +21,10 @@ export async function ensureStartupMigrations(): Promise<void> {
   }
 
   g.tailnoteStartupMigrationsPromise = (async () => {
-    const [orgResult, planResult] = await Promise.all([
+    const [orgResult, planResult, quoteSeedResult] = await Promise.all([
       migrateDefaultFreePlanOrganizations(),
       migrateFreemiumPlanFlag(),
+      seedQuoteLibrary(),
     ]);
     if (orgResult.paidPlanBackfilled > 0 || orgResult.freePlanDefaulted > 0) {
       console.info(
@@ -37,6 +39,13 @@ export async function ensureStartupMigrations(): Promise<void> {
         '[startup migrations] freemium plan flag:',
         `freeMarked=${planResult.freePlansMarked}`,
         `complimentaryCleared=${planResult.complimentaryPlansCleared}`
+      );
+    }
+    if (quoteSeedResult.seeded) {
+      console.info(
+        '[startup migrations] quote library:',
+        `categories=${quoteSeedResult.categoriesCreated}`,
+        `quotes=${quoteSeedResult.quotesCreated}`
       );
     }
     g.tailnoteStartupMigrationsDone = true;

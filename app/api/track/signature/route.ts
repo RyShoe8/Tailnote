@@ -46,6 +46,10 @@ export async function GET(request: Request) {
       organizationId: new mongoose.Types.ObjectId(payload.oid),
       employeeId: payload.eid ? new mongoose.Types.ObjectId(payload.eid) : undefined,
       kind: payload.k,
+      quoteId:
+        payload.qid && mongoose.isValidObjectId(payload.qid)
+          ? new mongoose.Types.ObjectId(payload.qid)
+          : undefined,
       userAgent: request.headers.get('user-agent')?.slice(0, 500) || '',
       referer: request.headers.get('referer')?.slice(0, 500) || '',
     });

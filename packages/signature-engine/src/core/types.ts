@@ -20,7 +20,7 @@ export type ContentBlockListItem = {
 
 export type ContentBlockData = {
   /** `custom` is kept for legacy reads; new blocks should use `list` or `image`. */
-  type: 'book_a_call' | 'latest_blogs' | 'list' | 'image' | 'custom';
+  type: 'book_a_call' | 'latest_blogs' | 'list' | 'image' | 'custom' | 'quote';
   enabled: boolean;
   // Book a call
   callTitle?: string;
@@ -37,6 +37,19 @@ export type ContentBlockData = {
   // Image
   imageUrl?: string;
   imageLinkUrl?: string;
+  // Quote promotional block
+  quoteSource?: 'library' | 'custom';
+  quoteId?: string;
+  quoteText?: string;
+  quoteAttribution?: string;
+  quoteShowAttribution?: boolean;
+  quoteAlignment?: 'left' | 'center';
+  quoteFontSize?: 'small' | 'medium' | 'large';
+  quoteStyle?: 'standard' | 'minimal' | 'highlighted';
+  /** Populated at render time for library quotes; not persisted. */
+  quoteResolvedText?: string;
+  quoteResolvedAttribution?: string;
+  quoteResolvedSourceUrl?: string;
   // Legacy custom fields (read-only fallback for older saved docs)
   customTitle?: string;
   customText?: string;

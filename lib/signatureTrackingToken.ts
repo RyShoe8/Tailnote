@@ -12,10 +12,17 @@ export type TrackingPayload = {
   eid?: string;
   k: SignatureClickKind;
   d: string;
+  qid?: string;
 };
 
 export function createSignatureTrackingToken(
-  parts: { organizationId: string; employeeId?: string; kind: SignatureClickKind; destination: string },
+  parts: {
+    organizationId: string;
+    employeeId?: string;
+    kind: SignatureClickKind;
+    destination: string;
+    quoteId?: string;
+  },
   secret: string
 ): string {
   if (!secret) throw new Error('Missing signature tracking secret');
@@ -28,6 +35,7 @@ export function createSignatureTrackingToken(
     eid: parts.employeeId,
     k: parts.kind,
     d,
+    ...(parts.quoteId ? { qid: parts.quoteId } : {}),
   };
   const body = Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url');
   const sig = crypto.createHmac('sha256', secret).update(body).digest('base64url');

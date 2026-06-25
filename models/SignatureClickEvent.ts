@@ -25,6 +25,7 @@ const SignatureClickEventSchema = new Schema(
     organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
     employeeId: { type: Schema.Types.ObjectId, ref: 'Employee', index: true },
     kind: { type: String, required: true, enum: KINDS },
+    quoteId: { type: Schema.Types.ObjectId, ref: 'Quote', index: true },
     userAgent: { type: String, default: '' },
     referer: { type: String, default: '' },
   },

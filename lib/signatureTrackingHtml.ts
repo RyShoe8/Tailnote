@@ -64,6 +64,7 @@ function classifyAnchor(
     mobileTelNorm: string;
     websiteNorm: string;
     contentBlockUrlMap: Map<string, SignatureClickKind>;
+    contentBlockQuoteUrlMap: Map<string, string>;
   }
 ): SignatureClickKind | null {
   const h = normalizeHref(hrefRaw);
@@ -117,6 +118,7 @@ function buildClassificationContext(input: RenderSignatureInput) {
   const websiteNorm = stringCtx.website ? normalizeHref(dec(stringCtx.website)) : '';
 
   const contentBlockUrlMap = new Map<string, SignatureClickKind>();
+  const contentBlockQuoteUrlMap = new Map<string, string>();
   if (input.brand.contentBlocks) {
     input.brand.contentBlocks.forEach((block, index) => {
       if (!block.enabled) return;
@@ -143,11 +145,20 @@ function buildClassificationContext(input: RenderSignatureInput) {
       } else if (block.type === 'image' && block.imageLinkUrl) {
         const h = normalizeHref(block.imageLinkUrl);
         if (h) contentBlockUrlMap.set(h, kind);
+      } else if (block.type === 'quote') {
+        const sourceUrl = (block.quoteResolvedSourceUrl ?? '').trim();
+        if (sourceUrl) {
+          const h = normalizeHref(sourceUrl);
+          if (h) {
+            contentBlockUrlMap.set(h, kind);
+            if (block.quoteId) contentBlockQuoteUrlMap.set(h, block.quoteId);
+          }
+        }
       }
     });
   }
 
-  return { socialByHref, logoHrefNorm, mailtoNorm, officeTelNorm, mobileTelNorm, websiteNorm, contentBlockUrlMap };
+  return { socialByHref, logoHrefNorm, mailtoNorm, officeTelNorm, mobileTelNorm, websiteNorm, contentBlockUrlMap, contentBlockQuoteUrlMap };
 }
 
 /**
@@ -177,6 +188,10 @@ export function appendSignatureClickTracking(args: {
     if (!kind) return;
     const destination = decodeHtmlEntities(rawHref).trim();
     if (!destination) return;
+    const h = normalizeHref(destination);
+    const hNoMarketing = normalizeHrefWithoutMarketing(rawHref);
+    const quoteId =
+      ctx.contentBlockQuoteUrlMap.get(h) ?? ctx.contentBlockQuoteUrlMap.get(hNoMarketing);
     let token: string;
     try {
       token = createSignatureTrackingToken(
@@ -185,6 +200,7 @@ export function appendSignatureClickTracking(args: {
           employeeId: args.employeeId,
           kind,
           destination,
+          quoteId,
         },
         secret
       );

@@ -15,6 +15,7 @@ import {
   orgPermissionFlags,
 } from '@/lib/org/permissions';
 import { resolveEmployeeContentBlocks } from '@/lib/org/resolveEmployeeContentBlocks';
+import { ContentBlocksArraySchema, sanitizeContentBlocksForSave } from '@/lib/quotes/contentBlockSchema';
 
 const ProfileSchema = z.object({
   firstName: z.string().trim().max(120),
@@ -23,7 +24,7 @@ const ProfileSchema = z.object({
   email: z.string().trim().email().max(320),
   officePhone: z.string().trim().max(80).optional(),
   mobilePhone: z.string().trim().max(80).optional(),
-  contentBlocks: z.array(z.any()).optional(),
+  contentBlocks: ContentBlocksArraySchema.optional(),
   templateId: z.string().min(1).optional(),
 });
 
@@ -170,7 +171,7 @@ export async function PATCH(request: Request) {
   const existingProfile = await UserSignatureProfileModel.findOne({ userId: user.id }).lean();
   const contentBlocksForUpdate =
     sendsBlocks && canEditPromo
-      ? (p.contentBlocks ?? [])
+      ? sanitizeContentBlocksForSave((p.contentBlocks ?? []) as ContentBlockData[])
       : ((existingProfile as { contentBlocks?: unknown[] } | null)?.contentBlocks ?? []);
 
   const update: Record<string, unknown> = {
@@ -199,7 +200,7 @@ export async function PATCH(request: Request) {
 
   const isOwner = user.role === 'owner';
   const blocksPayload = sendsBlocks && canEditPromo
-    ? (p.contentBlocks as ContentBlockData[] | undefined)
+    ? sanitizeContentBlocksForSave((p.contentBlocks ?? []) as ContentBlockData[])
     : undefined;
 
   if (user.id && user.email) {

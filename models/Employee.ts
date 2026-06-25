@@ -28,7 +28,7 @@ const EmployeeSchema = new Schema(
       {
         type: {
           type: String,
-          enum: ['book_a_call', 'latest_blogs', 'custom', 'list', 'image'],
+          enum: ['book_a_call', 'latest_blogs', 'custom', 'list', 'image', 'quote'],
         },
         enabled: { type: Boolean, default: true },
         // Book a Call
@@ -60,6 +60,14 @@ const EmployeeSchema = new Schema(
         ],
         imageUrl: { type: String },
         imageLinkUrl: { type: String },
+        quoteSource: { type: String, enum: ['library', 'custom'] },
+        quoteId: { type: String },
+        quoteText: { type: String },
+        quoteAttribution: { type: String },
+        quoteShowAttribution: { type: Boolean },
+        quoteAlignment: { type: String, enum: ['left', 'center'] },
+        quoteFontSize: { type: String, enum: ['small', 'medium', 'large'] },
+        quoteStyle: { type: String, enum: ['standard', 'minimal', 'highlighted'] },
         // Custom (legacy)
         customTitle: { type: String },
         customText: { type: String },

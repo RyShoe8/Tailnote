@@ -27,6 +27,7 @@ import {
 } from '@/lib/org/validateOrgLogoUrl';
 import { vcardDownloadUrl } from '@/lib/vcard/vcardDownloadUrl';
 import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
+import { hydrateQuoteContentBlocks } from '@/lib/quotes/hydrateQuoteContentBlocks';
 
 export const dynamic = 'force-dynamic';
 
@@ -256,6 +257,10 @@ export async function POST(request: Request) {
   const vcardUrl = previewTokenForVcard
     ? vcardDownloadUrl(publicSiteOrigin, previewTokenForVcard)
     : undefined;
+
+  if (orgBrand.contentBlocks?.length) {
+    orgBrand.contentBlocks = await hydrateQuoteContentBlocks(orgBrand.contentBlocks);
+  }
 
   const renderInput: RenderSignatureInput = {
     ...buildRenderInput({

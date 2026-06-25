@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { ColorField } from '@/components/dashboard/ColorField';
 import { PrimaryColorField } from '@/components/dashboard/PrimaryColorField';
 import { ContentBlocksEditor } from '@/components/signature/ContentBlocksEditor';
+import { useHydratedContentBlocks } from '@/components/signature/useHydratedContentBlocks';
 import { SocialLinksEditor } from '@/components/signature/SocialLinksEditor';
 import type { ContentBlockData } from 'emailsignature-engine';
 import { SignatureForm } from '@/components/signature/SignatureForm';
@@ -314,11 +315,13 @@ export function SignatureWorkspace() {
     });
   }, [selectedTemplate, org?.plan, org?.subscriptionStatus]);
 
+  const hydratedContentBlocks = useHydratedContentBlocks(contentBlocks);
+
   const html = useMemo(() => {
     if (!engineTemplate) return '';
     const rendered = renderSignature({
       profile,
-      brand: { ...brand, contentBlocks },
+      brand: { ...brand, contentBlocks: hydratedContentBlocks },
       template: engineTemplate,
       publicSiteOrigin: getSignatureAssetOrigin(),
     });
@@ -332,7 +335,7 @@ export function SignatureWorkspace() {
         : null,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- assetOriginNonce forces post-mount recompute so preview URLs use window origin, not SSR fallback
-  }, [profile, brand, engineTemplate, assetOriginNonce]);
+  }, [profile, brand, engineTemplate, assetOriginNonce, hydratedContentBlocks]);
 
   const contentBlocksHash = useMemo(() => JSON.stringify(contentBlocks), [contentBlocks]);
 

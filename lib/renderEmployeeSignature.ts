@@ -12,6 +12,7 @@ import {
 } from '@/lib/signatureTrackingHtml';
 import { vcardDownloadUrl } from '@/lib/vcard/vcardDownloadUrl';
 import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
+import { hydrateQuoteContentBlocks } from '@/lib/quotes/hydrateQuoteContentBlocks';
 
 /** Default UTM parameters for Tailnote signatures. */
 const DEFAULT_UTM = { source: 'Tailnote', medium: 'Email', campaign: 'Footer' };
@@ -149,9 +150,11 @@ export async function renderSignatureForEmployeeResolved(
   org: OrganizationDoc,
   emp: EmployeeDoc,
   tmpl: SignatureTemplateDoc,
-  options?: { publicSiteOrigin?: string }
+  options?: { publicSiteOrigin?: string; contentBlocks?: ContentBlockData[] }
 ): Promise<string> {
   const { resolveEmployeeContentBlocks } = await import('@/lib/org/resolveEmployeeContentBlocks');
-  const contentBlocks = await resolveEmployeeContentBlocks(org, emp);
+  const resolved =
+    options?.contentBlocks ?? (await resolveEmployeeContentBlocks(org, emp));
+  const contentBlocks = await hydrateQuoteContentBlocks(resolved);
   return renderSignatureForEmployee(org, emp, tmpl, { ...options, contentBlocks });
 }

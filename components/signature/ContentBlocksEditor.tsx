@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { QuoteLibraryPicker } from '@/components/signature/QuoteLibraryPicker';
 
 type Props = {
   value: ContentBlockData[];
@@ -158,6 +159,7 @@ export function ContentBlocksEditor({ value, onChange }: Props) {
                 <option value="latest_blogs">Latest Blogs (RSS)</option>
                 <option value="list">List</option>
                 <option value="image">Image</option>
+                <option value="quote">Quote</option>
               </select>
             </div>
 
@@ -172,6 +174,9 @@ export function ContentBlocksEditor({ value, onChange }: Props) {
             )}
             {block.type === 'image' && (
               <ImageEditor block={block} onChange={(p) => updateBlock(activeSlot, p)} />
+            )}
+            {block.type === 'quote' && (
+              <QuoteEditor block={block} onChange={(p) => updateBlock(activeSlot, p)} />
             )}
           </CardContent>
         )}
@@ -476,6 +481,169 @@ function ImageEditor({
           onChange={(e) => onChange({ imageLinkUrl: e.target.value })}
           placeholder="https://..."
         />
+      </div>
+    </>
+  );
+}
+
+function QuoteEditor({
+  block,
+  onChange,
+}: {
+  block: ContentBlockData;
+  onChange: (next: Partial<ContentBlockData>) => void;
+}) {
+  const source = block.quoteSource ?? (block.quoteId ? 'library' : 'custom');
+
+  function setSource(next: 'library' | 'custom') {
+    if (next === 'library') {
+      onChange({
+        quoteSource: 'library',
+        quoteText: undefined,
+        quoteAttribution: undefined,
+      });
+    } else {
+      onChange({
+        quoteSource: 'custom',
+        quoteId: undefined,
+      });
+    }
+  }
+
+  return (
+    <>
+      <div className="space-y-2">
+        <Label>Quote source</Label>
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="quote-source"
+              checked={source === 'library'}
+              onChange={() => setSource('library')}
+            />
+            Choose from Tailnote Library
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="quote-source"
+              checked={source === 'custom'}
+              onChange={() => setSource('custom')}
+            />
+            Custom Quote
+          </label>
+        </div>
+      </div>
+
+      {source === 'library' ? (
+        <QuoteLibraryPicker
+          selectedQuoteId={block.quoteId}
+          onSelect={(quote) =>
+            onChange({
+              quoteSource: 'library',
+              quoteId: quote.id,
+              quoteText: undefined,
+              quoteAttribution: undefined,
+              quoteResolvedText: quote.quoteText,
+              quoteResolvedAttribution: quote.attribution || quote.source,
+              quoteResolvedSourceUrl: quote.sourceUrl || undefined,
+            })
+          }
+        />
+      ) : (
+        <>
+          <div className="space-y-2">
+            <Label>Quote text</Label>
+            <Textarea
+              value={block.quoteText || ''}
+              onChange={(e) =>
+                onChange({
+                  quoteText: e.target.value,
+                  quoteResolvedText: e.target.value,
+                })
+              }
+              rows={3}
+              placeholder="The best marketing is helpful."
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Attribution (optional)</Label>
+            <Input
+              value={block.quoteAttribution || ''}
+              onChange={(e) =>
+                onChange({
+                  quoteAttribution: e.target.value,
+                  quoteResolvedAttribution: e.target.value,
+                })
+              }
+              placeholder="Tailnote"
+            />
+          </div>
+        </>
+      )}
+
+      <div className="space-y-3 border-t pt-4">
+        <p className="text-sm font-medium text-foreground">Display options</p>
+        <div className="flex items-center gap-2">
+          <input
+            id="quote-show-attribution"
+            type="checkbox"
+            checked={block.quoteShowAttribution !== false}
+            onChange={(e) => onChange({ quoteShowAttribution: e.target.checked })}
+            className="h-4 w-4 rounded border-input"
+          />
+          <Label htmlFor="quote-show-attribution" className="font-normal text-sm">
+            Show attribution
+          </Label>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="space-y-2">
+            <Label>Alignment</Label>
+            <select
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+              value={block.quoteAlignment ?? 'left'}
+              onChange={(e) =>
+                onChange({ quoteAlignment: e.target.value as 'left' | 'center' })
+              }
+            >
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label>Font size</Label>
+            <select
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+              value={block.quoteFontSize ?? 'medium'}
+              onChange={(e) =>
+                onChange({
+                  quoteFontSize: e.target.value as 'small' | 'medium' | 'large',
+                })
+              }
+            >
+              <option value="small">Small</option>
+              <option value="medium">Medium</option>
+              <option value="large">Large</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label>Style</Label>
+            <select
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+              value={block.quoteStyle ?? 'standard'}
+              onChange={(e) =>
+                onChange({
+                  quoteStyle: e.target.value as 'standard' | 'minimal' | 'highlighted',
+                })
+              }
+            >
+              <option value="standard">Standard</option>
+              <option value="minimal">Minimal</option>
+              <option value="highlighted">Highlighted</option>
+            </select>
+          </div>
+        </div>
       </div>
     </>
   );
