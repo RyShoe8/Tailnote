@@ -128,7 +128,7 @@ export default function PromotionalBlocksPage() {
             Built-in Quote Library
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Not sure what to say? Tailnote includes a curated library of business, marketing, and leadership quotes that you can rotate automatically in your team's signatures. Keep your emails fresh and inspiring without writing new copy every week.
+            Not sure what to say? Tailnote includes a curated library of business, marketing, and leadership quotes that you can rotate automatically in your team&apos;s signatures. Keep your emails fresh and inspiring without writing new copy every week.
           </p>
         </div>
       </section>
