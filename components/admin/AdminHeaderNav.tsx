@@ -12,13 +12,11 @@ const NAV_ITEMS = [
   { href: '/admin/analytics', label: 'Analytics' },
   { href: '/admin/feedback', label: 'Feedback' },
   { href: '/admin/email-health', label: 'Email health' },
-  { href: '/admin/content', label: 'Content' },
   { href: '/admin/blog', label: 'Blog' },
   { href: '/admin/quote-categories', label: 'Quote categories' },
   { href: '/admin/quotes', label: 'Quotes' },
   { href: '/admin/plans', label: 'Plans' },
   { href: '/admin/plans/archived', label: 'Archived plans' },
-  { href: '/admin/addons', label: 'Add-ons' },
   { href: '/admin/signatures', label: 'Signatures' },
 ] as const;
 

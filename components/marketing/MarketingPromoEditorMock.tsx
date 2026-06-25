@@ -1,10 +1,11 @@
-import { CalendarClock, ImageIcon, ListChecks, Rss } from 'lucide-react';
+import { CalendarClock, ImageIcon, ListChecks, Quote, Rss } from 'lucide-react';
 import { MarketingBrowserFrame } from '@/components/marketing/MarketingBrowserFrame';
 import { Badge } from '@/components/ui/badge';
 
 const BLOCK_ROWS = [
   { icon: CalendarClock, label: 'Book a call', enabled: true },
   { icon: ListChecks, label: 'Featured offers', enabled: true },
+  { icon: Quote, label: 'Quote — Tailnote library', enabled: true },
   { icon: Rss, label: 'Latest blog posts', enabled: true },
   { icon: ImageIcon, label: 'Spring promo banner', enabled: false },
 ] as const;

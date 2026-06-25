@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { AdminQuotesTable } from '@/components/admin/AdminQuotesTable';
 import { NOINDEX_METADATA } from '@/lib/seo/metadata';
 import { listQuoteCategoriesAdmin } from '@/lib/admin/quoteCategories';
@@ -16,14 +15,7 @@ export default async function AdminQuotesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm text-muted-foreground">
-          <Link href="/admin/content" className="hover:underline">
-            Content
-          </Link>
-          {' / '}
-          Quotes
-        </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Quotes</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Quotes</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Curated quotes for signature promotional blocks.
         </p>

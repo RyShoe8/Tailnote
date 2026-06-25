@@ -57,8 +57,8 @@ export default async function SignaturesMarketingPage() {
           </h1>
           <p className="mt-4 text-pretty text-base text-muted-foreground sm:text-lg">
             Curated signature layouts with promotional content blocks built in; book-a-call buttons,
-            offer lists, blog feeds, and image banners beside every signature. No drag-and-drop chaos;
-            HTML that works in real inboxes.
+            offer lists, blog feeds, image banners, and quotes from the Tailnote library beside every
+            signature. No drag-and-drop chaos; HTML that works in real inboxes.
           </p>
         </div>
         {presets.length === 0 ? (

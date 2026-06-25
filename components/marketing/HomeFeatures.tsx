@@ -6,7 +6,7 @@ const FEATURES = [
     icon: Megaphone,
     title: 'Promotional content blocks',
     description:
-      'Book-a-call buttons, offer lists, blog feeds, and image banners live next to every signature. Tailnote turns routine emails into mini campaigns.',
+      'Book-a-call buttons, offer lists, blog feeds, image banners, and a curated quote library with custom quotes live next to every signature. Tailnote turns routine emails into mini campaigns.',
   },
   {
     icon: Link2,

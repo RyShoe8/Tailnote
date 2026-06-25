@@ -30,6 +30,21 @@ function promoImageUrl(origin: string): string {
   return `${origin.replace(/\/+$/, '')}/images/tailnote-logo-mark.png`;
 }
 
+/** Marketing previews render without DB hydration — include resolved quote fields. */
+function marketingQuoteBlock(quoteText: string, attribution: string): ContentBlockData {
+  return {
+    type: 'quote',
+    enabled: true,
+    quoteSource: 'library',
+    quoteShowAttribution: true,
+    quoteAlignment: 'left',
+    quoteFontSize: 'medium',
+    quoteStyle: 'standard',
+    quoteResolvedText: quoteText,
+    quoteResolvedAttribution: attribution,
+  };
+}
+
 /** Diversified promotional blocks per template so marketing previews showcase the product. */
 function marketingContentBlocks(
   presetId: TemplatePresetId,
@@ -62,6 +77,10 @@ function marketingContentBlocks(
       ];
     case 'creator':
       return [
+        marketingQuoteBlock(
+          'People do not buy what you do. They buy why you do it.',
+          'Simon Sinek'
+        ),
         {
           type: 'list',
           enabled: true,
@@ -69,7 +88,6 @@ function marketingContentBlocks(
             { title: 'Nucleas', url: 'https://www.acmecorp.com/nucleas' },
             { title: 'The Ad Shop', url: 'https://www.acmecorp.com/ad-shop' },
             { title: 'Tailnote', url: 'https://www.acmecorp.com/tailnote' },
-            { title: 'The Frugal Gambler', url: 'https://www.acmecorp.com/frugal' },
           ],
         },
       ];
@@ -85,15 +103,10 @@ function marketingContentBlocks(
             { title: 'Tailnote', url: 'https://www.acmecorp.com/tailnote' },
           ],
         },
-        {
-          type: 'list',
-          enabled: true,
-          listTitle: 'Resources',
-          listItems: [
-            { title: 'Case studies', url: 'https://www.acmecorp.com/customers' },
-            { title: 'Product tour', url: 'https://www.acmecorp.com/tour' },
-          ],
-        },
+        marketingQuoteBlock(
+          "The best marketing doesn't feel like marketing.",
+          'Tom Fishburne'
+        ),
       ];
     case 'minimal':
       return [
@@ -123,6 +136,7 @@ function marketingContentBlocks(
       ];
     case 'stacked':
       return [
+        marketingQuoteBlock('The best marketing is helpful.', 'Tailnote'),
         {
           type: 'book_a_call',
           enabled: true,
@@ -130,35 +144,13 @@ function marketingContentBlocks(
           callUrl: 'https://www.acmecorp.com/workshop',
           callButtonText: 'Save your seat',
         },
-        {
-          type: 'list',
-          enabled: true,
-          listTitle: 'Quick links',
-          listItems: [
-            { title: 'Product tour', url: 'https://www.acmecorp.com/tour' },
-            { title: 'Case studies', url: 'https://www.acmecorp.com/customers' },
-            { title: 'Pricing', url: 'https://www.acmecorp.com/pricing' },
-          ],
-        },
       ];
     case 'corporate':
       return [
-        {
-          type: 'list',
-          enabled: true,
-          listTitle: 'Featured offers',
-          listItems: [
-            {
-              title: 'Free strategy session',
-              description: 'Limited slots',
-              url: 'https://www.acmecorp.com/strategy',
-            },
-            {
-              title: 'Product tour',
-              url: 'https://www.acmecorp.com/tour',
-            },
-          ],
-        },
+        marketingQuoteBlock(
+          'People do not buy what you do. They buy why you do it.',
+          'Simon Sinek'
+        ),
         {
           type: 'latest_blogs',
           enabled: true,

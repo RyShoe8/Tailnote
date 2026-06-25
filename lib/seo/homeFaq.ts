@@ -5,7 +5,7 @@ export const HOME_FAQS = [
   },
   {
     q: 'Do I need a designer to set this up?',
-    a: 'No. Pick a template, add your logo and brand color, and Tailnote handles the layout, fonts, and spacing. Promotional blocks are filled in with simple forms; buttons, offer lists, blog feeds, or image banners.',
+    a: 'No. Pick a template, add your logo and brand color, and Tailnote handles the layout, fonts, and spacing. Promotional blocks are filled in with simple forms; buttons, offer lists, blog feeds, image banners, or quotes from our library.',
   },
   {
     q: 'Can I track clicks and opens from email signatures?',

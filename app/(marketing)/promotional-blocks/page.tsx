@@ -44,7 +44,7 @@ const BENEFITS = [
 const STEPS = [
   {
     title: 'Add your blocks',
-    description: 'Pick book-a-call, lists, RSS, or banners and fill in simple forms — no HTML required.',
+    description: 'Pick book-a-call, lists, RSS, banners, or quotes from our library (or your own) — no HTML required.',
   },
   {
     title: 'Set org defaults',
@@ -83,8 +83,8 @@ export default function PromotionalBlocksPage() {
           </h1>
           <p className="mt-4 text-pretty text-base text-muted-foreground sm:text-lg">
             Go beyond a static signature. Tailnote promotional blocks turn routine outbound mail into
-            mini campaigns — book-a-call buttons, offer lists, blog feeds, and banners that work in real
-            inboxes.
+            mini campaigns — book-a-call buttons, offer lists, blog feeds, banners, and quotes from our
+            library (or your own) that work in real inboxes.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg" className="gap-2 shadow-card">
@@ -110,7 +110,7 @@ export default function PromotionalBlocksPage() {
       <section className="container py-16 sm:py-20 lg:py-24">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-            Four block types, <span className="tn-grad-text">mix and match</span>
+            Five block types, <span className="tn-grad-text">mix and match</span>
           </h2>
           <p className="mt-4 text-muted-foreground">
             Each block is designed for real email clients — not a drag-and-drop canvas that breaks in

@@ -1,4 +1,4 @@
-import { CalendarClock, ImageIcon, ListChecks, Rss } from 'lucide-react';
+import { CalendarClock, ImageIcon, ListChecks, Quote, Rss } from 'lucide-react';
 import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
 
 function BookACallDemo() {
@@ -55,6 +55,20 @@ function LatestBlogsDemo() {
   );
 }
 
+function QuoteDemo() {
+  return (
+    <div className="space-y-2 border-l-[3px] border-primary/80 pl-3">
+      <p className="text-sm italic leading-snug text-slate-900">
+        &ldquo;The best marketing is helpful.&rdquo;
+      </p>
+      <p className="text-[11px] text-slate-600">&mdash; Tailnote</p>
+      <span className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+        Tailnote library &middot; Marketing
+      </span>
+    </div>
+  );
+}
+
 function ImageDemo() {
   return (
     <div className="space-y-2">
@@ -101,6 +115,13 @@ const BLOCKS = [
       'Drop in a campaign image or seasonal banner. Replace it organization wide in a single edit so every employee email updates.',
     Demo: ImageDemo,
   },
+  {
+    icon: Quote,
+    title: 'Quote',
+    description:
+      'Pick from the Tailnote quote library by category or write your own. Library quotes update org-wide when admins edit them; custom quotes stay yours.',
+    Demo: QuoteDemo,
+  },
 ] as const;
 
 type Props = {
@@ -121,11 +142,17 @@ export function PromoBlocksShowcase({ showHeader = true, className = '' }: Props
           </h2>
           <p className="mt-4 text-pretty text-muted-foreground">
             Each Tailnote signature layout can carry one or more promotional blocks beside the signature. Mix
-            and match four ready-made types to turn routine email into a marketing channel.
+            and match five ready-made types to turn routine email into a marketing channel.
           </p>
         </div>
       ) : null}
-      <div className={showHeader ? 'mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4' : 'grid gap-6 sm:grid-cols-2 lg:grid-cols-4'}>
+      <div
+        className={
+          showHeader
+            ? 'mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5'
+            : 'grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5'
+        }
+      >
         {BLOCKS.map(({ icon: Icon, title, description, Demo }, index) => (
           <RevealOnScroll key={title} delayMs={index * 60} as="article">
             <div className="group relative h-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-ring">

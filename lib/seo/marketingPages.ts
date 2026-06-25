@@ -47,7 +47,7 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     path: '/signatures',
     title: 'Email signatures for teams',
     description:
-      'Curated professional email signatures with built-in promotional blocks — book-a-call buttons, offer lists, blog feeds, and image banners that work in Gmail and Outlook.',
+      'Curated professional email signatures with built-in promotional blocks — book-a-call buttons, offer lists, blog feeds, image banners, and a quote library that work in Gmail and Outlook.',
   },
   {
     key: 'fromSignature',
@@ -61,7 +61,7 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     path: '/promotional-blocks',
     title: 'Promotional blocks for email signatures',
     description:
-      'Add book-a-call buttons, offer lists, blog feeds, and promo banners to every employee email. Organization-wide updates with built-in UTM tracking.',
+      'Add book-a-call buttons, offer lists, blog feeds, promo banners, and quotes from the Tailnote library to every employee email. Organization-wide updates with built-in UTM tracking.',
   },
   {
     key: 'analytics',
