@@ -39,6 +39,8 @@ const PATCHABLE_FIELDS = [
   'signatureClickTrackingEnabled',
   'signatureOpenTrackingEnabled',
   'utmEnabled',
+  'brandOrder',
+  'hiddenFields',
 ] as const;
 
 const OWNER_ONLY_FIELDS = ['employeesCanEditBrand', 'employeesCanEditPromoBlocks'] as const;
@@ -59,6 +61,8 @@ const MEMBER_BRAND_FIELDS = [
   'state',
   'zip',
   'animation',
+  'brandOrder',
+  'hiddenFields',
 ] as const;
 
 type PatchableField = (typeof PATCHABLE_FIELDS)[number];

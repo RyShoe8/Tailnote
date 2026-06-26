@@ -123,11 +123,7 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
             {{/if}}
             
             <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:14px;color:#111827;line-height:1.5;">
-              {{#if companyName}}<tr><td style="padding-bottom:4px;font-weight:600;">{{companyName}}</td></tr>{{/if}}
-              {{#if email}}<tr><td style="padding-bottom:4px;"><a href="mailto:{{email}}" style="color:{{primaryColor}};text-decoration:none;">{{email}}</a></td></tr>{{/if}}
-              {{#if hasWebsite}}<tr><td style="padding-bottom:4px;"><a href="{{website}}" style="color:{{primaryColor}};text-decoration:none;">{{websiteDisplay}}</a></td></tr>{{/if}}
-              {{#if officePhone}}<tr><td style="padding-bottom:4px;"><a href="{{officePhoneTelHref}}" style="color:#111827;text-decoration:none;">{{officePhone}}</a></td></tr>{{/if}}
-              {{#if mobilePhone}}<tr><td style="padding-bottom:4px;"><a href="{{mobilePhoneTelHref}}" style="color:#111827;text-decoration:none;">M: {{mobilePhone}}</a></td></tr>{{/if}}
+              {{{mpContactRowsHtml}}}
             </table>
 
             {{#if showAddressBlock}}

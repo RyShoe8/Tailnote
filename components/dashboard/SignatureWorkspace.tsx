@@ -63,6 +63,8 @@ type OrgResponse = {
   signatureClickTrackingEnabled?: boolean;
   employeesCanEditBrand?: boolean;
   employeesCanEditPromoBlocks?: boolean;
+  brandOrder?: string[];
+  hiddenFields?: string[];
 };
 
 type OrgPermissions = {
@@ -108,6 +110,8 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
       enabled: Boolean(org.animation?.enabled),
       gifUrl: org.animation?.gifUrl?.trim() ?? '',
     },
+    brandOrder: org.brandOrder ?? [],
+    hiddenFields: org.hiddenFields ?? [],
   };
 }
 
@@ -128,6 +132,18 @@ export function SignatureWorkspace() {
   const [mobilePane, setMobilePane] = useState<MobileSignaturePane>('edit');
   const isLgUp = useIsLgUp();
   const isMobileInstall = useIsMobileInstallContext();
+
+  const toggleBrandHidden = (field: string) => {
+    setOrg((o) => {
+      if (!o) return o;
+      const hidden = new Set(o.hiddenFields || []);
+      if (hidden.has(field)) hidden.delete(field);
+      else hidden.add(field);
+      return { ...o, hiddenFields: Array.from(hidden) };
+    });
+  };
+  const isBrandHidden = (field: string) => org?.hiddenFields?.includes(field) ?? false;
+
   const [viewerRole, setViewerRole] = useState<string>('owner');
   const [permissions, setPermissions] = useState<OrgPermissions>({
     employeesCanEditBrand: false,
@@ -325,9 +341,15 @@ export function SignatureWorkspace() {
         (filteredProfile as any)[field] = '';
       }
     }
+    const filteredBrand = { ...brand, contentBlocks: hydratedContentBlocks };
+    if (brand.hiddenFields?.length) {
+      for (const field of brand.hiddenFields) {
+        (filteredBrand as any)[field] = '';
+      }
+    }
     const rendered = renderSignature({
       profile: filteredProfile,
-      brand: { ...brand, contentBlocks: hydratedContentBlocks },
+      brand: filteredBrand,
       template: engineTemplate,
       publicSiteOrigin: getSignatureAssetOrigin(),
     });
@@ -390,20 +412,20 @@ export function SignatureWorkspace() {
                 contentBlocks,
               },
               brandOverride: {
-                fontFamily: brand.fontFamily,
-                primaryColor: brand.primaryColor,
-                secondaryColor: brand.secondaryColor,
-                logoUrl: brand.logoUrl,
-                logoShape: brand.logoShape,
-                logoLink: brand.logoLink,
-                website: brand.website,
-                companyName: brand.companyName,
-                socialLinks: brand.socialLinks,
-                address: brand.address,
-                city: brand.city,
-                state: brand.state,
-                zip: brand.zip,
-                animation: brand.animation,
+                fontFamily: brand.hiddenFields?.includes('fontFamily') ? '' : brand.fontFamily,
+                primaryColor: brand.hiddenFields?.includes('primaryColor') ? '' : brand.primaryColor,
+                secondaryColor: brand.hiddenFields?.includes('secondaryColor') ? '' : brand.secondaryColor,
+                logoUrl: brand.hiddenFields?.includes('logoUrl') ? '' : brand.logoUrl,
+                logoShape: brand.hiddenFields?.includes('logoShape') ? '' : brand.logoShape,
+                logoLink: brand.hiddenFields?.includes('logoLink') ? '' : brand.logoLink,
+                website: brand.hiddenFields?.includes('website') ? '' : brand.website,
+                companyName: brand.hiddenFields?.includes('companyName') ? '' : brand.companyName,
+                socialLinks: brand.hiddenFields?.includes('socialLinks') ? {} : brand.socialLinks,
+                address: brand.hiddenFields?.includes('address') ? '' : brand.address,
+                city: brand.hiddenFields?.includes('city') ? '' : brand.city,
+                state: brand.hiddenFields?.includes('state') ? '' : brand.state,
+                zip: brand.hiddenFields?.includes('zip') ? '' : brand.zip,
+                animation: brand.hiddenFields?.includes('animation') ? undefined : brand.animation,
               },
             }),
           });
@@ -763,132 +785,211 @@ export function SignatureWorkspace() {
             <CardDescription>These values feed the signature engine for every employee.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Organization name</Label>
-              <Input value={orgName} onChange={(e) => setOrgName(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Website</Label>
-              <Input
-                value={org.website ?? ''}
-                onChange={(e) => setOrg((o) => ({ ...(o || {}), website: e.target.value }))}
-              />
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="cursor-pointer" onClick={() => toggleBrandHidden('companyName')}>Organization name</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className={`h-8 px-2 text-xs font-medium ${isBrandHidden('companyName') ? 'text-muted-foreground' : 'text-primary'}`}
+                  onClick={() => toggleBrandHidden('companyName')}
+                >
+                  {isBrandHidden('companyName') ? 'Show' : 'Hide'}
+                </Button>
+              </div>
+              {!isBrandHidden('companyName') && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                  <Input value={orgName} onChange={(e) => setOrgName(e.target.value)} />
+                </div>
+              )}
             </div>
             <div className="space-y-3">
-              <p className="text-sm font-medium">Address</p>
-              <p className="text-xs text-muted-foreground">
-                Optional. Shown on the Corporate and Professional layouts when filled in.
-              </p>
-              <div className="space-y-2">
-                <Label htmlFor="org-address">Street address</Label>
-                <Input
-                  id="org-address"
-                  value={org.address ?? ''}
-                  onChange={(e) => setOrg((o) => ({ ...(o || {}), address: e.target.value }))}
-                  placeholder="123 Main St"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="org-city">City</Label>
-                <Input
-                  id="org-city"
-                  value={org.city ?? ''}
-                  onChange={(e) => setOrg((o) => ({ ...(o || {}), city: e.target.value }))}
-                  placeholder="Dallas"
-                />
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="org-state">State</Label>
-                  <Input
-                    id="org-state"
-                    value={org.state ?? ''}
-                    onChange={(e) => setOrg((o) => ({ ...(o || {}), state: e.target.value }))}
-                    placeholder="TX"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="org-zip">ZIP</Label>
-                  <Input
-                    id="org-zip"
-                    value={org.zip ?? ''}
-                    onChange={(e) => setOrg((o) => ({ ...(o || {}), zip: e.target.value }))}
-                    placeholder="75201"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Social links</p>
-              <p className="text-xs text-muted-foreground">
-                Paste any profile URL and we&apos;ll detect the network and use the matching icon. LinkedIn, Facebook, Instagram, Reddit, and Discord are supported.
-              </p>
-              <SocialLinksEditor
-                value={org.socialLinks}
-                onChange={(next) => setOrg((o) => ({ ...(o || {}), socialLinks: next }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Logo</Label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex items-center justify-between">
+                <Label className="cursor-pointer" onClick={() => toggleBrandHidden('website')}>Website</Label>
                 <Button
                   type="button"
-                  variant={org.logoShape !== 'circle' ? 'default' : 'outline'}
+                  variant="ghost"
                   size="sm"
-                  onClick={() => setOrg((o) => ({ ...(o || {}), logoShape: 'rectangle' }))}
+                  className={`h-8 px-2 text-xs font-medium ${isBrandHidden('website') ? 'text-muted-foreground' : 'text-primary'}`}
+                  onClick={() => toggleBrandHidden('website')}
                 >
-                  Rectangle
-                </Button>
-                <Button
-                  type="button"
-                  variant={org.logoShape === 'circle' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setOrg((o) => ({ ...(o || {}), logoShape: 'circle' }))}
-                >
-                  Circle
+                  {isBrandHidden('website') ? 'Show' : 'Hide'}
                 </Button>
               </div>
-              <div className="flex min-w-0 flex-wrap items-center gap-3">
-                {canUploadOrgLogo ? (
+              {!isBrandHidden('website') && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-200">
                   <Input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/gif"
-                    className="w-full min-w-0 max-w-full sm:max-w-xs"
-                    onChange={handleLogoFile}
-                    disabled={uploadingLogo}
+                    value={org.website ?? ''}
+                    onChange={(e) => setOrg((o) => ({ ...(o || {}), website: e.target.value }))}
                   />
-                ) : (
+                </div>
+              )}
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium cursor-pointer" onClick={() => toggleBrandHidden('address')}>Address</p>
                   <p className="text-xs text-muted-foreground">
-                    Signature logo upload is managed by your organization owner or admin.
+                    Optional. Shown on the Corporate and Professional layouts when filled in.
                   </p>
-                )}
-                {uploadingLogo ? <span className="text-xs text-muted-foreground">Uploading…</span> : null}
-                {org.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={org.logoUrl}
-                    alt=""
-                    className={
-                      org.logoShape === 'circle'
-                        ? 'h-12 w-12 shrink-0 object-cover border bg-white p-0.5 rounded-full'
-                        : 'h-12 w-auto max-w-[120px] object-contain border rounded bg-white p-1'
-                    }
-                  />
-                ) : null}
+                </div>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  disabled={!org.logoUrl}
-                  onClick={() => setOrg((o) => ({ ...(o || {}), logoUrl: '' }))}
+                  className={`h-8 px-2 text-xs font-medium ${isBrandHidden('address') ? 'text-muted-foreground' : 'text-primary'}`}
+                  onClick={() => toggleBrandHidden('address')}
                 >
-                  Clear logo
+                  {isBrandHidden('address') ? 'Show' : 'Hide'}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Upload PNG, JPEG, WebP, or GIF up to 4 MB. Circular logos work best with a square
-                headshot; some Outlook versions may show a square crop.
-              </p>
+              {!isBrandHidden('address') && (
+                <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="space-y-2">
+                    <Label htmlFor="org-address">Street address</Label>
+                    <Input
+                      id="org-address"
+                      value={org.address ?? ''}
+                      onChange={(e) => setOrg((o) => ({ ...(o || {}), address: e.target.value }))}
+                      placeholder="123 Main St"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="org-city">City</Label>
+                    <Input
+                      id="org-city"
+                      value={org.city ?? ''}
+                      onChange={(e) => setOrg((o) => ({ ...(o || {}), city: e.target.value }))}
+                      placeholder="Dallas"
+                    />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="org-state">State</Label>
+                      <Input
+                        id="org-state"
+                        value={org.state ?? ''}
+                        onChange={(e) => setOrg((o) => ({ ...(o || {}), state: e.target.value }))}
+                        placeholder="TX"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="org-zip">ZIP</Label>
+                      <Input
+                        id="org-zip"
+                        value={org.zip ?? ''}
+                        onChange={(e) => setOrg((o) => ({ ...(o || {}), zip: e.target.value }))}
+                        placeholder="75201"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium cursor-pointer" onClick={() => toggleBrandHidden('socialLinks')}>Social links</p>
+                  <p className="text-xs text-muted-foreground">
+                    Paste any profile URL and we&apos;ll detect the network.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className={`h-8 px-2 text-xs font-medium ${isBrandHidden('socialLinks') ? 'text-muted-foreground' : 'text-primary'}`}
+                  onClick={() => toggleBrandHidden('socialLinks')}
+                >
+                  {isBrandHidden('socialLinks') ? 'Show' : 'Hide'}
+                </Button>
+              </div>
+              {!isBrandHidden('socialLinks') && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                  <SocialLinksEditor
+                    value={org.socialLinks}
+                    onChange={(next) => setOrg((o) => ({ ...(o || {}), socialLinks: next }))}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="cursor-pointer" onClick={() => toggleBrandHidden('logoUrl')}>Logo</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className={`h-8 px-2 text-xs font-medium ${isBrandHidden('logoUrl') ? 'text-muted-foreground' : 'text-primary'}`}
+                  onClick={() => toggleBrandHidden('logoUrl')}
+                >
+                  {isBrandHidden('logoUrl') ? 'Show' : 'Hide'}
+                </Button>
+              </div>
+              {!isBrandHidden('logoUrl') && (
+                <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant={org.logoShape !== 'circle' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setOrg((o) => ({ ...(o || {}), logoShape: 'rectangle' }))}
+                    >
+                      Rectangle
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={org.logoShape === 'circle' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setOrg((o) => ({ ...(o || {}), logoShape: 'circle' }))}
+                    >
+                      Circle
+                    </Button>
+                  </div>
+                  <div className="flex min-w-0 flex-wrap items-center gap-3">
+                    {canUploadOrgLogo ? (
+                      <Input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/gif"
+                        className="w-full min-w-0 max-w-full sm:max-w-xs"
+                        onChange={handleLogoFile}
+                        disabled={uploadingLogo}
+                      />
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Signature logo upload is managed by your organization owner or admin.
+                      </p>
+                    )}
+                    {uploadingLogo ? <span className="text-xs text-muted-foreground">Uploading…</span> : null}
+                    {org.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={org.logoUrl}
+                        alt=""
+                        className={
+                          org.logoShape === 'circle'
+                            ? 'h-12 w-12 shrink-0 object-cover border bg-white p-0.5 rounded-full'
+                            : 'h-12 w-auto max-w-[120px] object-contain border rounded bg-white p-1'
+                        }
+                      />
+                    ) : null}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={!org.logoUrl}
+                      onClick={() => setOrg((o) => ({ ...(o || {}), logoUrl: '' }))}
+                    >
+                      Clear logo
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Upload PNG, JPEG, WebP, or GIF up to 4 MB. Circular logos work best with a square
+                    headshot; some Outlook versions may show a square crop.
+                  </p>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Logo link (optional)</Label>
@@ -1076,18 +1177,6 @@ export function SignatureWorkspace() {
               animationKey={org?.fontFamily}
               mobileFrameWidth={mobileFrameWidthForLayout(engineTemplate?.layout)}
             />
-          </div>
-          {isMobileInstall ? (
-            <p className="text-xs text-muted-foreground lg:hidden">
-              Install on a desktop or laptop—phones cannot paste rich signatures. Open the{' '}
-              <strong className="text-foreground">Install</strong> tab to download or email your signature to yourself.
-            </p>
-          ) : null}
-          <div className="flex flex-wrap gap-2">
-            {!isMobileInstall ? <CopySignatureButton html={previewHtml} disabled={!canCopy} /> : null}
-            <Button type="button" variant="outline" size="sm" asChild>
-              <a href="/dashboard/signature?tab=install">Install steps</a>
-            </Button>
           </div>
         </CardContent>
       </Card>

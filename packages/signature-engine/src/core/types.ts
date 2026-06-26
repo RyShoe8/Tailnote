@@ -7,6 +7,7 @@ export type SignatureProfile = {
   mobilePhone?: string;
   avatarUrl?: string;
   hiddenFields?: string[];
+  detailOrder?: string[];
 };
 
 export type PromoUrlPrefix = 'https' | 'www';
@@ -90,6 +91,8 @@ export type SignatureBrand = {
     gifUrl?: string;
   };
   contentBlocks?: ContentBlockData[];
+  brandOrder?: string[];
+  hiddenFields?: string[];
 };
 
 export type SignatureElement =

@@ -44,6 +44,8 @@ const OrganizationSchema = new Schema(
       enabled: { type: Boolean, default: false },
       gifUrl: { type: String },
     },
+    hiddenFields: { type: [String], default: [] },
+    brandOrder: { type: [String], default: [] },
     /** When true, signature links are rewritten through /api/track/signature for click analytics. */
     signatureClickTrackingEnabled: { type: Boolean, default: true },
     /** When true, a 1×1 tracking pixel is appended to rendered signatures for open analytics. */

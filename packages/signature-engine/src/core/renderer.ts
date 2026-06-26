@@ -643,6 +643,60 @@ function buildCreatorContactTableHtml(
   return rows.join('');
 }
 
+function buildDynamicContactHtml(
+  profile: SignatureProfile,
+  brand: SignatureBrand,
+  officePhoneTelHref: string,
+  mobilePhoneTelHref: string,
+  websiteDisplay: string,
+  layout: SignatureTemplate['layout']
+): string {
+  const defaultBrandOrder = ['companyName', 'website', 'address', 'socialLinks'];
+  const defaultDetailOrder = ['avatarUrl', 'firstName', 'lastName', 'title', 'email', 'officePhone', 'mobilePhone'];
+  
+  const bOrder = brand.brandOrder?.length ? brand.brandOrder : defaultBrandOrder;
+  const dOrder = profile.detailOrder?.length ? profile.detailOrder : defaultDetailOrder;
+  
+  const bHidden = brand.hiddenFields || [];
+  const dHidden = profile.hiddenFields || [];
+
+  const rows: string[] = [];
+  
+  if (layout === 'modern_professional') {
+    // modern professional uses a vertical list for company, email, website, office, mobile
+    // It interleaves brand and detail fields. To respect both orders, we'll output brand fields first, then detail fields.
+    
+    const addRow = (content: string) => {
+      rows.push(`<tr><td style="padding-bottom:4px;">${content}</td></tr>`);
+    };
+
+    for (const key of bOrder) {
+      if (bHidden.includes(key)) continue;
+      if (key === 'companyName' && brand.companyName) {
+        rows.push(`<tr><td style="padding-bottom:4px;font-weight:600;">${escapeHtml(brand.companyName)}</td></tr>`);
+      }
+      if (key === 'website' && brand.website) {
+        addRow(`<a href="${escapeHtml(brand.website)}" style="color:${escapeHtml(brand.primaryColor)};text-decoration:none;">${escapeHtml(websiteDisplay)}</a>`);
+      }
+    }
+
+    for (const key of dOrder) {
+      if (dHidden.includes(key)) continue;
+      if (key === 'email' && profile.email) {
+        addRow(`<a href="mailto:${escapeHtml(profile.email)}" style="color:${escapeHtml(brand.primaryColor)};text-decoration:none;">${escapeHtml(profile.email)}</a>`);
+      }
+      if (key === 'officePhone' && profile.officePhone) {
+        addRow(`<a href="${escapeHtml(officePhoneTelHref)}" style="color:#111827;text-decoration:none;">${escapeHtml(profile.officePhone)}</a>`);
+      }
+      if (key === 'mobilePhone' && profile.mobilePhone) {
+        addRow(`<a href="${escapeHtml(mobilePhoneTelHref)}" style="color:#111827;text-decoration:none;">M: ${escapeHtml(profile.mobilePhone)}</a>`);
+      }
+    }
+  }
+
+  return rows.join('');
+}
+
 function collectFlattenedListItems(blocks: ContentBlockData[]): Array<{
   title: string;
   url: string;
@@ -1601,6 +1655,14 @@ export function mergeRenderContext(
     ecardSocialTdDiscordStyle: ecardSocial.dc,
     ecardSocialTdBlueskyStyle: ecardSocial.bs,
     ecardSocialTdYoutubeStyle: ecardSocial.yt,
+    mpContactRowsHtml: buildDynamicContactHtml(
+      profile,
+      brand,
+      officePhoneTelHref,
+      mobilePhoneTelHref,
+      websiteDisplay,
+      template.layout
+    ),
   };
 
   return { evalCtx, stringCtx };
