@@ -19,6 +19,7 @@ type Props = {
   bimiSuggestedRecord: string;
   onBimiUploaded?: (payload: { url: string; suggestedRecord: string }) => void;
   onAction?: () => void;
+  upgradeHref?: string;
 };
 
 function BodyText({ text }: { text: string }) {
@@ -43,6 +44,7 @@ export function TrustCenterPillarCard({
   bimiSuggestedRecord,
   onBimiUploaded,
   onAction,
+  upgradeHref = DASHBOARD_UPGRADE_HREF,
 }: Props) {
   const [showFix, setShowFix] = useState(false);
   const fixPanelRef = useRef<HTMLDivElement>(null);
@@ -91,7 +93,7 @@ export function TrustCenterPillarCard({
         <div className="mt-4">
           {pillar.action!.kind === 'upgrade' ? (
             <Button asChild size="sm">
-              <Link href={DASHBOARD_UPGRADE_HREF}>{pillar.action!.label}</Link>
+              <Link href={upgradeHref}>{pillar.action!.label}</Link>
             </Button>
           ) : (
             <Button type="button" size="sm" onClick={openFixPanel}>
@@ -136,6 +138,7 @@ export function TrustCenterPillarCard({
             bimiLogoUrl={bimiLogoUrl}
             bimiSuggestedRecord={bimiSuggestedRecord}
             onUploaded={onBimiUploaded}
+            upgradeHref={upgradeHref}
           />
         </div>
       ) : null}

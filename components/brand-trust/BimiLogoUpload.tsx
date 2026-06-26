@@ -15,6 +15,7 @@ type Props = {
   bimiSuggestedRecord?: string;
   onUploaded?: (payload: { url: string; suggestedRecord: string }) => void;
   variant?: 'default' | 'embedded';
+  upgradeHref?: string;
 };
 
 export function BimiLogoUpload({
@@ -23,6 +24,7 @@ export function BimiLogoUpload({
   bimiSuggestedRecord,
   onUploaded,
   variant = 'default',
+  upgradeHref = DASHBOARD_UPGRADE_HREF,
 }: Props) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +46,7 @@ export function BimiLogoUpload({
             : 'Upgrade to convert and host a BIMI-ready logo, then copy the DNS record we generate for you.'}
         </p>
         <Button asChild className="mt-3" size="sm">
-          <Link href={DASHBOARD_UPGRADE_HREF}>Upgrade</Link>
+          <Link href={upgradeHref}>Upgrade</Link>
         </Button>
       </div>
     );

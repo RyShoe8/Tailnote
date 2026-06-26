@@ -1,5 +1,6 @@
 import { JsonLd } from '@/components/seo/JsonLd';
-import { EmailHealthHero } from '@/components/email-health/EmailHealthHero';
+import { BrandTrustHubClient } from '@/components/brand-trust/BrandTrustHubClient';
+import { EmailHealthSeoHero } from '@/components/email-health/EmailHealthSeoHero';
 import { CATEGORY_GUIDE } from '@/lib/email-health/categoryGuide';
 import { EMAIL_HEALTH_FAQS } from '@/lib/email-health/faqs';
 import {
@@ -55,7 +56,15 @@ export default function EmailHealthLandingPage() {
         ]}
       />
       <div className="container relative py-16 sm:py-24 lg:py-28">
-        <EmailHealthHero />
+        <EmailHealthSeoHero />
+
+        <div className="mt-10">
+          <BrandTrustHubClient
+            variant="public"
+            navigateOnScan
+            suppressPreScanHeading
+          />
+        </div>
 
         <div className="mx-auto mt-16 grid max-w-4xl gap-6 sm:grid-cols-3">
           {EMAIL_HEALTH_FEATURE_CARDS.map((item) => (

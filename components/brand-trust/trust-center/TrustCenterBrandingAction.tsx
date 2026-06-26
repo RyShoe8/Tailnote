@@ -7,6 +7,7 @@ type Props = {
   bimiLogoUrl: string;
   bimiSuggestedRecord: string;
   onUploaded?: (payload: { url: string; suggestedRecord: string }) => void;
+  upgradeHref?: string;
 };
 
 export function TrustCenterBrandingAction({
@@ -14,6 +15,7 @@ export function TrustCenterBrandingAction({
   bimiLogoUrl,
   bimiSuggestedRecord,
   onUploaded,
+  upgradeHref,
 }: Props) {
   return (
     <BimiLogoUpload
@@ -22,6 +24,7 @@ export function TrustCenterBrandingAction({
       bimiLogoUrl={bimiLogoUrl}
       bimiSuggestedRecord={bimiSuggestedRecord}
       onUploaded={onUploaded}
+      upgradeHref={upgradeHref}
     />
   );
 }

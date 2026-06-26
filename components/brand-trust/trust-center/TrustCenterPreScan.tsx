@@ -10,9 +10,14 @@ import { TRUST_CENTER_PRE_SCAN } from '@/lib/brandTrust/trustCenterCopy';
 type Props = {
   initialDomain?: string;
   onScan: (domain: string) => Promise<void>;
+  showHeading?: boolean;
 };
 
-export function TrustCenterPreScan({ initialDomain = '', onScan }: Props) {
+export function TrustCenterPreScan({
+  initialDomain = '',
+  onScan,
+  showHeading = true,
+}: Props) {
   const [domain, setDomain] = useState(initialDomain);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -32,12 +37,14 @@ export function TrustCenterPreScan({ initialDomain = '', onScan }: Props) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <div className="mx-auto max-w-xl space-y-3 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          {TRUST_CENTER_PRE_SCAN.headline}
-        </h1>
-        <p className="text-muted-foreground">{TRUST_CENTER_PRE_SCAN.intro}</p>
-      </div>
+      {showHeading ? (
+        <div className="mx-auto max-w-xl space-y-3 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            {TRUST_CENTER_PRE_SCAN.headline}
+          </h1>
+          <p className="text-muted-foreground">{TRUST_CENTER_PRE_SCAN.intro}</p>
+        </div>
+      ) : null}
 
       <div className="rounded-2xl border border-slate-200/80 bg-card p-6 shadow-card sm:p-8">
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">

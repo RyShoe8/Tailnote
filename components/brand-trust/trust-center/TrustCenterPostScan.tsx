@@ -17,6 +17,7 @@ type Props = {
   rescanning: boolean;
   onRescan: () => void;
   onBimiUploaded?: (payload: { url: string; suggestedRecord: string }) => void;
+  upgradeHref?: string;
 };
 
 export function TrustCenterPostScan({
@@ -25,6 +26,7 @@ export function TrustCenterPostScan({
   rescanning,
   onRescan,
   onBimiUploaded,
+  upgradeHref,
 }: Props) {
   const pillars = buildTrustCenterPillars(scan, bimi);
   const summary = buildTrustCenterSummary(pillars);
@@ -69,6 +71,7 @@ export function TrustCenterPostScan({
             bimiLogoUrl={bimi.bimiLogoUrl}
             bimiSuggestedRecord={bimi.bimiSuggestedRecord}
             onBimiUploaded={onBimiUploaded}
+            upgradeHref={upgradeHref}
           />
         ))}
       </div>

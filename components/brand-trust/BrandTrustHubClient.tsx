@@ -2,10 +2,15 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { TrustCenterDomainTable } from '@/components/brand-trust/trust-center/TrustCenterDomainTable';
 import { TrustCenterPostScan } from '@/components/brand-trust/trust-center/TrustCenterPostScan';
 import { TrustCenterPreScan } from '@/components/brand-trust/trust-center/TrustCenterPreScan';
 import { TrustCenterScanAnother } from '@/components/brand-trust/trust-center/TrustCenterScanAnother';
+import {
+  DASHBOARD_UPGRADE_HREF,
+  PUBLIC_UPGRADE_HREF,
+} from '@/lib/billing/upgradeLinks';
 import {
   buildTrustCenterPillars,
   type TrustCenterBimiState,
@@ -14,17 +19,25 @@ import type { TrustCenterDomainRow } from '@/lib/brandTrust/orgBrandTrustScans';
 import { TRUST_CENTER_NO_DOMAIN } from '@/lib/brandTrust/trustCenterCopy';
 import type { SerializedEmailHealthScan } from '@/lib/email-health/serialize';
 
+export type BrandTrustHubVariant = 'public' | 'dashboard';
+
 type Props = {
-  orgDomain: string | null;
-  initialScan: SerializedEmailHealthScan | null;
+  variant?: BrandTrustHubVariant;
+  orgDomain?: string | null;
+  initialScan?: SerializedEmailHealthScan | null;
   initialDomains?: TrustCenterDomainRow[];
-  canUseBimiLogoHosting: boolean;
+  canUseBimiLogoHosting?: boolean;
   bimiLogoUrl?: string;
   bimiSuggestedRecord?: string;
+  /** Public landing: navigate to /email-health/{slug} after scan instead of inline results. */
+  navigateOnScan?: boolean;
+  /** Hide TrustCenterPreScan headline when a page-level SEO hero is shown above. */
+  suppressPreScanHeading?: boolean;
 };
 
 type ScanResponse = {
   scan?: SerializedEmailHealthScan;
+  slug?: string;
   error?: string;
 };
 
@@ -53,13 +66,22 @@ function upsertDomainRow(rows: TrustCenterDomainRow[], row: TrustCenterDomainRow
 }
 
 export function BrandTrustHubClient({
-  orgDomain,
-  initialScan,
+  variant = 'dashboard',
+  orgDomain = null,
+  initialScan = null,
   initialDomains = [],
-  canUseBimiLogoHosting,
+  canUseBimiLogoHosting = false,
   bimiLogoUrl: initialLogoUrl = '',
   bimiSuggestedRecord: initialRecord = '',
+  navigateOnScan = false,
+  suppressPreScanHeading = false,
 }: Props) {
+  const router = useRouter();
+  const isPublic = variant === 'public';
+  const scanApiPath = isPublic ? '/api/email-health/scan' : '/api/dashboard/brand-trust/scan';
+  const upgradeHref = isPublic ? PUBLIC_UPGRADE_HREF : DASHBOARD_UPGRADE_HREF;
+  const resultBasePath = '/email-health';
+
   const [scan, setScan] = useState<SerializedEmailHealthScan | null>(initialScan);
   const [domains, setDomains] = useState<TrustCenterDomainRow[]>(initialDomains);
   const [scanCache, setScanCache] = useState<Record<string, SerializedEmailHealthScan>>(() => {
@@ -75,14 +97,14 @@ export function BrandTrustHubClient({
   const bimiForDomain = useCallback(
     (domain: string): TrustCenterBimiState => {
       const isOrgDomain =
-        orgDomain && domain.toLowerCase() === orgDomain.toLowerCase();
+        !isPublic && orgDomain && domain.toLowerCase() === orgDomain.toLowerCase();
       return {
-        canUseBimiLogoHosting,
+        canUseBimiLogoHosting: isPublic ? false : canUseBimiLogoHosting,
         bimiLogoUrl: isOrgDomain ? bimiLogoUrl : '',
         bimiSuggestedRecord: isOrgDomain ? bimiSuggestedRecord : '',
       };
     },
-    [orgDomain, canUseBimiLogoHosting, bimiLogoUrl, bimiSuggestedRecord],
+    [isPublic, orgDomain, canUseBimiLogoHosting, bimiLogoUrl, bimiSuggestedRecord],
   );
 
   const activeBimi = useMemo(
@@ -90,13 +112,31 @@ export function BrandTrustHubClient({
     [scan, bimiForDomain, orgDomain],
   );
 
+  const applyScanResult = useCallback(
+    (serialized: SerializedEmailHealthScan) => {
+      const bimi = bimiForDomain(serialized.domain);
+      const row = domainRowFromScan(serialized, bimi);
+
+      setScanCache((prev) => ({ ...prev, [serialized.domain]: serialized }));
+      setScan(serialized);
+      setSelectedDomain(serialized.domain);
+
+      if (!isPublic) {
+        setDomains((prev) => upsertDomainRow(prev, row));
+      }
+
+      return serialized;
+    },
+    [bimiForDomain, isPublic],
+  );
+
   const runScan = useCallback(
     async (domain: string, force = false) => {
-      const res = await fetch('/api/dashboard/brand-trust/scan', {
+      const res = await fetch(scanApiPath, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ domain, force }),
-        credentials: 'include',
+        credentials: isPublic ? undefined : 'include',
       });
       const data = (await res.json()) as ScanResponse;
       if (!res.ok || !data.scan) {
@@ -106,17 +146,15 @@ export function BrandTrustHubClient({
         ...data.scan,
         scannedAt: new Date(data.scan.scannedAt),
       };
-      const bimi = bimiForDomain(serialized.domain);
-      const row = domainRowFromScan(serialized, bimi);
 
-      setScanCache((prev) => ({ ...prev, [serialized.domain]: serialized }));
-      setScan(serialized);
-      setSelectedDomain(serialized.domain);
-      setDomains((prev) => upsertDomainRow(prev, row));
+      if (navigateOnScan && data.slug) {
+        router.push(`${resultBasePath}/${data.slug}`);
+        return serialized;
+      }
 
-      return serialized;
+      return applyScanResult(serialized);
     },
-    [bimiForDomain],
+    [scanApiPath, isPublic, navigateOnScan, router, resultBasePath, applyScanResult],
   );
 
   const handleScan = useCallback(
@@ -181,12 +219,12 @@ export function BrandTrustHubClient({
     [scan, orgDomain, canUseBimiLogoHosting],
   );
 
-  const showResults = Boolean(scan) || domains.length > 0;
+  const showResults = Boolean(scan) || (!isPublic && domains.length > 0);
 
   if (!showResults) {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
-        {!orgDomain ? (
+        {!isPublic && !orgDomain ? (
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">{TRUST_CENTER_NO_DOMAIN.title}</h1>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -198,16 +236,20 @@ export function BrandTrustHubClient({
             </p>
           </div>
         ) : (
-          <h1 className="sr-only">Brand Trust Center</h1>
+          <h1 className="sr-only">{isPublic ? 'Email health checker' : 'Brand Trust Center'}</h1>
         )}
-        <TrustCenterPreScan initialDomain={orgDomain ?? ''} onScan={handleScan} />
+        <TrustCenterPreScan
+          initialDomain={orgDomain ?? ''}
+          onScan={handleScan}
+          showHeading={!suppressPreScanHeading}
+        />
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-3xl space-y-10">
-      <h1 className="sr-only">Brand Trust Center</h1>
+      <h1 className="sr-only">{isPublic ? 'Email health checker' : 'Brand Trust Center'}</h1>
 
       {scan ? (
         <TrustCenterPostScan
@@ -216,24 +258,36 @@ export function BrandTrustHubClient({
           rescanning={rescanningDomain !== null || switching}
           onRescan={() => void handleRescan()}
           onBimiUploaded={handleBimiUploaded}
+          upgradeHref={upgradeHref}
         />
       ) : null}
 
-      <TrustCenterDomainTable
-        domains={domains}
-        selectedDomain={selectedDomain}
-        rescanningDomain={rescanningDomain}
-        onSelect={(domain) => void handleSelectDomain(domain)}
-        onRescan={(domain) => void handleRescanDomain(domain)}
-      />
+      {!isPublic ? (
+        <TrustCenterDomainTable
+          domains={domains}
+          selectedDomain={selectedDomain}
+          rescanningDomain={rescanningDomain}
+          onSelect={(domain) => void handleSelectDomain(domain)}
+          onRescan={(domain) => void handleRescanDomain(domain)}
+        />
+      ) : null}
 
       <TrustCenterScanAnother onScan={handleScan} defaultDomain="" />
 
-      <p className="text-center text-sm text-muted-foreground">
-        <Link href="/email-health" className="text-primary underline">
-          Public email health checker
-        </Link>
-      </p>
+      {isPublic ? (
+        <p className="text-center text-sm text-muted-foreground">
+          Want inbox logo hosting and saved scan history?{' '}
+          <Link href="/signup" className="text-primary underline">
+            Create a free Tailnote account
+          </Link>
+        </p>
+      ) : (
+        <p className="text-center text-sm text-muted-foreground">
+          <Link href="/email-health" className="text-primary underline">
+            Public email health checker
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

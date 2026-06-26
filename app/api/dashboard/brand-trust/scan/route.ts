@@ -8,7 +8,7 @@ import { isScanFresh } from '@/lib/email-health/cache';
 import { persistEmailHealthScan } from '@/lib/email-health/persist';
 import { persistBimiScanResult } from '@/lib/email-health/persistBimi';
 import { runEmailHealthScan } from '@/lib/email-health/runScan';
-import { serializeEmailHealthScan } from '@/lib/email-health/serialize';
+import { emailHealthScanJsonResponse } from '@/lib/email-health/scanJsonResponse';
 import { EmailHealthScanModel, type EmailHealthScanDoc } from '@/models/EmailHealthScan';
 import { logError } from '@/lib/logger';
 
@@ -24,15 +24,7 @@ const bodySchema = z.object({
 type SessionUser = { organizationId?: string };
 
 function scanJsonResponse(doc: EmailHealthScanDoc, cached: boolean) {
-  return NextResponse.json({
-    cached,
-    slug: doc.domainSlug,
-    domain: doc.domain,
-    score: doc.score,
-    statusLabel: doc.statusLabel,
-    scannedAt: doc.scannedAt,
-    scan: serializeEmailHealthScan(doc),
-  });
+  return NextResponse.json(emailHealthScanJsonResponse(doc, cached));
 }
 
 export async function POST(request: Request) {

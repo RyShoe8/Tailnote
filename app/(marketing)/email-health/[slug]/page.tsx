@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { EmailHealthReportView } from '@/components/email-health/EmailHealthReportView';
+import { BrandTrustHubClient } from '@/components/brand-trust/BrandTrustHubClient';
 import { loadOrCreateScanBySlug } from '@/lib/email-health/loadScan';
 import type { DomainIssue } from '@/lib/email-health/types';
 import { breadcrumbJsonLd, faqPageJsonLd, webPageJsonLd } from '@/lib/seo/jsonLd';
@@ -65,12 +65,7 @@ export default async function EmailHealthResultPage({ params }: Props) {
       />
 
       <div className="container py-12 sm:py-16">
-        <EmailHealthReportView
-          scan={scan}
-          indexHref="/email-health"
-          showSignupCta
-          breadcrumbRoot={{ href: '/', label: 'Home' }}
-        />
+        <BrandTrustHubClient variant="public" initialScan={scan} />
       </div>
     </div>
   );
