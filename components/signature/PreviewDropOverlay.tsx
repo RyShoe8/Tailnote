@@ -3,13 +3,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 
-/** Contact row fields that can be reordered in the preview. */
-const CONTACT_ROW_FIELDS = new Set([
+/** Fields that can be freely reordered in the preview center column. */
+const REORDERABLE_FIELDS = new Set([
+  'logo',
+  'name',
+  'title',
   'companyName',
   'email',
   'website',
+  'address',
   'officePhone',
   'mobilePhone',
+  'avatar',
+  'socialLinks'
 ]);
 
 /** Human-readable labels for contact fields. */
@@ -113,15 +119,15 @@ export function PreviewDropOverlay({
           : draggedFieldId === 'logoUrl'
             ? 'logo'
             : draggedFieldId;
-    if (!normalizedId || !CONTACT_ROW_FIELDS.has(normalizedId)) {
+    if (!normalizedId || !REORDERABLE_FIELDS.has(normalizedId)) {
       setDropZones([]);
       return;
     }
 
-    // Find visible contact row elements in the preview
+    // Find visible reorderable elements in the preview
     const allSigFields = contentEl.querySelectorAll('[data-sig-field]');
     const contactEls = Array.from(allSigFields).filter((el) =>
-      CONTACT_ROW_FIELDS.has(el.getAttribute('data-sig-field') || '')
+      REORDERABLE_FIELDS.has(el.getAttribute('data-sig-field') || '')
     );
 
     const zones: DropZone[] = [];
@@ -176,8 +182,12 @@ export function PreviewDropOverlay({
 
   if (!isDragging) return null;
 
-  const isContactField =
-    draggedFieldId && CONTACT_ROW_FIELDS.has(draggedFieldId);
+  const isReorderableField =
+    draggedFieldId && REORDERABLE_FIELDS.has(
+      draggedFieldId === 'firstName' || draggedFieldId === 'lastName' ? 'name' : 
+      draggedFieldId === 'avatarUrl' ? 'avatar' : 
+      draggedFieldId === 'logoUrl' ? 'logo' : draggedFieldId
+    );
   const label = draggedFieldId ? FIELD_LABELS[draggedFieldId] || draggedFieldId : '';
 
   return (
@@ -214,7 +224,7 @@ export function PreviewDropOverlay({
           top: 12,
           left: '50%',
           transform: 'translateX(-50%)',
-          backgroundColor: isContactField ? 'rgba(59, 130, 246, 0.95)' : 'rgba(239, 68, 68, 0.95)',
+          backgroundColor: isReorderableField ? 'rgba(59, 130, 246, 0.95)' : 'rgba(239, 68, 68, 0.95)',
           color: '#fff',
           fontSize: 13,
           fontWeight: 600,
@@ -226,7 +236,7 @@ export function PreviewDropOverlay({
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         }}
       >
-        {isContactField
+        {isReorderableField
           ? `Drop "${label}" to reorder`
           : `Position of "${label}" is fixed in this layout.`}
       </div>

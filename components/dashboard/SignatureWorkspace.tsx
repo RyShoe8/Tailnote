@@ -12,6 +12,7 @@ import {
   DragEndEvent,
   DragStartEvent,
   useDraggable,
+  DragOverlay,
 } from '@dnd-kit/core';
 import { arrayMove, sortableKeyboardCoordinates, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Move } from 'lucide-react';
@@ -199,7 +200,7 @@ export function SignatureWorkspace() {
 
   const handleContactReorder = useCallback(
     (fieldId: string, insertAfterField: string | null) => {
-      const defaultOrder = ['companyName', 'email', 'website', 'officePhone', 'mobilePhone'];
+      const defaultOrder = ['logo', 'name', 'title', 'companyName', 'email', 'website', 'address', 'officePhone', 'mobilePhone'];
       const currentOrder = profile.contactDisplayOrder?.length
         ? [...profile.contactDisplayOrder]
         : [...defaultOrder];
@@ -1295,10 +1296,18 @@ export function SignatureWorkspace() {
       </LivePreviewStickyColumn>
       ) : null}
 
-      {!isLgUp ? (
+    {!isLgUp ? (
         <MobileSignaturePaneBar pane={mobilePane} onPaneChange={setMobilePane} />
       ) : null}
     </div>
+    <DragOverlay dropAnimation={null}>
+      {draggedFieldId ? (
+        <div className="rounded-xl border bg-card p-4 shadow-xl opacity-90 ring-1 ring-primary flex items-center">
+          <Move className="mr-2 h-5 w-5 text-muted-foreground" />
+          <span className="font-medium">Moving field</span>
+        </div>
+      ) : null}
+    </DragOverlay>
     </DndContext>
   );
 }

@@ -99,39 +99,7 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
 
           <!-- Middle Column: Info -->
           <td class="sig-info-col" valign="top" style="vertical-align:top;padding-right:24px;">
-            {{#if hasLogo}}
-            <div data-sig-field="logo" style="margin-bottom:16px;">
-              <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:block;">
-{{#if hasLogoSizedHeight}}
-                <img src="{{logoUrl}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" border="0" alt="" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;border:0;outline:none;text-decoration:none;border-radius:{{logoImgBorderRadius}};" />
-{{/if}}
-{{#if hasLogoAutoHeight}}
-                <img src="{{logoUrl}}" width="{{logoWidth}}" border="0" alt="" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:auto;border:0;outline:none;text-decoration:none;border-radius:{{logoImgBorderRadius}};" />
-{{/if}}
-              </a>
-            </div>
-            {{/if}}
-
-            {{#if hasName}}
-            <div data-sig-field="name" style="font-size:18px; font-weight:700; color:#111827; line-height:1.2; margin-bottom:4px; letter-spacing:-0.2px;">
-              {{firstName}} {{lastName}}
-            </div>
-            {{/if}}
-            {{#if hasTitle}}
-            <div data-sig-field="title" style="font-size:14px; color:#4B5563; margin-bottom:16px;">
-              {{title}}
-            </div>
-            {{/if}}
-            
-            <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:14px;color:#111827;line-height:1.5;">
-              {{{mpContactRowsHtml}}}
-            </table>
-
-            {{#if showAddressBlock}}
-            <div data-sig-field="address" style="margin-top: 16px; font-size: 12px; color: #6b7280; line-height: 1.4;">
-              {{addressBlockHtml}}
-            </div>
-            {{/if}}
+            {{{mpMiddleColumnHtml}}}
           </td>
 
           <!-- Right Column: Avatar -->

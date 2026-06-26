@@ -647,67 +647,7 @@ function buildCreatorContactTableHtml(
   return rows.join('');
 }
 
-function buildDynamicContactHtml(
-  profile: SignatureProfile,
-  brand: SignatureBrand,
-  officePhoneTelHref: string,
-  mobilePhoneTelHref: string,
-  websiteDisplay: string,
-  layout: SignatureTemplate['layout']
-): string {
-  const defaultBrandOrder = ['companyName', 'website', 'address', 'socialLinks'];
-  const defaultDetailOrder = ['avatarUrl', 'firstName', 'lastName', 'title', 'email', 'officePhone', 'mobilePhone'];
-  
-  const bOrder = brand.brandOrder?.length ? brand.brandOrder : defaultBrandOrder;
-  const dOrder = profile.detailOrder?.length ? profile.detailOrder : defaultDetailOrder;
-  
-  const bHidden = brand.hiddenFields || [];
-  const dHidden = profile.hiddenFields || [];
-
-  const rows: string[] = [];
-  
-  if (layout === 'modern_professional') {
-    const defaultContactOrder = ['companyName', 'email', 'website', 'officePhone', 'mobilePhone'];
-    const cdo = profile.contactDisplayOrder;
-    // Use custom order if provided, appending any missing default fields at the end
-    const contactOrder = cdo?.length
-      ? [...cdo.filter(f => defaultContactOrder.includes(f)), ...defaultContactOrder.filter(f => !cdo.includes(f))]
-      : defaultContactOrder;
-
-    for (const field of contactOrder) {
-      switch (field) {
-        case 'companyName':
-          if (brand.companyName && !bHidden.includes('companyName')) {
-            rows.push(`<tr data-sig-field="companyName"><td style="padding-bottom:4px;font-weight:700;color:#111827;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(brand.companyName)}</td></tr>`);
-          }
-          break;
-        case 'email':
-          if (profile.email && !dHidden.includes('email')) {
-            rows.push(`<tr data-sig-field="email"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="mailto:${escapeHtml(profile.email)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.email)}</a></td></tr>`);
-          }
-          break;
-        case 'website':
-          if (brand.website && !bHidden.includes('website')) {
-            rows.push(`<tr data-sig-field="website"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="${escapeHtml(brand.website)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(websiteDisplay)}</a></td></tr>`);
-          }
-          break;
-        case 'officePhone':
-          if (profile.officePhone && !dHidden.includes('officePhone')) {
-            rows.push(`<tr data-sig-field="officePhone"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="${escapeHtml(officePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.officePhone)}</a></td></tr>`);
-          }
-          break;
-        case 'mobilePhone':
-          if (profile.mobilePhone && !dHidden.includes('mobilePhone')) {
-            rows.push(`<tr data-sig-field="mobilePhone"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="${escapeHtml(mobilePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">M: ${escapeHtml(profile.mobilePhone)}</a></td></tr>`);
-          }
-          break;
-      }
-    }
-  }
-
-
-  return rows.join('');
-}
+// removed buildDynamicContactHtml
 
 function collectFlattenedListItems(blocks: ContentBlockData[]): Array<{
   title: string;
@@ -1397,7 +1337,100 @@ export function mergeRenderContext(
   if (isDefaultLayout && youtube) {
     defaultSocialTdYoutubeStyle = 'padding: 0; vertical-align: middle;';
   }
+  let mpMiddleColumnHtml = '';
+  if (template.layout === 'modern_professional') {
+    const defaultOrder = ['logo', 'name', 'title', 'companyName', 'email', 'website', 'address', 'officePhone', 'mobilePhone'];
+    const cdo = profile.contactDisplayOrder;
+    const order = cdo?.length
+      ? [...cdo.filter(f => defaultOrder.includes(f)), ...defaultOrder.filter(f => !cdo.includes(f))]
+      : defaultOrder;
 
+    let contactRowsHtml = '';
+    const flushContactRows = () => {
+      if (contactRowsHtml) {
+        mpMiddleColumnHtml += `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:14px;color:#111827;line-height:1.5;">${contactRowsHtml}</table>`;
+        contactRowsHtml = '';
+      }
+    };
+
+    for (const field of order) {
+      if (field === 'logo') {
+        flushContactRows();
+        if (hasLogo && !bHidden.includes('logoUrl')) {
+          const sizedImg = hasLogoSizedHeight
+            ? `<img src="${escapeHtml(logoUrl)}" width="${escapeHtml(logoWidthStr)}" height="${escapeHtml(logoDisplayHeightStr)}" border="0" alt="" style="display:block;max-width:${escapeHtml(logoWidthStr)}px;width:${escapeHtml(logoWidthStr)}px;height:${escapeHtml(logoDisplayHeightStr)}px;border:0;outline:none;text-decoration:none;border-radius:${escapeHtml(logoImgBorderRadius)};" />`
+            : '';
+          const autoImg = hasLogoAutoHeight
+            ? `<img src="${escapeHtml(logoUrl)}" width="${escapeHtml(logoWidthStr)}" border="0" alt="" style="display:block;max-width:${escapeHtml(logoWidthStr)}px;width:${escapeHtml(logoWidthStr)}px;height:auto;border:0;outline:none;text-decoration:none;border-radius:${escapeHtml(logoImgBorderRadius)};" />`
+            : '';
+          mpMiddleColumnHtml += `
+            <div data-sig-field="logo" style="margin-bottom:16px;">
+              <a href="${escapeHtml(logoLinkForHref)}" style="text-decoration:none; border:0; outline:none; display:block;">
+                ${sizedImg}
+                ${autoImg}
+              </a>
+            </div>
+          `;
+        }
+      } else if (field === 'name') {
+        flushContactRows();
+        if (hasName) {
+          mpMiddleColumnHtml += `
+            <div data-sig-field="name" style="font-size:18px; font-weight:700; color:#111827; line-height:1.2; margin-bottom:4px; letter-spacing:-0.2px;">
+              ${escapeHtml(fullName)}
+            </div>
+          `;
+        }
+      } else if (field === 'title') {
+        flushContactRows();
+        if (hasTitle) {
+          mpMiddleColumnHtml += `
+            <div data-sig-field="title" style="font-size:14px; color:#4B5563; margin-bottom:16px;">
+              ${escapeHtml(profile.title.trim())}
+            </div>
+          `;
+        }
+      } else if (field === 'address') {
+        flushContactRows();
+        if (showAddressBlock) {
+          mpMiddleColumnHtml += `
+            <div data-sig-field="address" style="margin-top: 16px; font-size: 12px; color: #6b7280; line-height: 1.4;">
+              ${addressBlockHtml}
+            </div>
+          `;
+        }
+      } else if (field === 'companyName' || field === 'email' || field === 'website' || field === 'officePhone' || field === 'mobilePhone') {
+        switch(field) {
+          case 'companyName':
+            if (brand.companyName && !bHidden.includes('companyName')) {
+              contactRowsHtml += `<tr data-sig-field="companyName"><td style="padding-bottom:4px;font-weight:700;color:#111827;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(brand.companyName)}</td></tr>`;
+            }
+            break;
+          case 'email':
+            if (profile.email && !pHidden.includes('email')) {
+              contactRowsHtml += `<tr data-sig-field="email"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="mailto:${escapeHtml(profile.email)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.email)}</a></td></tr>`;
+            }
+            break;
+          case 'website':
+            if (brand.website && !bHidden.includes('website')) {
+              contactRowsHtml += `<tr data-sig-field="website"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="${escapeHtml(brand.website)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(websiteDisplay)}</a></td></tr>`;
+            }
+            break;
+          case 'officePhone':
+            if (profile.officePhone && !pHidden.includes('officePhone')) {
+              contactRowsHtml += `<tr data-sig-field="officePhone"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="${escapeHtml(officePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.officePhone)}</a></td></tr>`;
+            }
+            break;
+          case 'mobilePhone':
+            if (profile.mobilePhone && !pHidden.includes('mobilePhone')) {
+              contactRowsHtml += `<tr data-sig-field="mobilePhone"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="${escapeHtml(mobilePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">M: ${escapeHtml(profile.mobilePhone)}</a></td></tr>`;
+            }
+            break;
+        }
+      }
+    }
+    flushContactRows();
+  }
   const creatorTagline =
     isCreatorLayout && (hasTitle || brand.companyName.trim())
       ? buildCreatorTagline(profile.title.trim(), brand.companyName.trim())
@@ -1653,7 +1686,7 @@ export function mergeRenderContext(
     executiveContactLineHtml,
     executiveSocialLineHtml,
     executivePromoRowsHtml,
-    portfolioRoleLine,
+    portfolioRoleLine: hasPortfolioRoleLine ? escapeHtml(portfolioRoleLine) : '',
     portfolioContactPillsHtml,
     portfolioNetworkSectionHtml,
     portfolioSocialTdLiStyle: portfolioSocial.li,
@@ -1663,7 +1696,7 @@ export function mergeRenderContext(
     portfolioSocialTdDiscordStyle: portfolioSocial.dc,
     portfolioSocialTdBlueskyStyle: portfolioSocial.bs,
     portfolioSocialTdYoutubeStyle: portfolioSocial.yt,
-    ecardRoleLine,
+    ecardRoleLine: hasEcardRoleLine ? escapeHtml(ecardRoleLine) : '',
     ecardContactTableHtml,
     ecardPortfolioSectionsHtml,
     ecardLogoFrameWidth,
@@ -1675,14 +1708,7 @@ export function mergeRenderContext(
     ecardSocialTdDiscordStyle: ecardSocial.dc,
     ecardSocialTdBlueskyStyle: ecardSocial.bs,
     ecardSocialTdYoutubeStyle: ecardSocial.yt,
-    mpContactRowsHtml: buildDynamicContactHtml(
-      profile,
-      brand,
-      officePhoneTelHref,
-      mobilePhoneTelHref,
-      websiteDisplay,
-      template.layout
-    ),
+    mpMiddleColumnHtml,
   };
 
   return { evalCtx, stringCtx };
