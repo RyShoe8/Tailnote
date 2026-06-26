@@ -13,7 +13,7 @@ import {
   DragStartEvent,
   useDraggable,
 } from '@dnd-kit/core';
-import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { arrayMove, sortableKeyboardCoordinates, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Move } from 'lucide-react';
 import {
   renderSignature,
@@ -33,7 +33,7 @@ import { ContentBlocksEditor } from '@/components/signature/ContentBlocksEditor'
 import { useHydratedContentBlocks } from '@/components/signature/useHydratedContentBlocks';
 import { SocialLinksEditor } from '@/components/signature/SocialLinksEditor';
 import type { ContentBlockData } from 'emailsignature-engine';
-import { SignatureForm } from '@/components/signature/SignatureForm';
+import { SignatureForm, SortableField } from '@/components/signature/SignatureForm';
 import {
   SignaturePreviewFrame,
   mobileFrameWidthForLayout,
@@ -54,21 +54,6 @@ import { hasAnalytics, hasBrandingRemoval } from '@/lib/billing/subscriptionAcce
 import { SignatureBimiTab } from '@/components/dashboard/SignatureBimiTab';
 import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 import { PreviewDropOverlay } from '@/components/signature/PreviewDropOverlay';
-
-function DraggableBrandHandle({ id }: { id: string }) {
-  const { attributes, listeners, setNodeRef } = useDraggable({ id });
-  return (
-    <div
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      className="cursor-grab text-muted-foreground hover:text-primary active:cursor-grabbing transition-colors"
-      title="Drag to preview to reposition"
-    >
-      <Move className="h-3.5 w-3.5" />
-    </div>
-  );
-}
 
 type OrgResponse = {
   companyName?: string;
@@ -910,53 +895,35 @@ export function SignatureWorkspace() {
                 These values feed the signature engine for every employee. Drag fields to reorder them in your signature.
               </p>
             </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {isLgUp && <DraggableBrandHandle id="companyName" />}
-                  <Label className="cursor-pointer" onClick={() => toggleBrandHidden('companyName')}>Organization name</Label>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className={`h-8 px-2 text-xs font-medium ${isBrandHidden('companyName') ? 'text-muted-foreground' : 'text-primary'}`}
-                  onClick={() => toggleBrandHidden('companyName')}
+            <SortableContext items={['companyName', 'website']} strategy={verticalListSortingStrategy}>
+              <div className="space-y-4">
+                <SortableField
+                  id="companyName"
+                  label="Organization name"
+                  isHidden={isBrandHidden('companyName')}
+                  onToggle={() => toggleBrandHidden('companyName')}
                 >
-                  {isBrandHidden('companyName') ? 'Show' : 'Hide'}
-                </Button>
-              </div>
-              {!isBrandHidden('companyName') && (
-                <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-                  <Input value={orgName} onChange={(e) => setOrgName(e.target.value)} />
-                </div>
-              )}
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {isLgUp && <DraggableBrandHandle id="website" />}
-                  <Label className="cursor-pointer" onClick={() => toggleBrandHidden('website')}>Website</Label>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className={`h-8 px-2 text-xs font-medium ${isBrandHidden('website') ? 'text-muted-foreground' : 'text-primary'}`}
-                  onClick={() => toggleBrandHidden('website')}
+                  <Input
+                    value={orgName}
+                    onChange={(e) => setOrgName(e.target.value)}
+                    placeholder="Acme Corp"
+                  />
+                </SortableField>
+
+                <SortableField
+                  id="website"
+                  label="Website"
+                  isHidden={isBrandHidden('website')}
+                  onToggle={() => toggleBrandHidden('website')}
                 >
-                  {isBrandHidden('website') ? 'Show' : 'Hide'}
-                </Button>
-              </div>
-              {!isBrandHidden('website') && (
-                <div className="animate-in fade-in slide-in-from-top-2 duration-200">
                   <Input
                     value={org.website ?? ''}
                     onChange={(e) => setOrg((o) => ({ ...(o || {}), website: e.target.value }))}
+                    placeholder="acme.com"
                   />
-                </div>
-              )}
-            </div>
+                </SortableField>
+              </div>
+            </SortableContext>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>

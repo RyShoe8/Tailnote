@@ -30,14 +30,15 @@ const LABELS: Record<string, string> = {
   mobilePhone: 'Mobile phone',
 };
 
-type SortableFieldProps = {
+export type SortableFieldProps = {
   id: string;
+  label?: string;
   isHidden: boolean;
   onToggle: () => void;
   children: React.ReactNode;
 };
 
-function SortableField({ id, isHidden, onToggle, children }: SortableFieldProps) {
+export function SortableField({ id, label, isHidden, onToggle, children }: SortableFieldProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
@@ -64,7 +65,7 @@ function SortableField({ id, isHidden, onToggle, children }: SortableFieldProps)
       </div>
       <div className="flex-1 space-y-3 min-w-0">
         <div className="flex items-center justify-between">
-          <Label className="cursor-pointer font-medium">{LABELS[id]}</Label>
+          <Label className="cursor-pointer font-medium">{label || LABELS[id]}</Label>
           <Button
             type="button"
             variant="ghost"

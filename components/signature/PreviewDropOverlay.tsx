@@ -211,23 +211,24 @@ export function PreviewDropOverlay({
       <div
         style={{
           position: 'absolute',
-          top: 6,
+          top: 12,
           left: '50%',
           transform: 'translateX(-50%)',
-          backgroundColor: 'rgba(59, 130, 246, 0.9)',
+          backgroundColor: isContactField ? 'rgba(59, 130, 246, 0.95)' : 'rgba(239, 68, 68, 0.95)',
           color: '#fff',
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: 600,
-          padding: '3px 10px',
-          borderRadius: 12,
+          padding: '6px 14px',
+          borderRadius: 16,
           pointerEvents: 'none',
           whiteSpace: 'nowrap',
           letterSpacing: '0.01em',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         }}
       >
         {isContactField
           ? `Drop "${label}" to reorder`
-          : `"${label}" position in signature`}
+          : `Position of "${label}" is fixed in this layout.`}
       </div>
 
       {/* Field highlight */}
@@ -267,80 +268,43 @@ function DroppableZone({ zone }: { zone: DropZone }) {
       ref={setNodeRef}
       style={{
         position: 'absolute',
-        top: zone.top - 14,
+        top: zone.top - 16,
         left: zone.left - 4,
         width: zone.width + 8,
-        height: 28,
+        height: 32,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        zIndex: 30,
       }}
     >
-      {/* The glowing line */}
+      {/* The drop target box */}
       <div
         style={{
           width: '100%',
-          height: isOver ? 3 : 2,
+          height: '100%',
           backgroundColor: isOver
-            ? 'rgba(59, 130, 246, 0.85)'
-            : 'rgba(59, 130, 246, 0.35)',
-          borderRadius: 2,
-          boxShadow: isOver
-            ? '0 0 8px rgba(59, 130, 246, 0.5), 0 0 2px rgba(59, 130, 246, 0.3)'
-            : '0 0 3px rgba(59, 130, 246, 0.15)',
-          transition: 'all 0.12s ease',
-          position: 'relative',
+            ? 'rgba(59, 130, 246, 0.2)'
+            : 'rgba(59, 130, 246, 0.05)',
+          border: isOver ? '2px dashed rgba(59, 130, 246, 0.9)' : '2px dashed rgba(59, 130, 246, 0.5)',
+          borderRadius: 6,
+          transition: 'all 0.15s ease',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
-        {/* Center plus icon */}
-        <div
+        <span
           style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: isOver ? 20 : 16,
-            height: isOver ? 20 : 16,
-            borderRadius: '50%',
-            backgroundColor: isOver
-              ? 'rgba(59, 130, 246, 0.9)'
-              : 'rgba(59, 130, 246, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.12s ease',
-            boxShadow: isOver
-              ? '0 0 6px rgba(59, 130, 246, 0.4)'
-              : 'none',
+            fontSize: 12,
+            fontWeight: 600,
+            color: 'rgba(59, 130, 246, 0.95)',
+            opacity: isOver ? 1 : 0,
+            transition: 'opacity 0.15s ease',
           }}
         >
-          <svg
-            width={isOver ? 12 : 10}
-            height={isOver ? 12 : 10}
-            viewBox="0 0 12 12"
-            fill="none"
-            style={{ transition: 'all 0.12s ease' }}
-          >
-            <line
-              x1="6"
-              y1="2"
-              x2="6"
-              y2="10"
-              stroke="#fff"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            <line
-              x1="2"
-              y1="6"
-              x2="10"
-              y2="6"
-              stroke="#fff"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
+          Drop here
+        </span>
       </div>
     </div>
   );

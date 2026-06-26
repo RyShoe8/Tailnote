@@ -1127,9 +1127,13 @@ export function mergeRenderContext(
 } {
   const origin = stripTrailingSlash(siteOrigin.trim() || DEFAULT_PUBLIC_SITE_ORIGIN);
   const { elements } = template;
-  const hasLogo = hasElement(elements, 'logo');
-  const hasName = hasElement(elements, 'name');
-  const hasTitle = hasElement(elements, 'title');
+  
+  const pHidden = profile.hiddenFields || [];
+  const bHidden = brand.hiddenFields || [];
+
+  const hasLogo = hasElement(elements, 'logo') && !bHidden.includes('companyName') /* wait, companyName or logo? the UI just hides companyName and website */ && !bHidden.includes('logoUrl');
+  const hasName = hasElement(elements, 'name') && !(pHidden.includes('firstName') && pHidden.includes('lastName'));
+  const hasTitle = hasElement(elements, 'title') && !pHidden.includes('title');
   const hasContact = hasElement(elements, 'contact');
   const hasSocial = hasElement(elements, 'social');
   const hasDivider = hasElement(elements, 'divider');
@@ -1570,21 +1574,21 @@ export function mergeRenderContext(
     hasEcardVcardUrl,
     hasEcardPortfolioSection,
     hasEcardFooter,
-    hasAvatar: Boolean(avatarUrl),
+    hasAvatar: Boolean(avatarUrl) && !pHidden.includes('avatarUrl'),
   };
 
   const stringCtx: Record<string, string> = {
-    fullName: escapeHtml(fullName),
-    firstName: escapeHtml(profile.firstName.trim()),
-    lastName: escapeHtml(profile.lastName.trim()),
-    title: escapeHtml(profile.title.trim()),
+    fullName: hasName ? escapeHtml(fullName) : '',
+    firstName: pHidden.includes('firstName') ? '' : escapeHtml(profile.firstName.trim()),
+    lastName: pHidden.includes('lastName') ? '' : escapeHtml(profile.lastName.trim()),
+    title: hasTitle ? escapeHtml(profile.title.trim()) : '',
     email: escapeHtml(profile.email.trim()),
     officePhone: escapeHtml(officePhone),
     officePhoneTelHref: escapeHtml(officePhoneTelHref),
     mobilePhone: escapeHtml(mobilePhone),
     mobilePhoneTelHref: escapeHtml(mobilePhoneTelHref),
-    avatarUrl: escapeHtml(avatarUrl),
-    logoUrl: escapeHtml(logoUrl),
+    avatarUrl: pHidden.includes('avatarUrl') ? '' : escapeHtml(avatarUrl),
+    logoUrl: bHidden.includes('logoUrl') ? '' : escapeHtml(logoUrl),
     logoLink: escapeHtml(logoLinkForHref),
     logoWidth: logoWidthStr,
     logoDisplayHeight: logoDisplayHeightStr,
@@ -1597,9 +1601,9 @@ export function mergeRenderContext(
     creatorPanelColor: escapeHtml(creatorPanelColor),
     creatorAccentColor: escapeHtml(creatorAccentColor),
     fontFamily: escapeHtml(brand.fontFamily.trim()),
-    companyName: escapeHtml(brand.companyName.trim()),
-    website: escapeHtml(website),
-    websiteDisplay: escapeHtml(websiteDisplay),
+    companyName: bHidden.includes('companyName') ? '' : escapeHtml(brand.companyName.trim()),
+    website: bHidden.includes('website') ? '' : escapeHtml(website),
+    websiteDisplay: bHidden.includes('website') ? '' : escapeHtml(websiteDisplay),
     linkedin: escapeHtml(linkedin),
     facebook: escapeHtml(facebook),
     instagram: escapeHtml(instagram),
