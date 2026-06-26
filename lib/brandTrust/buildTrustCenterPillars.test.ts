@@ -79,6 +79,38 @@ describe('buildTrustCenterPillars', () => {
     );
   });
 
+  it('includes personalized SPF dnsRecords for softfail deliverability issues', () => {
+    const scan = baseScan({
+      categories: baseScan().categories.map((c) =>
+        c.category === 'spf' ? { ...c, status: 'warn', points: 15 } : c,
+      ),
+      issues: [
+        {
+          category: 'spf',
+          severity: 'warn',
+          title: 'SPF uses softfail (~all)',
+          explanation: 'Softfail is acceptable for many teams.',
+          recommendation: 'Consider -all.',
+          technicalDetail: 'v=spf1 include:_spf.google.com ~all',
+          dnsRecords: [
+            {
+              type: 'TXT',
+              host: '@',
+              value: 'v=spf1 include:_spf.google.com -all',
+            },
+          ],
+        },
+      ],
+    });
+    const deliverability = buildTrustCenterPillars(scan, bimiReady).find(
+      (p) => p.id === 'deliverability',
+    );
+    assert.equal(deliverability?.status, 'needs_action');
+    assert.ok(
+      deliverability?.deliverabilityIssues?.[0]?.dnsRecords?.[0]?.value.includes('-all'),
+    );
+  });
+
   it('computes summary with action count', () => {
     const scan = baseScan({
       categories: baseScan().categories.map((c) =>

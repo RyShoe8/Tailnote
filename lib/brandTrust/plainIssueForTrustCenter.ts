@@ -5,6 +5,10 @@ export type PlainIssueCopy = {
   nextStep: string;
 };
 
+export type PlainIssueOptions = {
+  domain?: string;
+};
+
 function lowerFirst(s: string): string {
   if (!s) return s;
   return s.charAt(0).toLowerCase() + s.slice(1);
@@ -137,7 +141,31 @@ function dmarcPlain(issue: DomainIssue): PlainIssueCopy | null {
   return null;
 }
 
-export function plainIssueForTrustCenter(issue: DomainIssue): PlainIssueCopy {
+function dnsAwareNextStep(issue: DomainIssue, domain: string | undefined, fallback: string): string {
+  const records = (issue.dnsRecords ?? []).filter((r) => !r.exampleOnly);
+  if (!records.length || !domain) return fallback;
+  const host = records[0]!.host;
+  if (host === '@') {
+    return `Edit the TXT record at @ for ${domain} and replace it with the value below.`;
+  }
+  if (host === '_dmarc') {
+    return `Edit the TXT record at _dmarc.${domain} and replace it with the value below.`;
+  }
+  return `Edit the ${records[0]!.type} record for ${domain} and replace it with the value below.`;
+}
+
+function finalizePlainCopy(
+  issue: DomainIssue,
+  copy: PlainIssueCopy,
+  options?: PlainIssueOptions,
+): PlainIssueCopy {
+  return {
+    summary: copy.summary,
+    nextStep: dnsAwareNextStep(issue, options?.domain, copy.nextStep),
+  };
+}
+
+export function plainIssueForTrustCenter(issue: DomainIssue, options?: PlainIssueOptions): PlainIssueCopy {
   const specialized =
     issue.category === 'spf'
       ? spfPlain(issue)
@@ -147,7 +175,7 @@ export function plainIssueForTrustCenter(issue: DomainIssue): PlainIssueCopy {
           ? dmarcPlain(issue)
           : null;
 
-  if (specialized) return specialized;
+  if (specialized) return finalizePlainCopy(issue, specialized, options);
 
   const defaults = defaultForCategory(issue.category);
   const hasCustomExplanation =
@@ -157,15 +185,19 @@ export function plainIssueForTrustCenter(issue: DomainIssue): PlainIssueCopy {
     !issue.explanation.toLowerCase().includes('dmarc');
 
   if (hasCustomExplanation) {
-    return {
-      summary: stripAcronymsFromCard(issue.explanation),
-      nextStep: issue.recommendation
-        ? stripAcronymsFromCard(issue.recommendation)
-        : defaults.nextStep,
-    };
+    return finalizePlainCopy(
+      issue,
+      {
+        summary: stripAcronymsFromCard(issue.explanation),
+        nextStep: issue.recommendation
+          ? stripAcronymsFromCard(issue.recommendation)
+          : defaults.nextStep,
+      },
+      options,
+    );
   }
 
-  return defaults;
+  return finalizePlainCopy(issue, defaults, options);
 }
 
 /** Short phrase for pillar card body (no period). */

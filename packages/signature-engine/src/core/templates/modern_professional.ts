@@ -1,7 +1,7 @@
 /**
  * Modern Professional layout — 3 column design
  * Left: vertical social icons in pill box
- * Middle: Logo, Name, Title, Company, Info
+ * Middle: Logo, Name, Title, Company, Info (+ avatar nested beside info)
  * Right: Promotional content blocks / image
  */
 export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
@@ -74,60 +74,64 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
 </style>
 <table class="sig-mp-card-shell" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;max-width:660px;width:100%;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background-color:#ffffff;">
   <tr>
-    <td style="padding:24px 24px;">
-      <table class="sig-mp-header-layout-table" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;font-family: {{fontFamily}}, Arial, Helvetica, sans-serif; font-size:14px; color:#111827; line-height:1.4;">
+    <td style="padding:16px 18px;">
+      <table class="sig-mp-header-layout-table" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;font-family: {{fontFamily}}, Arial, Helvetica, sans-serif; font-size:14px; color:#111827; line-height:1.3;">
         <tr>
           <!-- Left Column: Social Icons -->
           {{#if showSocialBlock}}
-          <td data-sig-field="socialLinks" class="sig-social-col" width="40" valign="top" style="vertical-align:top;padding-right:24px;">
+          <td data-sig-field="socialLinks" class="sig-social-col" width="40" valign="top" style="vertical-align:top;padding-right:12px;">
             <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border:1px solid #e5e7eb;border-radius:24px;width:40px;text-align:center;">
-              <tr><td style="padding-top:12px;padding-bottom:12px;">
+              <tr><td style="padding-top:8px;padding-bottom:8px;">
                 <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
-                  {{#if hasWebsite}}<tr><td style="padding-bottom:16px;"><a href="{{website}}"><img src="{{iconGlobe}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasLinkedin}}<tr><td style="padding-bottom:16px;"><a href="{{linkedin}}"><img src="{{iconLinkedin}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasInstagram}}<tr><td style="padding-bottom:16px;"><a href="{{instagram}}"><img src="{{iconInstagram}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasFacebook}}<tr><td style="padding-bottom:16px;"><a href="{{facebook}}"><img src="{{iconFacebook}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasYoutube}}<tr><td style="padding-bottom:16px;"><a href="{{youtube}}"><img src="{{iconYoutube}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasReddit}}<tr><td style="padding-bottom:16px;"><a href="{{reddit}}"><img src="{{iconReddit}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasDiscord}}<tr><td style="padding-bottom:16px;"><a href="{{discord}}"><img src="{{iconDiscord}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasBluesky}}<tr><td style="padding-bottom:16px;"><a href="{{bluesky}}"><img src="{{iconBluesky}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasWebsite}}<tr><td style="padding-bottom:11px;"><a href="{{website}}"><img src="{{iconGlobe}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasLinkedin}}<tr><td style="padding-bottom:11px;"><a href="{{linkedin}}"><img src="{{iconLinkedin}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasInstagram}}<tr><td style="padding-bottom:11px;"><a href="{{instagram}}"><img src="{{iconInstagram}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasFacebook}}<tr><td style="padding-bottom:11px;"><a href="{{facebook}}"><img src="{{iconFacebook}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasYoutube}}<tr><td style="padding-bottom:11px;"><a href="{{youtube}}"><img src="{{iconYoutube}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasReddit}}<tr><td style="padding-bottom:11px;"><a href="{{reddit}}"><img src="{{iconReddit}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasDiscord}}<tr><td style="padding-bottom:11px;"><a href="{{discord}}"><img src="{{iconDiscord}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasBluesky}}<tr><td style="padding-bottom:11px;"><a href="{{bluesky}}"><img src="{{iconBluesky}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
                 </table>
               </td></tr>
             </table>
           </td>
           {{/if}}
 
-          <!-- Middle Column: Info -->
-          <td class="sig-info-col" valign="top" style="vertical-align:top;padding-right:24px;">
-            {{mpMiddleColumnHtml}}
+          <!-- Main Column: Info + Avatar (nested) -->
+          <td class="sig-mp-main-col" valign="top" style="vertical-align:top;padding-right:12px;">
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;">
+              <tr>
+                <td class="sig-info-col" valign="top" style="vertical-align:top;padding-right:12px;">
+                  {{mpMiddleColumnHtml}}
+                </td>
+                {{#if hasAvatar}}
+                <td data-sig-field="avatar" class="sig-avatar-col" width="100" valign="top" style="vertical-align:top;width:100px;">
+                  <div style="display:inline-block;width:100px;height:92px;overflow:hidden;">
+                    <svg width="100" height="92" viewBox="0 0 100 92" style="display:block;" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <clipPath id="sig-mp-avatar-clip">
+                          <polygon points="42,0 100,0 73,92 15,92" />
+                        </clipPath>
+                      </defs>
+                      <!-- Horizontal grey line at bottom-left -->
+                      <line x1="0" y1="61" x2="15" y2="61" stroke="#e5e7eb" stroke-width="3" />
+                      <!-- Thin accent slash -->
+                      <polygon points="31,0 37,0 10,92 4,92" fill="#e5e7eb" />
+                      <!-- Avatar image with clip path -->
+                      <g clip-path="url(#sig-mp-avatar-clip)">
+                        <image href="{{avatarUrl}}" x="15" y="0" width="85" height="92" preserveAspectRatio="xMidYMid slice" />
+                      </g>
+                    </svg>
+                  </div>
+                </td>
+                {{/if}}
+              </tr>
+            </table>
           </td>
-
-          <!-- Right Column: Avatar -->
-          {{#if hasAvatar}}
-          <td data-sig-field="avatar" class="sig-avatar-col" width="130" valign="top" style="vertical-align:top;padding-right:0;text-align:right;">
-            <div style="display:inline-block;width:130px;height:120px;overflow:hidden;">
-              <svg width="130" height="120" viewBox="0 0 130 120" style="display:block;" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <clipPath id="sig-mp-avatar-clip">
-                    <polygon points="55,0 130,0 95,120 20,120" />
-                  </clipPath>
-                </defs>
-                <!-- Horizontal grey line at bottom-left -->
-                <line x1="0" y1="80" x2="20" y2="80" stroke="#e5e7eb" stroke-width="3" />
-                <!-- Thin accent slash -->
-                <polygon points="40,0 48,0 13,120 5,120" fill="#e5e7eb" />
-                <!-- Avatar image with clip path -->
-                <g clip-path="url(#sig-mp-avatar-clip)">
-                  <image href="{{avatarUrl}}" x="20" y="0" width="110" height="120" preserveAspectRatio="xMidYMid slice" />
-                </g>
-              </svg>
-            </div>
-          </td>
-          {{/if}}
 
           <!-- Right Column: Promo Blocks / Image -->
           {{#if hasContentBlocks}}
-          <td class="sig-blocks-desktop" valign="top" width="220" style="vertical-align:top; border-left:1px solid #e5e7eb; padding-left:24px;">
+          <td class="sig-blocks-desktop" valign="top" width="220" style="vertical-align:top; border-left:1px solid #e5e7eb; padding-left:16px;">
             {{contentBlocksHtml}}
           </td>
           {{/if}}
@@ -138,7 +142,7 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
       {{#if hasContentBlocks}}
       <table class="sig-root-layout-table" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;font-family: {{fontFamily}}, Arial, Helvetica, sans-serif;">
         <tr class="sig-blocks-stacked-row" style="display:none;max-height:0;overflow:hidden;mso-hide:all;">
-          <td style="padding-top:20px;border-top:1px solid #e5e7eb;margin-top:20px;">
+          <td style="padding-top:14px;border-top:1px solid #e5e7eb;margin-top:14px;">
             {{contentBlocksHtmlStacked}}
           </td>
         </tr>

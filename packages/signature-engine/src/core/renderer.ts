@@ -1348,7 +1348,7 @@ export function mergeRenderContext(
     let contactRowsHtml = '';
     const flushContactRows = () => {
       if (contactRowsHtml) {
-        mpMiddleColumnHtml += `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:14px;color:#111827;line-height:1.5;">${contactRowsHtml}</table>`;
+        mpMiddleColumnHtml += `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:14px;color:#111827;line-height:1.35;">${contactRowsHtml}</table>`;
         contactRowsHtml = '';
       }
     };
@@ -1364,7 +1364,7 @@ export function mergeRenderContext(
             ? `<img src="${escapeHtml(logoUrl)}" width="${escapeHtml(logoWidthStr)}" border="0" alt="" style="display:block;max-width:${escapeHtml(logoWidthStr)}px;width:${escapeHtml(logoWidthStr)}px;height:auto;border:0;outline:none;text-decoration:none;border-radius:${escapeHtml(logoImgBorderRadius)};" />`
             : '';
           mpMiddleColumnHtml += `
-            <div data-sig-field="logo" style="margin-bottom:16px;">
+            <div data-sig-field="logo" style="margin-bottom:6px;">
               <a href="${escapeHtml(logoLinkForHref)}" style="text-decoration:none; border:0; outline:none; display:block;">
                 ${sizedImg}
                 ${autoImg}
@@ -1376,7 +1376,7 @@ export function mergeRenderContext(
         flushContactRows();
         if (hasName) {
           mpMiddleColumnHtml += `
-            <div data-sig-field="name" style="font-size:18px; font-weight:700; color:#111827; line-height:1.2; margin-bottom:4px; letter-spacing:-0.2px;">
+            <div data-sig-field="name" style="font-size:18px; font-weight:700; color:#111827; line-height:1.2; margin-bottom:2px; letter-spacing:-0.2px;">
               ${escapeHtml(fullName)}
             </div>
           `;
@@ -1385,7 +1385,7 @@ export function mergeRenderContext(
         flushContactRows();
         if (hasTitle) {
           mpMiddleColumnHtml += `
-            <div data-sig-field="title" style="font-size:14px; color:#4B5563; margin-bottom:16px;">
+            <div data-sig-field="title" style="font-size:14px; color:#4B5563; margin-bottom:4px;">
               ${escapeHtml(profile.title.trim())}
             </div>
           `;
@@ -1394,7 +1394,7 @@ export function mergeRenderContext(
         flushContactRows();
         if (showAddressBlock) {
           mpMiddleColumnHtml += `
-            <div data-sig-field="address" style="margin-top: 16px; font-size: 12px; color: #6b7280; line-height: 1.4;">
+            <div data-sig-field="address" style="margin-top: 6px; font-size: 12px; color: #6b7280; line-height: 1.4;">
               ${addressBlockHtml}
             </div>
           `;
@@ -1403,27 +1403,27 @@ export function mergeRenderContext(
         switch(field) {
           case 'companyName':
             if (brand.companyName && !bHidden.includes('companyName')) {
-              contactRowsHtml += `<tr><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="companyName" style="display:inline-block;font-weight:700;color:#111827;">${escapeHtml(brand.companyName)}</div></td></tr>`;
+              contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="companyName" style="display:inline-block;font-weight:700;color:#111827;">${escapeHtml(brand.companyName)}</div></td></tr>`;
             }
             break;
           case 'email':
             if (profile.email && !pHidden.includes('email')) {
-              contactRowsHtml += `<tr><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="email" style="display:inline-block;"><a href="mailto:${escapeHtml(profile.email)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.email)}</a></div></td></tr>`;
+              contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="email" style="display:inline-block;"><a href="mailto:${escapeHtml(profile.email)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.email)}</a></div></td></tr>`;
             }
             break;
           case 'website':
             if (brand.website && !bHidden.includes('website')) {
-              contactRowsHtml += `<tr><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="website" style="display:inline-block;"><a href="${escapeHtml(brand.website)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(websiteDisplay)}</a></div></td></tr>`;
+              contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="website" style="display:inline-block;"><a href="${escapeHtml(brand.website)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(websiteDisplay)}</a></div></td></tr>`;
             }
             break;
           case 'officePhone':
             if (profile.officePhone && !pHidden.includes('officePhone')) {
-              contactRowsHtml += `<tr><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="officePhone" style="display:inline-block;"><a href="${escapeHtml(officePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.officePhone)}</a></div></td></tr>`;
+              contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="officePhone" style="display:inline-block;"><a href="${escapeHtml(officePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.officePhone)}</a></div></td></tr>`;
             }
             break;
           case 'mobilePhone':
             if (profile.mobilePhone && !pHidden.includes('mobilePhone')) {
-              contactRowsHtml += `<tr><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="mobilePhone" style="display:inline-block;"><a href="${escapeHtml(mobilePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">M: ${escapeHtml(profile.mobilePhone)}</a></div></td></tr>`;
+              contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="mobilePhone" style="display:inline-block;"><a href="${escapeHtml(mobilePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">M: ${escapeHtml(profile.mobilePhone)}</a></div></td></tr>`;
             }
             break;
         }

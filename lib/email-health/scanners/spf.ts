@@ -1,11 +1,17 @@
 import { flattenTxt, resolveTxtRecords } from '@/lib/email-health/dns';
 import { buildCategoryResult } from '@/lib/email-health/scoring';
+import { suggestSpfTxtFix } from '@/lib/email-health/spfSuggestions';
 import type { CategoryResult, DomainIssue } from '@/lib/email-health/types';
 
 export type SpfScanResult = {
   category: CategoryResult;
   issues: DomainIssue[];
 };
+
+function spfDnsFix(record: string) {
+  const fix = suggestSpfTxtFix(record);
+  return fix ? [fix] : undefined;
+}
 
 export async function scanSpf(domain: string): Promise<SpfScanResult> {
   const issues: DomainIssue[] = [];
@@ -81,6 +87,7 @@ export async function scanSpf(domain: string): Promise<SpfScanResult> {
         'Save DNS and rescan after propagation.',
       ],
       technicalDetail: spf,
+      dnsRecords: spfDnsFix(spf),
     });
   } else if (lower.includes('?all')) {
     status = 'warn';
@@ -98,6 +105,7 @@ export async function scanSpf(domain: string): Promise<SpfScanResult> {
         'Rescan after DNS updates.',
       ],
       technicalDetail: spf,
+      dnsRecords: spfDnsFix(spf),
     });
   } else if (lower.includes('~all')) {
     status = 'warn';
@@ -116,6 +124,7 @@ export async function scanSpf(domain: string): Promise<SpfScanResult> {
         'Rescan after the change propagates.',
       ],
       technicalDetail: spf,
+      dnsRecords: spfDnsFix(spf),
     });
   } else if (!lower.includes('-all') && !lower.includes('~all')) {
     status = 'warn';
@@ -133,6 +142,7 @@ export async function scanSpf(domain: string): Promise<SpfScanResult> {
         'Save and rescan.',
       ],
       technicalDetail: spf,
+      dnsRecords: spfDnsFix(spf),
     });
   }
 

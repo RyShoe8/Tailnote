@@ -35,6 +35,11 @@ export function TrustCenterPostScan({
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
+      <div className="space-y-1">
+        <h2 className="text-xl font-semibold tracking-tight text-foreground">{scan.domain}</h2>
+        <p className="text-sm text-muted-foreground">Scan results</p>
+      </div>
+
       <div className="flex flex-wrap items-start justify-between gap-4">
         <p className="text-lg font-medium text-foreground">{summary}</p>
         <Button

@@ -53,4 +53,26 @@ describe('plainIssueForTrustCenter', () => {
     assert.match(plain.summary, /impersonation policy/i);
     assert.doesNotMatch(plain.summary, /\bDMARC\b/);
   });
+
+  it('uses domain-aware next step when a DNS fix record is present', () => {
+    const plain = plainIssueForTrustCenter(
+      issue({
+        category: 'spf',
+        title: 'SPF uses softfail (~all)',
+        explanation: 'Softfail is acceptable for many teams.',
+        recommendation: 'Consider -all.',
+        technicalDetail: 'v=spf1 include:_spf.google.com ~all',
+        dnsRecords: [
+          {
+            type: 'TXT',
+            host: '@',
+            value: 'v=spf1 include:_spf.google.com -all',
+          },
+        ],
+      }),
+      { domain: 'acme.com' },
+    );
+    assert.match(plain.nextStep, /acme\.com/);
+    assert.match(plain.nextStep, /replace it with the value below/i);
+  });
 });

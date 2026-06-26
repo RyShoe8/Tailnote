@@ -1466,8 +1466,12 @@ assert.ok(
   'modern_professional: no stray brace before logo',
 );
 assert.ok(
-  htmlModernProfessional.includes('padding-bottom:16px'),
-  'modern_professional: social icons use increased vertical spacing',
+  htmlModernProfessional.includes('sig-mp-main-col'),
+  'modern_professional: info and avatar nested in sig-mp-main-col',
+);
+assert.ok(
+  htmlModernProfessional.includes('padding-bottom:11px'),
+  'modern_professional: social icons use compact vertical spacing',
 );
 
 process.stdout.write('email-client-smoke: all checks passed.\n');

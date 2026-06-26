@@ -1,4 +1,5 @@
 import { fetchDmarcRecord, parseDmarcRecord, parseDmarcTag } from '@/lib/email-health/dmarc';
+import { suggestDmarcAddRua, suggestDmarcPct100 } from '@/lib/email-health/dmarcSuggestions';
 import { buildCategoryResult } from '@/lib/email-health/scoring';
 import type { CategoryResult, DomainIssue } from '@/lib/email-health/types';
 
@@ -120,6 +121,7 @@ export async function scanDmarc(domain: string): Promise<DmarcScanResult> {
 
   if (!rua && !ruf) {
     status = status === 'pass' ? 'warn' : status;
+    const ruaFix = suggestDmarcAddRua(dmarc, domain);
     issues.push({
       category: 'dmarc',
       severity: 'warn',
@@ -133,11 +135,13 @@ export async function scanDmarc(domain: string): Promise<DmarcScanResult> {
         'Save DNS and confirm reports arrive within a few days, then rescan.',
       ],
       technicalDetail: dmarc,
+      dnsRecords: ruaFix ? [ruaFix] : undefined,
     });
   }
 
   if (pct && pct !== '100' && policy !== 'none') {
     status = status === 'pass' ? 'warn' : status;
+    const pctFix = suggestDmarcPct100(dmarc);
     issues.push({
       category: 'dmarc',
       severity: 'warn',
@@ -151,6 +155,7 @@ export async function scanDmarc(domain: string): Promise<DmarcScanResult> {
         'Rescan after DNS propagation.',
       ],
       technicalDetail: dmarc,
+      dnsRecords: pctFix ? [pctFix] : undefined,
     });
   }
 
