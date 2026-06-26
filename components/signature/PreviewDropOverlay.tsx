@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 
-/** Fields that can be freely reordered in the preview center column. */
 const REORDERABLE_FIELDS = new Set([
   'logo',
   'name',
@@ -13,9 +12,7 @@ const REORDERABLE_FIELDS = new Set([
   'website',
   'address',
   'officePhone',
-  'mobilePhone',
-  'avatar',
-  'socialLinks'
+  'mobilePhone'
 ]);
 
 /** Human-readable labels for contact fields. */

@@ -199,7 +199,8 @@ export function SignatureWorkspace() {
   }, []);
 
   const handleContactReorder = useCallback(
-    (fieldId: string, insertAfterField: string | null) => {
+    (rawFieldId: string, insertAfterField: string | null) => {
+      const fieldId = rawFieldId === 'firstName' || rawFieldId === 'lastName' ? 'name' : rawFieldId === 'avatarUrl' ? 'avatar' : rawFieldId === 'logoUrl' ? 'logo' : rawFieldId;
       const defaultOrder = ['logo', 'name', 'title', 'companyName', 'email', 'website', 'address', 'officePhone', 'mobilePhone'];
       const currentOrder = profile.contactDisplayOrder?.length
         ? [...profile.contactDisplayOrder]
