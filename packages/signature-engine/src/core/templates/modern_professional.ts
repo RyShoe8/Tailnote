@@ -81,16 +81,16 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
           {{#if showSocialBlock}}
           <td data-sig-field="socialLinks" class="sig-social-col" width="40" valign="top" style="vertical-align:top;padding-right:24px;">
             <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border:1px solid #e5e7eb;border-radius:24px;width:40px;text-align:center;">
-              <tr><td style="padding-top:12px;">
+              <tr><td style="padding-top:12px;padding-bottom:12px;">
                 <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
-                  {{#if hasWebsite}}<tr><td style="padding-bottom:12px;"><a href="{{website}}"><img src="{{iconGlobe}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasLinkedin}}<tr><td style="padding-bottom:12px;"><a href="{{linkedin}}"><img src="{{iconLinkedin}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasInstagram}}<tr><td style="padding-bottom:12px;"><a href="{{instagram}}"><img src="{{iconInstagram}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasFacebook}}<tr><td style="padding-bottom:12px;"><a href="{{facebook}}"><img src="{{iconFacebook}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasYoutube}}<tr><td style="padding-bottom:12px;"><a href="{{youtube}}"><img src="{{iconYoutube}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasReddit}}<tr><td style="padding-bottom:12px;"><a href="{{reddit}}"><img src="{{iconReddit}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasDiscord}}<tr><td style="padding-bottom:12px;"><a href="{{discord}}"><img src="{{iconDiscord}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasBluesky}}<tr><td style="padding-bottom:12px;"><a href="{{bluesky}}"><img src="{{iconBluesky}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasWebsite}}<tr><td style="padding-bottom:16px;"><a href="{{website}}"><img src="{{iconGlobe}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasLinkedin}}<tr><td style="padding-bottom:16px;"><a href="{{linkedin}}"><img src="{{iconLinkedin}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasInstagram}}<tr><td style="padding-bottom:16px;"><a href="{{instagram}}"><img src="{{iconInstagram}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasFacebook}}<tr><td style="padding-bottom:16px;"><a href="{{facebook}}"><img src="{{iconFacebook}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasYoutube}}<tr><td style="padding-bottom:16px;"><a href="{{youtube}}"><img src="{{iconYoutube}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasReddit}}<tr><td style="padding-bottom:16px;"><a href="{{reddit}}"><img src="{{iconReddit}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasDiscord}}<tr><td style="padding-bottom:16px;"><a href="{{discord}}"><img src="{{iconDiscord}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasBluesky}}<tr><td style="padding-bottom:16px;"><a href="{{bluesky}}"><img src="{{iconBluesky}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
                 </table>
               </td></tr>
             </table>
@@ -99,7 +99,7 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
 
           <!-- Middle Column: Info -->
           <td class="sig-info-col" valign="top" style="vertical-align:top;padding-right:24px;">
-            {{{mpMiddleColumnHtml}}}
+            {{mpMiddleColumnHtml}}
           </td>
 
           <!-- Right Column: Avatar -->

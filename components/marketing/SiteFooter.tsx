@@ -63,6 +63,28 @@ function MediaShopCopyright() {
   );
 }
 
+function FeaturedOnSection({ centered = false }: { centered?: boolean }) {
+  return (
+    <div className={centered ? 'text-center' : ''}>
+      <p className="mb-3 text-sm font-medium text-foreground">Featured On</p>
+      <a
+        href="https://marketingdb.live"
+        target="_blank"
+        rel="noopener noreferrer nofollow sponsored"
+        className="inline-block opacity-90 transition-opacity hover:opacity-100"
+      >
+        <img
+          src="https://marketingdb.live/badge.svg"
+          alt="Listed on MarketingDB"
+          width={190}
+          height={44}
+          className="h-11 w-auto"
+        />
+      </a>
+    </div>
+  );
+}
+
 export function SiteFooter({ variant = 'full' }: SiteFooterProps) {
   if (variant === 'compact') {
     return (
@@ -78,6 +100,7 @@ export function SiteFooter({ variant = 'full' }: SiteFooterProps) {
                 <FooterLink key={item.href} href={item.href} label={item.label} />
               ))}
             </nav>
+            <FeaturedOnSection centered />
             <MediaShopCopyright />
             <RecaptchaNotice />
           </div>
@@ -145,7 +168,10 @@ export function SiteFooter({ variant = 'full' }: SiteFooterProps) {
             </ul>
           </div>
         </div>
-        <div className="mt-10 flex flex-col gap-3 border-t border-slate-200/70 pt-8 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 border-t border-slate-200/70 pt-8">
+          <FeaturedOnSection />
+        </div>
+        <div className="mt-8 flex flex-col gap-3 border-t border-slate-200/70 pt-8 sm:flex-row sm:items-center sm:justify-between">
           <MediaShopCopyright />
           <p className="text-sm text-muted-foreground">
             Tailnote is operated by{' '}

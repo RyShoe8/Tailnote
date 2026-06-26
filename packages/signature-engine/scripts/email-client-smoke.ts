@@ -1460,5 +1460,14 @@ assert.match(
   /color:#111827;text-decoration:none;[^>]*>test@example.com<\/a>/,
   'modern_professional: email link has dark grey/black color and no underline'
 );
+assert.ok(!htmlModernProfessional.includes('{{{'), 'modern_professional: no unprocessed template braces');
+assert.ok(
+  !htmlModernProfessional.match(/\{<div data-sig-field="logo"/),
+  'modern_professional: no stray brace before logo',
+);
+assert.ok(
+  htmlModernProfessional.includes('padding-bottom:16px'),
+  'modern_professional: social icons use increased vertical spacing',
+);
 
 process.stdout.write('email-client-smoke: all checks passed.\n');
