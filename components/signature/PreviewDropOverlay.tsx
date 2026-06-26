@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useDroppable } from '@dnd-kit/core';
 
 /** Contact row fields that can be reordered in the preview. */
 const CONTACT_ROW_FIELDS = new Set([
@@ -48,7 +49,6 @@ type Props = {
   wrapperRef: React.RefObject<HTMLDivElement | null>;
   isDragging: boolean;
   draggedFieldId: string | null;
-  onReorder: (fieldId: string, insertAfterField: string | null) => void;
 };
 
 /**
@@ -60,12 +60,10 @@ export function PreviewDropOverlay({
   wrapperRef,
   isDragging,
   draggedFieldId,
-  onReorder,
 }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [dropZones, setDropZones] = useState<DropZone[]>([]);
   const [fieldHighlight, setFieldHighlight] = useState<FieldHighlight | null>(null);
-  const [hoveredZoneId, setHoveredZoneId] = useState<string | null>(null);
 
   // Measure element positions and build drop zones + highlight
   const measure = useCallback(() => {
@@ -176,33 +174,6 @@ export function PreviewDropOverlay({
     return () => window.removeEventListener('resize', handler);
   }, [isDragging, measure]);
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent, zone: DropZone) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const fieldId = e.dataTransfer.getData('application/sig-field');
-      if (fieldId) {
-        onReorder(fieldId, zone.insertAfterField);
-      }
-      setHoveredZoneId(null);
-    },
-    [onReorder]
-  );
-
-  const handleDragOver = useCallback((e: React.DragEvent, zoneId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.dataTransfer.dropEffect = 'move';
-    setHoveredZoneId(zoneId);
-  }, []);
-
-  const handleOverlayDragLeave = useCallback((e: React.DragEvent) => {
-    // Only reset if truly leaving the overlay (not moving between children)
-    if (!overlayRef.current?.contains(e.relatedTarget as Node)) {
-      setHoveredZoneId(null);
-    }
-  }, []);
-
   if (!isDragging) return null;
 
   const isContactField =
@@ -221,15 +192,6 @@ export function PreviewDropOverlay({
         zIndex: 20,
         pointerEvents: 'auto',
         borderRadius: 8,
-      }}
-      onDragOver={(e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-      }}
-      onDragLeave={handleOverlayDragLeave}
-      onDrop={(e) => {
-        e.preventDefault();
-        setHoveredZoneId(null);
       }}
     >
       {/* Subtle backdrop */}
@@ -287,96 +249,99 @@ export function PreviewDropOverlay({
       )}
 
       {/* Drop zone insertion lines */}
-      {dropZones.map((zone) => {
-        const isHovered = hoveredZoneId === zone.id;
-        return (
-          <div
-            key={zone.id}
-            style={{
-              position: 'absolute',
-              top: zone.top - 14,
-              left: zone.left - 4,
-              width: zone.width + 8,
-              height: 28,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'copy',
-              borderRadius: 4,
-            }}
-            onDragOver={(e) => handleDragOver(e, zone.id)}
-            onDragLeave={() => setHoveredZoneId(null)}
-            onDrop={(e) => handleDrop(e, zone)}
+      {dropZones.map((zone) => (
+        <DroppableZone key={zone.id} zone={zone} />
+      ))}
+    </div>
+  );
+}
+
+function DroppableZone({ zone }: { zone: DropZone }) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: zone.id,
+    data: zone, // Pass zone data so onDragEnd can read insertAfterField
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        position: 'absolute',
+        top: zone.top - 14,
+        left: zone.left - 4,
+        width: zone.width + 8,
+        height: 28,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {/* The glowing line */}
+      <div
+        style={{
+          width: '100%',
+          height: isOver ? 3 : 2,
+          backgroundColor: isOver
+            ? 'rgba(59, 130, 246, 0.85)'
+            : 'rgba(59, 130, 246, 0.35)',
+          borderRadius: 2,
+          boxShadow: isOver
+            ? '0 0 8px rgba(59, 130, 246, 0.5), 0 0 2px rgba(59, 130, 246, 0.3)'
+            : '0 0 3px rgba(59, 130, 246, 0.15)',
+          transition: 'all 0.12s ease',
+          position: 'relative',
+        }}
+      >
+        {/* Center plus icon */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: isOver ? 20 : 16,
+            height: isOver ? 20 : 16,
+            borderRadius: '50%',
+            backgroundColor: isOver
+              ? 'rgba(59, 130, 246, 0.9)'
+              : 'rgba(59, 130, 246, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.12s ease',
+            boxShadow: isOver
+              ? '0 0 6px rgba(59, 130, 246, 0.4)'
+              : 'none',
+          }}
+        >
+          <svg
+            width={isOver ? 12 : 10}
+            height={isOver ? 12 : 10}
+            viewBox="0 0 12 12"
+            fill="none"
+            style={{ transition: 'all 0.12s ease' }}
           >
-            {/* The glowing line */}
-            <div
-              style={{
-                width: '100%',
-                height: isHovered ? 3 : 2,
-                backgroundColor: isHovered
-                  ? 'rgba(59, 130, 246, 0.85)'
-                  : 'rgba(59, 130, 246, 0.35)',
-                borderRadius: 2,
-                boxShadow: isHovered
-                  ? '0 0 8px rgba(59, 130, 246, 0.5), 0 0 2px rgba(59, 130, 246, 0.3)'
-                  : '0 0 3px rgba(59, 130, 246, 0.15)',
-                transition: 'all 0.12s ease',
-                position: 'relative',
-              }}
-            >
-              {/* Center plus icon */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: isHovered ? 20 : 16,
-                  height: isHovered ? 20 : 16,
-                  borderRadius: '50%',
-                  backgroundColor: isHovered
-                    ? 'rgba(59, 130, 246, 0.9)'
-                    : 'rgba(59, 130, 246, 0.5)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.12s ease',
-                  boxShadow: isHovered
-                    ? '0 0 6px rgba(59, 130, 246, 0.4)'
-                    : 'none',
-                }}
-              >
-                <svg
-                  width={isHovered ? 12 : 10}
-                  height={isHovered ? 12 : 10}
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  style={{ transition: 'all 0.12s ease' }}
-                >
-                  <line
-                    x1="6"
-                    y1="2"
-                    x2="6"
-                    y2="10"
-                    stroke="#fff"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <line
-                    x1="2"
-                    y1="6"
-                    x2="10"
-                    y2="6"
-                    stroke="#fff"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
-        );
-      })}
+            <line
+              x1="6"
+              y1="2"
+              x2="6"
+              y2="10"
+              stroke="#fff"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <line
+              x1="2"
+              y1="6"
+              x2="10"
+              y2="6"
+              stroke="#fff"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+      </div>
     </div>
   );
 }

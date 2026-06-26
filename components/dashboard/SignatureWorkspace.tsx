@@ -2,6 +2,18 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  useDraggable,
+} from '@dnd-kit/core';
+import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Move } from 'lucide-react';
 import {
   renderSignature,
@@ -42,6 +54,21 @@ import { hasAnalytics, hasBrandingRemoval } from '@/lib/billing/subscriptionAcce
 import { SignatureBimiTab } from '@/components/dashboard/SignatureBimiTab';
 import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 import { PreviewDropOverlay } from '@/components/signature/PreviewDropOverlay';
+
+function DraggableBrandHandle({ id }: { id: string }) {
+  const { attributes, listeners, setNodeRef } = useDraggable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className="cursor-grab text-muted-foreground hover:text-primary active:cursor-grabbing transition-colors"
+      title="Drag to preview to reposition"
+    >
+      <Move className="h-3.5 w-3.5" />
+    </div>
+  );
+}
 
 type OrgResponse = {
   companyName?: string;
@@ -174,7 +201,8 @@ export function SignatureWorkspace() {
   const [draggedFieldId, setDraggedFieldId] = useState<string | null>(null);
   const previewWrapperRef = useRef<HTMLDivElement>(null);
 
-  const handlePreviewDragStart = useCallback((fieldId: string) => {
+  const handlePreviewDragStart = useCallback((event: DragStartEvent) => {
+    const fieldId = String(event.active.id);
     setIsDraggingToPreview(true);
     setDraggedFieldId(fieldId);
   }, []);
@@ -213,6 +241,49 @@ export function SignatureWorkspace() {
       setDraggedFieldId(null);
     },
     [profile.contactDisplayOrder]
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      handlePreviewDragEnd();
+      const { active, over } = event;
+      if (!over) return;
+      
+      const activeId = String(active.id);
+      const overId = String(over.id);
+
+      // Dropped on a preview zone
+      if (overId.startsWith('zone-')) {
+        const zone = over.data.current;
+        if (zone) {
+          handleContactReorder(activeId, zone.insertAfterField);
+        }
+        return;
+      }
+
+      // Dropped on another form field (reordering details list)
+      if (activeId !== overId) {
+        setProfile((p) => {
+          const defaultOrder = ['avatarUrl', 'firstName', 'lastName', 'title', 'email', 'officePhone', 'mobilePhone'];
+          const currentOrder = p.detailOrder?.length ? p.detailOrder : defaultOrder;
+          // Ensure all fields are present
+          const activeItems = [...new Set([...currentOrder, ...defaultOrder])].filter((id) => defaultOrder.includes(id));
+          
+          const oldIndex = activeItems.indexOf(activeId);
+          const newIndex = activeItems.indexOf(overId);
+          if (oldIndex !== -1 && newIndex !== -1) {
+            return { ...p, detailOrder: arrayMove(activeItems, oldIndex, newIndex) };
+          }
+          return p;
+        });
+      }
+    },
+    [handleContactReorder, handlePreviewDragEnd]
   );
 
   const load = useCallback(async () => {
@@ -796,13 +867,14 @@ export function SignatureWorkspace() {
     const showPreviewColumn = isLgUp || mobilePane === 'preview';
 
     return (
-    <div
-      className={cn(
-        'grid lg:grid-cols-12 gap-8 items-start max-w-full min-w-0',
-        !isLgUp && 'pb-24'
-      )}
-    >
-      {showEditColumn ? (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handlePreviewDragStart} onDragEnd={handleDragEnd}>
+      <div
+        className={cn(
+          'grid lg:grid-cols-12 gap-8 items-start max-w-full min-w-0',
+          !isLgUp && 'pb-24'
+        )}
+      >
+        {showEditColumn ? (
       <div className="lg:col-span-5 xl:col-span-4 space-y-6 min-w-0">
         {showUpgradeNotice ? (
           <div className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
@@ -833,24 +905,15 @@ export function SignatureWorkspace() {
             <CardDescription>These values feed the signature engine for every employee.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="mb-2 space-y-1">
+              <p className="text-sm text-muted-foreground">
+                These values feed the signature engine for every employee. Drag fields to reorder them in your signature.
+              </p>
+            </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {isLgUp && (
-                    <div
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData('application/sig-field', 'companyName');
-                        e.dataTransfer.effectAllowed = 'move';
-                        handlePreviewDragStart('companyName');
-                      }}
-                      onDragEnd={handlePreviewDragEnd}
-                      className="cursor-grab text-muted-foreground hover:text-primary active:cursor-grabbing transition-colors"
-                      title="Drag to preview to reposition"
-                    >
-                      <Move className="h-3.5 w-3.5" />
-                    </div>
-                  )}
+                  {isLgUp && <DraggableBrandHandle id="companyName" />}
                   <Label className="cursor-pointer" onClick={() => toggleBrandHidden('companyName')}>Organization name</Label>
                 </div>
                 <Button
@@ -872,21 +935,7 @@ export function SignatureWorkspace() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {isLgUp && (
-                    <div
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData('application/sig-field', 'website');
-                        e.dataTransfer.effectAllowed = 'move';
-                        handlePreviewDragStart('website');
-                      }}
-                      onDragEnd={handlePreviewDragEnd}
-                      className="cursor-grab text-muted-foreground hover:text-primary active:cursor-grabbing transition-colors"
-                      title="Drag to preview to reposition"
-                    >
-                      <Move className="h-3.5 w-3.5" />
-                    </div>
-                  )}
+                  {isLgUp && <DraggableBrandHandle id="website" />}
                   <Label className="cursor-pointer" onClick={() => toggleBrandHidden('website')}>Website</Label>
                 </div>
                 <Button
@@ -1212,9 +1261,6 @@ export function SignatureWorkspace() {
                 <SignatureForm
                   value={profile}
                   onChange={setProfile}
-                  showPreviewDrag={isLgUp}
-                  onPreviewDragStart={handlePreviewDragStart}
-                  onPreviewDragEnd={handlePreviewDragEnd}
                 />
                 <div className="flex flex-wrap items-center gap-3">
                   <Button type="button" disabled={savingProfile} onClick={() => void handleSaveProfile()}>
@@ -1274,7 +1320,6 @@ export function SignatureWorkspace() {
                 wrapperRef={previewWrapperRef}
                 isDragging={isDraggingToPreview}
                 draggedFieldId={draggedFieldId}
-                onReorder={handleContactReorder}
               />
             )}
           </div>
@@ -1287,5 +1332,6 @@ export function SignatureWorkspace() {
         <MobileSignaturePaneBar pane={mobilePane} onPaneChange={setMobilePane} />
       ) : null}
     </div>
+    </DndContext>
   );
 }
