@@ -1271,7 +1271,7 @@ assert.doesNotMatch(
 assert.ok(htmlCreator.includes('123 Main St'), 'creator: address renders');
 assert.match(
   htmlCreator,
-  /icon-linkedin\.png[\s\S]*?123 Main St[\s\S]*?font-size: 22px/,
+  /icon-linkedin\.png[\s\S]*?123 Main St[\s\S]*?font-size: 11px/,
   'creator: address under social icons in left column'
 );
 assert.ok(htmlExecutive.includes('123 Main St'), 'executive: address renders');
@@ -1417,5 +1417,48 @@ const htmlQuoteHighlighted = renderSignature({
   publicSiteOrigin: origin,
 });
 assert.match(htmlQuoteHighlighted, /background-color:#f5f5f5/, 'quote: highlighted style');
+
+// Modern Professional layout tests
+const htmlModernProfessional = renderSignature({
+  profile: {
+    ...profile,
+    mobilePhone: '555-0200',
+    avatarUrl: 'https://example.com/images/avatar.png',
+  },
+  brand: {
+    ...mockSignatureBrand,
+    companyName: 'Cisco',
+    website: 'https://www.cisco.com',
+  },
+  template: {
+    id: 'modern-prof-smoke',
+    name: 'Modern Professional',
+    layout: 'modern_professional',
+    elements: [
+      { type: 'logo' },
+      { type: 'name' },
+      { type: 'title' },
+      { type: 'contact' },
+      { type: 'social' },
+      { type: 'address' },
+      { type: 'contentBlocks' },
+    ],
+  },
+  publicSiteOrigin: origin,
+});
+
+assert.ok(htmlModernProfessional.includes('sig-mp-card-shell'), 'modern_professional: card shell present');
+assert.ok(htmlModernProfessional.includes('icon-globe.png'), 'modern_professional: globe icon present in social column');
+assert.ok(htmlModernProfessional.includes('sig-mp-avatar-clip'), 'modern_professional: diagonal cropped avatar clipPath present');
+assert.match(
+  htmlModernProfessional,
+  /Cisco[\s\S]*?test@example.com[\s\S]*?www\.cisco\.com[\s\S]*?555-0100[\s\S]*?555-0200/,
+  'modern_professional: data points in correct order (Company -> Email -> Website -> Office -> Mobile)'
+);
+assert.match(
+  htmlModernProfessional,
+  /color:#111827;text-decoration:none;[^>]*>test@example.com<\/a>/,
+  'modern_professional: email link has dark grey/black color and no underline'
+);
 
 process.stdout.write('email-client-smoke: all checks passed.\n');

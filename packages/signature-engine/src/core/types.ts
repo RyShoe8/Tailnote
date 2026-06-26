@@ -8,6 +8,8 @@ export type SignatureProfile = {
   avatarUrl?: string;
   hiddenFields?: string[];
   detailOrder?: string[];
+  /** Order of contact-info rows as rendered in the signature (drag-to-preview reorder). */
+  contactDisplayOrder?: string[];
 };
 
 export type PromoUrlPrefix = 'https' | 'www';

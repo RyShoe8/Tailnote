@@ -10,3 +10,5 @@ export const SOCIAL_ICON_REDDIT = '/email-assets/icon-reddit.png?v=11';
 export const SOCIAL_ICON_DISCORD = '/email-assets/icon-discord.png?v=11';
 export const SOCIAL_ICON_BLUESKY = '/email-assets/icon-bluesky.png?v=11';
 export const SOCIAL_ICON_YOUTUBE = '/email-assets/icon-youtube.png?v=11';
+export const SOCIAL_ICON_GLOBE = '/email-assets/icon-globe.png?v=11';
+

@@ -5,7 +5,7 @@ import type { SignatureProfile } from 'emailsignature-engine';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Loader2, Trash2, GripVertical, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Trash2, GripVertical, Eye, EyeOff, Move } from 'lucide-react';
 
 import {
   DndContext,
@@ -49,10 +49,13 @@ type SortableFieldProps = {
   id: string;
   isHidden: boolean;
   onToggle: () => void;
+  showPreviewDrag?: boolean;
+  onPreviewDragStart?: (fieldId: string) => void;
+  onPreviewDragEnd?: () => void;
   children: React.ReactNode;
 };
 
-function SortableField({ id, isHidden, onToggle, children }: SortableFieldProps) {
+function SortableField({ id, isHidden, onToggle, showPreviewDrag, onPreviewDragStart, onPreviewDragEnd, children }: SortableFieldProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
@@ -80,16 +83,33 @@ function SortableField({ id, isHidden, onToggle, children }: SortableFieldProps)
       <div className="flex-1 space-y-3 min-w-0">
         <div className="flex items-center justify-between">
           <Label className="cursor-pointer font-medium">{LABELS[id]}</Label>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className={`h-8 px-2 text-xs font-medium ${isHidden ? 'text-muted-foreground' : 'text-primary'}`}
-            onClick={onToggle}
-          >
-            {isHidden ? <EyeOff className="mr-2 h-3.5 w-3.5" /> : <Eye className="mr-2 h-3.5 w-3.5" />}
-            {isHidden ? 'Hidden' : 'Visible'}
-          </Button>
+          <div className="flex items-center gap-1">
+            {showPreviewDrag && (
+              <div
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('application/sig-field', id);
+                  e.dataTransfer.effectAllowed = 'move';
+                  onPreviewDragStart?.(id);
+                }}
+                onDragEnd={() => onPreviewDragEnd?.()}
+                className="cursor-grab text-muted-foreground hover:text-primary active:cursor-grabbing transition-colors"
+                title="Drag to preview to reposition"
+              >
+                <Move className="h-3.5 w-3.5" />
+              </div>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className={`h-8 px-2 text-xs font-medium ${isHidden ? 'text-muted-foreground' : 'text-primary'}`}
+              onClick={onToggle}
+            >
+              {isHidden ? <EyeOff className="mr-2 h-3.5 w-3.5" /> : <Eye className="mr-2 h-3.5 w-3.5" />}
+              {isHidden ? 'Hidden' : 'Visible'}
+            </Button>
+          </div>
         </div>
         {!isHidden && <div className="animate-in fade-in slide-in-from-top-2 duration-200">{children}</div>}
       </div>
@@ -101,9 +121,13 @@ type Props = {
   value: SignatureProfile;
   onChange: (next: SignatureProfile) => void;
   disabled?: boolean;
+  /** Show drag-to-preview handles (desktop only). */
+  showPreviewDrag?: boolean;
+  onPreviewDragStart?: (fieldId: string) => void;
+  onPreviewDragEnd?: () => void;
 };
 
-export function SignatureForm({ value, onChange, disabled }: Props) {
+export function SignatureForm({ value, onChange, disabled, showPreviewDrag, onPreviewDragStart, onPreviewDragEnd }: Props) {
   const [uploading, setUploading] = useState(false);
 
   const set =
@@ -218,7 +242,15 @@ export function SignatureForm({ value, onChange, disabled }: Props) {
         <SortableContext items={activeItems} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">
             {activeItems.map((id) => (
-              <SortableField key={id} id={id} isHidden={isHidden(id)} onToggle={() => toggleHidden(id)}>
+              <SortableField
+                key={id}
+                id={id}
+                isHidden={isHidden(id)}
+                onToggle={() => toggleHidden(id)}
+                showPreviewDrag={showPreviewDrag}
+                onPreviewDragStart={onPreviewDragStart}
+                onPreviewDragEnd={onPreviewDragEnd}
+              >
                 {renderField(id)}
               </SortableField>
             ))}

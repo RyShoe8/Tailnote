@@ -26,6 +26,7 @@ import {
   SOCIAL_ICON_LINKEDIN,
   SOCIAL_ICON_REDDIT,
   SOCIAL_ICON_YOUTUBE,
+  SOCIAL_ICON_GLOBE,
 } from './socialIcons';
 
 type ElementType = SignatureElement['type'];
@@ -40,13 +41,16 @@ function logoWidthForLayout(layout: SignatureTemplate['layout'], useCircle: bool
   if (useCircle) return '110';
   switch (layout) {
     case 'default':
+      return '130';
+    case 'standard':
+    case 'stacked':
       return '110';
     case 'creator':
-      return '90';
+      return '100';
     case 'executive_minimalist':
-      return '80';
+      return '90';
     case 'professional':
-      return '95';
+      return '105';
     default:
       return '100';
   }
@@ -663,36 +667,44 @@ function buildDynamicContactHtml(
   const rows: string[] = [];
   
   if (layout === 'modern_professional') {
-    // modern professional uses a vertical list for company, email, website, office, mobile
-    // It interleaves brand and detail fields. To respect both orders, we'll output brand fields first, then detail fields.
-    
-    const addRow = (content: string) => {
-      rows.push(`<tr><td style="padding-bottom:4px;">${content}</td></tr>`);
-    };
+    const defaultContactOrder = ['companyName', 'email', 'website', 'officePhone', 'mobilePhone'];
+    const cdo = profile.contactDisplayOrder;
+    // Use custom order if provided, appending any missing default fields at the end
+    const contactOrder = cdo?.length
+      ? [...cdo.filter(f => defaultContactOrder.includes(f)), ...defaultContactOrder.filter(f => !cdo.includes(f))]
+      : defaultContactOrder;
 
-    for (const key of bOrder) {
-      if (bHidden.includes(key)) continue;
-      if (key === 'companyName' && brand.companyName) {
-        rows.push(`<tr><td style="padding-bottom:4px;font-weight:600;">${escapeHtml(brand.companyName)}</td></tr>`);
-      }
-      if (key === 'website' && brand.website) {
-        addRow(`<a href="${escapeHtml(brand.website)}" style="color:${escapeHtml(brand.primaryColor)};text-decoration:none;">${escapeHtml(websiteDisplay)}</a>`);
-      }
-    }
-
-    for (const key of dOrder) {
-      if (dHidden.includes(key)) continue;
-      if (key === 'email' && profile.email) {
-        addRow(`<a href="mailto:${escapeHtml(profile.email)}" style="color:${escapeHtml(brand.primaryColor)};text-decoration:none;">${escapeHtml(profile.email)}</a>`);
-      }
-      if (key === 'officePhone' && profile.officePhone) {
-        addRow(`<a href="${escapeHtml(officePhoneTelHref)}" style="color:#111827;text-decoration:none;">${escapeHtml(profile.officePhone)}</a>`);
-      }
-      if (key === 'mobilePhone' && profile.mobilePhone) {
-        addRow(`<a href="${escapeHtml(mobilePhoneTelHref)}" style="color:#111827;text-decoration:none;">M: ${escapeHtml(profile.mobilePhone)}</a>`);
+    for (const field of contactOrder) {
+      switch (field) {
+        case 'companyName':
+          if (brand.companyName && !bHidden.includes('companyName')) {
+            rows.push(`<tr data-sig-field="companyName"><td style="padding-bottom:4px;font-weight:700;color:#111827;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(brand.companyName)}</td></tr>`);
+          }
+          break;
+        case 'email':
+          if (profile.email && !dHidden.includes('email')) {
+            rows.push(`<tr data-sig-field="email"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="mailto:${escapeHtml(profile.email)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.email)}</a></td></tr>`);
+          }
+          break;
+        case 'website':
+          if (brand.website && !bHidden.includes('website')) {
+            rows.push(`<tr data-sig-field="website"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="${escapeHtml(brand.website)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(websiteDisplay)}</a></td></tr>`);
+          }
+          break;
+        case 'officePhone':
+          if (profile.officePhone && !dHidden.includes('officePhone')) {
+            rows.push(`<tr data-sig-field="officePhone"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="${escapeHtml(officePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.officePhone)}</a></td></tr>`);
+          }
+          break;
+        case 'mobilePhone':
+          if (profile.mobilePhone && !dHidden.includes('mobilePhone')) {
+            rows.push(`<tr data-sig-field="mobilePhone"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="${escapeHtml(mobilePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">M: ${escapeHtml(profile.mobilePhone)}</a></td></tr>`);
+          }
+          break;
       }
     }
   }
+
 
   return rows.join('');
 }
@@ -1218,7 +1230,10 @@ export function mergeRenderContext(
   const stateLine = hasAddressEl && brand.state?.trim() ? brand.state.trim() : '';
   const zipLine = hasAddressEl && brand.zip?.trim() ? brand.zip.trim() : '';
 
-  const showSocialBlock = hasSocial && Boolean(linkedin || facebook || instagram || reddit || discord || bluesky || youtube);
+  const isModernProfessional = template.layout === 'modern_professional';
+  const showSocialBlock = hasSocial && Boolean(
+    (isModernProfessional && website) || linkedin || facebook || instagram || reddit || discord || bluesky || youtube
+  );
 
   let socialTdLiStyle = '';
   let socialTdFbStyle = '';
@@ -1600,6 +1615,7 @@ export function mergeRenderContext(
     iconDiscord: normalizeImageUrl(ensureAbsolutePublicUrl(SOCIAL_ICON_DISCORD, origin)),
     iconBluesky: normalizeImageUrl(ensureAbsolutePublicUrl(SOCIAL_ICON_BLUESKY, origin)),
     iconYoutube: normalizeImageUrl(ensureAbsolutePublicUrl(SOCIAL_ICON_YOUTUBE, origin)),
+    iconGlobe: normalizeImageUrl(ensureAbsolutePublicUrl(SOCIAL_ICON_GLOBE, origin)),
     socialTdLiStyle,
     socialTdFbStyle,
     socialTdIgStyle,

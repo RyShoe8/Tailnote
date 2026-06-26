@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Move } from 'lucide-react';
 import {
   renderSignature,
   type SignatureBrand,
@@ -40,6 +41,7 @@ import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
 import { hasAnalytics, hasBrandingRemoval } from '@/lib/billing/subscriptionAccess';
 import { SignatureBimiTab } from '@/components/dashboard/SignatureBimiTab';
 import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
+import { PreviewDropOverlay } from '@/components/signature/PreviewDropOverlay';
 
 type OrgResponse = {
   companyName?: string;
@@ -166,6 +168,52 @@ export function SignatureWorkspace() {
   const [trackedHtml, setTrackedHtml] = useState<string | null>(null);
   /** Bumps after mount so signature HTML re-renders with real `window` origin (SSR memo used localhost). */
   const [assetOriginNonce, setAssetOriginNonce] = useState(0);
+
+  // ── Drag-to-preview state ──
+  const [isDraggingToPreview, setIsDraggingToPreview] = useState(false);
+  const [draggedFieldId, setDraggedFieldId] = useState<string | null>(null);
+  const previewWrapperRef = useRef<HTMLDivElement>(null);
+
+  const handlePreviewDragStart = useCallback((fieldId: string) => {
+    setIsDraggingToPreview(true);
+    setDraggedFieldId(fieldId);
+  }, []);
+
+  const handlePreviewDragEnd = useCallback(() => {
+    setIsDraggingToPreview(false);
+    setDraggedFieldId(null);
+  }, []);
+
+  const handleContactReorder = useCallback(
+    (fieldId: string, insertAfterField: string | null) => {
+      const defaultOrder = ['companyName', 'email', 'website', 'officePhone', 'mobilePhone'];
+      const currentOrder = profile.contactDisplayOrder?.length
+        ? [...profile.contactDisplayOrder]
+        : [...defaultOrder];
+
+      // Remove field from its current position
+      const curIdx = currentOrder.indexOf(fieldId);
+      if (curIdx !== -1) currentOrder.splice(curIdx, 1);
+
+      if (insertAfterField === null) {
+        // Insert at the beginning
+        currentOrder.unshift(fieldId);
+      } else {
+        const afterIdx = currentOrder.indexOf(insertAfterField);
+        if (afterIdx !== -1) {
+          currentOrder.splice(afterIdx + 1, 0, fieldId);
+        } else {
+          currentOrder.push(fieldId);
+        }
+      }
+
+      setProfile((p) => ({ ...p, contactDisplayOrder: currentOrder }));
+      // Clear drag state
+      setIsDraggingToPreview(false);
+      setDraggedFieldId(null);
+    },
+    [profile.contactDisplayOrder]
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -787,7 +835,24 @@ export function SignatureWorkspace() {
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="cursor-pointer" onClick={() => toggleBrandHidden('companyName')}>Organization name</Label>
+                <div className="flex items-center gap-2">
+                  {isLgUp && (
+                    <div
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('application/sig-field', 'companyName');
+                        e.dataTransfer.effectAllowed = 'move';
+                        handlePreviewDragStart('companyName');
+                      }}
+                      onDragEnd={handlePreviewDragEnd}
+                      className="cursor-grab text-muted-foreground hover:text-primary active:cursor-grabbing transition-colors"
+                      title="Drag to preview to reposition"
+                    >
+                      <Move className="h-3.5 w-3.5" />
+                    </div>
+                  )}
+                  <Label className="cursor-pointer" onClick={() => toggleBrandHidden('companyName')}>Organization name</Label>
+                </div>
                 <Button
                   type="button"
                   variant="ghost"
@@ -806,7 +871,24 @@ export function SignatureWorkspace() {
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="cursor-pointer" onClick={() => toggleBrandHidden('website')}>Website</Label>
+                <div className="flex items-center gap-2">
+                  {isLgUp && (
+                    <div
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('application/sig-field', 'website');
+                        e.dataTransfer.effectAllowed = 'move';
+                        handlePreviewDragStart('website');
+                      }}
+                      onDragEnd={handlePreviewDragEnd}
+                      className="cursor-grab text-muted-foreground hover:text-primary active:cursor-grabbing transition-colors"
+                      title="Drag to preview to reposition"
+                    >
+                      <Move className="h-3.5 w-3.5" />
+                    </div>
+                  )}
+                  <Label className="cursor-pointer" onClick={() => toggleBrandHidden('website')}>Website</Label>
+                </div>
                 <Button
                   type="button"
                   variant="ghost"
@@ -1127,7 +1209,13 @@ export function SignatureWorkspace() {
                 <CardDescription>Sample person for preview. Save your details so they persist.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <SignatureForm value={profile} onChange={setProfile} />
+                <SignatureForm
+                  value={profile}
+                  onChange={setProfile}
+                  showPreviewDrag={isLgUp}
+                  onPreviewDragStart={handlePreviewDragStart}
+                  onPreviewDragEnd={handlePreviewDragEnd}
+                />
                 <div className="flex flex-wrap items-center gap-3">
                   <Button type="button" disabled={savingProfile} onClick={() => void handleSaveProfile()}>
                     {savingProfile ? 'Saving…' : 'Save my details'}
@@ -1169,7 +1257,11 @@ export function SignatureWorkspace() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 max-w-full min-w-0 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain">
-          <div className="min-w-0 overflow-hidden select-all [&_.signature-email-preview]:select-all">
+          <div
+            ref={previewWrapperRef}
+            className="min-w-0 overflow-hidden select-all [&_.signature-email-preview]:select-all"
+            style={{ position: 'relative' }}
+          >
             <SignaturePreviewFrame
               html={previewHtml}
               variant="mobile"
@@ -1177,6 +1269,14 @@ export function SignatureWorkspace() {
               animationKey={org?.fontFamily}
               mobileFrameWidth={mobileFrameWidthForLayout(engineTemplate?.layout)}
             />
+            {isDraggingToPreview && isLgUp && (
+              <PreviewDropOverlay
+                wrapperRef={previewWrapperRef}
+                isDragging={isDraggingToPreview}
+                draggedFieldId={draggedFieldId}
+                onReorder={handleContactReorder}
+              />
+            )}
           </div>
         </CardContent>
       </Card>

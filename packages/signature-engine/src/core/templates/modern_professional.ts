@@ -79,10 +79,11 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
         <tr>
           <!-- Left Column: Social Icons -->
           {{#if showSocialBlock}}
-          <td class="sig-social-col" width="40" valign="top" style="vertical-align:top;padding-right:24px;">
+          <td data-sig-field="socialLinks" class="sig-social-col" width="40" valign="top" style="vertical-align:top;padding-right:24px;">
             <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border:1px solid #e5e7eb;border-radius:24px;width:40px;text-align:center;">
               <tr><td style="padding-top:12px;">
                 <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
+                  {{#if hasWebsite}}<tr><td style="padding-bottom:12px;"><a href="{{website}}"><img src="{{iconGlobe}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
                   {{#if hasLinkedin}}<tr><td style="padding-bottom:12px;"><a href="{{linkedin}}"><img src="{{iconLinkedin}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
                   {{#if hasInstagram}}<tr><td style="padding-bottom:12px;"><a href="{{instagram}}"><img src="{{iconInstagram}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
                   {{#if hasFacebook}}<tr><td style="padding-bottom:12px;"><a href="{{facebook}}"><img src="{{iconFacebook}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
@@ -99,7 +100,7 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
           <!-- Middle Column: Info -->
           <td class="sig-info-col" valign="top" style="vertical-align:top;padding-right:24px;">
             {{#if hasLogo}}
-            <div style="margin-bottom:16px;">
+            <div data-sig-field="logo" style="margin-bottom:16px;">
               <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:block;">
 {{#if hasLogoSizedHeight}}
                 <img src="{{logoUrl}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" border="0" alt="" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;border:0;outline:none;text-decoration:none;border-radius:{{logoImgBorderRadius}};" />
@@ -112,12 +113,12 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
             {{/if}}
 
             {{#if hasName}}
-            <div style="font-size:18px; font-weight:700; color:#111827; line-height:1.2; margin-bottom:4px; letter-spacing:-0.2px;">
+            <div data-sig-field="name" style="font-size:18px; font-weight:700; color:#111827; line-height:1.2; margin-bottom:4px; letter-spacing:-0.2px;">
               {{firstName}} {{lastName}}
             </div>
             {{/if}}
             {{#if hasTitle}}
-            <div style="font-size:14px; color:#4B5563; margin-bottom:16px;">
+            <div data-sig-field="title" style="font-size:14px; color:#4B5563; margin-bottom:16px;">
               {{title}}
             </div>
             {{/if}}
@@ -127,7 +128,7 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
             </table>
 
             {{#if showAddressBlock}}
-            <div style="margin-top: 16px; font-size: 12px; color: #6b7280; line-height: 1.4;">
+            <div data-sig-field="address" style="margin-top: 16px; font-size: 12px; color: #6b7280; line-height: 1.4;">
               {{addressBlockHtml}}
             </div>
             {{/if}}
@@ -135,8 +136,24 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
 
           <!-- Right Column: Avatar -->
           {{#if hasAvatar}}
-          <td class="sig-avatar-col" width="80" valign="top" style="vertical-align:top;padding-right:24px;">
-            <img src="{{avatarUrl}}" width="80" height="80" style="display:block;width:80px;height:80px;border-radius:50%;object-fit:cover;border:1px solid #e5e7eb;" alt="Profile Picture" />
+          <td data-sig-field="avatar" class="sig-avatar-col" width="130" valign="top" style="vertical-align:top;padding-right:0;text-align:right;">
+            <div style="display:inline-block;width:130px;height:120px;overflow:hidden;">
+              <svg width="130" height="120" viewBox="0 0 130 120" style="display:block;" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <clipPath id="sig-mp-avatar-clip">
+                    <polygon points="55,0 130,0 95,120 20,120" />
+                  </clipPath>
+                </defs>
+                <!-- Horizontal grey line at bottom-left -->
+                <line x1="0" y1="80" x2="20" y2="80" stroke="#e5e7eb" stroke-width="3" />
+                <!-- Thin accent slash -->
+                <polygon points="40,0 48,0 13,120 5,120" fill="#e5e7eb" />
+                <!-- Avatar image with clip path -->
+                <g clip-path="url(#sig-mp-avatar-clip)">
+                  <image href="{{avatarUrl}}" x="20" y="0" width="110" height="120" preserveAspectRatio="xMidYMid slice" />
+                </g>
+              </svg>
+            </div>
           </td>
           {{/if}}
 
