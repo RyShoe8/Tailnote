@@ -37,7 +37,9 @@ function defaultForCategory(category: EmailHealthCategory): PlainIssueCopy {
     case 'dkim':
       return {
         summary: 'Outgoing messages are not signed so receivers can verify they came from you.',
-        nextStep: 'Turn on message signing in your email provider and add the record they give you.',
+        nextStep: dkimStepsNextStep(
+          'Turn on message signing in your email provider and add the record they give you.',
+        ),
       };
     case 'dmarc':
       return {
@@ -106,7 +108,9 @@ function dkimPlain(issue: DomainIssue): PlainIssueCopy | null {
   if (t.includes('no dkim') || t.includes('not found') || t.includes('missing')) {
     return {
       summary: 'Message signing is not set up, so providers cannot verify your mail is authentic.',
-      nextStep: 'Enable signing in your email provider admin and publish the TXT record they provide.',
+      nextStep: dkimStepsNextStep(
+        'Enable signing in your email provider admin and publish the TXT record they provide.',
+      ),
     };
   }
   if (t.includes('1024') || t.includes('shorter') || t.includes('key')) {
@@ -141,7 +145,18 @@ function dmarcPlain(issue: DomainIssue): PlainIssueCopy | null {
   return null;
 }
 
+function hasRealDnsRecords(issue: DomainIssue): boolean {
+  return (issue.dnsRecords ?? []).some((r) => !r.exampleOnly);
+}
+
+function dkimStepsNextStep(fallback: string): string {
+  return 'Follow the steps below in your email provider admin, then add the record they give you in DNS.';
+}
+
 function dnsAwareNextStep(issue: DomainIssue, domain: string | undefined, fallback: string): string {
+  if (issue.category === 'dkim' && !hasRealDnsRecords(issue)) {
+    return dkimStepsNextStep(fallback);
+  }
   const records = (issue.dnsRecords ?? []).filter((r) => !r.exampleOnly);
   if (!records.length || !domain) return fallback;
   const host = records[0]!.host;

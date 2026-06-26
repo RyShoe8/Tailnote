@@ -4,6 +4,11 @@ import {
   exampleBimiRecordValue,
   missingBimiTechnicalDetail,
 } from '@/lib/email-health/bimiDnsExample';
+import {
+  dkimProviderCallout,
+  getDkimSetupGuide,
+  isMissingDkimIssue,
+} from '@/lib/email-health/dkimSetupGuide';
 import type { SerializedEmailHealthScan } from '@/lib/email-health/serialize';
 import type { DomainIssue } from '@/lib/email-health/types';
 
@@ -42,9 +47,34 @@ function enrichMissingBimiIssue(issue: DomainIssue, domain: string): DomainIssue
   };
 }
 
+function enrichMissingDkimIssue(issue: DomainIssue, mailProvider?: string): DomainIssue {
+  if (!isMissingDkimIssue(issue)) {
+    return issue;
+  }
+
+  const guide = getDkimSetupGuide(mailProvider);
+  const callout = dkimProviderCallout(mailProvider);
+
+  return {
+    ...issue,
+    stepsToPass: guide.steps,
+    dnsRecords: undefined,
+    callout: callout ?? issue.callout,
+  };
+}
+
+function enrichIssueForDisplay(
+  issue: DomainIssue,
+  scan: SerializedEmailHealthScan,
+): DomainIssue {
+  let enriched = enrichMissingBimiIssue(issue, scan.domain);
+  enriched = enrichMissingDkimIssue(enriched, scan.mailProvider);
+  return enriched;
+}
+
 export function enrichScanForDisplay(scan: SerializedEmailHealthScan): SerializedEmailHealthScan {
   return {
     ...scan,
-    issues: scan.issues.map((issue) => enrichMissingBimiIssue(issue, scan.domain)),
+    issues: scan.issues.map((issue) => enrichIssueForDisplay(issue, scan)),
   };
 }

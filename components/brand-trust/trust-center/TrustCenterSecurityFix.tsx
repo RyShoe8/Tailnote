@@ -22,6 +22,12 @@ function currentRecordForIssue(issue: DomainIssue): string | null {
   return detail;
 }
 
+function showStepsForIssue(issue: DomainIssue): boolean {
+  if (!issue.stepsToPass?.length) return false;
+  if (issue.severity !== 'fail' && issue.severity !== 'warn') return false;
+  return true;
+}
+
 export function TrustCenterSecurityFix({ issues, zoneDomain }: Props) {
   if (issues.length === 0) return null;
 
@@ -30,9 +36,9 @@ export function TrustCenterSecurityFix({ issues, zoneDomain }: Props) {
       {issues.map((issue, i) => {
         const plain = plainIssueForTrustCenter(issue, { domain: zoneDomain });
         const fixRecords = (issue.dnsRecords ?? []).filter((r) => !r.exampleOnly);
+        const exampleRecords = (issue.dnsRecords ?? []).filter((r) => r.exampleOnly);
         const currentRecord = currentRecordForIssue(issue);
-        const showSteps =
-          fixRecords.length === 0 && (issue.stepsToPass?.length ?? 0) > 0;
+        const showSteps = showStepsForIssue(issue);
 
         return (
           <div
@@ -41,6 +47,23 @@ export function TrustCenterSecurityFix({ issues, zoneDomain }: Props) {
           >
             <p className="text-sm text-foreground">{plain.summary}</p>
             <p className="mt-2 text-sm text-muted-foreground">{plain.nextStep}</p>
+
+            {issue.callout ? (
+              <p className="mt-3 rounded-md bg-primary/5 px-3 py-2 text-sm text-muted-foreground">
+                {issue.callout}
+              </p>
+            ) : null}
+
+            {showSteps ? (
+              <div className="mt-3">
+                <p className="text-sm font-medium text-foreground">How to set this up</p>
+                <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
+                  {issue.stepsToPass!.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ol>
+              </div>
+            ) : null}
 
             {currentRecord ? (
               <div className="mt-3 space-y-1">
@@ -55,7 +78,9 @@ export function TrustCenterSecurityFix({ issues, zoneDomain }: Props) {
 
             {fixRecords.length > 0 ? (
               <div className="mt-3 space-y-2">
-                <p className="text-sm font-medium text-foreground">Replace with</p>
+                <p className="text-sm font-medium text-foreground">
+                  {currentRecord ? 'Replace with' : 'Copy this record'}
+                </p>
                 {fixRecords.map((rec) => (
                   <DnsRecordCopy
                     key={`${rec.type}-${rec.host}-${rec.value}`}
@@ -66,14 +91,16 @@ export function TrustCenterSecurityFix({ issues, zoneDomain }: Props) {
               </div>
             ) : null}
 
-            {showSteps ? (
-              <div className="mt-3">
-                <p className="text-sm font-medium text-foreground">Steps</p>
-                <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
-                  {issue.stepsToPass!.map((step) => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ol>
+            {exampleRecords.length > 0 ? (
+              <div className="mt-3 space-y-2">
+                <p className="text-sm font-medium text-foreground">Example record shape</p>
+                {exampleRecords.map((rec) => (
+                  <DnsRecordCopy
+                    key={`${rec.type}-${rec.host}-${rec.value}`}
+                    record={rec}
+                    zoneDomain={zoneDomain}
+                  />
+                ))}
               </div>
             ) : null}
           </div>

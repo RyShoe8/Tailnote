@@ -55,13 +55,6 @@ export async function scanDkim(domain: string): Promise<DkimScanResult> {
         'Click “Start authentication” or equivalent in the provider, wait for DNS, then rescan.',
       ],
       technicalDetail: `Checked common selectors (${COMMON_SELECTORS.join(', ')}) — none returned DKIM keys.`,
-      dnsRecords: [
-        {
-          type: 'TXT',
-          host: 'selector1._domainkey',
-          value: '(paste the DKIM TXT value from your mail provider)',
-        },
-      ],
     });
     return {
       category: buildCategoryResult('dkim', 'fail', 'No DKIM keys found'),

@@ -39,6 +39,7 @@ describe('plainIssueForTrustCenter', () => {
     );
     assert.match(plain.summary, /signing/i);
     assert.doesNotMatch(plain.summary, /\bDKIM\b/);
+    assert.match(plain.nextStep, /steps below/i);
   });
 
   it('paraphrases missing DMARC', () => {
