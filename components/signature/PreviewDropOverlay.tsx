@@ -15,6 +15,11 @@ const REORDERABLE_FIELDS = new Set([
   'mobilePhone'
 ]);
 
+// DOM parser lowercases attributes, so we need a mapping back to camelCase
+const REORDERABLE_FIELDS_LOWER = new Map(
+  Array.from(REORDERABLE_FIELDS).map(f => [f.toLowerCase(), f])
+);
+
 /** Human-readable labels for contact fields. */
 const FIELD_LABELS: Record<string, string> = {
   companyName: 'Company',
@@ -92,7 +97,7 @@ export function PreviewDropOverlay({
             : draggedFieldId === 'logoUrl'
               ? 'logo'
               : draggedFieldId;
-      const fieldEl = contentEl.querySelector(`[data-sig-field="${attrName}"]`);
+      const fieldEl = contentEl.querySelector(`[data-sig-field="${attrName.toLowerCase()}"]`);
       if (fieldEl) {
         const rect = fieldEl.getBoundingClientRect();
         setFieldHighlight({
@@ -123,16 +128,19 @@ export function PreviewDropOverlay({
 
     // Find visible reorderable elements in the preview
     const allSigFields = contentEl.querySelectorAll('[data-sig-field]');
-    const contactEls = Array.from(allSigFields).filter((el) =>
-      REORDERABLE_FIELDS.has(el.getAttribute('data-sig-field') || '')
-    );
+    const contactEls = Array.from(allSigFields).filter((el) => {
+      const attr = el.getAttribute('data-sig-field')?.toLowerCase() || '';
+      return REORDERABLE_FIELDS_LOWER.has(attr);
+    });
 
     const zones: DropZone[] = [];
     for (let i = 0; i <= contactEls.length; i++) {
       const prev = i > 0 ? contactEls[i - 1] : null;
       const next = i < contactEls.length ? contactEls[i] : null;
-      const prevField = prev?.getAttribute('data-sig-field') || null;
-      const nextField = next?.getAttribute('data-sig-field') || null;
+      const rawPrevField = prev?.getAttribute('data-sig-field')?.toLowerCase();
+      const rawNextField = next?.getAttribute('data-sig-field')?.toLowerCase();
+      const prevField = rawPrevField ? REORDERABLE_FIELDS_LOWER.get(rawPrevField) || null : null;
+      const nextField = rawNextField ? REORDERABLE_FIELDS_LOWER.get(rawNextField) || null : null;
 
       // Skip zone immediately before or after the dragged item (no-op position)
       if (prevField === normalizedId || nextField === normalizedId) continue;
@@ -156,7 +164,7 @@ export function PreviewDropOverlay({
         id: `zone-${i}`,
         top,
         left: refRect.left - overlayRect.left,
-        width: refRect.width,
+        width: Math.max(refRect.width, 150),
         insertAfterField: prevField,
       });
     }
