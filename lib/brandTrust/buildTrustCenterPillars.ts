@@ -31,7 +31,7 @@ export type TrustCenterBimiState = {
 
 export type PillarAction = {
   label: string;
-  kind: 'spf_fix' | 'security_fix' | 'branding_setup' | 'upgrade';
+  kind: 'spf_fix' | 'security_fix' | 'branding_setup' | 'upgrade' | 'signup';
 };
 
 export type PillarResult = {
@@ -115,7 +115,6 @@ function brandingNeedsAction(
   scan: SerializedEmailHealthScan,
   bimi: TrustCenterBimiState,
 ): boolean {
-  if (!bimi.canUseBimiLogoHosting) return true;
   if (!bimi.bimiLogoUrl.trim()) return true;
   const bimiResult = categoryResult(scan, 'bimi');
   if (bimiResult && (bimiResult.status === 'warn' || bimiResult.status === 'fail')) return true;
@@ -208,19 +207,18 @@ function buildBrandingPillar(
     };
   }
 
-  if (!bimi.canUseBimiLogoHosting) {
-    return {
-      id: 'branding',
-      status: 'needs_action',
-      headline: copy.headline,
-      body: copy.notOnPlan,
-      action: { label: copy.upgradeLabel, kind: 'upgrade' },
-      learnSections: TRUST_CENTER_LEARN.branding,
-      showCertificateLearn: true,
-    };
-  }
-
   if (!bimi.bimiLogoUrl.trim()) {
+    if (!bimi.canUseBimiLogoHosting) {
+      return {
+        id: 'branding',
+        status: 'needs_action',
+        headline: copy.headline,
+        body: copy.notSignedIn,
+        action: { label: copy.signupLabel, kind: 'signup' },
+        learnSections: TRUST_CENTER_LEARN.branding,
+        showCertificateLearn: true,
+      };
+    }
     return {
       id: 'branding',
       status: 'needs_action',

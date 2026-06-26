@@ -139,9 +139,9 @@ export const TRUST_CENTER_PILLAR_COPY = {
       'Yahoo and Fastmail are more likely to show your logo with your current setup.',
     actionLabel: 'Set it up free',
     showDnsLabel: 'Show DNS record',
-    upgradeLabel: 'See plans',
-    notOnPlan:
-      "Nothing is set up yet. On a paid plan, you can upload your logo, copy the one DNS record we generate, add it at your provider, and rescan.",
+    signupLabel: 'Create free account',
+    notSignedIn:
+      'Create a free Tailnote account to upload your logo, copy the DNS record we generate, add it at your provider, and rescan.',
     notUploaded:
       "Nothing is set up yet. Here's what to do for free:\n1. Upload your logo\n2. Copy the DNS record we give you\n3. Add it at your DNS provider and rescan",
     uploadedPending:

@@ -65,7 +65,7 @@ export const SIGNATURE_VS_INBOX_LOGO =
   'Your email signature logo and your inbox brand logo are separate things. BIMI helps supporting inboxes show your brand logo next to your emails — it does not change the logo inside your Tailnote signature.';
 
 export const PAID_BIMI_HOSTING_CTA =
-  'On a paid Tailnote plan, we can convert and host a BIMI-ready logo for you — then give you the DNS record to copy.';
+  'Create a free Tailnote account to convert and host a BIMI-ready logo — then copy the DNS record we generate.';
 
 export const BIMI_PLACEHOLDER_SVG_NOTE =
   'placeholder.svg is an example only — inbox providers require a valid, square BIMI SVG hosted over HTTPS.';

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth/session';
 import { connectMongoose } from '@/lib/mongoose';
-import { assertOrganizationHasBimiLogoHosting } from '@/lib/dashboard/bimiLogoRequired';
 import { convertToBimiSvg } from '@/lib/bimi/convertToBimiSvg';
 import { SecureImageUploadError } from '@/lib/uploads/secureImageUpload';
 import { OrganizationModel, type OrganizationDoc } from '@/models/Organization';
@@ -30,9 +29,6 @@ export async function POST(request: Request) {
   if (!org) {
     return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
   }
-
-  const blocked = assertOrganizationHasBimiLogoHosting(org);
-  if (blocked) return blocked;
 
   let form: FormData;
   try {

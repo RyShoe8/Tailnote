@@ -198,6 +198,29 @@ describe('buildTrustCenterPillars', () => {
     assert.equal(deliverability?.deliverabilityIssues?.[0]?.category, 'mx');
   });
 
+  it('offers branding upload on free dashboard tier', () => {
+    const pillars = buildTrustCenterPillars(baseScan(), {
+      canUseBimiLogoHosting: true,
+      bimiLogoUrl: '',
+      bimiSuggestedRecord: '',
+    });
+    const branding = pillars.find((p) => p.id === 'branding');
+    assert.equal(branding?.status, 'needs_action');
+    assert.equal(branding?.action?.kind, 'branding_setup');
+  });
+
+  it('offers signup CTA for public branding without upload session', () => {
+    const pillars = buildTrustCenterPillars(baseScan(), {
+      canUseBimiLogoHosting: false,
+      bimiLogoUrl: '',
+      bimiSuggestedRecord: '',
+    });
+    const branding = pillars.find((p) => p.id === 'branding');
+    assert.equal(branding?.status, 'needs_action');
+    assert.equal(branding?.action?.kind, 'signup');
+    assert.match(branding?.body ?? '', /free Tailnote account/i);
+  });
+
   it('provides non-empty structured learn sections per pillar', () => {
     const pillars = buildTrustCenterPillars(baseScan(), bimiReady);
     for (const pillar of pillars) {

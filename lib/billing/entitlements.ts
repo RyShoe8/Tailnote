@@ -22,7 +22,7 @@ export function getBillingEntitlements(
       isPro: false,
       maxTemplates: MAX_TEMPLATES_BASIC,
       canUseTemplateAnimationSlot: false,
-      canUseBimiLogoHosting: false,
+      canUseBimiLogoHosting: true,
     };
   }
   return {

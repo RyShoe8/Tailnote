@@ -68,7 +68,9 @@ export function TrustCenterPillarCard({
   }
 
   const isBranding = pillar.id === 'branding';
-  const showActionButton = pillar.action && (pillar.action.kind === 'upgrade' || !showFix);
+  const showActionButton =
+    pillar.action &&
+    (pillar.action.kind === 'upgrade' || pillar.action.kind === 'signup' || !showFix);
 
   function openFixPanel() {
     setShowFix(true);
@@ -94,6 +96,10 @@ export function TrustCenterPillarCard({
           {pillar.action!.kind === 'upgrade' ? (
             <Button asChild size="sm">
               <Link href={upgradeHref}>{pillar.action!.label}</Link>
+            </Button>
+          ) : pillar.action!.kind === 'signup' ? (
+            <Button asChild size="sm">
+              <Link href="/signup">{pillar.action!.label}</Link>
             </Button>
           ) : (
             <Button type="button" size="sm" onClick={openFixPanel}>
