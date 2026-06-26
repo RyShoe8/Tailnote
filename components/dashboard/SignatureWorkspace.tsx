@@ -264,7 +264,23 @@ export function SignatureWorkspace() {
           const oldIndex = activeItems.indexOf(activeId);
           const newIndex = activeItems.indexOf(overId);
           if (oldIndex !== -1 && newIndex !== -1) {
-            return { ...p, detailOrder: arrayMove(activeItems, oldIndex, newIndex) };
+            const newDetailOrder = arrayMove(activeItems, oldIndex, newIndex);
+
+            // Also attempt to sync contactDisplayOrder so the preview updates
+            let newContactDisplayOrder = p.contactDisplayOrder?.length ? [...p.contactDisplayOrder] : ['logo', 'name', 'title', 'companyName', 'email', 'website', 'address', 'officePhone', 'mobilePhone'];
+            const mappedActiveId = activeId === 'firstName' || activeId === 'lastName' ? 'name' : activeId === 'avatarUrl' ? 'avatar' : activeId === 'logoUrl' ? 'logo' : activeId;
+            const mappedOverId = overId === 'firstName' || overId === 'lastName' ? 'name' : overId === 'avatarUrl' ? 'avatar' : overId === 'logoUrl' ? 'logo' : overId;
+
+            if (mappedActiveId !== mappedOverId && newContactDisplayOrder.includes(mappedActiveId) && newContactDisplayOrder.includes(mappedOverId)) {
+              const cdoOldIndex = newContactDisplayOrder.indexOf(mappedActiveId);
+              // Calculate direction of move in the form to move it relative to the target in the preview
+              const cdoNewIndex = newContactDisplayOrder.indexOf(mappedOverId);
+              if (cdoOldIndex !== -1 && cdoNewIndex !== -1) {
+                newContactDisplayOrder = arrayMove(newContactDisplayOrder, cdoOldIndex, cdoNewIndex);
+              }
+            }
+
+            return { ...p, detailOrder: newDetailOrder, contactDisplayOrder: newContactDisplayOrder };
           }
           return p;
         });

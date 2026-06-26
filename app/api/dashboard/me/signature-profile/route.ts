@@ -26,6 +26,8 @@ const ProfileSchema = z.object({
   mobilePhone: z.string().trim().max(80).optional(),
   avatarUrl: z.string().trim().optional(),
   hiddenFields: z.array(z.string()).optional(),
+  detailOrder: z.array(z.string()).optional(),
+  contactDisplayOrder: z.array(z.string()).optional(),
   contentBlocks: ContentBlocksArraySchema.optional(),
   templateId: z.string().min(1).optional(),
 });
@@ -47,6 +49,8 @@ function docToProfile(doc: {
   mobilePhone?: string;
   avatarUrl?: string;
   hiddenFields?: string[];
+  detailOrder?: string[];
+  contactDisplayOrder?: string[];
   templateId?: unknown;
   contentBlocks?: unknown[];
 }) {
@@ -63,6 +67,8 @@ function docToProfile(doc: {
     mobilePhone: doc.mobilePhone ?? '',
     avatarUrl: doc.avatarUrl ?? '',
     hiddenFields: doc.hiddenFields ?? [],
+    detailOrder: doc.detailOrder ?? [],
+    contactDisplayOrder: doc.contactDisplayOrder ?? [],
     contentBlocks: doc.contentBlocks ?? [],
     ...(templateId ? { templateId } : {}),
   };
@@ -190,6 +196,8 @@ export async function PATCH(request: Request) {
     mobilePhone: p.mobilePhone ?? '',
     avatarUrl: p.avatarUrl ?? '',
     hiddenFields: p.hiddenFields ?? [],
+    detailOrder: p.detailOrder ?? [],
+    contactDisplayOrder: p.contactDisplayOrder ?? [],
     contentBlocks: contentBlocksForUpdate,
   };
   if (templateObjectId && canEditPromo) {

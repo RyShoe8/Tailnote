@@ -41,6 +41,7 @@ export type EmployeeProfileInput = {
   email: string;
   officePhone?: string;
   mobilePhone?: string;
+  contactDisplayOrder?: string[];
 };
 
 export function toSignatureBrand(input: OrgBrandInput): SignatureBrand {
@@ -87,6 +88,7 @@ export function toSignatureProfile(input: EmployeeProfileInput): SignatureProfil
     email: input.email,
     officePhone: input.officePhone?.trim() || undefined,
     mobilePhone: input.mobilePhone?.trim() || undefined,
+    contactDisplayOrder: input.contactDisplayOrder,
   };
 }
 

@@ -79,6 +79,7 @@ const BodySchema = z.object({
       officePhone: z.string().trim().max(80).optional(),
       mobilePhone: z.string().trim().max(80).optional(),
       contentBlocks: z.array(z.any()).optional(),
+      contactDisplayOrder: z.array(z.string()).optional(),
     })
     .optional(),
   /** Unsaved brand edits from the dashboard editor; merged over the org doc for the preview render only. */
@@ -148,6 +149,7 @@ export async function POST(request: Request) {
         email: p.email,
         officePhone: p.officePhone ?? '',
         mobilePhone: p.mobilePhone ?? '',
+        contactDisplayOrder: p.contactDisplayOrder,
       };
       orgBrand = mergeEmployeeSocialIntoOrgBrand(org as never, { linkedin: li }, p.contentBlocks ?? resolvedBlocks);
     } else {
@@ -163,6 +165,7 @@ export async function POST(request: Request) {
       email: p.email,
       officePhone: p.officePhone ?? '',
       mobilePhone: p.mobilePhone ?? '',
+      contactDisplayOrder: p.contactDisplayOrder,
     };
     if (p.contentBlocks) {
       orgBrand.contentBlocks = p.contentBlocks;
@@ -179,6 +182,7 @@ export async function POST(request: Request) {
       email: row.email,
       officePhone: row.officePhone ?? '',
       mobilePhone: row.mobilePhone ?? '',
+      contactDisplayOrder: row.contactDisplayOrder,
     };
     const selfEmp = await EmployeeModel.findOne({
       organizationId: org._id,

@@ -1403,27 +1403,27 @@ export function mergeRenderContext(
         switch(field) {
           case 'companyName':
             if (brand.companyName && !bHidden.includes('companyName')) {
-              contactRowsHtml += `<tr data-sig-field="companyName"><td style="padding-bottom:4px;font-weight:700;color:#111827;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(brand.companyName)}</td></tr>`;
+              contactRowsHtml += `<tr><td data-sig-field="companyName" style="padding-bottom:4px;font-weight:700;color:#111827;font-family:inherit;font-size:14px;line-height:1.4;display:block;">${escapeHtml(brand.companyName)}</td></tr>`;
             }
             break;
           case 'email':
             if (profile.email && !pHidden.includes('email')) {
-              contactRowsHtml += `<tr data-sig-field="email"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="mailto:${escapeHtml(profile.email)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.email)}</a></td></tr>`;
+              contactRowsHtml += `<tr><td data-sig-field="email" style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;display:block;"><a href="mailto:${escapeHtml(profile.email)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.email)}</a></td></tr>`;
             }
             break;
           case 'website':
             if (brand.website && !bHidden.includes('website')) {
-              contactRowsHtml += `<tr data-sig-field="website"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="${escapeHtml(brand.website)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(websiteDisplay)}</a></td></tr>`;
+              contactRowsHtml += `<tr><td data-sig-field="website" style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;display:block;"><a href="${escapeHtml(brand.website)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(websiteDisplay)}</a></td></tr>`;
             }
             break;
           case 'officePhone':
             if (profile.officePhone && !pHidden.includes('officePhone')) {
-              contactRowsHtml += `<tr data-sig-field="officePhone"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="${escapeHtml(officePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.officePhone)}</a></td></tr>`;
+              contactRowsHtml += `<tr><td data-sig-field="officePhone" style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;display:block;"><a href="${escapeHtml(officePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.officePhone)}</a></td></tr>`;
             }
             break;
           case 'mobilePhone':
             if (profile.mobilePhone && !pHidden.includes('mobilePhone')) {
-              contactRowsHtml += `<tr data-sig-field="mobilePhone"><td style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;"><a href="${escapeHtml(mobilePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">M: ${escapeHtml(profile.mobilePhone)}</a></td></tr>`;
+              contactRowsHtml += `<tr><td data-sig-field="mobilePhone" style="padding-bottom:4px;font-family:inherit;font-size:14px;line-height:1.4;display:block;"><a href="${escapeHtml(mobilePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">M: ${escapeHtml(profile.mobilePhone)}</a></td></tr>`;
             }
             break;
         }
