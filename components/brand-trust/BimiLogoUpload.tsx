@@ -30,12 +30,18 @@ export function BimiLogoUpload({
   const [hostedUrl, setHostedUrl] = useState(bimiLogoUrl ?? '');
   const [record, setRecord] = useState(bimiSuggestedRecord ?? '');
 
+  const embedded = variant === 'embedded';
+
   if (!canUseBimiLogoHosting) {
     return (
       <div className="rounded-lg border border-dashed border-border p-4 text-sm">
-        <p className="font-medium">BIMI logo hosting is a paid feature</p>
+        <p className="font-medium">
+          {embedded ? 'Logo hosting for inboxes is a paid feature' : 'BIMI logo hosting is a paid feature'}
+        </p>
         <p className="mt-1 text-muted-foreground">
-          Upgrade to convert and host a BIMI-ready logo, then copy the DNS record we generate for you.
+          {embedded
+            ? 'Upgrade to upload your logo, get a ready-to-copy DNS record, and show your brand in supporting inboxes.'
+            : 'Upgrade to convert and host a BIMI-ready logo, then copy the DNS record we generate for you.'}
         </p>
         <Button asChild className="mt-3" size="sm">
           <Link href={DASHBOARD_UPGRADE_HREF}>Upgrade</Link>
@@ -78,8 +84,6 @@ export function BimiLogoUpload({
     }
   }
 
-  const embedded = variant === 'embedded';
-
   return (
     <div
       id={embedded ? undefined : 'bimi-logo-upload'}
@@ -95,7 +99,9 @@ export function BimiLogoUpload({
           <p className="mt-1 text-sm text-muted-foreground">{RASTER_SVG_HONESTY}</p>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">{RASTER_SVG_HONESTY}</p>
+        <p className="text-sm text-muted-foreground">
+          Choose a square logo file. We&apos;ll prepare it and give you the DNS record to copy.
+        </p>
       )}
       <div className="space-y-2">
         <Label htmlFor="bimi-logo-file">Logo file (PNG, JPEG, WebP, or SVG)</Label>

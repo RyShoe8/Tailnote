@@ -3,6 +3,7 @@ import { getServerSession } from '@/lib/auth/session';
 import { connectMongoose } from '@/lib/mongoose';
 import { getBillingEntitlements } from '@/lib/billing/entitlements';
 import { domainFromOrgWebsite } from '@/lib/brandTrust/domainFromOrg';
+import { listOrgBrandTrustDomainRows } from '@/lib/brandTrust/orgBrandTrustScans';
 import { loadScanBySlug } from '@/lib/email-health/loadScan';
 import { domainToSlug } from '@/lib/email-health/domain';
 import { OrganizationModel, type OrganizationDoc } from '@/models/Organization';
@@ -45,9 +46,12 @@ export async function GET() {
       }).lean()
     : null;
 
+  const domains = await listOrgBrandTrustDomainRows(org);
+
   return NextResponse.json({
     orgDomain,
     scan,
+    domains,
     bimiLogoUrl: org.bimiLogoUrl ?? '',
     bimiSuggestedRecord: org.bimiSuggestedRecord ?? '',
     bimiScan: bimiRow,

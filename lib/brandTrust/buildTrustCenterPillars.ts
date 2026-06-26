@@ -1,5 +1,13 @@
-import { CATEGORY_GUIDE } from '@/lib/email-health/categoryGuide';
-import { BIMI_WHAT_IS, BIMI_CMC_VMC } from '@/lib/email-health/bimiCopy';
+import {
+  TRUST_CENTER_LEARN,
+  TRUST_CENTER_PILLAR_COPY,
+  TRUST_CENTER_SUMMARY,
+  deliverabilityPartialBody,
+  securityPartialBody,
+  type TrustCenterLearnSection,
+  type TrustCenterPillarId,
+} from '@/lib/brandTrust/trustCenterCopy';
+import { plainFixPhrase, plainIssueForTrustCenter } from '@/lib/brandTrust/plainIssueForTrustCenter';
 import type { SerializedEmailHealthScan } from '@/lib/email-health/serialize';
 import type {
   DnsRecordSuggestion,
@@ -7,7 +15,7 @@ import type {
   EmailHealthCategory,
 } from '@/lib/email-health/types';
 
-export type TrustCenterPillarId = 'deliverability' | 'security' | 'branding';
+export type { TrustCenterPillarId, TrustCenterLearnSection };
 
 export const TRUST_CENTER_PILLAR_ORDER: readonly TrustCenterPillarId[] = [
   'deliverability',
@@ -32,11 +40,13 @@ export type PillarResult = {
   headline?: string;
   body: string;
   confirmationLine?: string;
+  confirmationNote?: string;
   action?: PillarAction;
-  learnContent: string;
+  learnSections: TrustCenterLearnSection[];
   showCertificateLearn?: boolean;
   dnsRecords?: DnsRecordSuggestion[];
   securityIssues?: DomainIssue[];
+  fixIntro?: string;
 };
 
 const DELIVERABILITY_CATEGORIES: EmailHealthCategory[] = ['spf', 'mx', 'tls', 'https'];
@@ -67,11 +77,12 @@ function pillarCategoriesNeedAction(
 }
 
 function passingDeliverabilityLabels(scan: SerializedEmailHealthScan): string[] {
-  const labels: string[] = [];
-  if (!pillarCategoriesNeedAction(scan, ['mx'])) labels.push('mail routing');
-  if (!pillarCategoriesNeedAction(scan, ['tls'])) labels.push('encrypted mail delivery');
-  if (!pillarCategoriesNeedAction(scan, ['https'])) labels.push('a secure website');
-  return labels;
+  const labels = TRUST_CENTER_PILLAR_COPY.deliverability.passingLabels;
+  const passing: string[] = [];
+  if (!pillarCategoriesNeedAction(scan, ['mx'])) passing.push(labels.mx);
+  if (!pillarCategoriesNeedAction(scan, ['tls'])) passing.push(labels.tls);
+  if (!pillarCategoriesNeedAction(scan, ['https'])) passing.push(labels.https);
+  return passing;
 }
 
 function primaryIssue(
@@ -82,27 +93,6 @@ function primaryIssue(
   return scan.issues
     .filter((i) => categories.includes(i.category) && (i.severity === 'fail' || i.severity === 'warn'))
     .sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])[0];
-}
-
-function plainIssueSummary(issue: DomainIssue): string {
-  return issue.explanation;
-}
-
-function buildDeliverabilityLearn(): string {
-  return [
-    CATEGORY_GUIDE.spf.whatItChecks,
-    CATEGORY_GUIDE.mx.whatItChecks,
-    CATEGORY_GUIDE.tls.whatItChecks,
-    CATEGORY_GUIDE.https.whatItChecks,
-  ].join(' ');
-}
-
-function buildSecurityLearn(): string {
-  return [CATEGORY_GUIDE.dkim.whatItChecks, CATEGORY_GUIDE.dmarc.whatItChecks].join(' ');
-}
-
-function buildBrandingLearn(): string {
-  return [BIMI_WHAT_IS.body, BIMI_CMC_VMC.intro].join(' ');
 }
 
 function brandingNeedsAction(
@@ -118,47 +108,39 @@ function brandingNeedsAction(
 }
 
 function buildDeliverabilityPillar(scan: SerializedEmailHealthScan): PillarResult {
+  const copy = TRUST_CENTER_PILLAR_COPY.deliverability;
   const needsAction = pillarCategoriesNeedAction(scan, DELIVERABILITY_CATEGORIES);
-  const learnContent = buildDeliverabilityLearn();
 
   if (!needsAction) {
     return {
       id: 'deliverability',
       status: 'confirmed',
       body: '',
-      confirmationLine: 'Your emails are set up to land in the inbox, not spam.',
-      learnContent,
+      confirmationLine: copy.confirmed,
+      learnSections: TRUST_CENTER_LEARN.deliverability,
     };
   }
 
   const passing = passingDeliverabilityLabels(scan);
   const spfIssue = primaryIssue(scan, ['spf']) ?? categoryIssues(scan, 'spf')[0];
   const spfDnsRecords = (spfIssue?.dnsRecords ?? []).filter((r) => !r.exampleOnly);
-
-  let fixSentence = 'Your sender policy still needs a quick update so inbox providers trust your mail.';
-  if (spfIssue) {
-    fixSentence = plainIssueSummary(spfIssue);
-  }
-
-  const alreadyFine =
-    passing.length > 0
-      ? `${passing.join(', ')} ${passing.length === 1 ? 'is' : 'are'} already set up correctly, but `
-      : '';
+  const fixPhrase = plainFixPhrase(spfIssue, copy.defaultFix);
 
   return {
     id: 'deliverability',
     status: 'needs_action',
-    headline: 'Will your emails land in the inbox instead of spam?',
-    body: `${alreadyFine}${fixSentence}`,
-    action: { label: 'Fix it now', kind: 'spf_fix' },
-    learnContent,
+    headline: copy.headline,
+    body: deliverabilityPartialBody(passing, fixPhrase),
+    action: { label: copy.actionLabel, kind: 'spf_fix' },
+    learnSections: TRUST_CENTER_LEARN.deliverability,
     dnsRecords: spfDnsRecords.length > 0 ? spfDnsRecords : undefined,
+    fixIntro: copy.fixIntro,
   };
 }
 
 function buildSecurityPillar(scan: SerializedEmailHealthScan): PillarResult {
+  const copy = TRUST_CENTER_PILLAR_COPY.security;
   const needsAction = pillarCategoriesNeedAction(scan, SECURITY_CATEGORIES);
-  const learnContent = buildSecurityLearn();
   const securityIssues = SECURITY_CATEGORIES.flatMap((c) => categoryIssues(scan, c));
 
   if (!needsAction) {
@@ -166,36 +148,25 @@ function buildSecurityPillar(scan: SerializedEmailHealthScan): PillarResult {
       id: 'security',
       status: 'confirmed',
       body: '',
-      confirmationLine: "Scammers can't easily send fake emails that look like they're from you.",
-      learnContent,
+      confirmationLine: copy.confirmed,
+      learnSections: TRUST_CENTER_LEARN.security,
     };
   }
 
-  const dkimOk = !pillarCategoriesNeedAction(scan, ['dkim']);
-  const dmarcOk = !pillarCategoriesNeedAction(scan, ['dmarc']);
-  const parts: string[] = [];
-  if (dkimOk) parts.push('message signing is in place');
-  if (dmarcOk) parts.push('you have an enforcement policy');
+  const working: string[] = [];
+  if (!pillarCategoriesNeedAction(scan, ['dkim'])) working.push(copy.working.dkim);
+  if (!pillarCategoriesNeedAction(scan, ['dmarc'])) working.push(copy.working.dmarc);
 
-  let missing = 'signing and enforcement still need to be finished.';
   const primary = primaryIssue(scan, SECURITY_CATEGORIES);
-  if (primary) {
-    missing = plainIssueSummary(primary);
-  } else if (!dkimOk && dmarcOk) {
-    missing = 'message signing is not set up yet.';
-  } else if (dkimOk && !dmarcOk) {
-    missing = 'you do not have an enforcement policy yet.';
-  }
-
-  const alreadyFine = parts.length > 0 ? `${parts.join(' and ')}, but ` : '';
+  const fixPhrase = plainFixPhrase(primary, copy.defaultFix);
 
   return {
     id: 'security',
     status: 'needs_action',
-    headline: "Can people tell a fake email isn't really from you?",
-    body: `${alreadyFine}${missing}`,
-    action: { label: 'Fix it now', kind: 'security_fix' },
-    learnContent,
+    headline: copy.headline,
+    body: securityPartialBody(working, fixPhrase),
+    action: { label: copy.actionLabel, kind: 'security_fix' },
+    learnSections: TRUST_CENTER_LEARN.security,
     securityIssues,
   };
 }
@@ -204,19 +175,17 @@ function buildBrandingPillar(
   scan: SerializedEmailHealthScan,
   bimi: TrustCenterBimiState,
 ): PillarResult {
-  const learnContent = buildBrandingLearn();
+  const copy = TRUST_CENTER_PILLAR_COPY.branding;
   const needsAction = brandingNeedsAction(scan, bimi);
 
   if (!needsAction) {
-    const providerNote = scan.bimiDetail
-      ? ' Yahoo and Fastmail are more likely to show your logo with your current setup.'
-      : '';
     return {
       id: 'branding',
       status: 'confirmed',
       body: '',
-      confirmationLine: `Your logo is set up to show in supporting inboxes.${providerNote}`,
-      learnContent,
+      confirmationLine: copy.confirmed,
+      confirmationNote: scan.bimiDetail ? copy.confirmedProviderNote : undefined,
+      learnSections: TRUST_CENTER_LEARN.branding,
       showCertificateLearn: true,
     };
   }
@@ -225,10 +194,10 @@ function buildBrandingPillar(
     return {
       id: 'branding',
       status: 'needs_action',
-      headline: 'Want your logo to show up next to your emails in Gmail and other inboxes?',
-      body: "Nothing's set up yet. Upgrade to a paid plan to upload your logo, get the one DNS record we generate, add it, and rescan.",
-      action: { label: 'See plans', kind: 'upgrade' },
-      learnContent,
+      headline: copy.headline,
+      body: copy.notOnPlan,
+      action: { label: copy.upgradeLabel, kind: 'upgrade' },
+      learnSections: TRUST_CENTER_LEARN.branding,
       showCertificateLearn: true,
     };
   }
@@ -237,10 +206,10 @@ function buildBrandingPillar(
     return {
       id: 'branding',
       status: 'needs_action',
-      headline: 'Want your logo to show up next to your emails in Gmail and other inboxes?',
-      body: "Nothing's set up yet. Here's everything you can do for free: upload your logo, we'll generate the one DNS record you need, then add it and rescan.",
-      action: { label: 'Set it up free', kind: 'branding_setup' },
-      learnContent,
+      headline: copy.headline,
+      body: copy.notUploaded,
+      action: { label: copy.actionLabel, kind: 'branding_setup' },
+      learnSections: TRUST_CENTER_LEARN.branding,
       showCertificateLearn: true,
     };
   }
@@ -248,20 +217,18 @@ function buildBrandingPillar(
   return {
     id: 'branding',
     status: 'needs_action',
-    headline: 'Want your logo to show up next to your emails in Gmail and other inboxes?',
-    body: 'Your logo is hosted. Add the DNS record below at your provider, then rescan to confirm your logo can show in supporting inboxes.',
-    action: { label: 'Set it up free', kind: 'branding_setup' },
-    learnContent,
+    headline: copy.headline,
+    body: copy.uploadedPending,
+    action: { label: copy.actionLabel, kind: 'branding_setup' },
+    learnSections: TRUST_CENTER_LEARN.branding,
     showCertificateLearn: true,
   };
 }
 
 export function buildTrustCenterSummary(pillars: PillarResult[]): string {
   const n = pillars.filter((p) => p.status === 'needs_action').length;
-  if (n === 0) {
-    return 'Great news — deliverability, security, and branding are all in good shape for your domain.';
-  }
-  return `Good news — most things are already working. ${n} area${n === 1 ? '' : 's'} need${n === 1 ? 's' : ''} a quick look.`;
+  if (n === 0) return TRUST_CENTER_SUMMARY.allGood;
+  return TRUST_CENTER_SUMMARY.partial(n);
 }
 
 export function buildTrustCenterPillars(
@@ -277,6 +244,8 @@ export function buildTrustCenterPillars(
 
 /** Test helper: card copy must stay plain English (no acronyms outside learn expanders). */
 export function pillarCardCopyIsPlainEnglish(pillar: PillarResult): boolean {
-  const text = [pillar.headline, pillar.body, pillar.confirmationLine].filter(Boolean).join(' ');
+  const text = [pillar.headline, pillar.body, pillar.confirmationLine, pillar.confirmationNote]
+    .filter(Boolean)
+    .join(' ');
   return !ACRONYM_PATTERN.test(text);
 }

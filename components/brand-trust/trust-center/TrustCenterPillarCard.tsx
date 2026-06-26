@@ -21,6 +21,20 @@ type Props = {
   onAction?: () => void;
 };
 
+function BodyText({ text }: { text: string }) {
+  const lines = text.split('\n').filter(Boolean);
+  if (lines.length <= 1) {
+    return <p className="mt-2 text-sm text-muted-foreground">{text}</p>;
+  }
+  return (
+    <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+      {lines.map((line) => (
+        <p key={line}>{line}</p>
+      ))}
+    </div>
+  );
+}
+
 export function TrustCenterPillarCard({
   pillar,
   domain,
@@ -43,8 +57,11 @@ export function TrustCenterPillarCard({
         <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
         <div className="min-w-0 space-y-3">
           <p className="text-sm font-medium text-foreground">{pillar.confirmationLine}</p>
+          {pillar.confirmationNote ? (
+            <p className="text-sm text-muted-foreground">{pillar.confirmationNote}</p>
+          ) : null}
           <TrustCenterLearnMore
-            content={pillar.learnContent}
+            sections={pillar.learnSections}
             showCertificateLearn={pillar.showCertificateLearn}
           />
         </div>
@@ -63,7 +80,7 @@ export function TrustCenterPillarCard({
       }`}
     >
       <h3 className="text-base font-semibold tracking-tight text-foreground">{pillar.headline}</h3>
-      <p className="mt-2 text-sm text-muted-foreground">{pillar.body}</p>
+      <BodyText text={pillar.body} />
 
       {pillar.action ? (
         <div className="mt-4">
@@ -88,6 +105,9 @@ export function TrustCenterPillarCard({
 
       {showFix && pillar.id === 'deliverability' && pillar.dnsRecords?.length ? (
         <div className="mt-4 space-y-3">
+          {pillar.fixIntro ? (
+            <p className="text-sm text-muted-foreground">{pillar.fixIntro}</p>
+          ) : null}
           {pillar.dnsRecords.map((rec) => (
             <DnsRecordCopy key={`${rec.type}-${rec.host}`} record={rec} zoneDomain={domain} />
           ))}
@@ -111,7 +131,7 @@ export function TrustCenterPillarCard({
 
       <div className="mt-4">
         <TrustCenterLearnMore
-          content={pillar.learnContent}
+          sections={pillar.learnSections}
           showCertificateLearn={pillar.showCertificateLearn}
         />
       </div>

@@ -7,6 +7,7 @@ import {
   pillarCardCopyIsPlainEnglish,
   type TrustCenterBimiState,
 } from './buildTrustCenterPillars';
+import { TRUST_CENTER_LEARN } from './trustCenterCopy';
 import type { SerializedEmailHealthScan } from '@/lib/email-health/serialize';
 
 function baseScan(overrides: Partial<SerializedEmailHealthScan> = {}): SerializedEmailHealthScan {
@@ -50,7 +51,7 @@ describe('buildTrustCenterPillars', () => {
     assert.ok(pillars.every((p) => p.status === 'confirmed'));
     assert.equal(
       buildTrustCenterSummary(pillars),
-      'Great news — deliverability, security, and branding are all in good shape for your domain.',
+      "You're in great shape. Deliverability, security, and branding all look good for this domain.",
     );
   });
 
@@ -96,7 +97,7 @@ describe('buildTrustCenterPillars', () => {
     const pillars = buildTrustCenterPillars(scan, bimiReady);
     assert.equal(
       buildTrustCenterSummary(pillars),
-      'Good news — most things are already working. 1 area needs a quick look.',
+      "Most of this looks good. We found 1 thing worth fixing — we'll walk you through each one below.",
     );
   });
 
@@ -133,5 +134,25 @@ describe('buildTrustCenterPillars', () => {
         assert.ok(pillar.confirmationLine);
       }
     }
+  });
+
+  it('provides non-empty structured learn sections per pillar', () => {
+    const pillars = buildTrustCenterPillars(baseScan(), bimiReady);
+    for (const pillar of pillars) {
+      assert.ok(pillar.learnSections.length > 0, pillar.id);
+      for (const section of pillar.learnSections) {
+        assert.ok(section.title.length > 0);
+        assert.ok(section.body.length > 0);
+      }
+    }
+    const deliverability = pillars.find((p) => p.id === 'deliverability');
+    const cardText = [deliverability?.headline, deliverability?.body, deliverability?.confirmationLine]
+      .filter(Boolean)
+      .join(' ');
+    assert.doesNotMatch(cardText, /\bSPF\b/);
+    assert.ok(
+      TRUST_CENTER_LEARN.deliverability.some((s) => s.title.includes('SPF')),
+      'SPF should appear only in learn sections',
+    );
   });
 });

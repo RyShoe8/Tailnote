@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from '@/lib/auth/session';
+import { registerOrgBrandTrustScan } from '@/lib/brandTrust/orgBrandTrustScans';
 import { connectMongoose } from '@/lib/mongoose';
 import { DomainValidationError, parseDomainInput } from '@/lib/email-health/domain';
 import { isScanFresh } from '@/lib/email-health/cache';
@@ -68,6 +69,9 @@ export async function POST(request: Request) {
   if (!parsed.data.force) {
     const existing = await EmailHealthScanModel.findOne({ domain }).lean<EmailHealthScanDoc>();
     if (existing?.scannedAt && isScanFresh(new Date(existing.scannedAt))) {
+      if (user.organizationId) {
+        await registerOrgBrandTrustScan(user.organizationId, domain, new Date(existing.scannedAt));
+      }
       return scanJsonResponse(existing, true);
     }
   }
@@ -89,7 +93,14 @@ export async function POST(request: Request) {
       if (!doc) {
         return NextResponse.json({ error: 'Scan failed. Please try again.' }, { status: 500 });
       }
+      if (user.organizationId) {
+        await registerOrgBrandTrustScan(user.organizationId, domain, new Date(doc.scannedAt));
+      }
       return scanJsonResponse(doc, false);
+    }
+
+    if (user.organizationId) {
+      await registerOrgBrandTrustScan(user.organizationId, domain, new Date(saved.scannedAt));
     }
 
     return scanJsonResponse(saved as EmailHealthScanDoc, false);

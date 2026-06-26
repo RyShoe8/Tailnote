@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { Loader2, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,17 +33,38 @@ const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
 ];
 
 export function EmailHealthScansTable({ initialScans }: { initialScans: AdminEmailHealthScanRow[] }) {
+  const [scans, setScans] = useState(initialScans);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const visibleScans = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return initialScans.filter((row) => {
+    return scans.filter((row) => {
       if (statusFilter !== 'all' && row.statusLabel !== statusFilter) return false;
       if (!q) return true;
       return row.domain.includes(q) || row.domainSlug.includes(q);
     });
-  }, [initialScans, search, statusFilter]);
+  }, [scans, search, statusFilter]);
+
+  async function handleDelete(id: string, domain: string) {
+    if (!window.confirm(`Delete the scan for ${domain}? This cannot be undone.`)) return;
+    setError(null);
+    setDeletingId(id);
+    try {
+      const res = await fetch(`/api/admin/email-health/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(data.error ?? 'Delete failed');
+      }
+      setScans((prev) => prev.filter((row) => row.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Delete failed');
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -69,9 +91,10 @@ export function EmailHealthScansTable({ initialScans }: { initialScans: AdminEma
           ))}
         </div>
       </div>
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <div className="min-w-0 overflow-x-auto rounded-md border">
-          <table className="w-full min-w-[40rem] text-sm">
+          <table className="w-full min-w-[44rem] text-sm">
             <thead>
               <tr className="border-b bg-muted/40 text-left">
                 <th className="p-3 font-medium">Domain</th>
@@ -79,14 +102,14 @@ export function EmailHealthScansTable({ initialScans }: { initialScans: AdminEma
                 <th className="p-3 font-medium">Status</th>
                 <th className="p-3 font-medium">Mail provider</th>
                 <th className="p-3 font-medium">Scanned</th>
-                <th className="p-3 font-medium w-28" />
+                <th className="p-3 font-medium w-36" />
               </tr>
             </thead>
             <tbody>
               {visibleScans.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-6 text-center text-muted-foreground">
-                    {initialScans.length === 0
+                    {scans.length === 0
                       ? 'No domains scanned yet.'
                       : 'No domains match this filter.'}
                   </td>
@@ -104,14 +127,31 @@ export function EmailHealthScansTable({ initialScans }: { initialScans: AdminEma
                       {formatDate(row.scannedAt)}
                     </td>
                     <td className="p-3">
-                      <Link
-                        href={`/email-health/${row.domainSlug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        View report
-                      </Link>
+                      <div className="flex items-center gap-3">
+                        <Link
+                          href={`/email-health/${row.domainSlug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          View report
+                        </Link>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          disabled={deletingId === row.id}
+                          onClick={() => void handleDelete(row.id, row.domain)}
+                          aria-label={`Delete scan for ${row.domain}`}
+                        >
+                          {deletingId === row.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                          ) : (
+                            <Trash2 className="h-4 w-4" aria-hidden />
+                          )}
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))

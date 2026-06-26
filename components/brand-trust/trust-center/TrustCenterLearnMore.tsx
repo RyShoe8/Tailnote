@@ -8,14 +8,15 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { BIMI_REALITY_CHECK } from '@/lib/email-health/bimiCopy';
+import { TRUST_CENTER_CERTIFICATE_PREAMBLE } from '@/lib/brandTrust/trustCenterCopy';
+import type { TrustCenterLearnSection } from '@/lib/brandTrust/trustCenterCopy';
 
 type Props = {
-  content: string;
+  sections: TrustCenterLearnSection[];
   showCertificateLearn?: boolean;
 };
 
-export function TrustCenterLearnMore({ content, showCertificateLearn = false }: Props) {
+export function TrustCenterLearnMore({ sections, showCertificateLearn = false }: Props) {
   const [certOpen, setCertOpen] = useState(false);
 
   return (
@@ -24,11 +25,16 @@ export function TrustCenterLearnMore({ content, showCertificateLearn = false }: 
         Learn about this
         <ChevronDown className="h-4 w-4" aria-hidden />
       </CollapsibleTrigger>
-      <CollapsibleContent className="mt-3 space-y-3 text-sm text-muted-foreground">
-        <p>{content}</p>
+      <CollapsibleContent className="mt-3 space-y-4 text-sm text-muted-foreground">
+        {sections.map((section) => (
+          <div key={section.title}>
+            <p className="font-medium text-foreground">{section.title}</p>
+            <p className="mt-1">{section.body}</p>
+          </div>
+        ))}
         {showCertificateLearn ? (
           <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
-            <p className="text-sm text-muted-foreground">{BIMI_REALITY_CHECK.body}</p>
+            <p className="text-sm text-muted-foreground">{TRUST_CENTER_CERTIFICATE_PREAMBLE}</p>
             <button
               type="button"
               className="mt-2 flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"

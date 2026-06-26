@@ -55,3 +55,10 @@ export async function listEmailHealthScans(): Promise<AdminEmailHealthScanRow[]>
     .lean<ScanLean[]>();
   return docs.map(toRow);
 }
+
+export async function deleteEmailHealthScan(id: string): Promise<boolean> {
+  if (!mongoose.Types.ObjectId.isValid(id)) return false;
+  await connectMongoose();
+  const result = await EmailHealthScanModel.findByIdAndDelete(id);
+  return result !== null;
+}

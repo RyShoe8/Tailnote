@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Loader2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { TRUST_CENTER_PRE_SCAN } from '@/lib/brandTrust/trustCenterCopy';
 
 type Props = {
   initialDomain?: string;
@@ -22,7 +23,7 @@ export function TrustCenterPreScan({ initialDomain = '', onScan }: Props) {
     try {
       await onScan(domain.trim());
     } catch {
-      setError('Scan failed. Please try again.');
+      setError('We could not complete the scan. Please try again in a moment.');
     } finally {
       setLoading(false);
     }
@@ -32,21 +33,18 @@ export function TrustCenterPreScan({ initialDomain = '', onScan }: Props) {
     <div className="mx-auto max-w-2xl space-y-8">
       <div className="space-y-4 text-center">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          See how your domain is doing — and fix what&apos;s holding it back.
+          {TRUST_CENTER_PRE_SCAN.headline}
         </h1>
+        <p className="text-muted-foreground">{TRUST_CENTER_PRE_SCAN.intro}</p>
         <p className="text-muted-foreground">
-          {initialDomain ? (
-            <>
-              Scan {initialDomain} and we&apos;ll show you exactly how to:
-            </>
-          ) : (
-            <>Scan your domain and we&apos;ll show you exactly how to:</>
-          )}
+          {initialDomain
+            ? TRUST_CENTER_PRE_SCAN.scanLead(initialDomain)
+            : TRUST_CENTER_PRE_SCAN.scanLeadGeneric}
         </p>
         <ul className="mx-auto max-w-md space-y-2 text-left text-sm text-muted-foreground">
-          <li>• Get your emails delivered to the inbox instead of spam or junk</li>
-          <li>• Stop scammers from sending fake emails that look like they&apos;re from you</li>
-          <li>• Get your logo showing up next to your emails in Gmail and other inboxes</li>
+          {TRUST_CENTER_PRE_SCAN.bullets.map((bullet) => (
+            <li key={bullet}>• {bullet}</li>
+          ))}
         </ul>
       </div>
 
