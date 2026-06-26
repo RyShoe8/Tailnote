@@ -1339,11 +1339,11 @@ export function mergeRenderContext(
   }
   let mpMiddleColumnHtml = '';
   if (template.layout === 'modern_professional') {
-    const defaultOrder = ['logo', 'name', 'title', 'companyName', 'email', 'website', 'address', 'officePhone', 'mobilePhone'];
+    const mpFieldOrder = ['logo', 'name', 'title', 'email', 'website'] as const;
     const cdo = profile.contactDisplayOrder;
     const order = cdo?.length
-      ? [...cdo.filter(f => defaultOrder.includes(f)), ...defaultOrder.filter(f => !cdo.includes(f))]
-      : defaultOrder;
+      ? [...cdo.filter((f) => mpFieldOrder.includes(f as (typeof mpFieldOrder)[number])), ...mpFieldOrder.filter((f) => !cdo.includes(f))]
+      : [...mpFieldOrder];
 
     let contactRowsHtml = '';
     const flushContactRows = () => {
@@ -1390,42 +1390,13 @@ export function mergeRenderContext(
             </div>
           `;
         }
-      } else if (field === 'address') {
-        flushContactRows();
-        if (showAddressBlock) {
-          mpMiddleColumnHtml += `
-            <div data-sig-field="address" style="margin-top: 6px; font-size: 12px; color: #6b7280; line-height: 1.4;">
-              ${addressBlockHtml}
-            </div>
-          `;
+      } else if (field === 'email') {
+        if (profile.email && !pHidden.includes('email')) {
+          contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;white-space:normal;"><div data-sig-field="email" style="display:inline-block;"><a href="mailto:${escapeHtml(profile.email)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.email)}</a></div></td></tr>`;
         }
-      } else if (field === 'companyName' || field === 'email' || field === 'website' || field === 'officePhone' || field === 'mobilePhone') {
-        switch(field) {
-          case 'companyName':
-            if (brand.companyName && !bHidden.includes('companyName')) {
-              contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="companyName" style="display:inline-block;font-weight:700;color:#111827;">${escapeHtml(brand.companyName)}</div></td></tr>`;
-            }
-            break;
-          case 'email':
-            if (profile.email && !pHidden.includes('email')) {
-              contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="email" style="display:inline-block;"><a href="mailto:${escapeHtml(profile.email)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.email)}</a></div></td></tr>`;
-            }
-            break;
-          case 'website':
-            if (brand.website && !bHidden.includes('website')) {
-              contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="website" style="display:inline-block;"><a href="${escapeHtml(brand.website)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(websiteDisplay)}</a></div></td></tr>`;
-            }
-            break;
-          case 'officePhone':
-            if (profile.officePhone && !pHidden.includes('officePhone')) {
-              contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="officePhone" style="display:inline-block;"><a href="${escapeHtml(officePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.officePhone)}</a></div></td></tr>`;
-            }
-            break;
-          case 'mobilePhone':
-            if (profile.mobilePhone && !pHidden.includes('mobilePhone')) {
-              contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;"><div data-sig-field="mobilePhone" style="display:inline-block;"><a href="${escapeHtml(mobilePhoneTelHref)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">M: ${escapeHtml(profile.mobilePhone)}</a></div></td></tr>`;
-            }
-            break;
+      } else if (field === 'website') {
+        if (brand.website && !bHidden.includes('website')) {
+          contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;white-space:normal;"><div data-sig-field="website" style="display:inline-block;"><a href="${escapeHtml(brand.website)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(websiteDisplay)}</a></div></td></tr>`;
         }
       }
     }

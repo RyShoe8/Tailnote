@@ -1452,8 +1452,24 @@ assert.ok(htmlModernProfessional.includes('icon-globe.png'), 'modern_professiona
 assert.ok(htmlModernProfessional.includes('sig-mp-avatar-clip'), 'modern_professional: diagonal cropped avatar clipPath present');
 assert.match(
   htmlModernProfessional,
-  /Cisco[\s\S]*?test@example.com[\s\S]*?www\.cisco\.com[\s\S]*?555-0100[\s\S]*?555-0200/,
-  'modern_professional: data points in correct order (Company -> Email -> Website -> Office -> Mobile)'
+  /test@example\.com[\s\S]*?www\.cisco\.com/,
+  'modern_professional: data points in correct order (Email -> Website)',
+);
+assert.ok(
+  !htmlModernProfessional.includes('data-sig-field="companyName"'),
+  'modern_professional: company name omitted (shown in logo)',
+);
+assert.ok(
+  !htmlModernProfessional.includes('data-sig-field="officePhone"'),
+  'modern_professional: office phone omitted',
+);
+assert.ok(
+  !htmlModernProfessional.includes('data-sig-field="mobilePhone"'),
+  'modern_professional: mobile phone omitted',
+);
+assert.ok(
+  !htmlModernProfessional.includes('555-0100'),
+  'modern_professional: phone numbers omitted',
 );
 assert.match(
   htmlModernProfessional,
@@ -1470,8 +1486,12 @@ assert.ok(
   'modern_professional: info and avatar nested in sig-mp-main-col',
 );
 assert.ok(
-  htmlModernProfessional.includes('padding-bottom:11px'),
-  'modern_professional: social icons use compact vertical spacing',
+  htmlModernProfessional.includes('sig-info-col" width="1"'),
+  'modern_professional: info column shrink-wraps beside avatar',
+);
+assert.ok(
+  htmlModernProfessional.includes('padding-bottom:16px'),
+  'modern_professional: social icons use increased vertical spacing',
 );
 
 process.stdout.write('email-client-smoke: all checks passed.\n');
