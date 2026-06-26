@@ -1,7 +1,10 @@
 import { notFound } from 'next/navigation';
-import { EmailHealthReportView } from '@/components/email-health/EmailHealthReportView';
-import { getDashboardSession } from '@/lib/dashboard/getDashboardContext';
-import { loadOrCreateScanBySlug } from '@/lib/email-health/loadScan';
+import { BrandTrustHubClient } from '@/components/brand-trust/BrandTrustHubClient';
+import { getBillingEntitlements } from '@/lib/billing/entitlements';
+import { domainFromOrgWebsite } from '@/lib/brandTrust/domainFromOrg';
+import { getDashboardOrg, getDashboardSession } from '@/lib/dashboard/getDashboardContext';
+import { loadScanBySlug } from '@/lib/email-health/loadScan';
+import { connectMongoose } from '@/lib/mongoose';
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -10,23 +13,23 @@ type Props = {
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardBrandTrustResultPage({ params }: Props) {
-  await getDashboardSession();
+  const { user } = await getDashboardSession();
+  await connectMongoose();
+  const org = await getDashboardOrg(user.organizationId!);
   const { slug } = await params;
-  const scan = await loadOrCreateScanBySlug(slug);
+  const scan = await loadScanBySlug(slug);
   if (!scan) notFound();
 
+  const orgDomain = domainFromOrgWebsite(org.website);
+  const entitlements = getBillingEntitlements(org);
+
   return (
-    <div className="space-y-6">
-      <EmailHealthReportView
-        scan={scan}
-        indexHref="/dashboard/brand-trust"
-        sharePathPrefix="/email-health"
-        showSignupCta={false}
-        breadcrumbRoot={{ href: '/dashboard', label: 'Overview' }}
-        showDomainScanField
-        scanApiPath="/api/dashboard/brand-trust/scan"
-        resultBasePath="/dashboard/brand-trust"
-      />
-    </div>
+    <BrandTrustHubClient
+      orgDomain={orgDomain ?? scan.domain}
+      initialScan={scan}
+      canUseBimiLogoHosting={entitlements.canUseBimiLogoHosting}
+      bimiLogoUrl={String(org.bimiLogoUrl ?? '')}
+      bimiSuggestedRecord={String(org.bimiSuggestedRecord ?? '')}
+    />
   );
 }

@@ -7,7 +7,8 @@ import { isScanFresh } from '@/lib/email-health/cache';
 import { persistEmailHealthScan } from '@/lib/email-health/persist';
 import { persistBimiScanResult } from '@/lib/email-health/persistBimi';
 import { runEmailHealthScan } from '@/lib/email-health/runScan';
-import { EmailHealthScanModel } from '@/models/EmailHealthScan';
+import { serializeEmailHealthScan } from '@/lib/email-health/serialize';
+import { EmailHealthScanModel, type EmailHealthScanDoc } from '@/models/EmailHealthScan';
 import { logError } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
@@ -20,6 +21,18 @@ const bodySchema = z.object({
 });
 
 type SessionUser = { organizationId?: string };
+
+function scanJsonResponse(doc: EmailHealthScanDoc, cached: boolean) {
+  return NextResponse.json({
+    cached,
+    slug: doc.domainSlug,
+    domain: doc.domain,
+    score: doc.score,
+    statusLabel: doc.statusLabel,
+    scannedAt: doc.scannedAt,
+    scan: serializeEmailHealthScan(doc),
+  });
+}
 
 export async function POST(request: Request) {
   const session = await getServerSession();
@@ -41,9 +54,8 @@ export async function POST(request: Request) {
   }
 
   let domain: string;
-  let domainSlug: string;
   try {
-    ({ domain, domainSlug } = parseDomainInput(parsed.data.domain));
+    ({ domain } = parseDomainInput(parsed.data.domain));
   } catch (err) {
     if (err instanceof DomainValidationError) {
       return NextResponse.json({ error: err.message }, { status: 400 });
@@ -54,22 +66,15 @@ export async function POST(request: Request) {
   await connectMongoose();
 
   if (!parsed.data.force) {
-    const existing = await EmailHealthScanModel.findOne({ domain }).lean();
+    const existing = await EmailHealthScanModel.findOne({ domain }).lean<EmailHealthScanDoc>();
     if (existing?.scannedAt && isScanFresh(new Date(existing.scannedAt))) {
-      return NextResponse.json({
-        cached: true,
-        slug: existing.domainSlug,
-        domain: existing.domain,
-        score: existing.score,
-        statusLabel: existing.statusLabel,
-        scannedAt: existing.scannedAt,
-      });
+      return scanJsonResponse(existing, true);
     }
   }
 
   try {
     const report = await runEmailHealthScan(domain);
-    await persistEmailHealthScan(report, {});
+    const saved = await persistEmailHealthScan(report, {});
 
     if (report.bimiDetail) {
       await persistBimiScanResult({
@@ -79,14 +84,15 @@ export async function POST(request: Request) {
       });
     }
 
-    return NextResponse.json({
-      cached: false,
-      slug: domainSlug,
-      domain,
-      score: report.score,
-      statusLabel: report.statusLabel,
-      scannedAt: report.scannedAt,
-    });
+    if (!saved) {
+      const doc = await EmailHealthScanModel.findOne({ domain }).lean<EmailHealthScanDoc>();
+      if (!doc) {
+        return NextResponse.json({ error: 'Scan failed. Please try again.' }, { status: 500 });
+      }
+      return scanJsonResponse(doc, false);
+    }
+
+    return scanJsonResponse(saved as EmailHealthScanDoc, false);
   } catch (err) {
     logError('api/dashboard/brand-trust/scan', err);
     return NextResponse.json({ error: 'Scan failed. Please try again.' }, { status: 500 });

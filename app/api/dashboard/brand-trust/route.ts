@@ -3,7 +3,7 @@ import { getServerSession } from '@/lib/auth/session';
 import { connectMongoose } from '@/lib/mongoose';
 import { getBillingEntitlements } from '@/lib/billing/entitlements';
 import { domainFromOrgWebsite } from '@/lib/brandTrust/domainFromOrg';
-import { loadOrCreateScanBySlug } from '@/lib/email-health/loadScan';
+import { loadScanBySlug } from '@/lib/email-health/loadScan';
 import { domainToSlug } from '@/lib/email-health/domain';
 import { OrganizationModel, type OrganizationDoc } from '@/models/Organization';
 import { BimiScanResultModel } from '@/models/BimiScanResult';
@@ -34,7 +34,7 @@ export async function GET() {
   let scan = null;
   if (orgDomain) {
     const slug = domainToSlug(orgDomain);
-    const serialized = await loadOrCreateScanBySlug(slug);
+    const serialized = await loadScanBySlug(slug);
     if (serialized) scan = serialized;
   }
 

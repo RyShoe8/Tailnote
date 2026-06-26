@@ -14,6 +14,7 @@ type Props = {
   bimiLogoUrl?: string;
   bimiSuggestedRecord?: string;
   onUploaded?: (payload: { url: string; suggestedRecord: string }) => void;
+  variant?: 'default' | 'embedded';
 };
 
 export function BimiLogoUpload({
@@ -21,6 +22,7 @@ export function BimiLogoUpload({
   bimiLogoUrl,
   bimiSuggestedRecord,
   onUploaded,
+  variant = 'default',
 }: Props) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,12 +78,25 @@ export function BimiLogoUpload({
     }
   }
 
+  const embedded = variant === 'embedded';
+
   return (
-    <div id="bimi-logo-upload" className="space-y-4 rounded-lg border border-border p-4">
-      <div>
-        <p className="font-medium">Upload BIMI logo</p>
-        <p className="mt-1 text-sm text-muted-foreground">{RASTER_SVG_HONESTY}</p>
-      </div>
+    <div
+      id={embedded ? undefined : 'bimi-logo-upload'}
+      className={
+        embedded
+          ? 'space-y-3'
+          : 'space-y-4 rounded-lg border border-border p-4'
+      }
+    >
+      {!embedded ? (
+        <div>
+          <p className="font-medium">Upload BIMI logo</p>
+          <p className="mt-1 text-sm text-muted-foreground">{RASTER_SVG_HONESTY}</p>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">{RASTER_SVG_HONESTY}</p>
+      )}
       <div className="space-y-2">
         <Label htmlFor="bimi-logo-file">Logo file (PNG, JPEG, WebP, or SVG)</Label>
         <Input
