@@ -80,8 +80,8 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
           <!-- Left Column: Social Icons -->
           {{#if showSocialBlock}}
           <td data-sig-field="socialLinks" class="sig-social-col" width="40" valign="top" style="vertical-align:top;padding-right:12px;">
-            <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border:1px solid #e5e7eb;border-radius:24px;width:40px;text-align:center;">
-              <tr><td style="padding-top:10px;padding-bottom:10px;">
+            <table class="sig-mp-social-pill" cellpadding="0" cellspacing="0" border="0" height="100%" style="height:100%;border-collapse:separate;border:1px solid #e5e7eb;border-radius:24px;width:40px;text-align:center;">
+              <tr><td valign="middle" align="center" style="vertical-align:middle;text-align:center;padding:8px 0;">
                 <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
                   {{#if hasWebsite}}<tr><td style="padding-bottom:16px;"><a href="{{website}}"><img src="{{iconGlobe}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
                   {{#if hasLinkedin}}<tr><td style="padding-bottom:16px;"><a href="{{linkedin}}"><img src="{{iconLinkedin}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
@@ -105,7 +105,7 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
                   {{mpMiddleColumnHtml}}
                 </td>
                 {{#if hasAvatar}}
-                <td data-sig-field="avatar" class="sig-avatar-col" width="100" valign="top" style="vertical-align:top;width:100px;">
+                <td data-sig-field="avatar" class="sig-avatar-col" width="100" valign="middle" style="vertical-align:middle;width:100px;">
                   <div style="display:inline-block;width:100px;height:92px;overflow:hidden;">
                     <svg width="100" height="92" viewBox="0 0 100 92" style="display:block;" xmlns="http://www.w3.org/2000/svg">
                       <defs>

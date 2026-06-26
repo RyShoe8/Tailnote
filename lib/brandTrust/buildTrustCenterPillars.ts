@@ -237,7 +237,7 @@ function buildBrandingPillar(
     status: 'needs_action',
     headline: copy.headline,
     body: copy.uploadedPending,
-    action: { label: copy.actionLabel, kind: 'branding_setup' },
+    action: { label: copy.showDnsLabel, kind: 'branding_setup' },
     learnSections: TRUST_CENTER_LEARN.branding,
     showCertificateLearn: true,
   };

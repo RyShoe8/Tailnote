@@ -69,7 +69,7 @@ export function BrandTrustHubClient({
   const [selectedDomain, setSelectedDomain] = useState<string | null>(initialScan?.domain ?? null);
   const [bimiLogoUrl, setBimiLogoUrl] = useState(initialLogoUrl);
   const [bimiSuggestedRecord, setBimiSuggestedRecord] = useState(initialRecord);
-  const [rescanning, setRescanning] = useState(false);
+  const [rescanningDomain, setRescanningDomain] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
 
   const bimiForDomain = useCallback(
@@ -126,15 +126,22 @@ export function BrandTrustHubClient({
     [runScan],
   );
 
+  const handleRescanDomain = useCallback(
+    async (domain: string) => {
+      setRescanningDomain(domain);
+      try {
+        await runScan(domain, true);
+      } finally {
+        setRescanningDomain(null);
+      }
+    },
+    [runScan],
+  );
+
   const handleRescan = useCallback(async () => {
     if (!scan?.domain) return;
-    setRescanning(true);
-    try {
-      await runScan(scan.domain, true);
-    } finally {
-      setRescanning(false);
-    }
-  }, [runScan, scan?.domain]);
+    await handleRescanDomain(scan.domain);
+  }, [handleRescanDomain, scan?.domain]);
 
   const handleSelectDomain = useCallback(
     async (domain: string) => {
@@ -206,7 +213,7 @@ export function BrandTrustHubClient({
         <TrustCenterPostScan
           scan={scan}
           bimi={activeBimi}
-          rescanning={rescanning || switching}
+          rescanning={rescanningDomain !== null || switching}
           onRescan={() => void handleRescan()}
           onBimiUploaded={handleBimiUploaded}
         />
@@ -215,7 +222,9 @@ export function BrandTrustHubClient({
       <TrustCenterDomainTable
         domains={domains}
         selectedDomain={selectedDomain}
+        rescanningDomain={rescanningDomain}
         onSelect={(domain) => void handleSelectDomain(domain)}
+        onRescan={(domain) => void handleRescanDomain(domain)}
       />
 
       <TrustCenterScanAnother onScan={handleScan} defaultDomain="" />

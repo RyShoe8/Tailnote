@@ -11,11 +11,16 @@ export const TRUST_CENTER_PRE_SCAN = {
   trustLine: 'Free scan · No DNS changes required to start',
 } as const;
 
+export type TrustCenterScanCheck = {
+  label: string;
+  solution: string;
+};
+
 export type TrustCenterScanExplainerPillar = {
   id: TrustCenterPillarId;
   title: string;
   promise: string;
-  checks: string[];
+  checks: TrustCenterScanCheck[];
 };
 
 export const TRUST_CENTER_SCAN_EXPLAINER: TrustCenterScanExplainerPillar[] = [
@@ -24,29 +29,67 @@ export const TRUST_CENTER_SCAN_EXPLAINER: TrustCenterScanExplainerPillar[] = [
     title: 'Inbox delivery',
     promise: 'Will your mail land in the inbox, not spam?',
     checks: [
-      'Sender policy (SPF)',
-      'Mail routing (MX)',
-      'Encrypted delivery (TLS)',
-      'Secure website (HTTPS)',
+      {
+        label: 'Sender policy (SPF)',
+        solution:
+          'We read your current DNS record and give you the exact TXT value to copy and paste.',
+      },
+      {
+        label: 'Mail routing (MX)',
+        solution:
+          'We flag missing or misconfigured mail routing and explain what to set at your DNS provider.',
+      },
+      {
+        label: 'Encrypted delivery (TLS)',
+        solution:
+          'We check whether your mail servers accept encrypted delivery and tell you what to fix.',
+      },
+      {
+        label: 'Secure website (HTTPS)',
+        solution:
+          'We confirm your site loads over HTTPS and note certificate or redirect issues.',
+      },
     ],
   },
   {
     id: 'security',
     title: 'Anti-spoofing',
     promise: 'Can receivers spot fake email from your domain?',
-    checks: ['Message signing (DKIM)', 'Impersonation policy (DMARC)'],
+    checks: [
+      {
+        label: 'Message signing (DKIM)',
+        solution:
+          'We show whether signing is set up and walk you through enabling it with your email provider.',
+      },
+      {
+        label: 'Impersonation policy (DMARC)',
+        solution:
+          'We generate the policy record you need and help you tighten it over time.',
+      },
+    ],
   },
   {
     id: 'branding',
     title: 'Inbox logo',
     promise: 'Can your logo show beside messages in Gmail and others?',
     checks: [
-      'Logo DNS record (BIMI)',
-      'Hosted logo file',
-      'Certificate readiness (optional)',
+      {
+        label: 'Logo DNS record (BIMI)',
+        solution:
+          'After you upload your logo, we give you the DNS record to publish at your provider.',
+      },
+      {
+        label: 'Hosted logo file',
+        solution: 'Upload your logo on Tailnote — we convert it to the format inboxes expect.',
+      },
+      {
+        label: 'Certificate readiness (optional)',
+        solution:
+          'We explain when a certificate is optional and when Gmail may require one.',
+      },
     ],
   },
-] as const;
+];
 
 export const TRUST_CENTER_SCAN_EXPLAINER_COMPACT =
   'We check inbox delivery, anti-spoofing, and inbox logo setup — then show you exactly what to fix.';
@@ -95,6 +138,7 @@ export const TRUST_CENTER_PILLAR_COPY = {
     confirmedProviderNote:
       'Yahoo and Fastmail are more likely to show your logo with your current setup.',
     actionLabel: 'Set it up free',
+    showDnsLabel: 'Show DNS record',
     upgradeLabel: 'See plans',
     notOnPlan:
       "Nothing is set up yet. On a paid plan, you can upload your logo, copy the one DNS record we generate, add it at your provider, and rescan.",

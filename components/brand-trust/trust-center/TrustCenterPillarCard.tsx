@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -44,12 +44,8 @@ export function TrustCenterPillarCard({
   onBimiUploaded,
   onAction,
 }: Props) {
-  const [showFix, setShowFix] = useState(
-    pillar.id === 'branding' &&
-      pillar.status === 'needs_action' &&
-      Boolean(bimiLogoUrl) &&
-      pillar.action?.kind === 'branding_setup',
-  );
+  const [showFix, setShowFix] = useState(false);
+  const fixPanelRef = useRef<HTMLDivElement>(null);
 
   if (pillar.status === 'confirmed') {
     return (
@@ -70,6 +66,15 @@ export function TrustCenterPillarCard({
   }
 
   const isBranding = pillar.id === 'branding';
+  const showActionButton = pillar.action && (pillar.action.kind === 'upgrade' || !showFix);
+
+  function openFixPanel() {
+    setShowFix(true);
+    onAction?.();
+    requestAnimationFrame(() => {
+      fixPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  }
 
   return (
     <article
@@ -82,29 +87,22 @@ export function TrustCenterPillarCard({
       <h3 className="text-base font-semibold tracking-tight text-foreground">{pillar.headline}</h3>
       <BodyText text={pillar.body} />
 
-      {pillar.action ? (
+      {showActionButton ? (
         <div className="mt-4">
-          {pillar.action.kind === 'upgrade' ? (
+          {pillar.action!.kind === 'upgrade' ? (
             <Button asChild size="sm">
-              <Link href={DASHBOARD_UPGRADE_HREF}>{pillar.action.label}</Link>
+              <Link href={DASHBOARD_UPGRADE_HREF}>{pillar.action!.label}</Link>
             </Button>
           ) : (
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => {
-                setShowFix(true);
-                onAction?.();
-              }}
-            >
-              {pillar.action.label}
+            <Button type="button" size="sm" onClick={openFixPanel}>
+              {pillar.action!.label}
             </Button>
           )}
         </div>
       ) : null}
 
       {showFix && pillar.id === 'deliverability' ? (
-        <div className="mt-4 space-y-3">
+        <div ref={fixPanelRef} className="mt-4 space-y-3">
           {pillar.deliverabilityIssues?.length ? (
             <TrustCenterSecurityFix issues={pillar.deliverabilityIssues} zoneDomain={domain} />
           ) : pillar.dnsRecords?.length ? (
@@ -126,11 +124,13 @@ export function TrustCenterPillarCard({
       ) : null}
 
       {showFix && pillar.id === 'security' && pillar.securityIssues?.length ? (
-        <TrustCenterSecurityFix issues={pillar.securityIssues} zoneDomain={domain} />
+        <div ref={fixPanelRef}>
+          <TrustCenterSecurityFix issues={pillar.securityIssues} zoneDomain={domain} />
+        </div>
       ) : null}
 
       {showFix && pillar.id === 'branding' && pillar.action?.kind === 'branding_setup' ? (
-        <div className="mt-4">
+        <div ref={fixPanelRef} className="mt-4">
           <TrustCenterBrandingAction
             canUseBimiLogoHosting={canUseBimiLogoHosting}
             bimiLogoUrl={bimiLogoUrl}

@@ -1345,10 +1345,13 @@ export function mergeRenderContext(
       ? [...cdo.filter((f) => mpFieldOrder.includes(f as (typeof mpFieldOrder)[number])), ...mpFieldOrder.filter((f) => !cdo.includes(f))]
       : [...mpFieldOrder];
 
+    const mpSecondary =
+      'font-family:inherit;font-size:14px;line-height:1.35;color:#374151;';
+
     let contactRowsHtml = '';
     const flushContactRows = () => {
       if (contactRowsHtml) {
-        mpMiddleColumnHtml += `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:14px;color:#111827;line-height:1.35;">${contactRowsHtml}</table>`;
+        mpMiddleColumnHtml += `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;${mpSecondary}">${contactRowsHtml}</table>`;
         contactRowsHtml = '';
       }
     };
@@ -1364,7 +1367,7 @@ export function mergeRenderContext(
             ? `<img src="${escapeHtml(logoUrl)}" width="${escapeHtml(logoWidthStr)}" border="0" alt="" style="display:block;max-width:${escapeHtml(logoWidthStr)}px;width:${escapeHtml(logoWidthStr)}px;height:auto;border:0;outline:none;text-decoration:none;border-radius:${escapeHtml(logoImgBorderRadius)};" />`
             : '';
           mpMiddleColumnHtml += `
-            <div data-sig-field="logo" style="margin-bottom:6px;">
+            <div data-sig-field="logo" style="margin-bottom:2px;">
               <a href="${escapeHtml(logoLinkForHref)}" style="text-decoration:none; border:0; outline:none; display:block;">
                 ${sizedImg}
                 ${autoImg}
@@ -1376,7 +1379,7 @@ export function mergeRenderContext(
         flushContactRows();
         if (hasName) {
           mpMiddleColumnHtml += `
-            <div data-sig-field="name" style="font-size:18px; font-weight:700; color:#111827; line-height:1.2; margin-bottom:2px; letter-spacing:-0.2px;">
+            <div data-sig-field="name" style="font-size:16px;font-weight:700;color:#111827;line-height:1.3;margin-bottom:2px;letter-spacing:-0.2px;">
               ${escapeHtml(fullName)}
             </div>
           `;
@@ -1385,18 +1388,18 @@ export function mergeRenderContext(
         flushContactRows();
         if (hasTitle) {
           mpMiddleColumnHtml += `
-            <div data-sig-field="title" style="font-size:14px; color:#4B5563; margin-bottom:4px;">
+            <div data-sig-field="title" style="${mpSecondary}margin-bottom:2px;">
               ${escapeHtml(profile.title.trim())}
             </div>
           `;
         }
       } else if (field === 'email') {
         if (profile.email && !pHidden.includes('email')) {
-          contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;white-space:normal;"><div data-sig-field="email" style="display:inline-block;"><a href="mailto:${escapeHtml(profile.email)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(profile.email)}</a></div></td></tr>`;
+          contactRowsHtml += `<tr><td style="padding-bottom:2px;${mpSecondary}white-space:normal;"><div data-sig-field="email" style="display:inline-block;"><a href="mailto:${escapeHtml(profile.email)}" style="${mpSecondary}text-decoration:none;">${escapeHtml(profile.email)}</a></div></td></tr>`;
         }
       } else if (field === 'website') {
         if (brand.website && !bHidden.includes('website')) {
-          contactRowsHtml += `<tr><td style="padding-bottom:2px;font-family:inherit;font-size:14px;line-height:1.4;white-space:normal;"><div data-sig-field="website" style="display:inline-block;"><a href="${escapeHtml(brand.website)}" style="color:#111827;text-decoration:none;font-family:inherit;font-size:14px;line-height:1.4;">${escapeHtml(websiteDisplay)}</a></div></td></tr>`;
+          contactRowsHtml += `<tr><td style="padding-bottom:2px;${mpSecondary}white-space:normal;"><div data-sig-field="website" style="display:inline-block;"><a href="${escapeHtml(brand.website)}" style="${mpSecondary}text-decoration:none;">${escapeHtml(websiteDisplay)}</a></div></td></tr>`;
         }
       }
     }

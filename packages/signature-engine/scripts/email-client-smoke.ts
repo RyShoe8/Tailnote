@@ -1473,8 +1473,15 @@ assert.ok(
 );
 assert.match(
   htmlModernProfessional,
-  /color:#111827;text-decoration:none;[^>]*>test@example.com<\/a>/,
-  'modern_professional: email link has dark grey/black color and no underline'
+  /color:#374151;text-decoration:none;[^>]*>test@example.com<\/a>/,
+  'modern_professional: email link uses unified secondary text color'
+);
+assert.ok(htmlModernProfessional.includes('margin-bottom:2px'), 'modern_professional: logo uses tight bottom margin');
+assert.ok(htmlModernProfessional.includes('sig-mp-social-pill'), 'modern_professional: social pill uses full-height wrapper');
+assert.ok(htmlModernProfessional.includes('height:100%'), 'modern_professional: social pill stretches to row height');
+assert.ok(
+  htmlModernProfessional.includes('sig-avatar-col" width="100" valign="middle"'),
+  'modern_professional: avatar vertically centered',
 );
 assert.ok(!htmlModernProfessional.includes('{{{'), 'modern_professional: no unprocessed template braces');
 assert.ok(

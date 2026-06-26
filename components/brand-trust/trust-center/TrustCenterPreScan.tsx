@@ -31,7 +31,7 @@ export function TrustCenterPreScan({ initialDomain = '', onScan }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-10">
+    <div className="mx-auto max-w-3xl space-y-8">
       <div className="mx-auto max-w-xl space-y-3 text-center">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {TRUST_CENTER_PRE_SCAN.headline}
@@ -66,11 +66,14 @@ export function TrustCenterPreScan({ initialDomain = '', onScan }: Props) {
           </div>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
         </form>
-
-        <div className="mt-8 border-t border-border/60 pt-8">
-          <TrustCenterScanExplainer variant="full" />
-        </div>
       </div>
+
+      <section className="space-y-4">
+        <h2 className="text-center text-sm font-medium text-foreground">
+          What we check — and how we help you fix it
+        </h2>
+        <TrustCenterScanExplainer variant="full" />
+      </section>
 
       <p className="text-center text-xs text-muted-foreground">{TRUST_CENTER_PRE_SCAN.trustLine}</p>
     </div>
