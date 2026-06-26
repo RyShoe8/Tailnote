@@ -199,7 +199,7 @@ export function BrandTrustHubClient({
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
+    <div className="mx-auto max-w-3xl space-y-10">
       <h1 className="sr-only">Brand Trust Center</h1>
 
       {scan ? (

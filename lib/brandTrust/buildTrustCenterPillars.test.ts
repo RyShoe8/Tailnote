@@ -136,6 +136,36 @@ describe('buildTrustCenterPillars', () => {
     }
   });
 
+  it('flags deliverability when MX fails without SPF issues', () => {
+    const scan = baseScan({
+      categories: baseScan().categories.map((c) =>
+        c.category === 'mx' ? { ...c, status: 'fail', points: 0 } : c,
+      ),
+      issues: [
+        {
+          category: 'mx',
+          severity: 'fail',
+          title: 'No mail servers (MX) found for this domain',
+          explanation: 'Without MX records, this domain cannot receive email.',
+          recommendation: 'Add MX records pointing to your email hosting provider.',
+          dnsRecords: [
+            {
+              type: 'MX',
+              host: '@',
+              value: '10 mail.yourprovider.com',
+            },
+          ],
+        },
+      ],
+    });
+    const pillars = buildTrustCenterPillars(scan, bimiReady);
+    const deliverability = pillars.find((p) => p.id === 'deliverability');
+    assert.equal(deliverability?.status, 'needs_action');
+    assert.ok(deliverability?.deliverabilityIssues?.length);
+    assert.ok(deliverability?.dnsRecords?.length);
+    assert.equal(deliverability?.deliverabilityIssues?.[0]?.category, 'mx');
+  });
+
   it('provides non-empty structured learn sections per pillar', () => {
     const pillars = buildTrustCenterPillars(baseScan(), bimiReady);
     for (const pillar of pillars) {

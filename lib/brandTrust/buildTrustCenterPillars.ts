@@ -45,9 +45,25 @@ export type PillarResult = {
   learnSections: TrustCenterLearnSection[];
   showCertificateLearn?: boolean;
   dnsRecords?: DnsRecordSuggestion[];
+  deliverabilityIssues?: DomainIssue[];
   securityIssues?: DomainIssue[];
   fixIntro?: string;
 };
+
+function aggregateDnsRecords(issues: DomainIssue[]): DnsRecordSuggestion[] {
+  const seen = new Set<string>();
+  const records: DnsRecordSuggestion[] = [];
+  for (const issue of issues) {
+    for (const rec of issue.dnsRecords ?? []) {
+      if (rec.exampleOnly) continue;
+      const key = `${rec.type}|${rec.host}|${rec.value}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      records.push(rec);
+    }
+  }
+  return records;
+}
 
 const DELIVERABILITY_CATEGORIES: EmailHealthCategory[] = ['spf', 'mx', 'tls', 'https'];
 const SECURITY_CATEGORIES: EmailHealthCategory[] = ['dkim', 'dmarc'];
@@ -122,9 +138,10 @@ function buildDeliverabilityPillar(scan: SerializedEmailHealthScan): PillarResul
   }
 
   const passing = passingDeliverabilityLabels(scan);
-  const spfIssue = primaryIssue(scan, ['spf']) ?? categoryIssues(scan, 'spf')[0];
-  const spfDnsRecords = (spfIssue?.dnsRecords ?? []).filter((r) => !r.exampleOnly);
-  const fixPhrase = plainFixPhrase(spfIssue, copy.defaultFix);
+  const deliverabilityIssues = DELIVERABILITY_CATEGORIES.flatMap((c) => categoryIssues(scan, c));
+  const primary = primaryIssue(scan, DELIVERABILITY_CATEGORIES);
+  const allDnsRecords = aggregateDnsRecords(deliverabilityIssues);
+  const fixPhrase = plainFixPhrase(primary, copy.defaultFix);
 
   return {
     id: 'deliverability',
@@ -133,7 +150,8 @@ function buildDeliverabilityPillar(scan: SerializedEmailHealthScan): PillarResul
     body: deliverabilityPartialBody(passing, fixPhrase),
     action: { label: copy.actionLabel, kind: 'spf_fix' },
     learnSections: TRUST_CENTER_LEARN.deliverability,
-    dnsRecords: spfDnsRecords.length > 0 ? spfDnsRecords : undefined,
+    deliverabilityIssues: deliverabilityIssues.length > 0 ? deliverabilityIssues : undefined,
+    dnsRecords: allDnsRecords.length > 0 ? allDnsRecords : undefined,
     fixIntro: copy.fixIntro,
   };
 }

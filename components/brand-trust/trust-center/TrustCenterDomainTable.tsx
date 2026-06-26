@@ -12,10 +12,11 @@ const PILLAR_COLUMNS: { id: TrustCenterPillarId; label: string; short: string }[
 
 function formatDate(iso: string): string {
   try {
-    return new Date(iso).toLocaleDateString(undefined, {
+    return new Date(iso).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
+      timeZone: 'UTC',
     });
   } catch {
     return iso;
@@ -27,7 +28,7 @@ function PillarStatusCell({ status, label }: { status: TrustCenterPillarStatus; 
   return (
     <td className="p-3 text-center">
       <span
-        className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${
+        className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${
           ok ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
         }`}
         title={ok ? `${label}: looking good` : `${label}: needs attention`}
@@ -52,7 +53,7 @@ export function TrustCenterDomainTable({ domains, selectedDomain, onSelect }: Pr
     <div className="space-y-3">
       <h2 className="text-sm font-medium text-foreground">Your scanned domains</h2>
       <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-        <div className="min-w-0 overflow-x-auto rounded-xl border shadow-card">
+        <div className="min-w-0 overflow-x-auto rounded-2xl border border-slate-200/80 shadow-card">
           <table className="w-full min-w-[32rem] text-sm">
             <thead>
               <tr className="border-b bg-muted/40 text-left">
@@ -73,7 +74,7 @@ export function TrustCenterDomainTable({ domains, selectedDomain, onSelect }: Pr
                   <tr
                     key={row.domain}
                     className={`border-b last:border-0 cursor-pointer transition-colors hover:bg-muted/30 ${
-                      selected ? 'bg-primary/5' : ''
+                      selected ? 'border-l-2 border-l-primary bg-primary/5' : 'border-l-2 border-l-transparent'
                     }`}
                     onClick={() => onSelect(row.domain)}
                     onKeyDown={(e) => {

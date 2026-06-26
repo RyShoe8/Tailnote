@@ -6,14 +6,50 @@ export const TRUST_CENTER_PRE_SCAN = {
   headline: "See how your domain is doing — and fix what's holding it back.",
   intro:
     "We'll walk you through three things that affect whether people trust email from your domain.",
-  scanLead: (domain: string) => `Scan ${domain} and we'll show you exactly how to:`,
-  scanLeadGeneric: "Scan your domain and we'll show you exactly how to:",
-  bullets: [
-    'Get your emails delivered to the inbox instead of spam or junk',
-    'Stop scammers from sending fake emails that look like they\'re from you',
-    'Get your logo showing up next to your emails in Gmail and other inboxes',
-  ],
+  scanLead: (domain: string) => `Enter ${domain} below to see what's working and what to fix.`,
+  scanLeadGeneric: "Enter your domain below to see what's working and what to fix.",
+  trustLine: 'Free scan · No DNS changes required to start',
 } as const;
+
+export type TrustCenterScanExplainerPillar = {
+  id: TrustCenterPillarId;
+  title: string;
+  promise: string;
+  checks: string[];
+};
+
+export const TRUST_CENTER_SCAN_EXPLAINER: TrustCenterScanExplainerPillar[] = [
+  {
+    id: 'deliverability',
+    title: 'Inbox delivery',
+    promise: 'Will your mail land in the inbox, not spam?',
+    checks: [
+      'Sender policy (SPF)',
+      'Mail routing (MX)',
+      'Encrypted delivery (TLS)',
+      'Secure website (HTTPS)',
+    ],
+  },
+  {
+    id: 'security',
+    title: 'Anti-spoofing',
+    promise: 'Can receivers spot fake email from your domain?',
+    checks: ['Message signing (DKIM)', 'Impersonation policy (DMARC)'],
+  },
+  {
+    id: 'branding',
+    title: 'Inbox logo',
+    promise: 'Can your logo show beside messages in Gmail and others?',
+    checks: [
+      'Logo DNS record (BIMI)',
+      'Hosted logo file',
+      'Certificate readiness (optional)',
+    ],
+  },
+] as const;
+
+export const TRUST_CENTER_SCAN_EXPLAINER_COMPACT =
+  'We check inbox delivery, anti-spoofing, and inbox logo setup — then show you exactly what to fix.';
 
 export const TRUST_CENTER_NO_DOMAIN = {
   title: 'Brand Trust Center',

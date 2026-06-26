@@ -34,7 +34,7 @@ export function TrustCenterPostScan({
   ).filter((p): p is NonNullable<typeof p> => p !== undefined);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
+    <div className="mx-auto max-w-3xl space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <p className="text-lg font-medium text-foreground">{summary}</p>
         <Button
@@ -54,10 +54,10 @@ export function TrustCenterPostScan({
         </Button>
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-5" key={scan.domain}>
         {ordered.map((pillar) => (
           <TrustCenterPillarCard
-            key={pillar.id}
+            key={`${scan.domain}-${pillar.id}`}
             pillar={pillar}
             domain={scan.domain}
             canUseBimiLogoHosting={bimi.canUseBimiLogoHosting}

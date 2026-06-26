@@ -103,14 +103,25 @@ export function TrustCenterPillarCard({
         </div>
       ) : null}
 
-      {showFix && pillar.id === 'deliverability' && pillar.dnsRecords?.length ? (
+      {showFix && pillar.id === 'deliverability' ? (
         <div className="mt-4 space-y-3">
-          {pillar.fixIntro ? (
-            <p className="text-sm text-muted-foreground">{pillar.fixIntro}</p>
-          ) : null}
-          {pillar.dnsRecords.map((rec) => (
-            <DnsRecordCopy key={`${rec.type}-${rec.host}`} record={rec} zoneDomain={domain} />
-          ))}
+          {pillar.deliverabilityIssues?.length ? (
+            <TrustCenterSecurityFix issues={pillar.deliverabilityIssues} zoneDomain={domain} />
+          ) : pillar.dnsRecords?.length ? (
+            <>
+              {pillar.fixIntro ? (
+                <p className="text-sm text-muted-foreground">{pillar.fixIntro}</p>
+              ) : null}
+              {pillar.dnsRecords.map((rec) => (
+                <DnsRecordCopy key={`${rec.type}-${rec.host}`} record={rec} zoneDomain={domain} />
+              ))}
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Review the guidance above, make the recommended changes at your DNS or email provider,
+              then rescan to confirm.
+            </p>
+          )}
         </div>
       ) : null}
 
