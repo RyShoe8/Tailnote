@@ -9,6 +9,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { DnsRecordCopy } from '@/components/email-health/DnsRecordCopy';
+import { PAID_BIMI_HOSTING_CTA } from '@/lib/email-health/bimiCopy';
 import type { DomainIssue } from '@/lib/email-health/types';
 
 function severityVariant(severity: DomainIssue['severity']) {
@@ -75,12 +76,32 @@ export function IssueCard({ issue, showPricingLink = true, zoneDomain }: Props) 
 
       {issue.callout ? (
         <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 text-sm text-muted-foreground">
-          {issue.callout}{' '}
-          {showPricingLink ? (
-            <Link href="/pricing" className="font-medium text-primary underline underline-offset-4">
-              See paid plans
-            </Link>
-          ) : null}
+          {issue.callout === PAID_BIMI_HOSTING_CTA ? (
+            showPricingLink ? (
+              <>
+                {issue.callout}{' '}
+                <Link href="/pricing" className="font-medium text-primary underline underline-offset-4">
+                  See paid plans
+                </Link>
+              </>
+            ) : (
+              <>
+                You can convert and host a BIMI-ready logo using your Tailnote plan.{' '}
+                <a href="#bimi-logo-upload" className="font-medium text-primary underline underline-offset-4">
+                  Set it up now
+                </a>
+              </>
+            )
+          ) : (
+            <>
+              {issue.callout}{' '}
+              {showPricingLink ? (
+                <Link href="/pricing" className="font-medium text-primary underline underline-offset-4">
+                  See paid plans
+                </Link>
+              ) : null}
+            </>
+          )}
         </div>
       ) : null}
 

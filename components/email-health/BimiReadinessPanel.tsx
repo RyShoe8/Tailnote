@@ -92,6 +92,7 @@ export function BimiReadinessPanel({
                 callout: issue.callout,
                 stepsToPass: issue.dnsRecords?.length ? undefined : [issue.howToFix],
               }}
+              showPricingLink={showPaidCta}
               zoneDomain={bimi.domain}
             />
           ))}

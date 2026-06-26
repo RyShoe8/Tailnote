@@ -77,7 +77,7 @@ export function BimiLogoUpload({
   }
 
   return (
-    <div className="space-y-4 rounded-lg border border-border p-4">
+    <div id="bimi-logo-upload" className="space-y-4 rounded-lg border border-border p-4">
       <div>
         <p className="font-medium">Upload BIMI logo</p>
         <p className="mt-1 text-sm text-muted-foreground">{RASTER_SVG_HONESTY}</p>
