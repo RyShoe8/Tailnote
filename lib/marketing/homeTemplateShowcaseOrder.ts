@@ -1,16 +1,18 @@
 import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
 import type { TemplatePresetId } from '@/lib/email/templatePresets';
 
+/** Fixed order for homepage hero carousel and signature rotator. */
 export const HOME_TEMPLATE_SHOWCASE_ORDER = [
-  'ecard',
-  'default',
-  'creator',
-  'professional',
   'executive_minimalist',
+  'ecard',
+  'creator',
+  'default',
+  'modern_professional',
   'corporate',
+  'professional',
+  'portfolio',
   'stacked',
   'minimal',
-  'portfolio',
 ] as const satisfies readonly TemplatePresetId[];
 
 export type HomeShowcasePresetId = (typeof HOME_TEMPLATE_SHOWCASE_ORDER)[number];

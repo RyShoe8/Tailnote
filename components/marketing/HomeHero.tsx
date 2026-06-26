@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { HeroEmailCarousel, type PresetData } from '@/components/marketing/HeroEmailCarousel';
 import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
 import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
+import { sortPresetsForHomeShowcase } from '@/lib/marketing/homeTemplateShowcaseOrder';
 import type { CatalogPresetRow } from '@/lib/templates/getEnabledPresets';
 import type { TemplatePresetId } from '@/lib/email/templatePresets';
 
@@ -12,8 +13,8 @@ type Props = {
 };
 
 export function HomeHero({ presets }: Props) {
-  // Generate HTML for each preset to cycle through
-  const carouselPresets: PresetData[] = presets.map((p) => {
+  const ordered = sortPresetsForHomeShowcase(presets);
+  const carouselPresets: PresetData[] = ordered.map((p) => {
     const presetId = p.presetId as TemplatePresetId;
     return {
       presetId,
