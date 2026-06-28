@@ -37,7 +37,7 @@ export default function SpotlightSubmissionPage({ params }: { params: { id: stri
             </div>
             <div>
               <p className="text-sm text-muted-foreground font-medium">Quote</p>
-              <p className="italic">"{submission.quote}"</p>
+              <p className="italic">&quot;{submission.quote}&quot;</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground font-medium">Description</p>

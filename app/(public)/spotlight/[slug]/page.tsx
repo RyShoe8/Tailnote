@@ -47,7 +47,7 @@ export default function SpotlightCompanyPage({ params }: Props) {
               </div>
               
               <blockquote className="border-l-4 border-primary pl-6 py-2 italic text-2xl text-muted-foreground">
-                "{quote}"
+                &quot;{quote}&quot;
               </blockquote>
             </div>
 

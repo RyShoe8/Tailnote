@@ -30,7 +30,7 @@ export default function SpotlightWinnersPage() {
                   <p className="text-sm text-muted-foreground">Featured Oct 2023</p>
                 </div>
               </div>
-              <p className="text-sm">"The best marketing is helpful. Acme widgets make your team 10x faster."</p>
+              <p className="text-sm">&quot;The best marketing is helpful. Acme widgets make your team 10x faster.&quot;</p>
               <Link href="/spotlight/acme-corp" className="inline-flex text-primary hover:underline text-sm font-medium">
                 View Campaign →
               </Link>
