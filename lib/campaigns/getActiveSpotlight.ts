@@ -24,7 +24,7 @@ export async function getActiveSpotlight(): Promise<RenderSignatureInput['active
   const asset = await CampaignAssetModel.findOne({
     submissionId: submission._id,
     assetType: 'signature_image',
-  }).lean();
+  }).lean() as unknown as { url?: string } | null;
 
   return {
     campaignId: submission._id.toString(),
