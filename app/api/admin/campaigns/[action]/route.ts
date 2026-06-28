@@ -11,8 +11,9 @@ const ActionSchema = z.enum(['approve', 'reject', 'schedule', 'save_asset']);
 
 export async function POST(
   request: Request,
-  { params }: { params: { action: string } }
+  { params }: { params: Promise<{ action: string }> }
 ) {
+  const { action } = await params;
   const session = await getServerSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -25,7 +26,7 @@ export async function POST(
     // In many projects admin check is done in middleware or here
   }
 
-  const actionParsed = ActionSchema.safeParse(params.action);
+  const actionParsed = ActionSchema.safeParse(action);
   if (!actionParsed.success) {
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   }
