@@ -145,8 +145,9 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
   const [org, setOrg] = useState<OrgResponse | null>(null);
   const [orgName, setOrgName] = useState('');
   const [contentBlocks, setContentBlocks] = useState<ContentBlockData[]>([]);
-  const [activeTab, setActiveTab] = useState<'brand' | 'blocks' | 'details'>('details');
+  const [activeTab, setActiveTab] = useState<'brand' | 'blocks' | 'details' | 'apply' | 'install'>('details');
   const [mobilePane, setMobilePane] = useState<MobileSignaturePane>('edit');
+  const [allowQuoteDatabase, setAllowQuoteDatabase] = useState(true);
   const [companySize, setCompanySize] = useState('1-10');
   const [whyShouldWeFeatureYou, setWhyShouldWeFeatureYou] = useState('');
   const [industry, setIndustry] = useState('');
@@ -663,6 +664,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
           socialPlatforms,
           socialProfiles: socialLinks,
           agreedToTerms: true,
+          allowQuoteDatabase,
         }),
       });
 
@@ -778,6 +780,8 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
             <button onClick={() => setActiveTab('blocks')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'blocks' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Promo Blocks</button>
           ) : null}
           <button onClick={() => setActiveTab('details')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'details' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Details</button>
+          <button onClick={() => setActiveTab('apply')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'apply' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Apply</button>
+          <button onClick={() => setActiveTab('install')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'install' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Install</button>
         </div>
 
         <div className="pt-2 min-w-0">
@@ -1102,11 +1106,20 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
                   value={profile}
                   onChange={setProfile}
                 />
-                
-                <div className="border-t pt-6 space-y-4">
-                  <h3 className="text-lg font-semibold">Spotlight Information</h3>
-                  <p className="text-sm text-muted-foreground">These details won&apos;t appear on the signature but are required for your application.</p>
-                  
+              </CardContent>
+            </Card>
+          )}
+
+          {activeTab === 'apply' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Spotlight Application</CardTitle>
+                <CardDescription>
+                  Tell us a bit about your company to submit your profile for the Spotlight.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="industry">Industry</Label>
                     <Input id="industry" value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="e.g. Technology" required />
@@ -1137,6 +1150,18 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
                       required
                     />
                   </div>
+                  <div className="flex items-center space-x-2 pt-2">
+                    <input
+                      type="checkbox"
+                      id="allowQuoteDatabase"
+                      checked={allowQuoteDatabase}
+                      onChange={(e) => setAllowQuoteDatabase(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <Label htmlFor="allowQuoteDatabase" className="text-sm font-normal cursor-pointer text-muted-foreground">
+                      Allow Tailnote to feature my quote in the community database
+                    </Label>
+                  </div>
                 </div>
 
                 <div className="pt-6 border-t flex flex-col items-start gap-3">
@@ -1149,6 +1174,12 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {activeTab === 'install' && (
+            <SignatureInstallPanel
+              html={previewHtml}
+            />
           )}
 
         </div>

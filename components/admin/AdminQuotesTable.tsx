@@ -39,6 +39,7 @@ export function AdminQuotesTable({
   const [limit] = useState(initialLimit);
   const [q, setQ] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [status, setStatus] = useState<string>('all'); // all, active, pending
   const [msg, setMsg] = useState<string | null>(null);
 
   const totalPages = Math.ceil(total / limit) || 1;
@@ -47,6 +48,8 @@ export function AdminQuotesTable({
     const params = new URLSearchParams({ page: String(nextPage), limit: String(limit) });
     if (q.trim()) params.set('q', q.trim());
     if (categoryId) params.set('categoryId', categoryId);
+    if (status === 'active') params.set('isActive', 'true');
+    if (status === 'pending') params.set('isActive', 'false');
 
     const res = await fetch(`/api/admin/quotes?${params}`, { credentials: 'include' });
     const j = (await res.json()) as {
@@ -59,7 +62,7 @@ export function AdminQuotesTable({
       setTotal(j.total ?? 0);
       setPage(j.page ?? nextPage);
     }
-  }, [page, limit, q, categoryId]);
+  }, [page, limit, q, categoryId, status]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -67,7 +70,7 @@ export function AdminQuotesTable({
     }, 300);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- debounced search
-  }, [q, categoryId]);
+  }, [q, categoryId, status]);
 
   async function onDelete(quote: QuoteRow) {
     if (!confirm('Delete this quote? This cannot be undone.')) return;
@@ -79,6 +82,22 @@ export function AdminQuotesTable({
     const j = (await res.json().catch(() => ({}))) as { error?: string };
     if (!res.ok) {
       setMsg(typeof j.error === 'string' ? j.error : 'Delete failed');
+      return;
+    }
+    await reload(page);
+    router.refresh();
+  }
+  async function onAccept(quote: QuoteRow) {
+    setMsg(null);
+    const res = await fetch(`/api/admin/quotes/${quote.id}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isActive: true }),
+    });
+    const j = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setMsg(typeof j.error === 'string' ? j.error : 'Accept failed');
       return;
     }
     await reload(page);
@@ -123,6 +142,19 @@ export function AdminQuotesTable({
               ))}
             </select>
           </div>
+          <div className="min-w-[150px] space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <select
+              id="status"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="active">Active</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
         </div>
 
         {msg ? <p className="text-sm text-destructive">{msg}</p> : null}
@@ -156,6 +188,11 @@ export function AdminQuotesTable({
                   </td>
                   <td className="px-3 py-3">
                     <div className="flex flex-wrap gap-2">
+                      {!quote.isActive && (
+                        <Button variant="default" size="sm" onClick={() => void onAccept(quote)}>
+                          Accept
+                        </Button>
+                      )}
                       <Button asChild variant="outline" size="sm">
                         <Link href={`/admin/quotes/${quote.id}/edit`}>Edit</Link>
                       </Button>

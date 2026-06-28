@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { connectMongoose } from '@/lib/mongoose';
 import { CampaignModel } from '@/models/Campaign';
 import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
+import { QuoteModel } from '@/models/Quote';
+import { QuoteCategoryModel } from '@/models/QuoteCategory';
 import { getServerSession } from '@/lib/auth/session';
 
 const urlPreprocess = (val: unknown) => {
@@ -34,6 +36,7 @@ const ApplySchema = z.object({
   agreedToTerms: z.boolean().refine((val) => val === true, {
     message: "You must agree to the terms.",
   }),
+  allowQuoteDatabase: z.boolean().optional(),
 });
 
 export async function POST(request: Request) {
@@ -99,6 +102,28 @@ export async function POST(request: Request) {
   });
 
   await submission.save();
+
+  if (parsed.data.allowQuoteDatabase && parsed.data.content.quote) {
+    let category = await QuoteCategoryModel.findOne({ slug: 'community-submissions' });
+    if (!category) {
+      category = await QuoteCategoryModel.create({
+        name: 'Community Submissions',
+        slug: 'community-submissions',
+        description: 'Quotes submitted by users via Spotlight applications.',
+      });
+    }
+
+    await QuoteModel.create({
+      quoteText: parsed.data.content.quote,
+      attribution: parsed.data.founder,
+      source: parsed.data.companyName,
+      sourceUrl: parsed.data.website,
+      categoryId: category._id,
+      categoryName: category.name,
+      isActive: false, // Pending
+      isFeatured: false,
+    });
+  }
 
   return NextResponse.json({ success: true, submissionId: submission._id });
 }

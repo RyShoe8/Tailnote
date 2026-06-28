@@ -12,17 +12,17 @@ import { QuoteLibraryPicker } from '@/components/signature/QuoteLibraryPicker';
 type Props = {
   value: ContentBlockData[];
   onChange: (blocks: ContentBlockData[]) => void;
+  spotlightMode?: boolean;
 };
-
-const SLOT_COUNT = 2;
 
 /** Must match List editor slots so migrated docs persist four rows. */
 const MAX_LIST_ITEMS = 4;
 
-function ensureSlots(blocks: ContentBlockData[]): ContentBlockData[] {
+function ensureSlots(blocks: ContentBlockData[], spotlightMode: boolean = false): ContentBlockData[] {
+  const SLOT_COUNT = spotlightMode ? 1 : 2;
   const out = [...blocks];
   while (out.length < SLOT_COUNT) {
-    out.push({ type: 'book_a_call', enabled: false });
+    out.push({ type: spotlightMode ? 'quote' : 'book_a_call', enabled: false });
   }
   return out.slice(0, SLOT_COUNT);
 }
@@ -74,14 +74,14 @@ function migrateCustomToListFields(
   };
 }
 
-export function ContentBlocksEditor({ value, onChange }: Props) {
-  const blocks = ensureSlots(value);
+export function ContentBlocksEditor({ value, onChange, spotlightMode = false }: Props) {
+  const blocks = ensureSlots(value, spotlightMode);
   const [activeSlot, setActiveSlot] = useState<number>(0);
   const migratedCustomSlotRef = useRef<Set<number>>(new Set());
 
   /** Persist legacy `custom` blocks as real `list` rows so the renderer uses listItems (multi-row + per-item links). */
   useEffect(() => {
-    const slots = ensureSlots(value);
+    const slots = ensureSlots(value, spotlightMode);
     let changed = false;
     const next = [...slots];
     for (let i = 0; i < next.length; i += 1) {
@@ -111,23 +111,25 @@ export function ContentBlocksEditor({ value, onChange }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 overflow-x-auto border-b hide-scrollbar">
-        {blocks.map((b, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => setActiveSlot(i)}
-            className={`px-3 py-1.5 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
-              activeSlot === i
-                ? 'border-primary text-foreground'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            Block {i + 1}
-            {b.enabled ? <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary align-middle" /> : null}
-          </button>
-        ))}
-      </div>
+      {!spotlightMode && (
+        <div className="flex items-center gap-2 border-b px-4">
+          {blocks.map((b, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setActiveSlot(i)}
+              className={`border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+                activeSlot === i
+                  ? 'border-primary text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Slot {i + 1}
+              {b.enabled && <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-green-500" />}
+            </button>
+          ))}
+        </div>
+      )}
 
       <Card>
         <CardHeader className="pb-3">
@@ -148,6 +150,7 @@ export function ContentBlocksEditor({ value, onChange }: Props) {
         </CardHeader>
         {block.enabled && (
           <CardContent className="space-y-4 pt-0">
+          {!spotlightMode && (
             <div className="space-y-2">
               <Label>Type</Label>
               <select
@@ -163,6 +166,7 @@ export function ContentBlocksEditor({ value, onChange }: Props) {
                 <option value="spotlight">Tailnote Spotlight</option>
               </select>
             </div>
+          )}
 
             {block.type === 'book_a_call' && (
               <BookACallEditor block={block} onChange={(p) => updateBlock(activeSlot, p)} />
