@@ -12,7 +12,7 @@ export default async function SpotlightDashboardPage() {
   }
 
   await connectMongoose();
-  const submission = await CampaignSubmissionModel.findOne({ userId: session.user.id }).lean();
+  const submission = (await CampaignSubmissionModel.findOne({ userId: session.user.id }).lean()) as any;
 
   return (
     <div className="max-w-4xl space-y-8">
