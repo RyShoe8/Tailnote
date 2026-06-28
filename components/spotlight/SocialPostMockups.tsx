@@ -16,11 +16,13 @@ const SignatureCard = () => {
   const signatureHtml = stripSignaturePreviewLinks(renderMarketingSample('modern_professional'));
   return (
     <div className="mt-3 overflow-hidden rounded-lg border bg-card p-4 shadow-sm relative">
-      <div className="absolute top-2 right-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+      <div className="absolute top-2 right-2 z-10 text-[10px] font-bold text-muted-foreground uppercase tracking-wider bg-background/80 px-1 rounded">
         Tailnote Signature
       </div>
-      <div className="pt-2">
-        <MarketingSignaturePreview html={signatureHtml} />
+      <div className="pt-2 h-[150px]">
+        <div className="origin-top-left" style={{ transform: 'scale(0.65)', width: '153.8%' }}>
+          <MarketingSignaturePreview html={signatureHtml} />
+        </div>
       </div>
     </div>
   );
