@@ -30,7 +30,7 @@ export async function POST(
   if (!actionParsed.success) {
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   }
-  const action = actionParsed.data;
+  const validatedAction = actionParsed.data;
 
   let json: unknown;
   try {
@@ -41,7 +41,7 @@ export async function POST(
 
   await connectMongoose();
 
-  if (action === 'approve' || action === 'reject') {
+  if (validatedAction === 'approve' || validatedAction === 'reject') {
     const schema = z.object({
       submissionId: z.string().min(1),
       notes: z.string().optional(),
@@ -52,11 +52,11 @@ export async function POST(
     const submission = await CampaignSubmissionModel.findById(parsed.data.submissionId);
     if (!submission) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    submission.status = action === 'approve' ? 'approved' : 'rejected';
+    submission.status = validatedAction === 'approve' ? 'approved' : 'rejected';
     if (parsed.data.notes) submission.reviewerNotes = parsed.data.notes;
     
     // If approved, create initial assets placeholder
-    if (action === 'approve') {
+    if (validatedAction === 'approve') {
       // Create asset records pending generation
       const assetTypes = ['signature_image', 'social_post_1', 'social_post_2', 'landing_page_hero'];
       for (const type of assetTypes) {
@@ -72,7 +72,7 @@ export async function POST(
     return NextResponse.json({ success: true });
   }
 
-  if (action === 'schedule') {
+  if (validatedAction === 'schedule') {
     const schema = z.object({
       submissionId: z.string().min(1),
       startDate: z.string().min(1),
@@ -99,7 +99,7 @@ export async function POST(
     return NextResponse.json({ success: true });
   }
 
-  if (action === 'save_asset') {
+  if (validatedAction === 'save_asset') {
     const schema = z.object({
       submissionId: z.string().min(1),
       assetType: z.string().min(1),
