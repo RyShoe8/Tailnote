@@ -22,12 +22,28 @@ export default async function SpotlightDashboardPage() {
       </div>
 
       {!submission ? (
-        <div className="rounded-lg border bg-card text-card-foreground p-8 text-center space-y-4">
-          <h2 className="text-xl font-semibold">Ready to get featured?</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            Apply to be featured in the Tailnote Spotlight and get your startup in front of thousands of founders.
-          </p>
-          <Button asChild size="lg" className="mt-4">
+        <div className="rounded-lg border bg-card text-card-foreground p-8 text-center space-y-6">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Ready to get featured?</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Apply to be featured in the Tailnote Spotlight and get your startup in front of thousands of founders.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-6 text-left max-w-3xl mx-auto border-t pt-8">
+            <div className="space-y-2">
+              <h3 className="font-semibold text-primary">Global Signature</h3>
+              <p className="text-sm text-muted-foreground">Your custom signature is attached to thousands of emails across the Tailnote network.</p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-primary">Social Features</h3>
+              <p className="text-sm text-muted-foreground">Dedicated posts on Bluesky and Reddit sharing your story with the community.</p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-primary">Hall of Fame</h3>
+              <p className="text-sm text-muted-foreground">Potential induction into our LinkedIn Hall of Fame to reach thousands of professionals.</p>
+            </div>
+          </div>
+          <Button asChild size="lg" className="mt-8">
             <Link href="/dashboard/spotlight/apply">Apply for Spotlight</Link>
           </Button>
         </div>
@@ -45,7 +61,7 @@ export default async function SpotlightDashboardPage() {
           
           <div className="border-t pt-4">
             <h3 className="font-medium mb-2">Application Details</h3>
-            <div className="grid sm:grid-cols-2 gap-4 text-sm">
+            <div className="grid sm:grid-cols-2 gap-4 text-sm mb-6">
               <div>
                 <span className="text-muted-foreground">Founder:</span> {submission.founder as string}
               </div>
@@ -58,6 +74,15 @@ export default async function SpotlightDashboardPage() {
                   &quot;{(submission.content as any)?.quote}&quot;
                 </blockquote>
               </div>
+            </div>
+
+            <div className="bg-muted/50 rounded-lg p-4">
+              <h4 className="font-semibold text-sm mb-2">What happens if you win?</h4>
+              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                <li>Your custom signature is attached to thousands of network emails.</li>
+                <li>You receive a dedicated feature on Bluesky and Reddit.</li>
+                <li>Potential induction into the Tailnote LinkedIn Hall of Fame.</li>
+              </ul>
             </div>
           </div>
         </div>

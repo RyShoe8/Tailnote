@@ -4,6 +4,7 @@ import { ArrowRight, Trophy, Sparkles, TrendingUp } from 'lucide-react';
 import { connectMongoose } from '@/lib/mongoose';
 import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
 import { CampaignAnalyticsModel } from '@/models/CampaignAnalytics';
+import { BlueskyPostMockup, RedditPostMockup, LinkedInPostMockup } from '@/components/spotlight/SocialPostMockups';
 
 export const metadata: Metadata = {
   title: 'Tailnote Spotlight - Community Marketing Network',
@@ -92,6 +93,51 @@ export default async function SpotlightHomepage() {
               <Trophy className="mx-auto h-8 w-8 text-primary" />
               <h3 className="text-3xl font-bold">{formatNumber(totalClicks)}</h3>
               <p className="text-muted-foreground">Clicks Delivered</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What You Get Section */}
+      <section className="py-24 bg-muted/30">
+        <div className="container px-4 md:px-6">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">More Than Just Signatures</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Spotlight winners get featured across the entire Tailnote network. 
+              Here is what a typical feature looks like when your startup wins.
+            </p>
+          </div>
+          <div className="grid lg:grid-cols-3 gap-8 items-start justify-items-center">
+            <div className="space-y-4 w-full flex flex-col items-center">
+              <h3 className="font-semibold text-xl text-center">Bluesky Spotlight</h3>
+              <p className="text-sm text-muted-foreground text-center max-w-xs">A dedicated post to our community featuring your signature and a brief description of what you&apos;re building.</p>
+              <BlueskyPostMockup 
+                companyName="Acme Corp"
+                description="Acme is building the next generation of widgets for modern teams. We love their focus on speed and reliability!"
+                founderName="Jane Doe"
+                logoInitial="A"
+              />
+            </div>
+            <div className="space-y-4 w-full flex flex-col items-center">
+              <h3 className="font-semibold text-xl text-center">Reddit Feature</h3>
+              <p className="text-sm text-muted-foreground text-center max-w-xs">We share your story with startup communities, driving high-intent traffic to your website.</p>
+              <RedditPostMockup 
+                companyName="Acme Corp"
+                description="Acme is building the next generation of widgets for modern teams. We love their focus on speed and reliability!"
+                founderName="Jane Doe"
+                logoInitial="A"
+              />
+            </div>
+            <div className="space-y-4 w-full flex flex-col items-center">
+              <h3 className="font-semibold text-xl text-center">LinkedIn Hall of Fame</h3>
+              <p className="text-sm text-muted-foreground text-center max-w-xs">Top winners are inducted into our LinkedIn Hall of Fame, reaching thousands of professionals.</p>
+              <LinkedInPostMockup 
+                companyName="Acme Corp"
+                description="Acme is building the next generation of widgets for modern teams. We love their focus on speed and reliability!"
+                founderName="Jane Doe"
+                logoInitial="A"
+              />
             </div>
           </div>
         </div>
