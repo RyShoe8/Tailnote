@@ -25,7 +25,7 @@ export type ContentBlockListItem = {
 
 export type ContentBlockData = {
   /** `custom` is kept for legacy reads; new blocks should use `list` or `image`. */
-  type: 'book_a_call' | 'latest_blogs' | 'list' | 'image' | 'custom' | 'quote';
+  type: 'book_a_call' | 'latest_blogs' | 'list' | 'image' | 'custom' | 'quote' | 'spotlight';
   enabled: boolean;
   // Book a call
   callTitle?: string;
@@ -95,6 +95,7 @@ export type SignatureBrand = {
   contentBlocks?: ContentBlockData[];
   brandOrder?: string[];
   hiddenFields?: string[];
+  spotlightEnabled?: boolean;
 };
 
 export type SignatureElement =
@@ -137,4 +138,17 @@ export type RenderSignatureInput = {
   utm?: { source: string; medium: string; campaign: string } | false;
   /** Public URL for eCard Save Contact vCard download (omit for marketing samples). */
   vcardDownloadUrl?: string;
+  /** The currently active Spotlight campaign data to render if the spotlight block is enabled. */
+  activeSpotlight?: {
+    campaignId: string;
+    slug: string;
+    companyName: string;
+    logoUrl: string;
+    quoteText: string;
+    founder: string;
+    website: string;
+    signatureImageUrl?: string;
+  };
+  /** If true, forcibly appends the spotlight block. */
+  isFreeTier?: boolean;
 };

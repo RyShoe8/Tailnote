@@ -17,3 +17,9 @@ export { StripeWebhookEventModel, type StripeWebhookEventDoc } from './StripeWeb
 export { BillingNotificationModel, type BillingNotificationDoc } from './BillingNotification';
 export { FeedbackSubmissionModel, type FeedbackSubmissionDoc } from './FeedbackSubmission';
 export { BlogPostModel, type BlogPostDoc } from './BlogPost';
+
+export { CampaignModel, type CampaignDoc } from './Campaign';
+export { CampaignSubmissionModel, type CampaignSubmissionDoc } from './CampaignSubmission';
+export { CampaignAssetModel, type CampaignAssetDoc } from './CampaignAsset';
+export { CampaignScheduleModel, type CampaignScheduleDoc } from './CampaignSchedule';
+export { CampaignAnalyticsModel, type CampaignAnalyticsDoc } from './CampaignAnalytics';

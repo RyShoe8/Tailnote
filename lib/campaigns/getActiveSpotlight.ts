@@ -1,0 +1,34 @@
+import { CampaignScheduleModel } from '@/models/CampaignSchedule';
+import { CampaignAssetModel } from '@/models/CampaignAsset';
+import { connectMongoose } from '@/lib/mongoose';
+import type { RenderSignatureInput } from 'emailsignature-engine';
+import type { CampaignSubmissionDoc } from '@/models/CampaignSubmission';
+
+export async function getActiveSpotlight(): Promise<RenderSignatureInput['activeSpotlight'] | undefined> {
+  await connectMongoose();
+  
+  const now = new Date();
+  
+  const schedule = await CampaignScheduleModel.findOne({
+    startDate: { $lte: now },
+    endDate: { $gt: now },
+  })
+    .populate<{ submissionId: CampaignSubmissionDoc }>('submissionId')
+    .sort({ startDate: -1 })
+    .lean();
+
+  if (!schedule || !schedule.submissionId) return undefined;
+
+  const submission = schedule.submissionId;
+  
+  const asset = await CampaignAssetModel.findOne({
+    submissionId: submission._id,
+    assetType: 'signature_image',
+  }).lean();
+
+  return {
+    slug: submission.slug || submission._id.toString(),
+    companyName: submission.companyName,
+    signatureImageUrl: asset?.url || '',
+  };
+}

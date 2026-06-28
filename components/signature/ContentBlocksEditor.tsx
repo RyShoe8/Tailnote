@@ -160,6 +160,7 @@ export function ContentBlocksEditor({ value, onChange }: Props) {
                 <option value="list">List</option>
                 <option value="image">Image</option>
                 <option value="quote">Quote</option>
+                <option value="spotlight">Tailnote Spotlight</option>
               </select>
             </div>
 
@@ -177,6 +178,15 @@ export function ContentBlocksEditor({ value, onChange }: Props) {
             )}
             {block.type === 'quote' && (
               <QuoteEditor block={block} onChange={(p) => updateBlock(activeSlot, p)} />
+            )}
+            {block.type === 'spotlight' && (
+              <div className="text-sm text-muted-foreground p-4 bg-muted rounded-md">
+                <p className="font-medium text-foreground mb-1">Tailnote Spotlight</p>
+                <p>
+                  This block automatically displays the currently featured company from Tailnote Spotlight.
+                  No configuration is required. It updates automatically when a new Spotlight is published.
+                </p>
+              </div>
             )}
           </CardContent>
         )}

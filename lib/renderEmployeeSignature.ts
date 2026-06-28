@@ -95,7 +95,7 @@ export function renderSignatureForEmployee(
   org: OrganizationDoc,
   emp: EmployeeDoc,
   tmpl: SignatureTemplateDoc,
-  options?: { publicSiteOrigin?: string; contentBlocks?: ContentBlockData[] }
+  options?: { publicSiteOrigin?: string; contentBlocks?: ContentBlockData[]; activeSpotlight?: RenderSignatureInput['activeSpotlight'] }
 ): string {
   const presetId = tmpl.presetId as TemplatePresetId;
   const includeAnimation = shouldIncludeSignatureAnimation(org, tmpl);
@@ -121,6 +121,7 @@ export function renderSignatureForEmployee(
       vcardDownloadUrl: vcardUrl,
     }),
     publicSiteOrigin,
+    activeSpotlight: options?.activeSpotlight,
   };
   let html = renderSignature(renderInput);
   html = appendSignatureClickTrackingIfEnabled({
@@ -155,6 +156,18 @@ export async function renderSignatureForEmployeeResolved(
   const { resolveEmployeeContentBlocks } = await import('@/lib/org/resolveEmployeeContentBlocks');
   const resolved =
     options?.contentBlocks ?? (await resolveEmployeeContentBlocks(org, emp));
-  const contentBlocks = await hydrateQuoteContentBlocks(resolved);
-  return renderSignatureForEmployee(org, emp, tmpl, { ...options, contentBlocks });
+  let contentBlocks = await hydrateQuoteContentBlocks(resolved);
+
+  const isFree = org.plan === 'free' || !org.plan;
+  if (isFree && !contentBlocks.some((b) => b.type === 'spotlight')) {
+    contentBlocks.push({ type: 'spotlight', enabled: true });
+  }
+
+  let activeSpotlight;
+  if (contentBlocks.some((b) => b.enabled && b.type === 'spotlight')) {
+    const { getActiveSpotlight } = await import('@/lib/campaigns/getActiveSpotlight');
+    activeSpotlight = await getActiveSpotlight();
+  }
+
+  return renderSignatureForEmployee(org, emp, tmpl, { ...options, contentBlocks, activeSpotlight });
 }

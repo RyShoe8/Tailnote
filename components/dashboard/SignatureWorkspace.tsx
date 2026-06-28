@@ -80,6 +80,7 @@ type OrgResponse = {
   employeesCanEditPromoBlocks?: boolean;
   brandOrder?: string[];
   hiddenFields?: string[];
+  spotlightEnabled?: boolean;
 };
 
 type OrgPermissions = {
@@ -127,6 +128,7 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
     },
     brandOrder: org.brandOrder ?? [],
     hiddenFields: org.hiddenFields ?? [],
+    spotlightEnabled: org.spotlightEnabled ?? false,
   };
 }
 
@@ -474,6 +476,7 @@ export function SignatureWorkspace() {
       brand: filteredBrand,
       template: engineTemplate,
       publicSiteOrigin: getSignatureAssetOrigin(),
+      isFreeTier: org?.plan === 'free' || !org?.plan,
     });
     return appendSignatureAttributionIfNeeded({
       html: rendered,
@@ -759,6 +762,7 @@ export function SignatureWorkspace() {
           state: org.state,
           zip: org.zip,
           animation: org.animation,
+          spotlightEnabled: org.spotlightEnabled,
         }),
       });
       const j = await res.json().catch(() => ({}));
@@ -1171,6 +1175,23 @@ export function SignatureWorkspace() {
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="space-y-2 border-t pt-4">
+              <Label>Tailnote Spotlight</Label>
+              <p className="text-xs text-muted-foreground">
+                Join our community marketing network by featuring a curated startup in your signature.
+              </p>
+              <label className="flex items-center gap-2 text-sm cursor-pointer mt-2">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-input"
+                  checked={org.plan === 'free' || org.spotlightEnabled}
+                  disabled={org.plan === 'free'}
+                  onChange={(e) => setOrg((o) => ({ ...(o || {}), spotlightEnabled: e.target.checked }))}
+                />
+                <span>Enable Tailnote Spotlight</span>
+                {org.plan === 'free' && <span className="ml-2 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full font-medium">Free plan locked</span>}
+              </label>
             </div>
             {message ? (
               <p

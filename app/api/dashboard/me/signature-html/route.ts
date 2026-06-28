@@ -264,6 +264,19 @@ export async function POST(request: Request) {
 
   if (orgBrand.contentBlocks?.length) {
     orgBrand.contentBlocks = await hydrateQuoteContentBlocks(orgBrand.contentBlocks);
+  } else {
+    orgBrand.contentBlocks = [];
+  }
+
+  const isFree = org.plan === 'free' || !org.plan;
+  if (isFree && !orgBrand.contentBlocks.some((b) => b.type === 'spotlight')) {
+    orgBrand.contentBlocks.push({ type: 'spotlight', enabled: true });
+  }
+
+  let activeSpotlight;
+  if (orgBrand.contentBlocks.some((b) => b.enabled && b.type === 'spotlight')) {
+    const { getActiveSpotlight } = await import('@/lib/campaigns/getActiveSpotlight');
+    activeSpotlight = await getActiveSpotlight();
   }
 
   const renderInput: RenderSignatureInput = {
@@ -275,6 +288,7 @@ export async function POST(request: Request) {
       vcardDownloadUrl: vcardUrl,
     }),
     publicSiteOrigin,
+    activeSpotlight,
   };
 
   let html = renderSignature(renderInput);

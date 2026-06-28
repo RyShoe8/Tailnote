@@ -348,7 +348,8 @@ function buildQuoteBlocksHtml(blocks: ContentBlockData[], primaryColor: string, 
 function buildContentBlockParts(
   blocks: ContentBlockData[],
   origin: string,
-  primaryColor: string
+  primaryColor: string,
+  activeSpotlight?: RenderSignatureInput['activeSpotlight']
 ): string[] {
   const btnBg = escapeHtml(primaryColor);
   const enabled = blocks.filter((b) => b.enabled).slice(0, 2);
@@ -465,6 +466,17 @@ function buildContentBlockParts(
     } else if (block.type === 'quote') {
       const quoteHtml = buildQuoteBlockHtml(block, primaryColor);
       if (quoteHtml) parts.push(quoteHtml);
+    } else if (block.type === 'spotlight' && activeSpotlight) {
+      const imageUrl = (activeSpotlight.signatureImageUrl || '').trim();
+      if (imageUrl) {
+        const absImg = escapeHtml(ensureAbsolutePublicUrl(normalizeImageUrl(imageUrl), origin));
+        const linkUrl = `${origin}/spotlight/${activeSpotlight.slug}`;
+        const imgTag = `<img src="${absImg}" border="0" alt="${escapeHtml(activeSpotlight.companyName)}" style="display:block;max-width:400px;width:100%;height:auto;border:0;outline:none;text-decoration:none;border-radius:4px;" />`;
+        const wrapped = `<a href="${escapeHtml(linkUrl)}" style="text-decoration:none;border:0;outline:none;display:inline-block;width:100%;max-width:400px;">${imgTag}</a>`;
+        parts.push(`<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-bottom:12px;" width="100%">
+    <tr><td style="padding:0;line-height:0;font-size:0;">${wrapped}</td></tr>
+  </table>`);
+      }
     }
   }
 
@@ -477,9 +489,10 @@ function buildContentBlockParts(
 function renderContentBlocksHtml(
   blocks: ContentBlockData[],
   origin: string,
-  primaryColor: string
+  primaryColor: string,
+  activeSpotlight?: RenderSignatureInput['activeSpotlight']
 ): { desktop: string; stacked: string } {
-  const parts = buildContentBlockParts(blocks, origin, primaryColor);
+  const parts = buildContentBlockParts(blocks, origin, primaryColor, activeSpotlight);
   if (parts.length === 0) return { desktop: '', stacked: '' };
 
   const stacked = parts.join('');
@@ -499,7 +512,8 @@ function renderContentBlocksHtml(
 function buildDefaultListFooterHtml(
   blocks: ContentBlockData[],
   origin: string,
-  primaryColor: string
+  primaryColor: string,
+  activeSpotlight?: RenderSignatureInput['activeSpotlight']
 ): string {
   const enabled = blocks.filter((b) => b.enabled).slice(0, 2);
   if (enabled.length === 0) return '';
@@ -507,6 +521,14 @@ function buildDefaultListFooterHtml(
   function columnHtml(block: ContentBlockData): string {
     if (block.type === 'quote') {
       return buildQuoteBlockHtml(block, primaryColor);
+    }
+    if (block.type === 'spotlight' && activeSpotlight) {
+      const imageUrl = (activeSpotlight.signatureImageUrl || '').trim();
+      if (!imageUrl) return '';
+      const absImg = escapeHtml(ensureAbsolutePublicUrl(normalizeImageUrl(imageUrl), origin));
+      const linkUrl = `${origin}/spotlight/${activeSpotlight.slug}`;
+      const imgTag = `<img src="${absImg}" border="0" alt="${escapeHtml(activeSpotlight.companyName)}" style="display:block;max-width:400px;width:100%;height:auto;border:0;outline:none;text-decoration:none;border-radius:4px;" />`;
+      return `<a href="${escapeHtml(linkUrl)}" style="text-decoration:none;border:0;outline:none;display:inline-block;width:100%;max-width:400px;margin-bottom:12px;">${imgTag}</a>`;
     }
     if (block.type !== 'list') return '';
     const title = escapeHtml((block.listTitle || '').trim());
@@ -1060,7 +1082,8 @@ export function mergeRenderContext(
   brand: SignatureBrand,
   template: SignatureTemplate,
   siteOrigin: string = DEFAULT_PUBLIC_SITE_ORIGIN,
-  vcardDownloadUrl?: string
+  vcardDownloadUrl?: string,
+  activeSpotlight?: RenderSignatureInput['activeSpotlight']
 ): {
   evalCtx: Record<string, string | boolean | undefined>;
   stringCtx: Record<string, string>;
@@ -1240,7 +1263,7 @@ export function mergeRenderContext(
   const hasContentBlocks = hasContentBlocksEl && contentBlocks.length > 0;
   const brandPrimaryColor = brand.primaryColor.trim() || '#2563eb';
   const contentBlocksRendered = hasContentBlocks
-    ? renderContentBlocksHtml(contentBlocks, origin, brandPrimaryColor)
+    ? renderContentBlocksHtml(contentBlocks, origin, brandPrimaryColor, activeSpotlight)
     : { desktop: '', stacked: '' };
   const isDefaultLayout = template.layout === 'default';
   const isCreatorLayout = template.layout === 'creator';
@@ -1277,7 +1300,7 @@ export function mergeRenderContext(
   const contentBlocksHtmlStacked = usesCustomPromoLayout ? '' : contentBlocksRendered.stacked;
 
   const defaultListFooterHtml = isDefaultLayout
-    ? buildDefaultListFooterHtml(contentBlocks, origin, brandPrimaryColor)
+    ? buildDefaultListFooterHtml(contentBlocks, origin, brandPrimaryColor, activeSpotlight)
     : '';
   const hasDefaultListFooter = Boolean(defaultListFooterHtml);
 
@@ -1702,7 +1725,23 @@ function pickTemplate(layout: SignatureTemplate['layout']): string {
 }
 
 export function renderSignature(input: RenderSignatureInput): string {
-  const { profile, brand, template, publicSiteOrigin, utm } = input;
+  const { profile, template, publicSiteOrigin, utm } = input;
+  
+  // Clone brand to avoid mutating the original input
+  const brand = { ...input.brand };
+  brand.contentBlocks = [...(brand.contentBlocks || [])];
+
+  // Forcibly inject Spotlight block if it's a free tier user or if explicitly enabled
+  if (input.activeSpotlight && (input.isFreeTier || brand.spotlightEnabled)) {
+    const hasSpotlight = brand.contentBlocks.some((b) => b.type === 'spotlight' && b.enabled);
+    if (!hasSpotlight) {
+      // Remove any disabled spotlight block
+      brand.contentBlocks = brand.contentBlocks.filter((b) => b.type !== 'spotlight');
+      // Append a fresh spotlight block
+      brand.contentBlocks.push({ type: 'spotlight', enabled: true });
+    }
+  }
+
   const origin = stripTrailingSlash(
     (publicSiteOrigin ?? DEFAULT_PUBLIC_SITE_ORIGIN).trim() || DEFAULT_PUBLIC_SITE_ORIGIN
   );
@@ -1712,7 +1751,8 @@ export function renderSignature(input: RenderSignatureInput): string {
     brand,
     template,
     origin,
-    input.vcardDownloadUrl
+    input.vcardDownloadUrl,
+    input.activeSpotlight
   );
   const afterIf = processConditionals(tmpl, evalCtx);
   let html = substituteVariables(afterIf, stringCtx);
