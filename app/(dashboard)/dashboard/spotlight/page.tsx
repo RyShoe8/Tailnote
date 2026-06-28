@@ -32,7 +32,7 @@ export default async function SpotlightDashboardPage() {
           <div className="grid sm:grid-cols-3 gap-6 text-left max-w-3xl mx-auto border-t pt-8">
             <div className="space-y-2">
               <h3 className="font-semibold text-primary">Global Signature</h3>
-              <p className="text-sm text-muted-foreground">Your custom signature is attached to thousands of emails across the Tailnote network.</p>
+              <p className="text-sm text-muted-foreground">Your custom signature is shared in social media posts across the Tailnote network.</p>
             </div>
             <div className="space-y-2">
               <h3 className="font-semibold text-primary">Social Features</h3>
