@@ -1,13 +1,47 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { ArrowRight, Trophy, Sparkles, TrendingUp } from 'lucide-react';
+import { connectMongoose } from '@/lib/mongoose';
+import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
+import { CampaignAnalyticsModel } from '@/models/CampaignAnalytics';
 
 export const metadata: Metadata = {
   title: 'Tailnote Spotlight - Community Marketing Network',
   description: 'Discover and support curated startups in the Tailnote community. Apply to be featured in thousands of email signatures across the network.',
 };
 
-export default function SpotlightHomepage() {
+function formatNumber(num: number): string {
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M+';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(0) + 'k+';
+  }
+  return num.toString();
+}
+
+export default async function SpotlightHomepage() {
+  await connectMongoose();
+  
+  // Real stats
+  const startupsFeatured = await CampaignSubmissionModel.countDocuments({
+    status: { $in: ['scheduled', 'published', 'archived'] }
+  });
+
+  const analyticsAgg = await CampaignAnalyticsModel.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalImpressions: { $sum: '$impressions' },
+        totalClicks: { $sum: '$clicks' }
+      }
+    }
+  ]);
+  
+  // Safe fallbacks to realistic baseline numbers or 0
+  const totalImpressions = analyticsAgg.length > 0 ? analyticsAgg[0].totalImpressions : 0;
+  const totalClicks = analyticsAgg.length > 0 ? analyticsAgg[0].totalClicks : 0;
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -46,17 +80,17 @@ export default function SpotlightHomepage() {
           <div className="grid gap-8 md:grid-cols-3 text-center">
             <div className="space-y-2">
               <Sparkles className="mx-auto h-8 w-8 text-primary" />
-              <h3 className="text-3xl font-bold">50+</h3>
+              <h3 className="text-3xl font-bold">{startupsFeatured > 0 ? startupsFeatured : '0'}</h3>
               <p className="text-muted-foreground">Startups Featured</p>
             </div>
             <div className="space-y-2">
               <TrendingUp className="mx-auto h-8 w-8 text-primary" />
-              <h3 className="text-3xl font-bold">1M+</h3>
+              <h3 className="text-3xl font-bold">{formatNumber(totalImpressions)}</h3>
               <p className="text-muted-foreground">Signature Views Generated</p>
             </div>
             <div className="space-y-2">
               <Trophy className="mx-auto h-8 w-8 text-primary" />
-              <h3 className="text-3xl font-bold">250k+</h3>
+              <h3 className="text-3xl font-bold">{formatNumber(totalClicks)}</h3>
               <p className="text-muted-foreground">Clicks Delivered</p>
             </div>
           </div>
