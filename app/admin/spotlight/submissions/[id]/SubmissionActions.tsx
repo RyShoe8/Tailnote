@@ -11,6 +11,7 @@ export function SubmissionActions({ submissionId }: { submissionId: string }) {
     
     try {
       await deleteSubmissionAction(submissionId);
+      router.push('/admin/spotlight');
     } catch (err) {
       alert('Failed to delete submission');
     }
@@ -19,6 +20,7 @@ export function SubmissionActions({ submissionId }: { submissionId: string }) {
   async function handleStatusUpdate(status: string) {
     try {
       await updateSubmissionStatusAction(submissionId, status);
+      router.refresh();
     } catch (err) {
       alert('Failed to update status');
     }

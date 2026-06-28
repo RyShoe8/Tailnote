@@ -16,7 +16,7 @@ export async function deleteSubmissionAction(id: string) {
   await connectMongoose();
   await CampaignSubmissionModel.findByIdAndDelete(id);
 
-  redirect('/admin/spotlight');
+  return { success: true };
 }
 
 export async function updateSubmissionStatusAction(id: string, status: string) {
@@ -39,5 +39,5 @@ export async function updateSubmissionStatusAction(id: string, status: string) {
     }
   }
 
-  redirect(`/admin/spotlight/submissions/${id}`);
+  return { success: true };
 }
