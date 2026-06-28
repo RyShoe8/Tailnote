@@ -48,6 +48,28 @@ export default function SpotlightApplyPage() {
     setLoading(false);
   };
 
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLoading(true); // Reusing loading state for upload
+    const data = new FormData();
+    data.append('file', file);
+    try {
+      const res = await fetch('/api/dashboard/me/image', { method: 'POST', body: data });
+      const json = await res.json();
+      if (res.ok && json.url) {
+        updateForm('logoUrl', json.url);
+      } else {
+        alert(json.error || 'Upload failed');
+      }
+    } catch {
+      alert('Upload failed');
+    } finally {
+      setLoading(false);
+      e.target.value = '';
+    }
+  };
+
   if (success) {
     return (
       <div className="container max-w-2xl mx-auto py-24 text-center">
@@ -77,8 +99,15 @@ export default function SpotlightApplyPage() {
               <Input value={formData.website} onChange={e => updateForm('website', e.target.value)} placeholder="e.g. example.com" />
             </div>
             <div className="space-y-2">
-              <Label>Logo URL</Label>
-              <Input value={formData.logoUrl} onChange={e => updateForm('logoUrl', e.target.value)} placeholder="e.g. example.com/logo.png" />
+              <Label>Company Logo</Label>
+              {formData.logoUrl ? (
+                <div className="flex items-center gap-4">
+                  <img src={formData.logoUrl} alt="Logo preview" className="w-12 h-12 object-cover border rounded-md" />
+                  <Button type="button" variant="outline" size="sm" onClick={() => updateForm('logoUrl', '')}>Change Logo</Button>
+                </div>
+              ) : (
+                <Input type="file" accept="image/png,image/jpeg,image/webp" onChange={handleUpload} disabled={loading} />
+              )}
             </div>
             <Button onClick={() => setStep(2)}>Next</Button>
           </div>
