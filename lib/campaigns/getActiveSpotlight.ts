@@ -31,8 +31,8 @@ export async function getActiveSpotlight(): Promise<RenderSignatureInput['active
     slug: submission.slug || submission._id.toString(),
     companyName: submission.companyName,
     logoUrl: submission.logoUrl || '',
-    quoteText: submission.quote || '',
-    founder: submission.founderName || 'Founder',
+    quoteText: (submission.content as any)?.quote || '',
+    founder: submission.founder || 'Founder',
     website: submission.website || 'https://tailnote.com',
     signatureImageUrl: asset?.url || '',
   };
