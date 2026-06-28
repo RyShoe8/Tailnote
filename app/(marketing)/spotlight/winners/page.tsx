@@ -14,9 +14,9 @@ export const metadata: Metadata = {
 export default async function SpotlightWinnersPage() {
   await connectMongoose();
 
-  // Find submissions that were scheduled, published, or archived
+  // Find submissions that were added to the Hall of Fame
   const pastFeatures = await CampaignSubmissionModel.find({
-    status: { $in: ['scheduled', 'published', 'archived'] }
+    hallOfFame: true
   })
     .sort({ createdAt: -1 })
     .lean();
@@ -28,7 +28,7 @@ export default async function SpotlightWinnersPage() {
           <Trophy className="mx-auto h-12 w-12 text-primary" />
           <h1 className="text-4xl font-bold tracking-tighter">Spotlight Hall of Fame</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            These standout startups were hand-picked to be featured in thousands of email signatures and showcased on LinkedIn.
+            These standout startups were hand-picked by the community and showcased across the Tailnote network.
           </p>
         </div>
 

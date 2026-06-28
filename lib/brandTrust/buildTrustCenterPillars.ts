@@ -115,10 +115,18 @@ function brandingNeedsAction(
   scan: SerializedEmailHealthScan,
   bimi: TrustCenterBimiState,
 ): boolean {
-  if (!bimi.bimiLogoUrl.trim()) return true;
   const bimiResult = categoryResult(scan, 'bimi');
+  
+  // If their DNS already has a fully valid BIMI record, they are good to go!
+  if (bimiResult && bimiResult.status === 'pass') return false;
+
+  // Otherwise, if they haven't uploaded a logo to our hosting, they need action
+  if (!bimi.bimiLogoUrl.trim()) return true;
+
+  // Even if they uploaded a logo, if the DNS is still warn/fail, they need action
   if (bimiResult && (bimiResult.status === 'warn' || bimiResult.status === 'fail')) return true;
   if (categoryIssues(scan, 'bimi').length > 0) return true;
+  
   return false;
 }
 

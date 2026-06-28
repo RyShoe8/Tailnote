@@ -193,7 +193,7 @@ export function ContentBlocksEditor({ value, onChange, spotlightMode = false }: 
               <ImageEditor block={block} onChange={(p) => updateBlock(activeSlot, p)} />
             )}
             {block.type === 'quote' && (
-              <QuoteEditor block={block} onChange={(p) => updateBlock(activeSlot, p)} />
+              <QuoteEditor block={block} onChange={(p) => updateBlock(activeSlot, p)} spotlightMode={spotlightMode} />
             )}
             {block.type === 'spotlight' && (
               <div className="text-sm text-muted-foreground p-4 bg-muted rounded-md">
@@ -515,11 +515,13 @@ function ImageEditor({
 function QuoteEditor({
   block,
   onChange,
+  spotlightMode,
 }: {
   block: ContentBlockData;
   onChange: (next: Partial<ContentBlockData>) => void;
+  spotlightMode?: boolean;
 }) {
-  const source = block.quoteSource ?? (block.quoteId ? 'library' : 'custom');
+  const source = spotlightMode ? 'custom' : (block.quoteSource ?? (block.quoteId ? 'library' : 'custom'));
 
   function setSource(next: 'library' | 'custom') {
     if (next === 'library') {
@@ -538,9 +540,10 @@ function QuoteEditor({
 
   return (
     <>
-      <div className="space-y-2">
-        <Label>Quote source</Label>
-        <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
+      {!spotlightMode && (
+        <div className="space-y-2">
+          <Label>Quote source</Label>
+          <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
           <label className="flex items-center gap-2 text-sm">
             <input
               type="radio"
@@ -561,8 +564,9 @@ function QuoteEditor({
           </label>
         </div>
       </div>
+      )}
 
-      {source === 'library' ? (
+      {source === 'library' && !spotlightMode ? (
         <QuoteLibraryPicker
           selectedQuoteId={block.quoteId}
           onSelect={(quote) =>

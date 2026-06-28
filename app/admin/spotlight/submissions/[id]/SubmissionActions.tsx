@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { deleteSubmissionAction, updateSubmissionStatusAction } from './actions';
+import { deleteSubmissionAction, updateSubmissionStatusAction, toggleHallOfFameAction } from './actions';
 
-export function SubmissionActions({ submissionId }: { submissionId: string }) {
+export function SubmissionActions({ submissionId, hallOfFame }: { submissionId: string; hallOfFame?: boolean }) {
   const router = useRouter();
 
   async function handleDelete() {
@@ -23,6 +23,15 @@ export function SubmissionActions({ submissionId }: { submissionId: string }) {
       router.refresh();
     } catch (err) {
       alert('Failed to update status');
+    }
+  }
+
+  async function handleToggleHallOfFame() {
+    try {
+      await toggleHallOfFameAction(submissionId);
+      router.refresh();
+    } catch (err) {
+      alert('Failed to toggle Hall of Fame status');
     }
   }
 
@@ -47,6 +56,20 @@ export function SubmissionActions({ submissionId }: { submissionId: string }) {
           className="w-full bg-destructive text-destructive-foreground py-2 px-4 rounded-md font-medium hover:bg-destructive/90 transition"
         >
           Reject Submission
+        </button>
+      </div>
+      <div className="pt-4 border-t mt-4 space-y-3">
+        <h3 className="font-semibold text-sm">Hall of Fame</h3>
+        <p className="text-xs text-muted-foreground">Feature this submission on the public Spotlight winners page.</p>
+        <button 
+          onClick={handleToggleHallOfFame}
+          className={`w-full py-2 px-4 rounded-md font-medium transition ${
+            hallOfFame 
+              ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200' 
+              : 'border border-input bg-background hover:bg-accent'
+          }`}
+        >
+          {hallOfFame ? '★ Remove from Hall of Fame' : '☆ Add to Hall of Fame'}
         </button>
       </div>
       <div className="pt-4 border-t border-destructive/20 mt-4 space-y-3">

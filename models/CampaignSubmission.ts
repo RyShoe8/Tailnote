@@ -36,6 +36,8 @@ const CampaignSubmissionSchema = new Schema(
       default: 'none',
     },
     
+    hallOfFame: { type: Boolean, default: false },
+    
     reviewerNotes: { type: String, default: '' },
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } }

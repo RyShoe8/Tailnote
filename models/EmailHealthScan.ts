@@ -49,7 +49,7 @@ const EmailHealthScanSchema = new Schema(
   {
     domain: { type: String, required: true, unique: true, index: true, trim: true, lowercase: true },
     domainSlug: { type: String, required: true, index: true, trim: true, lowercase: true },
-    score: { type: Number, required: true, min: 0, max: 100 },
+    score: { type: Number, min: 0, max: 100 },
     statusLabel: {
       type: String,
       enum: ['Excellent', 'Good', 'Needs Attention', 'High Risk'],

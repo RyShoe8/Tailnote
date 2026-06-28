@@ -378,10 +378,12 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
           officePhone: typeof sp.officePhone === 'string' ? sp.officePhone : '',
           mobilePhone: typeof sp.mobilePhone === 'string' ? sp.mobilePhone : '',
         });
-        if ((sp as any).contentBlocks) {
-          setContentBlocks((sp as any).contentBlocks);
-        }
       }
+      
+      // For Spotlight applications, we always start with an empty quote block,
+      // ignoring any blocks they may have saved on their normal signature profile.
+      // This does not overwrite their real profile because this workspace only posts to /api/campaigns/apply.
+      setContentBlocks([{ type: 'quote', quoteSource: 'custom', quoteText: '', enabled: true }]);
     } finally {
       setLoading(false);
     }

@@ -15,7 +15,6 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
   }
 
   const quote = (submission.content as any)?.quote || '';
-  const description = (submission.content as any)?.description || '';
   const whyShouldWeFeatureYou = (submission.content as any)?.whyShouldWeFeatureYou || '';
 
   return (
@@ -64,10 +63,6 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
               <p className="italic">&quot;{quote}&quot;</p>
             </div>
             
-            <div>
-              <p className="text-sm text-muted-foreground font-medium">Description</p>
-              <p>{description}</p>
-            </div>
 
             {whyShouldWeFeatureYou ? (
               <div>
@@ -102,7 +97,7 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
         </div>
 
         <div className="space-y-6">
-          <SubmissionActions submissionId={id} />
+          <SubmissionActions submissionId={id} hallOfFame={submission.hallOfFame} />
         </div>
       </div>
     </div>

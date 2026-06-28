@@ -1,25 +1,16 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { ArrowRight, Trophy, Sparkles, TrendingUp } from 'lucide-react';
+import { ArrowRight, Sparkles, Trophy } from 'lucide-react';
 import { connectMongoose } from '@/lib/mongoose';
 import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
-import { CampaignAnalyticsModel } from '@/models/CampaignAnalytics';
 import { BlueskyPostMockup, RedditPostMockup, LinkedInPostMockup } from '@/components/spotlight/SocialPostMockups';
 
 export const metadata: Metadata = {
   title: 'Tailnote Spotlight - Community Marketing Network',
-  description: 'Discover and support curated startups in the Tailnote community. Apply to be featured in thousands of email signatures across the network.',
+  description: 'Discover and support curated startups in the Tailnote community. Apply to be featured across the Tailnote Spotlight network.',
 };
 
-function formatNumber(num: number): string {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M+';
-  }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(0) + 'k+';
-  }
-  return num.toString();
-}
+
 
 export default async function SpotlightHomepage() {
   await connectMongoose();
@@ -29,19 +20,7 @@ export default async function SpotlightHomepage() {
     status: { $in: ['scheduled', 'published', 'archived'] }
   });
 
-  const analyticsAgg = await CampaignAnalyticsModel.aggregate([
-    {
-      $group: {
-        _id: null,
-        totalImpressions: { $sum: '$impressions' },
-        totalClicks: { $sum: '$clicks' }
-      }
-    }
-  ]);
-  
-  // Safe fallbacks to realistic baseline numbers or 0
-  const totalImpressions = analyticsAgg.length > 0 ? analyticsAgg[0].totalImpressions : 0;
-  const totalClicks = analyticsAgg.length > 0 ? analyticsAgg[0].totalClicks : 0;
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -117,21 +96,11 @@ export default async function SpotlightHomepage() {
       {/* Stats Section */}
       <section className="py-12 border-b">
         <div className="container px-4 md:px-6">
-          <div className="grid gap-8 md:grid-cols-3 text-center">
+          <div className="flex justify-center text-center">
             <div className="space-y-2">
               <Sparkles className="mx-auto h-8 w-8 text-primary" />
               <h3 className="text-3xl font-bold">{startupsFeatured > 0 ? startupsFeatured : '0'}</h3>
               <p className="text-muted-foreground">Startups Featured</p>
-            </div>
-            <div className="space-y-2">
-              <TrendingUp className="mx-auto h-8 w-8 text-primary" />
-              <h3 className="text-3xl font-bold">{formatNumber(totalImpressions)}</h3>
-              <p className="text-muted-foreground">Signature Views Generated</p>
-            </div>
-            <div className="space-y-2">
-              <Trophy className="mx-auto h-8 w-8 text-primary" />
-              <h3 className="text-3xl font-bold">{formatNumber(totalClicks)}</h3>
-              <p className="text-muted-foreground">Clicks Delivered</p>
             </div>
           </div>
         </div>
