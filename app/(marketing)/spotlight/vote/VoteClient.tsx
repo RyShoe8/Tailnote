@@ -61,7 +61,7 @@ export function VoteClient({ initialSubmissions }: { initialSubmissions: any[] }
             </div>
             
             <div className="bg-muted/50 p-6 rounded-xl border relative mb-6">
-              <span className="absolute -top-3 -left-2 text-4xl text-primary/30 font-serif">"</span>
+              <span className="absolute -top-3 -left-2 text-4xl text-primary/30 font-serif">&quot;</span>
               <p className="text-lg italic text-foreground mb-4 relative z-10">
                 {sub.content?.quote || sub.content?.description || 'No quote provided.'}
               </p>

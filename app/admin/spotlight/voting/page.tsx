@@ -32,7 +32,7 @@ export default async function AdminVotingPage() {
       {votingSubmissions.length === 0 ? (
         <div className="bg-card border rounded-lg p-12 text-center">
           <h2 className="text-xl font-semibold mb-2">No Active Votes</h2>
-          <p className="text-muted-foreground">Move submissions to the "voting" status to see them here.</p>
+          <p className="text-muted-foreground">Move submissions to the &quot;voting&quot; status to see them here.</p>
         </div>
       ) : (
         <VotingDashboardClient submissions={JSON.parse(JSON.stringify(votingSubmissions))} />
