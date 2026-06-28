@@ -1,9 +1,10 @@
 import Link from 'next/link';
 
-export default function SpotlightSubmissionPage({ params }: { params: { id: string } }) {
+export default async function SpotlightSubmissionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   // Mock data
   const submission = {
-    id: params.id,
+    id,
     companyName: 'Example Startup',
     website: 'https://example.com',
     industry: 'Software',

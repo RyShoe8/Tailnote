@@ -2,20 +2,20 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  // In a real app, fetch data based on params.slug
+  const { slug } = await params;
   return {
-    title: `${params.slug.replace('-', ' ').toUpperCase()} - Tailnote Spotlight`,
-    description: `Learn more about ${params.slug} on Tailnote Spotlight.`,
+    title: `${slug.replace('-', ' ').toUpperCase()} - Tailnote Spotlight`,
+    description: `Learn more about ${slug} on Tailnote Spotlight.`,
   };
 }
 
-export default function SpotlightCompanyPage({ params }: Props) {
-  // Mock data for now
-  const companyName = params.slug.replace('-', ' ').toUpperCase();
+export default async function SpotlightCompanyPage({ params }: Props) {
+  const { slug } = await params;
+  const companyName = slug.replace('-', ' ').toUpperCase();
   const quote = "The best marketing is helpful. We make your team 10x faster.";
   const description = "Acme Corp is a startup focused on building the best widgets for modern teams. Founded in 2023, they have grown rapidly and are now used by thousands of companies worldwide.";
 
