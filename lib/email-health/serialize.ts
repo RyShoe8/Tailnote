@@ -7,7 +7,7 @@ import type { BIMIResult } from '@/lib/email-health/bimiTypes';
 export type SerializedEmailHealthScan = {
   domain: string;
   domainSlug: string;
-  score: number;
+  score?: number;
   statusLabel: StatusLabel;
   categories: CategoryResult[];
   issues: DomainIssue[];
@@ -20,7 +20,7 @@ export function serializeEmailHealthScan(doc: EmailHealthScanDoc): SerializedEma
   return enrichScanForDisplay({
     domain: doc.domain,
     domainSlug: doc.domainSlug,
-    score: doc.score,
+    score: doc.score ?? undefined,
     statusLabel: doc.statusLabel as StatusLabel,
     categories: JSON.parse(JSON.stringify(doc.categories)) as CategoryResult[],
     issues: JSON.parse(JSON.stringify(doc.issues)) as DomainIssue[],

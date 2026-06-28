@@ -51,7 +51,6 @@ function domainRowFromScan(
     domainSlug: scan.domainSlug,
     scannedAt:
       scan.scannedAt instanceof Date ? scan.scannedAt.toISOString() : new Date(scan.scannedAt).toISOString(),
-    score: scan.score,
     pillars: {
       deliverability: pillars.find((p) => p.id === 'deliverability')!.status,
       security: pillars.find((p) => p.id === 'security')!.status,

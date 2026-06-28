@@ -1,10 +1,10 @@
 import { CATEGORY_GUIDE } from '@/lib/email-health/categoryGuide';
 
 export const EMAIL_HEALTH_PAGE_TITLE =
-  'SPF, DKIM & DMARC Checker — Domain Email Health & Trust Score';
+  'SPF, DKIM & DMARC Checker — Domain Email Health & Brand Trust';
 
 export const EMAIL_HEALTH_PAGE_DESCRIPTION =
-  'Free email deliverability audit: SPF checker, DKIM checker, DMARC checker, BIMI checker, and a 0–100 email trust score. See why emails go to spam and fix DNS in plain English.';
+  'Free email deliverability audit: SPF checker, DKIM checker, DMARC checker, and BIMI checker. See why emails go to spam and fix DNS in plain English.';
 
 /** Tooltip for nav/footer links to Email Health */
 export const EMAIL_HEALTH_NAV_TITLE = EMAIL_HEALTH_PAGE_DESCRIPTION;
@@ -12,15 +12,15 @@ export const EMAIL_HEALTH_NAV_TITLE = EMAIL_HEALTH_PAGE_DESCRIPTION;
 export const EMAIL_HEALTH_HERO = {
   eyebrow: 'Free email deliverability audit',
   h1: 'SPF, DKIM & DMARC checker for domain email health',
-  h1Highlight: 'email trust score',
+  h1Highlight: 'brand trust',
   subcopy:
-    'Run a free email deliverability audit on any domain. Get an instant 0–100 trust score plus SPF, DKIM, DMARC, and BIMI results in plain English — no sysadmin jargon.',
+    'Run a free email deliverability audit on any domain. Get an instant Brand Trust report plus SPF, DKIM, DMARC, and BIMI results in plain English — no sysadmin jargon.',
 } as const;
 
 export const EMAIL_HEALTH_FEATURE_CARDS = [
   {
-    title: 'Email trust score',
-    body: 'A single 0–100 score with clear status levels so you know where your domain email health stands.',
+    title: 'Brand trust report',
+    body: 'A three-pillar evaluation of Inbox Delivery, Anti-Spoofing, and Inbox Logo readiness.',
   },
   {
     title: 'Deliverability audit',
@@ -64,10 +64,10 @@ export const EMAIL_HEALTH_CHECKER_SECTIONS: EmailHealthCheckerSection[] = [
 export const EMAIL_HEALTH_DELIVERABILITY_AUDIT = {
   heading: 'Email deliverability audit',
   intro:
-    'Every scan is a full email deliverability audit: we test SPF, DKIM, DMARC, BIMI, mail routing (MX), SMTP TLS, and HTTPS — then roll results into one domain email health score. Enter your domain above to start.',
-  scoreSectionHeading: 'What’s in your domain email health score?',
+    'Every scan is a full email deliverability audit: we test SPF, DKIM, DMARC, BIMI, mail routing (MX), SMTP TLS, and HTTPS — then roll results into one domain email health report. Enter your domain above to start.',
+  scoreSectionHeading: 'What’s in your domain brand trust report?',
   scoreSectionIntro:
-    'Your email trust score adds up to 100 points across seven checks. Pass earns full credit; warn earns partial; fail earns none. Every warn includes step-by-step instructions to reach a pass.',
+    'Your report is broken down into three pillars: Inbox Delivery, Anti-Spoofing, and Inbox Logo. Each pillar aggregates multiple technical checks into a simple pass/fail status, with step-by-step instructions to fix any issues.',
 } as const;
 
 /** All checks for ItemList JSON-LD (includes supporting checks beyond primary keyword H2s). */

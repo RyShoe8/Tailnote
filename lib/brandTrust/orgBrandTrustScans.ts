@@ -18,7 +18,6 @@ export type TrustCenterDomainRow = {
   domain: string;
   domainSlug: string;
   scannedAt: string;
-  score: number;
   pillars: Record<TrustCenterPillarId, TrustCenterPillarStatus>;
 };
 
@@ -103,7 +102,6 @@ export async function listOrgBrandTrustDomainRows(org: OrganizationDoc): Promise
       domain: scan.domain,
       domainSlug: scan.domainSlug,
       scannedAt: scan.scannedAt.toISOString(),
-      score: scan.score,
       pillars,
     });
   }

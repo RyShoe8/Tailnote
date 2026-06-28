@@ -21,7 +21,6 @@ export default async function DashboardEmailHealthResultPage({ params }: Props) 
         scan={scan}
         indexHref="/dashboard/email-health"
         sharePathPrefix="/email-health"
-        showSignupCta={false}
         breadcrumbRoot={{ href: '/dashboard', label: 'Overview' }}
       />
     </div>
