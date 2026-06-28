@@ -78,26 +78,23 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
 
             {submission.socialPlatforms && submission.socialPlatforms.length > 0 ? (
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Social Platforms</p>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {submission.socialPlatforms.map((platform: string) => (
-                    <span key={platform} className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded capitalize">
-                      {platform}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {submission.socialProfiles && Object.keys(submission.socialProfiles).length > 0 ? (
-              <div>
                 <p className="text-sm text-muted-foreground font-medium">Social Profiles</p>
-                <div className="flex flex-col gap-1 mt-1">
-                  {Object.entries(submission.socialProfiles).map(([platform, url]) => (
-                    <a key={platform} href={url as string} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline capitalize">
-                      {platform}: {url as string}
-                    </a>
-                  ))}
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {submission.socialPlatforms.map((platform: string) => {
+                    const url = submission.socialProfiles?.[platform] as string | undefined;
+                    if (url) {
+                      return (
+                        <a key={platform} href={url} target="_blank" rel="noreferrer" className="px-2 py-1 bg-primary/10 text-primary hover:bg-primary/20 text-xs rounded capitalize transition">
+                          {platform}
+                        </a>
+                      );
+                    }
+                    return (
+                      <span key={platform} className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded capitalize">
+                        {platform}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             ) : null}
