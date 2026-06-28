@@ -13,9 +13,9 @@ export async function getActiveSpotlight(): Promise<RenderSignatureInput['active
     startDate: { $lte: now },
     endDate: { $gt: now },
   })
-    .populate<{ submissionId: CampaignSubmissionDoc }>('submissionId')
+    .populate('submissionId')
     .sort({ startDate: -1 })
-    .lean();
+    .lean() as unknown as { submissionId?: CampaignSubmissionDoc } | null;
 
   if (!schedule || !schedule.submissionId) return undefined;
 
