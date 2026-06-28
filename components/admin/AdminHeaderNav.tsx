@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { href: '/admin/plans', label: 'Plans' },
   { href: '/admin/plans/archived', label: 'Archived plans' },
   { href: '/admin/signatures', label: 'Signatures' },
+  { href: '/admin/spotlight', label: 'Spotlight' },
 ] as const;
 
 const linkClass =

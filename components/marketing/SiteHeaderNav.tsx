@@ -15,6 +15,7 @@ export const PRODUCT_NAV = [
   { href: '/analytics', label: 'Analytics' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/blog', label: 'Blog' },
+  { href: '/spotlight', label: 'Spotlight' },
   { href: '/email-health', label: 'Email Health', title: EMAIL_HEALTH_NAV_TITLE },
 ] as const;
 
