@@ -24,7 +24,7 @@ export default async function SpotlightCompanyPage({ params }: Props) {
     '@type': 'Organization',
     name: companyName,
     description: description,
-    url: `https://tailnote.com/spotlight/${params.slug}`,
+    url: `https://tailnote.com/spotlight/${slug}`,
   };
 
   return (
