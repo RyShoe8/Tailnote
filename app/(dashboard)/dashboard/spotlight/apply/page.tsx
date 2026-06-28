@@ -38,7 +38,7 @@ export default function SpotlightApplyPage() {
         body: JSON.stringify(formData)
       });
       if (res.ok) {
-        setSuccess(true);
+        window.location.href = '/dashboard/spotlight';
       } else {
         alert('Failed to submit application.');
       }
@@ -70,14 +70,7 @@ export default function SpotlightApplyPage() {
     }
   };
 
-  if (success) {
-    return (
-      <div className="container max-w-2xl mx-auto py-24 text-center">
-        <h1 className="text-3xl font-bold mb-4">Application Submitted!</h1>
-        <p className="text-muted-foreground">Thank you for applying to Tailnote Spotlight. We will review your application and get back to you soon.</p>
-      </div>
-    );
-  }
+
 
   return (
     <div className="container max-w-2xl mx-auto py-12 md:py-24">

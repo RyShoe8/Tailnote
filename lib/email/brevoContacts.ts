@@ -13,6 +13,8 @@ function parseName(name?: string | null): { FNAME?: string; LNAME?: string } {
 export async function syncUserToBrevoList(input: {
   email: string;
   name?: string | null;
+  companyName?: string | null;
+  industry?: string | null;
 }): Promise<void> {
   if (!isBrevoConfigured()) {
     if (process.env.NODE_ENV === 'development') {
@@ -24,7 +26,10 @@ export async function syncUserToBrevoList(input: {
   const email = input.email.trim().toLowerCase();
   if (!email) return;
 
-  const attributes = parseName(input.name);
+  const attributes: any = parseName(input.name);
+  if (input.companyName) attributes['COMPANY'] = input.companyName;
+  if (input.industry) attributes['INDUSTRY'] = input.industry;
+  
   const listId = getBrevoListId();
 
   const result = await brevoFetch('/contacts', {

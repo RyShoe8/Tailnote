@@ -56,7 +56,7 @@ export default async function SpotlightHomepage() {
             </p>
             <div className="flex flex-col gap-4 sm:flex-row justify-center">
               <Link
-                href="/spotlight/apply"
+                href="/spotlight/join"
                 className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
               >
                 Apply for Spotlight

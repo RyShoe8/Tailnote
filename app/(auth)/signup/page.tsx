@@ -27,6 +27,10 @@ function buildPostSignupPath(
   if (inviteToken) {
     return `/invite/${encodeURIComponent(inviteToken)}?accept=1`;
   }
+  const redirect = searchParams.get('redirect');
+  if (redirect && redirect.startsWith('/')) {
+    return redirect;
+  }
   const qs = new URLSearchParams();
   const subscriptionPlanId = searchParams.get('subscriptionPlanId');
   const plan = searchParams.get('plan');
@@ -46,6 +50,9 @@ function SignupForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState(inviteEmail || '');
   const [password, setPassword] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [subscribeNewsletter, setSubscribeNewsletter] = useState(true);
   const oauthError = searchParams.get('error');
   const [error, setError] = useState<string | null>(
     oauthError ? formatOAuthCallbackError(oauthError) : null
@@ -115,6 +122,15 @@ function SignupForm() {
         );
         return;
       }
+      try {
+        await fetch('/api/auth/brevo-sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ companyName, industry, subscribeNewsletter }),
+        });
+      } catch (err) {
+        console.error('Brevo sync failed', err);
+      }
       if (joinToken) {
         window.location.href = `/join/${encodeURIComponent(joinToken)}?accept=1`;
         return;
@@ -181,6 +197,40 @@ function SignupForm() {
               required
               minLength={8}
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="companyName">Company Name</Label>
+            <Input id="companyName" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="industry">Industry</Label>
+            <select
+              id="industry"
+              value={industry}
+              onChange={(e) => setIndustry(e.target.value)}
+              required
+              className="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="" disabled>Select your industry...</option>
+              <option value="Technology">Technology</option>
+              <option value="Healthcare">Healthcare</option>
+              <option value="Finance">Finance</option>
+              <option value="Education">Education</option>
+              <option value="Retail">Retail</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div className="flex items-start space-x-2 pt-2">
+            <input
+              type="checkbox"
+              id="newsletter"
+              checked={subscribeNewsletter}
+              onChange={(e) => setSubscribeNewsletter(e.target.checked)}
+              className="mt-1 h-4 w-4 shrink-0 rounded-sm border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            <Label htmlFor="newsletter" className="text-sm font-normal text-muted-foreground cursor-pointer">
+              Send me startup marketing tips, news, and updates.
+            </Label>
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Creating…' : 'Create account'}

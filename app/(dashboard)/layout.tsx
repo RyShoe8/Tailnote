@@ -12,6 +12,7 @@ const links = [
   { href: '/dashboard/brand-trust', label: 'Brand Trust Center' },
   { href: '/dashboard/signature', label: 'Signature' },
   { href: '/dashboard/analytics', label: 'Analytics' },
+  { href: '/dashboard/spotlight', label: 'Spotlight' },
   { href: '/dashboard/employees', label: 'Employees' },
   { href: '/dashboard/billing', label: 'Billing' },
 ];
