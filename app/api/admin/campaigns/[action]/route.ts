@@ -21,9 +21,10 @@ export async function POST(
   
   // Basic admin check (could use a dedicated role or specific user ID)
   // For now, assuming anyone hitting this route must be verified as admin in middleware
-  // Or checking user role if 'admin' is stored somewhere. Let's do a simple check.
-  if (session.user.role !== 'superadmin' && session.user.email !== 'ryan@tailnote.com') { // Adjust based on your admin strategy
+  // Or checking user email. Let's do a simple check.
+  if (session.user.email !== 'ryan@tailnote.com') { // Adjust based on your admin strategy
     // In many projects admin check is done in middleware or here
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const actionParsed = ActionSchema.safeParse(action);
