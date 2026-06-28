@@ -96,3 +96,26 @@ The Tailnote Team
 
   return { subject, text, html };
 }
+
+export function buildSpotlightVotingEmail(submission: CampaignSubmissionDoc) {
+  const loginUrl = 'https://tailnote.com/spotlight/vote';
+  const subject = `You're up for a vote! Spotlight 🌟`;
+  
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2>You're up for a vote! 🌟</h2>
+      <p>Hi ${submission.founder},</p>
+      <p>Great news! Your quote has been selected for this week's Spotlight community vote.</p>
+      <p>To win the top spot and get featured on Tuesday, you'll need the most community votes.</p>
+      <p><a href="${loginUrl}">Share this link and get your community to vote for you!</a></p>
+      <p>Even if you don't win, you are guaranteed to be featured as a runner-up on Thursday.</p>
+      <br/>
+      <p>Good luck!</p>
+      <p>The Tailnote Team</p>
+    </div>
+  `;
+
+  const text = `Hi ${submission.founder},\n\nGreat news! Your quote has been selected for this week's Spotlight community vote.\n\nTo win the top spot and get featured on Tuesday, you'll need the most community votes. Share this link to get your community to vote for you: ${loginUrl}\n\nEven if you don't win, you are guaranteed to be featured as a runner-up on Thursday.\n\nGood luck!\nThe Tailnote Team`;
+
+  return { subject, text, html };
+}

@@ -40,10 +40,16 @@ export function SubmissionActions({ submissionId, hallOfFame }: { submissionId: 
       <h2 className="font-semibold text-lg border-b pb-2">Admin Actions</h2>
       <div className="space-y-3">
         <button 
+          onClick={() => handleStatusUpdate('voting')}
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 transition"
+        >
+          Add to Active Vote
+        </button>
+        <button 
           onClick={() => handleStatusUpdate('approved')}
           className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-md font-medium hover:bg-primary/90 transition"
         >
-          Approve & Generate Assets
+          Approve (Skip Vote)
         </button>
         <button 
           onClick={() => handleStatusUpdate('needs_changes')}

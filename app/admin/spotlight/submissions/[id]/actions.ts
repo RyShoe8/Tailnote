@@ -13,6 +13,7 @@ import {
   buildSpotlightApprovedEmail,
   buildSpotlightNeedsChangesEmail,
   buildSpotlightRejectedEmail,
+  buildSpotlightVotingEmail,
 } from '@/lib/email/templates/spotlight';
 
 export async function deleteSubmissionAction(id: string) {
@@ -39,7 +40,7 @@ export async function updateSubmissionStatusAction(id: string, status: string) {
   const submitter = db ? await db.collection('user').findOne({ id: submission.userId }) : null;
   const submitterEmail = submitter?.email;
 
-  if (status === 'approved') {
+  if (status === 'voting' || status === 'approved') {
     // Generate dummy/pending assets
     const assetTypes = ['signature_image', 'social_post_1', 'social_post_2', 'landing_page_hero'];
     for (const assetType of assetTypes) {
@@ -51,8 +52,13 @@ export async function updateSubmissionStatusAction(id: string, status: string) {
     }
     
     if (submitterEmail) {
-      const { subject, html, text } = buildSpotlightApprovedEmail(submission as any);
-      await sendEmail({ to: submitterEmail, subject, html, text });
+      if (status === 'voting') {
+        const { subject, html, text } = buildSpotlightVotingEmail(submission as any);
+        await sendEmail({ to: submitterEmail, subject, html, text });
+      } else {
+        const { subject, html, text } = buildSpotlightApprovedEmail(submission as any);
+        await sendEmail({ to: submitterEmail, subject, html, text });
+      }
     }
   } else if (status === 'needs_changes') {
     if (submitterEmail) {

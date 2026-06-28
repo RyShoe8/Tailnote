@@ -25,10 +25,13 @@ const CampaignSubmissionSchema = new Schema(
     
     status: {
       type: String,
-      enum: ['pending', 'approved', 'needs_changes', 'rejected', 'scheduled', 'published', 'archived'],
+      enum: ['pending', 'voting', 'approved', 'needs_changes', 'rejected', 'scheduled', 'published', 'archived'],
       default: 'pending',
       index: true,
     },
+    
+    votes: { type: Number, default: 0 },
+    voterIps: { type: [String], default: [] },
     
     gamificationBadge: {
       type: String,
