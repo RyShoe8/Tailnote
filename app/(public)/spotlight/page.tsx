@@ -53,7 +53,7 @@ export default async function SpotlightHomepage() {
               Submit a quote.<br />Get featured everywhere.
             </h1>
             <p className="mx-auto max-w-[750px] text-lg text-muted-foreground sm:text-xl">
-              Tailnote Spotlight is a highly competitive, community-powered marketing network. Build your custom signature, submit an inspiring quote about your startup, and if our team picks you—you win massive exposure across the entire Tailnote network.
+              Tailnote Spotlight is a highly competitive, community-powered marketing network. Build your custom signature, submit a clever or inspiring quote, and if our team picks you—you win massive exposure across the entire Tailnote network.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row justify-center pt-4">
               <Link
@@ -93,7 +93,7 @@ export default async function SpotlightHomepage() {
             <div className="space-y-4">
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">2</div>
               <h3 className="text-xl font-semibold">Write Your Quote</h3>
-              <p className="text-muted-foreground">Submit a short quote or pitch about your startup. The more compelling it is, the higher your chances.</p>
+              <p className="text-muted-foreground">Submit a short quote, thought, or hot take. The more compelling it is, the higher your chances.</p>
             </div>
             <div className="space-y-4">
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">3</div>

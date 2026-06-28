@@ -14,12 +14,13 @@ export default async function SpotlightApplyPage() {
   let spotlightCampaign = await CampaignModel.findOne({ type: 'spotlight' }).lean();
   
   if (!spotlightCampaign) {
-    return (
-      <div className="max-w-2xl text-center py-12 space-y-4">
-        <h1 className="text-2xl font-bold">Error loading Spotlight</h1>
-        <p className="text-muted-foreground">Please try again later.</p>
-      </div>
-    );
+    // Auto-create if it doesn't exist for some reason
+    const newCampaign = await CampaignModel.create({
+      name: 'Tailnote Spotlight',
+      type: 'spotlight',
+      status: 'active'
+    });
+    spotlightCampaign = newCampaign.toObject();
   }
 
   return (

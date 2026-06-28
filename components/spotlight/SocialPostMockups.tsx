@@ -8,18 +8,23 @@ interface MockupProps {
   logoInitial: string;
 }
 
-const SignatureCard = ({ companyName, founderName, logoInitial }: MockupProps) => (
-  <div className="mt-3 flex items-center gap-4 rounded-lg border bg-card p-4 shadow-sm">
-    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">
-      {logoInitial}
+import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
+import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
+import { MarketingSignaturePreview } from '@/components/marketing/MarketingSignaturePreview';
+
+const SignatureCard = () => {
+  const signatureHtml = stripSignaturePreviewLinks(renderMarketingSample('modern_professional'));
+  return (
+    <div className="mt-3 overflow-hidden rounded-lg border bg-card p-4 shadow-sm relative">
+      <div className="absolute top-2 right-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+        Tailnote Signature
+      </div>
+      <div className="pt-2">
+        <MarketingSignaturePreview html={signatureHtml} />
+      </div>
     </div>
-    <div>
-      <div className="font-semibold">{founderName}</div>
-      <div className="text-sm text-muted-foreground">Founder, {companyName}</div>
-      <div className="mt-1 text-xs font-medium text-primary">Featured in Tailnote Spotlight</div>
-    </div>
-  </div>
-);
+  );
+};
 
 export function BlueskyPostMockup(props: MockupProps) {
   return (
@@ -39,7 +44,7 @@ export function BlueskyPostMockup(props: MockupProps) {
             <br /><br />
             {props.description}
           </p>
-          <SignatureCard {...props} />
+          <SignatureCard />
           <div className="mt-3 flex items-center justify-between text-muted-foreground">
             <button className="flex items-center gap-1.5 hover:text-[#0085ff] transition-colors"><MessageCircle className="h-4 w-4" /> <span className="text-xs">12</span></button>
             <button className="flex items-center gap-1.5 hover:text-green-500 transition-colors"><Repeat className="h-4 w-4" /> <span className="text-xs">45</span></button>
@@ -75,7 +80,7 @@ export function RedditPostMockup(props: MockupProps) {
           <p className="text-sm text-foreground/90">
             {props.description}
           </p>
-          <SignatureCard {...props} />
+          <SignatureCard />
           <div className="mt-3 flex items-center gap-4 text-xs font-medium text-muted-foreground">
             <div className="flex items-center gap-1.5 hover:bg-muted p-1 rounded transition-colors cursor-pointer">
               <MessageSquare className="h-4 w-4" /> 142 Comments
@@ -118,7 +123,7 @@ export function LinkedInPostMockup(props: MockupProps) {
         Check out their custom signature below and join the Spotlight network today.
       </p>
       <div className="rounded-lg border bg-muted/30 p-2 mb-3">
-        <SignatureCard {...props} />
+        <SignatureCard />
       </div>
       <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
         <span>👍 ❤️ 👏 342</span>
