@@ -48,28 +48,57 @@ export default async function SpotlightHomepage() {
       {/* Hero Section */}
       <section className="bg-muted py-24 text-center">
         <div className="container px-4 md:px-6">
-          <div className="mx-auto max-w-3xl space-y-6">
+          <div className="mx-auto max-w-4xl space-y-6">
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
-              Tailnote Spotlight
+              Submit a quote.<br />Get featured everywhere.
             </h1>
-            <p className="mx-auto max-w-[700px] text-lg text-muted-foreground sm:text-xl">
-              Join the community-powered marketing network. We feature curated startups in thousands of email signatures, driving real traffic and growth.
+            <p className="mx-auto max-w-[750px] text-lg text-muted-foreground sm:text-xl">
+              Tailnote Spotlight is a highly competitive, community-powered marketing network. Build your custom signature, submit an inspiring quote about your startup, and if our team picks you—you win massive exposure across the entire Tailnote network.
             </p>
-            <div className="flex flex-col gap-4 sm:flex-row justify-center">
+            <div className="flex flex-col gap-4 sm:flex-row justify-center pt-4">
               <Link
                 href="/spotlight/join"
-                className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+                className="inline-flex h-12 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
               >
-                Apply for Spotlight
+                Apply with your Quote
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
               <Link
                 href="/spotlight/winners"
-                className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                className="inline-flex h-12 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
               >
-                View Hall of Fame
+                View the Hall of Fame
                 <Trophy className="ml-2 h-4 w-4" />
               </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it Works Section */}
+      <section className="py-24 border-b">
+        <div className="container px-4 md:px-6">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">How to win the Spotlight</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              We hand-pick the most inspiring, ambitious, and clever quotes submitted by founders every single week. Make yours stand out.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 text-center max-w-5xl mx-auto">
+            <div className="space-y-4">
+              <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">1</div>
+              <h3 className="text-xl font-semibold">Build Your Signature</h3>
+              <p className="text-muted-foreground">Use our visual editor to design the exact signature that will be featured across our network.</p>
+            </div>
+            <div className="space-y-4">
+              <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">2</div>
+              <h3 className="text-xl font-semibold">Write Your Quote</h3>
+              <p className="text-muted-foreground">Submit a short quote or pitch about your startup. The more compelling it is, the higher your chances.</p>
+            </div>
+            <div className="space-y-4">
+              <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">3</div>
+              <h3 className="text-xl font-semibold">Get Picked</h3>
+              <p className="text-muted-foreground">If selected, your quote and signature will immediately go live to thousands of founders.</p>
             </div>
           </div>
         </div>
