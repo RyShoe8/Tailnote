@@ -346,3 +346,24 @@ export function renderMarketingSample(presetId: TemplatePresetId): string {
     ...(vcardUrl ? { vcardDownloadUrl: vcardUrl } : {}),
   });
 }
+
+/** Renders a live signature HTML sample for spotlight pages with a custom quote (server-only). */
+export function renderSpotlightSample(quote: string, companyName: string): string {
+  const origin = getSignatureAssetOrigin();
+  const presetId = 'modern_professional';
+  const profile = demoProfile(presetId);
+  const brand = demoBrand(origin, presetId);
+  
+  // Replace the default content blocks with just the spotlight quote block
+  brand.contentBlocks = [
+    marketingQuoteBlock(quote, companyName)
+  ];
+  
+  return renderSignature({
+    profile,
+    brand,
+    template: presetToEngineTemplate(presetId, `spotlight-mock`),
+    publicSiteOrigin: origin,
+    utm: MARKETING_UTM,
+  });
+}

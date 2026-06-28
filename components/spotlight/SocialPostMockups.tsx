@@ -9,12 +9,14 @@ interface MockupProps {
   quote?: string;
 }
 
-import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
+import { renderMarketingSample, renderSpotlightSample } from '@/lib/marketing/renderMarketingSample';
 import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
 import { MarketingSignaturePreview } from '@/components/marketing/MarketingSignaturePreview';
 
-const SignatureCard = () => {
-  const signatureHtml = stripSignaturePreviewLinks(renderMarketingSample('modern_professional'));
+const SignatureCard = ({ quote, companyName }: { quote?: string; companyName: string }) => {
+  const signatureHtml = stripSignaturePreviewLinks(
+    quote ? renderSpotlightSample(quote, companyName) : renderMarketingSample('modern_professional')
+  );
   return (
     <div className="mt-3 overflow-x-auto rounded-lg border bg-card p-4 shadow-sm relative">
       <div className="absolute top-2 right-2 z-10 text-[10px] font-bold text-muted-foreground uppercase tracking-wider bg-background/80 px-1 rounded">
@@ -41,14 +43,11 @@ export function BlueskyPostMockup(props: MockupProps) {
             <span className="text-muted-foreground text-sm">· 2h</span>
           </div>
           <p className="mt-1 text-[15px] leading-snug">
-            {props.quote && (
-              <span className="italic block mb-2 text-muted-foreground">&quot;{props.quote}&quot;</span>
-            )}
             We are thrilled to feature <strong>{props.companyName}</strong> in this week&apos;s Spotlight! 🚀
             <br /><br />
             {props.description}
           </p>
-          <SignatureCard />
+          <SignatureCard quote={props.quote} companyName={props.companyName} />
           <div className="mt-3 flex items-center justify-between text-muted-foreground">
             <button className="flex items-center gap-1.5 hover:text-[#0085ff] transition-colors"><MessageCircle className="h-4 w-4" /> <span className="text-xs">12</span></button>
             <button className="flex items-center gap-1.5 hover:text-green-500 transition-colors"><Repeat className="h-4 w-4" /> <span className="text-xs">45</span></button>
@@ -81,15 +80,10 @@ export function RedditPostMockup(props: MockupProps) {
           <h3 className="font-semibold text-lg leading-tight mb-2">
             Founder Spotlight: Check out what {props.companyName} is building
           </h3>
-          {props.quote && (
-            <blockquote className="border-l-4 border-muted-foreground/30 pl-3 my-3 italic text-muted-foreground">
-              &quot;{props.quote}&quot;
-            </blockquote>
-          )}
           <p className="text-sm text-foreground/90">
             {props.description}
           </p>
-          <SignatureCard />
+          <SignatureCard quote={props.quote} companyName={props.companyName} />
           <div className="mt-3 flex items-center gap-4 text-xs font-medium text-muted-foreground">
             <div className="flex items-center gap-1.5 hover:bg-muted p-1 rounded transition-colors cursor-pointer">
               <MessageSquare className="h-4 w-4" /> 142 Comments
@@ -125,9 +119,6 @@ export function LinkedInPostMockup(props: MockupProps) {
       <p className="text-sm leading-relaxed mb-3">
         🚀 We love supporting fellow founders! 🚀
         <br /><br />
-        {props.quote && (
-          <span className="italic block mb-2 text-muted-foreground">&quot;{props.quote}&quot;</span>
-        )}
         This week we are excited to cross-promote <strong>{props.companyName}</strong> in our Spotlight. 
         <br />
         {props.description}
@@ -135,7 +126,7 @@ export function LinkedInPostMockup(props: MockupProps) {
         Check out their custom signature below and join the Spotlight network today.
       </p>
       <div className="rounded-lg border bg-muted/30 p-2 mb-3">
-        <SignatureCard />
+        <SignatureCard quote={props.quote} companyName={props.companyName} />
       </div>
       <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
         <span>👍 ❤️ 👏 342</span>
