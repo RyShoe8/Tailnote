@@ -77,11 +77,11 @@ export default async function SpotlightDashboardPage() {
             </div>
 
             <div className="bg-muted/50 rounded-lg p-4">
-              <h4 className="font-semibold text-sm mb-2">What happens if you win?</h4>
+              <h4 className="font-semibold text-sm mb-2">What happens when you are featured?</h4>
               <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                <li>Your custom signature is attached to thousands of network emails.</li>
+                <li>Your company and quote are highlighted in social media posts across the Tailnote network.</li>
                 <li>You receive a dedicated feature on Bluesky and Reddit.</li>
-                <li>Potential induction into the Tailnote LinkedIn Hall of Fame.</li>
+                <li>Potential cross-promotion on our official Tailnote LinkedIn.</li>
               </ul>
             </div>
           </div>
