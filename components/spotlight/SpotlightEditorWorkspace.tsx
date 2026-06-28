@@ -1092,7 +1092,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
                   Blocks appear in a row beneath your signature on every layout, so they stay readable on phone-sized inboxes.
                 </p>
               </div>
-              <ContentBlocksEditor value={contentBlocks} onChange={setContentBlocks} />
+              <ContentBlocksEditor value={contentBlocks} onChange={setContentBlocks} spotlightMode={true} />
             </div>
           )}
           {activeTab === 'details' && (
@@ -1179,6 +1179,8 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
           {activeTab === 'install' && (
             <SignatureInstallPanel
               html={previewHtml}
+              downloadFilename="spotlight-submission.html"
+              spotlightMode={true}
             />
           )}
 

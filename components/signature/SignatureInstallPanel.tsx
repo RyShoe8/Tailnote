@@ -25,6 +25,7 @@ type Props = {
   emailForwardNote?: string;
   employeeId?: string;
   installContext?: { templateId: string };
+  spotlightMode?: boolean;
 };
 
 const btnClass = 'w-full justify-center';
@@ -36,6 +37,7 @@ export function SignatureInstallPanel({
   emailForwardNote,
   employeeId,
   installContext,
+  spotlightMode,
 }: Props) {
   const isMobileInstall = useIsMobileInstallContext();
   const [activeMethod, setActiveMethod] = useState<InstallMethod | null>(null);
@@ -91,14 +93,21 @@ export function SignatureInstallPanel({
             </>
           ) : null}
 
-          <AppleMailInstallButton
-            disabled={appleDisabled}
-            employeeId={employeeId}
-            templateId={installContext?.templateId}
-            variant={buttonVariant('apple')}
-            className={btnClass}
-            onActivate={() => setActiveMethod('apple')}
-          />
+          <div className="space-y-1">
+            <AppleMailInstallButton
+              disabled={appleDisabled}
+              employeeId={employeeId}
+              templateId={installContext?.templateId}
+              variant={buttonVariant('apple')}
+              className={btnClass}
+              onActivate={() => setActiveMethod('apple')}
+            />
+            {spotlightMode && (
+              <p className="text-[10px] text-muted-foreground text-center px-2 leading-tight">
+                Apple Mail scripts are not supported for Spotlight profiles.
+              </p>
+            )}
+          </div>
 
           <Button
             type="button"
