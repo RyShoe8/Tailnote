@@ -24,7 +24,12 @@ function ensureSlots(blocks: ContentBlockData[], spotlightMode: boolean = false)
   while (out.length < SLOT_COUNT) {
     out.push({ type: spotlightMode ? 'quote' : 'book_a_call', enabled: false });
   }
-  return out.slice(0, SLOT_COUNT);
+  
+  const sliced = out.slice(0, SLOT_COUNT);
+  if (spotlightMode && sliced[0]) {
+    sliced[0].type = 'quote';
+  }
+  return sliced;
 }
 
 /** Promote legacy `custom` (no image) to `list` with padded items; keeps multi-row editing + renderer parity. */
@@ -84,6 +89,13 @@ export function ContentBlocksEditor({ value, onChange, spotlightMode = false }: 
     const slots = ensureSlots(value, spotlightMode);
     let changed = false;
     const next = [...slots];
+
+    // Force quote type if in spotlight mode and it was loaded from a profile with a different type
+    if (spotlightMode && next[0] && next[0].type !== 'quote') {
+      next[0].type = 'quote';
+      changed = true;
+    }
+
     for (let i = 0; i < next.length; i += 1) {
       const b = next[i];
       if (!b.enabled || b.type !== 'custom') continue;
@@ -99,7 +111,7 @@ export function ContentBlocksEditor({ value, onChange, spotlightMode = false }: 
     }
     if (changed) onChange(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-wave migration when persisted `value` still uses custom
-  }, [value]);
+  }, [value, spotlightMode]);
 
   const updateBlock = (index: number, next: Partial<ContentBlockData>) => {
     const newBlocks = [...blocks];
