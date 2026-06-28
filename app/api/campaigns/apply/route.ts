@@ -69,7 +69,7 @@ export async function POST(request: Request) {
   }
 
   await connectMongoose();
-  const campaign = await CampaignModel.findOne({ _id: parsed.data.campaignId, isActive: true });
+  const campaign = await CampaignModel.findOne({ _id: parsed.data.campaignId, status: 'active' });
   if (!campaign) {
     return NextResponse.json({ error: 'Campaign not found or is no longer active.' }, { status: 404 });
   }
