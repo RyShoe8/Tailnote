@@ -27,8 +27,13 @@ export async function getActiveSpotlight(): Promise<RenderSignatureInput['active
   }).lean();
 
   return {
+    campaignId: submission._id.toString(),
     slug: submission.slug || submission._id.toString(),
     companyName: submission.companyName,
+    logoUrl: submission.logoUrl || '',
+    quoteText: submission.quote || '',
+    founder: submission.founderName || 'Founder',
+    website: submission.website || 'https://tailnote.com',
     signatureImageUrl: asset?.url || '',
   };
 }
