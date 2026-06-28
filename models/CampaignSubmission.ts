@@ -32,6 +32,7 @@ const CampaignSubmissionSchema = new Schema(
     
     votes: { type: Number, default: 0 },
     voterIps: { type: [String], default: [] },
+    votingStartDate: { type: Date },
     
     gamificationBadge: {
       type: String,

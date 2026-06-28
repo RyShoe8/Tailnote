@@ -17,9 +17,9 @@ export function SubmissionActions({ submissionId, hallOfFame }: { submissionId: 
     }
   }
 
-  async function handleStatusUpdate(status: string) {
+  async function handleStatusUpdate(status: string, votingStartDate?: Date) {
     try {
-      await updateSubmissionStatusAction(submissionId, status);
+      await updateSubmissionStatusAction(submissionId, status, votingStartDate);
       router.refresh();
     } catch (err) {
       alert('Failed to update status');
@@ -39,12 +39,24 @@ export function SubmissionActions({ submissionId, hallOfFame }: { submissionId: 
     <div className="bg-card border rounded-lg p-6 space-y-4">
       <h2 className="font-semibold text-lg border-b pb-2">Admin Actions</h2>
       <div className="space-y-3">
-        <button 
-          onClick={() => handleStatusUpdate('voting')}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 transition"
-        >
-          Add to Active Vote
-        </button>
+        <div className="p-3 border rounded-md bg-muted/30 space-y-2">
+          <label className="text-sm font-medium">Schedule Voting Start Date</label>
+          <input 
+            type="date" 
+            id="votingStartDate"
+            className="w-full border rounded px-2 py-1 text-sm" 
+            defaultValue={new Date().toISOString().split('T')[0]} 
+          />
+          <button 
+            onClick={() => {
+              const dateVal = (document.getElementById('votingStartDate') as HTMLInputElement).value;
+              handleStatusUpdate('voting', dateVal ? new Date(dateVal) : undefined);
+            }}
+            className="w-full bg-blue-600 text-white py-1.5 px-4 rounded-md font-medium text-sm hover:bg-blue-700 transition mt-2"
+          >
+            Add to Scheduled Vote
+          </button>
+        </div>
         <button 
           onClick={() => handleStatusUpdate('approved')}
           className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-md font-medium hover:bg-primary/90 transition"

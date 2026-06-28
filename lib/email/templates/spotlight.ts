@@ -97,15 +97,24 @@ The Tailnote Team
   return { subject, text, html };
 }
 
-export function buildSpotlightVotingEmail(submission: CampaignSubmissionDoc) {
+export function buildSpotlightVotingEmail(submission: CampaignSubmissionDoc, votingStartDate?: Date) {
   const loginUrl = 'https://tailnote.com/spotlight/vote';
   const subject = `You're up for a vote! Spotlight 🌟`;
+  
+  let dateTextHtml = "for this week's Spotlight community vote.";
+  let dateTextPlain = "for this week's Spotlight community vote.";
+  
+  if (votingStartDate) {
+    const formattedDate = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric' }).format(votingStartDate);
+    dateTextHtml = `for the Spotlight community vote starting on <strong>${formattedDate}</strong>.`;
+    dateTextPlain = `for the Spotlight community vote starting on ${formattedDate}.`;
+  }
   
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
       <h2>You're up for a vote! 🌟</h2>
       <p>Hi ${submission.founder},</p>
-      <p>Great news! Your quote has been selected for this week's Spotlight community vote.</p>
+      <p>Great news! Your quote has been selected ${dateTextHtml}</p>
       <p>To win the top spot and get featured on Tuesday, you'll need the most community votes.</p>
       <p><a href="${loginUrl}">Share this link and get your community to vote for you!</a></p>
       <p>Even if you don't win, you are guaranteed to be featured as a runner-up on Thursday.</p>
@@ -115,7 +124,7 @@ export function buildSpotlightVotingEmail(submission: CampaignSubmissionDoc) {
     </div>
   `;
 
-  const text = `Hi ${submission.founder},\n\nGreat news! Your quote has been selected for this week's Spotlight community vote.\n\nTo win the top spot and get featured on Tuesday, you'll need the most community votes. Share this link to get your community to vote for you: ${loginUrl}\n\nEven if you don't win, you are guaranteed to be featured as a runner-up on Thursday.\n\nGood luck!\nThe Tailnote Team`;
+  const text = `Hi ${submission.founder},\n\nGreat news! Your quote has been selected ${dateTextPlain}\n\nTo win the top spot and get featured on Tuesday, you'll need the most community votes. Share this link to get your community to vote for you: ${loginUrl}\n\nEven if you don't win, you are guaranteed to be featured as a runner-up on Thursday.\n\nGood luck!\nThe Tailnote Team`;
 
   return { subject, text, html };
 }

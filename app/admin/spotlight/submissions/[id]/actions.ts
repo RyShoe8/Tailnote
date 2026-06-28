@@ -27,12 +27,17 @@ export async function deleteSubmissionAction(id: string) {
   return { success: true };
 }
 
-export async function updateSubmissionStatusAction(id: string, status: string) {
+export async function updateSubmissionStatusAction(id: string, status: string, votingStartDate?: Date) {
   const session = await getServerSession();
   if (!session?.user?.id) throw new Error('Unauthorized');
   if (!(await isPlatformAdmin(session.user.id))) throw new Error('Forbidden');
 
-  const submission = await CampaignSubmissionModel.findByIdAndUpdate(id, { status }).populate('userId');
+  const updatePayload: any = { status };
+  if (votingStartDate) {
+    updatePayload.votingStartDate = votingStartDate;
+  }
+
+  const submission = await CampaignSubmissionModel.findByIdAndUpdate(id, updatePayload).populate('userId');
   if (!submission) throw new Error('Submission not found');
   
   // We need to fetch the user's email address from BetterAuth 'user' collection
@@ -53,7 +58,7 @@ export async function updateSubmissionStatusAction(id: string, status: string) {
     
     if (submitterEmail) {
       if (status === 'voting') {
-        const { subject, html, text } = buildSpotlightVotingEmail(submission as any);
+        const { subject, html, text } = buildSpotlightVotingEmail(submission as any, votingStartDate);
         await sendEmail({ to: submitterEmail, subject, html, text });
       } else {
         const { subject, html, text } = buildSpotlightApprovedEmail(submission as any);

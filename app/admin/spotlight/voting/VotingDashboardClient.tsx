@@ -36,6 +36,7 @@ export function VotingDashboardClient({ submissions }: { submissions: any[] }) {
               <th className="p-4 font-medium">Rank</th>
               <th className="p-4 font-medium">Company</th>
               <th className="p-4 font-medium">Founder</th>
+              <th className="p-4 font-medium">Start Date</th>
               <th className="p-4 font-medium">Votes</th>
             </tr>
           </thead>
@@ -47,6 +48,9 @@ export function VotingDashboardClient({ submissions }: { submissions: any[] }) {
                 </td>
                 <td className="p-4">{sub.companyName}</td>
                 <td className="p-4">{sub.founder}</td>
+                <td className="p-4 text-muted-foreground text-xs">
+                  {sub.votingStartDate ? new Date(sub.votingStartDate).toLocaleDateString() : 'Immediate'}
+                </td>
                 <td className="p-4 font-bold text-lg">{sub.votes || 0}</td>
               </tr>
             ))}

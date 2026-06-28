@@ -7,8 +7,15 @@ export const revalidate = 0; // Ensure fresh data on load
 export default async function SpotlightVotePage() {
   await connectMongoose();
 
-  // Fetch submissions currently up for voting
-  const votingSubmissions = await CampaignSubmissionModel.find({ status: 'voting' })
+  // Fetch submissions currently up for voting that have started
+  const votingSubmissions = await CampaignSubmissionModel.find({
+    status: 'voting',
+    $or: [
+      { votingStartDate: { $exists: false } },
+      { votingStartDate: null },
+      { votingStartDate: { $lte: new Date() } }
+    ]
+  })
     .select('_id companyName founder industry logoUrl content votes')
     .sort({ createdAt: 1 })
     .lean();
