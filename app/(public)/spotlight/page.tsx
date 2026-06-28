@@ -50,10 +50,10 @@ export default async function SpotlightHomepage() {
         <div className="container px-4 md:px-6">
           <div className="mx-auto max-w-4xl space-y-6">
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl">
-              Submit a quote.<br />Get featured everywhere.
+              Cross-promote.<br />Grow together.
             </h1>
             <p className="mx-auto max-w-[750px] text-lg text-muted-foreground sm:text-xl">
-              Tailnote Spotlight is a highly competitive, community-powered marketing network. Build your custom signature, submit a clever or inspiring quote, and if our team picks you—you win massive exposure across the entire Tailnote network.
+              Tailnote Spotlight is a fun, community-powered network where founders help each other grow. Build your custom signature, share an inspiring quote, and you could be featured across the Tailnote network!
             </p>
             <div className="flex flex-col gap-4 sm:flex-row justify-center pt-4">
               <Link
@@ -79,9 +79,9 @@ export default async function SpotlightHomepage() {
       <section className="py-24 border-b">
         <div className="container px-4 md:px-6">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">How to win the Spotlight</h2>
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">How Spotlight works</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              We hand-pick the most inspiring, ambitious, and clever quotes submitted by founders every single week. Make yours stand out.
+              We hand-pick our favorite quotes submitted by founders every week to share with the community. It&apos;s a great way to support and cross-promote one another!
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 text-center max-w-5xl mx-auto">
@@ -92,13 +92,13 @@ export default async function SpotlightHomepage() {
             </div>
             <div className="space-y-4">
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">2</div>
-              <h3 className="text-xl font-semibold">Write Your Quote</h3>
-              <p className="text-muted-foreground">Submit a short quote, thought, or hot take. The more compelling it is, the higher your chances.</p>
+              <h3 className="text-xl font-semibold">Share a Quote</h3>
+              <p className="text-muted-foreground">Submit a fun, short quote or thought to share with the rest of the founder community.</p>
             </div>
             <div className="space-y-4">
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">3</div>
-              <h3 className="text-xl font-semibold">Get Picked</h3>
-              <p className="text-muted-foreground">If selected, your quote and signature will immediately go live to thousands of founders.</p>
+              <h3 className="text-xl font-semibold">Get Featured</h3>
+              <p className="text-muted-foreground">If selected, your quote and signature will be shared to help promote your business to other founders.</p>
             </div>
           </div>
         </div>

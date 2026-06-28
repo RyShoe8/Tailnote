@@ -75,7 +75,7 @@ export function RedditPostMockup(props: MockupProps) {
             <span>4 hours ago</span>
           </div>
           <h3 className="font-semibold text-lg leading-tight mb-2">
-            Spotlight Winner: How {props.companyName} is changing the game
+            Founder Spotlight: Check out what {props.companyName} is building
           </h3>
           <p className="text-sm text-foreground/90">
             {props.description}
@@ -114,9 +114,9 @@ export function LinkedInPostMockup(props: MockupProps) {
         </div>
       </div>
       <p className="text-sm leading-relaxed mb-3">
-        🏆 Welcome to the Tailnote Hall of Fame! 🏆
+        🚀 We love supporting fellow founders! 🚀
         <br /><br />
-        This week we are shining a light on <strong>{props.companyName}</strong>. 
+        This week we are excited to cross-promote <strong>{props.companyName}</strong> in our Spotlight. 
         <br />
         {props.description}
         <br /><br />
