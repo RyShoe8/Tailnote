@@ -137,7 +137,7 @@ export default async function SpotlightHomepage() {
               Here is what a typical feature looks like when your startup wins.
             </p>
           </div>
-          <div className="grid lg:grid-cols-3 gap-8 items-start justify-items-center">
+          <div className="flex flex-col gap-12 items-center">
             <div className="space-y-4 w-full flex flex-col items-center">
               <h3 className="font-semibold text-xl text-center">Bluesky Spotlight</h3>
               <p className="text-sm text-muted-foreground text-center max-w-xs">A dedicated post to our community featuring your signature and a brief description of what you&apos;re building.</p>
@@ -146,6 +146,7 @@ export default async function SpotlightHomepage() {
                 description="Acme is building the next generation of widgets for modern teams. We love their focus on speed and reliability!"
                 founderName="Jane Doe"
                 logoInitial="A"
+                quote="The best marketing is helpful. We make your team 10x faster."
               />
             </div>
             <div className="space-y-4 w-full flex flex-col items-center">
@@ -156,6 +157,7 @@ export default async function SpotlightHomepage() {
                 description="Acme is building the next generation of widgets for modern teams. We love their focus on speed and reliability!"
                 founderName="Jane Doe"
                 logoInitial="A"
+                quote="The best marketing is helpful. We make your team 10x faster."
               />
             </div>
             <div className="space-y-4 w-full flex flex-col items-center">
@@ -166,6 +168,7 @@ export default async function SpotlightHomepage() {
                 description="Acme is building the next generation of widgets for modern teams. We love their focus on speed and reliability!"
                 founderName="Jane Doe"
                 logoInitial="A"
+                quote="The best marketing is helpful. We make your team 10x faster."
               />
             </div>
           </div>

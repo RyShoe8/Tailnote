@@ -6,6 +6,7 @@ interface MockupProps {
   description: string;
   founderName: string;
   logoInitial: string;
+  quote?: string;
 }
 
 import { renderMarketingSample } from '@/lib/marketing/renderMarketingSample';
@@ -15,14 +16,12 @@ import { MarketingSignaturePreview } from '@/components/marketing/MarketingSigna
 const SignatureCard = () => {
   const signatureHtml = stripSignaturePreviewLinks(renderMarketingSample('modern_professional'));
   return (
-    <div className="mt-3 overflow-hidden rounded-lg border bg-card p-4 shadow-sm relative">
+    <div className="mt-3 overflow-x-auto rounded-lg border bg-card p-4 shadow-sm relative">
       <div className="absolute top-2 right-2 z-10 text-[10px] font-bold text-muted-foreground uppercase tracking-wider bg-background/80 px-1 rounded">
         Tailnote Signature
       </div>
-      <div className="pt-2 h-[150px]">
-        <div className="origin-top-left" style={{ transform: 'scale(0.65)', width: '153.8%' }}>
-          <MarketingSignaturePreview html={signatureHtml} />
-        </div>
+      <div className="pt-2 min-w-[500px]">
+        <MarketingSignaturePreview html={signatureHtml} />
       </div>
     </div>
   );
@@ -30,7 +29,7 @@ const SignatureCard = () => {
 
 export function BlueskyPostMockup(props: MockupProps) {
   return (
-    <div className="rounded-xl border bg-background p-4 shadow-sm max-w-md w-full">
+    <div className="rounded-xl border bg-background p-4 shadow-sm max-w-2xl w-full">
       <div className="flex gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0085ff] text-white font-bold">
           T
@@ -42,6 +41,9 @@ export function BlueskyPostMockup(props: MockupProps) {
             <span className="text-muted-foreground text-sm">· 2h</span>
           </div>
           <p className="mt-1 text-[15px] leading-snug">
+            {props.quote && (
+              <span className="italic block mb-2 text-muted-foreground">&quot;{props.quote}&quot;</span>
+            )}
             We are thrilled to feature <strong>{props.companyName}</strong> in this week&apos;s Spotlight! 🚀
             <br /><br />
             {props.description}
@@ -61,7 +63,7 @@ export function BlueskyPostMockup(props: MockupProps) {
 
 export function RedditPostMockup(props: MockupProps) {
   return (
-    <div className="rounded-xl border bg-background p-4 shadow-sm max-w-md w-full">
+    <div className="rounded-xl border bg-background p-4 shadow-sm max-w-2xl w-full">
       <div className="flex gap-3">
         <div className="flex flex-col items-center gap-1 text-muted-foreground">
           <ArrowBigUp className="h-6 w-6 text-orange-500 fill-orange-500/20" />
@@ -79,6 +81,11 @@ export function RedditPostMockup(props: MockupProps) {
           <h3 className="font-semibold text-lg leading-tight mb-2">
             Founder Spotlight: Check out what {props.companyName} is building
           </h3>
+          {props.quote && (
+            <blockquote className="border-l-4 border-muted-foreground/30 pl-3 my-3 italic text-muted-foreground">
+              &quot;{props.quote}&quot;
+            </blockquote>
+          )}
           <p className="text-sm text-foreground/90">
             {props.description}
           </p>
@@ -102,7 +109,7 @@ export function RedditPostMockup(props: MockupProps) {
 
 export function LinkedInPostMockup(props: MockupProps) {
   return (
-    <div className="rounded-xl border bg-background p-4 shadow-sm max-w-md w-full">
+    <div className="rounded-xl border bg-background p-4 shadow-sm max-w-2xl w-full">
       <div className="flex items-center gap-3 mb-3">
         <div className="flex h-12 w-12 items-center justify-center rounded bg-[#0a66c2] text-white font-bold text-xl">
           T
@@ -118,6 +125,9 @@ export function LinkedInPostMockup(props: MockupProps) {
       <p className="text-sm leading-relaxed mb-3">
         🚀 We love supporting fellow founders! 🚀
         <br /><br />
+        {props.quote && (
+          <span className="italic block mb-2 text-muted-foreground">&quot;{props.quote}&quot;</span>
+        )}
         This week we are excited to cross-promote <strong>{props.companyName}</strong> in our Spotlight. 
         <br />
         {props.description}
