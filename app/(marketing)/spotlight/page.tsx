@@ -84,21 +84,31 @@ export default async function SpotlightHomepage() {
               We hand-pick our favorite quotes submitted by founders every week to share with the community. It&apos;s a great way to support and cross-promote one another!
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 text-center max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-8 text-center max-w-6xl mx-auto">
             <div className="space-y-4">
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">1</div>
               <h3 className="text-xl font-semibold">Build Your Signature</h3>
-              <p className="text-muted-foreground">Use our visual editor to design the exact signature that will be featured across our network.</p>
+              <p className="text-muted-foreground text-sm">Use our visual editor to design the exact signature that will be featured across our network.</p>
             </div>
             <div className="space-y-4">
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">2</div>
               <h3 className="text-xl font-semibold">Share a Quote</h3>
-              <p className="text-muted-foreground">Submit a fun, short quote or thought to share with the rest of the founder community.</p>
+              <p className="text-muted-foreground text-sm">Submit a fun, short quote or thought to share with the rest of the founder community.</p>
             </div>
             <div className="space-y-4">
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">3</div>
+              <h3 className="text-xl font-semibold">Community Vote</h3>
+              <p className="text-muted-foreground text-sm">The community votes on their favorite quotes and signatures each week.</p>
+            </div>
+            <div className="space-y-4">
+              <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">4</div>
               <h3 className="text-xl font-semibold">Get Featured</h3>
-              <p className="text-muted-foreground">If selected, your quote and signature will be shared to help promote your business to other founders.</p>
+              <p className="text-muted-foreground text-sm">If selected, your quote and signature will be shared across the network to promote your business. You&apos;ll also earn a place in our Spotlight Hall of Fame with a do-follow link to your website.</p>
+            </div>
+            <div className="space-y-4">
+              <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">5</div>
+              <h3 className="text-xl font-semibold">LinkedIn Spotlight</h3>
+              <p className="text-muted-foreground text-sm">The highest quality submissions will get a dedicated LinkedIn post by us with more information about their company.</p>
             </div>
           </div>
         </div>
@@ -142,33 +152,33 @@ export default async function SpotlightHomepage() {
               <h3 className="font-semibold text-xl text-center">Bluesky Spotlight</h3>
               <p className="text-sm text-muted-foreground text-center max-w-xs">A dedicated post to our community featuring your signature and a brief description of what you&apos;re building.</p>
               <BlueskyPostMockup 
-                companyName="Acme Corp"
-                description="Acme is building the next generation of widgets for modern teams. We love their focus on speed and reliability!"
-                founderName="Jane Doe"
-                logoInitial="A"
-                quote="The best marketing is helpful. We make your team 10x faster."
+                companyName="Orbit Health"
+                description="Orbit Health is rethinking telemedicine with their new AI-powered diagnostic assistant."
+                founderName="Dr. Sarah Chen"
+                logoInitial="O"
+                quote="Move fast, but never compromise on care."
               />
             </div>
             <div className="space-y-4 w-full flex flex-col items-center">
               <h3 className="font-semibold text-xl text-center">Reddit Feature</h3>
               <p className="text-sm text-muted-foreground text-center max-w-xs">We share your story with startup communities, driving high-intent traffic to your website.</p>
               <RedditPostMockup 
-                companyName="Acme Corp"
-                description="Acme is building the next generation of widgets for modern teams. We love their focus on speed and reliability!"
-                founderName="Jane Doe"
-                logoInitial="A"
-                quote="The best marketing is helpful. We make your team 10x faster."
+                companyName="Nexus DB"
+                description="Nexus DB is a high-performance, distributed SQL database built for the edge. They've just launched their open-source beta and the performance numbers are looking incredible. Definitely worth checking out if you're dealing with global latency issues."
+                founderName="David Kim"
+                logoInitial="N"
+                quote="Complexity is the enemy of execution."
               />
             </div>
             <div className="space-y-4 w-full flex flex-col items-center">
               <h3 className="font-semibold text-xl text-center">LinkedIn Hall of Fame</h3>
               <p className="text-sm text-muted-foreground text-center max-w-xs">Top winners are inducted into our LinkedIn Hall of Fame, reaching thousands of professionals.</p>
               <LinkedInPostMockup 
-                companyName="Acme Corp"
-                description="Acme is building the next generation of widgets for modern teams. We love their focus on speed and reliability!"
-                founderName="Jane Doe"
-                logoInitial="A"
-                quote="The best marketing is helpful. We make your team 10x faster."
+                companyName="Lumina Design"
+                description="Lumina Design is transforming how product teams collaborate on design systems. By bridging the gap between Figma and code, they are helping teams ship consistent UI components 10x faster. We've been using their beta internally and it's already saved us countless hours of back-and-forth between our engineering and design teams. 🚀 If you're a product leader looking to streamline your workflow, you need to check them out!"
+                founderName="Elena Rodriguez"
+                logoInitial="L"
+                quote="Design is not just what it looks like and feels like. Design is how it works."
               />
             </div>
           </div>
