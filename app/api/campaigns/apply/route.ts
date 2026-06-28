@@ -5,11 +5,22 @@ import { CampaignModel } from '@/models/Campaign';
 import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
 import { getServerSession } from '@/lib/auth/session';
 
+const urlPreprocess = (val: unknown) => {
+  if (typeof val === 'string' && val.trim() !== '') {
+    const trimmed = val.trim();
+    if (!/^https?:\/\//i.test(trimmed)) {
+      return `https://${trimmed}`;
+    }
+    return trimmed;
+  }
+  return val;
+};
+
 const ApplySchema = z.object({
   campaignId: z.string().min(1),
   companyName: z.string().trim().min(1).max(200),
-  website: z.string().trim().url().max(2000),
-  logoUrl: z.string().trim().url().max(2000),
+  website: z.preprocess(urlPreprocess, z.string().url().max(2000)),
+  logoUrl: z.preprocess(urlPreprocess, z.string().url().max(2000)),
   founder: z.string().trim().min(1).max(200),
   industry: z.string().trim().min(1).max(100),
   companySize: z.string().trim().min(1).max(100),

@@ -55,6 +55,10 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
               <button className="w-full bg-secondary text-secondary-foreground py-2 px-4 rounded-md font-medium hover:bg-secondary/80 transition">Request Changes</button>
               <button className="w-full bg-destructive text-destructive-foreground py-2 px-4 rounded-md font-medium hover:bg-destructive/90 transition">Reject Submission</button>
             </div>
+            <div className="pt-4 border-t border-destructive/20 mt-4 space-y-3">
+              <p className="text-xs text-muted-foreground">Destructive actions:</p>
+              <button className="w-full border border-destructive text-destructive py-2 px-4 rounded-md font-medium hover:bg-destructive/10 transition">Delete Submission</button>
+            </div>
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ import { CampaignAssetModel } from '@/models/CampaignAsset';
 import { getServerSession } from '@/lib/auth/session';
 import { OrganizationModel } from '@/models/Organization';
 
-const ActionSchema = z.enum(['approve', 'reject', 'schedule', 'save_asset']);
+const ActionSchema = z.enum(['approve', 'reject', 'schedule', 'save_asset', 'delete']);
 
 export async function POST(
   request: Request,
@@ -119,6 +119,20 @@ export async function POST(
       },
       { upsert: true }
     );
+
+    return NextResponse.json({ success: true });
+  }
+
+  if (validatedAction === 'delete') {
+    const schema = z.object({
+      submissionId: z.string().min(1),
+    });
+    const parsed = schema.safeParse(json);
+    if (!parsed.success) return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
+
+    await CampaignSubmissionModel.findByIdAndDelete(parsed.data.submissionId);
+    await CampaignAssetModel.deleteMany({ submissionId: parsed.data.submissionId });
+    await CampaignScheduleModel.deleteMany({ submissionId: parsed.data.submissionId });
 
     return NextResponse.json({ success: true });
   }

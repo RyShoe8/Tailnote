@@ -74,11 +74,11 @@ export default function SpotlightApplyPage() {
             </div>
             <div className="space-y-2">
               <Label>Website</Label>
-              <Input value={formData.website} onChange={e => updateForm('website', e.target.value)} placeholder="https://" />
+              <Input value={formData.website} onChange={e => updateForm('website', e.target.value)} placeholder="e.g. example.com" />
             </div>
             <div className="space-y-2">
               <Label>Logo URL</Label>
-              <Input value={formData.logoUrl} onChange={e => updateForm('logoUrl', e.target.value)} placeholder="https://" />
+              <Input value={formData.logoUrl} onChange={e => updateForm('logoUrl', e.target.value)} placeholder="e.g. example.com/logo.png" />
             </div>
             <Button onClick={() => setStep(2)}>Next</Button>
           </div>
