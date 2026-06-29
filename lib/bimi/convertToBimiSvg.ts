@@ -74,7 +74,8 @@ export async function convertToBimiSvg(args: {
     finalSvg = reoptimized.data;
   }
 
-  const pathname = `tailnote/orgs/${args.organizationId}/bimi/logo.svg`;
+  // We must use a new static filename because 'logo.svg' was previously cached for 1 year by Vercel Blob
+  const pathname = `tailnote/orgs/${args.organizationId}/bimi/bimi-logo.svg`;
   const blob = await put(pathname, finalSvg, {
     access: 'public',
     contentType: 'image/svg+xml',
