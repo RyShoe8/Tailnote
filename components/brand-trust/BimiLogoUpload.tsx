@@ -124,12 +124,21 @@ export function BimiLogoUpload({
         </ul>
       ) : null}
       {hostedUrl ? (
-        <p className="text-sm break-all">
-          Hosted URL:{' '}
-          <a href={hostedUrl} className="text-primary underline" target="_blank" rel="noreferrer">
-            {hostedUrl}
-          </a>
-        </p>
+        <div className="space-y-3">
+          <div>
+            <p className="text-sm font-medium mb-2">Hosted BIMI Logo</p>
+            <div className="flex h-24 w-24 items-center justify-center rounded-lg border bg-white shadow-sm dark:bg-black/40">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={hostedUrl} alt="BIMI logo" className="h-20 w-20 object-contain" />
+            </div>
+          </div>
+          <p className="text-sm break-all text-muted-foreground">
+            URL:{' '}
+            <a href={hostedUrl} className="text-primary underline" target="_blank" rel="noreferrer">
+              {hostedUrl}
+            </a>
+          </p>
+        </div>
       ) : null}
       {record ? (
         <div className="space-y-2">

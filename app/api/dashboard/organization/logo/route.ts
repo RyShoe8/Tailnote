@@ -8,6 +8,7 @@ import {
   uploadSecureImage,
 } from '@/lib/uploads/secureImageUpload';
 import { OrganizationModel } from '@/models/Organization';
+import { convertToBimiSvg } from '@/lib/bimi/convertToBimiSvg';
 
 const MAX_BYTES = 4 * 1024 * 1024;
 const MAX_WIDTH = 400;
@@ -55,8 +56,22 @@ export async function POST(request: Request) {
 
     const logoHeightPx = logoHeightPxForEmailDisplay(width, height);
 
+    let bimiUpdates = {};
+    if (file instanceof File) {
+      try {
+        const bimiResult = await convertToBimiSvg({ file, organizationId: user.organizationId });
+        bimiUpdates = {
+          bimiLogoUrl: bimiResult.url,
+          bimiSuggestedRecord: bimiResult.suggestedRecord,
+          bimiLogoUploadedAt: new Date(),
+        };
+      } catch (err) {
+        logError('api/dashboard/organization/logo/bimi-auto-convert', err);
+      }
+    }
+
     await OrganizationModel.findByIdAndUpdate(user.organizationId, {
-      $set: { logoUrl: url, logoHeightPx },
+      $set: { logoUrl: url, logoHeightPx, ...bimiUpdates },
     });
 
     return NextResponse.json({ url, logoHeightPx });

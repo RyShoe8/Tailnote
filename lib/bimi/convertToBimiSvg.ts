@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+// import removed
 import { put } from '@vercel/blob';
 import sharp from 'sharp';
 import { optimize } from 'svgo';
@@ -74,7 +74,7 @@ export async function convertToBimiSvg(args: {
     finalSvg = reoptimized.data;
   }
 
-  const pathname = `tailnote/orgs/${args.organizationId}/bimi/${randomUUID()}.svg`;
+  const pathname = `tailnote/orgs/${args.organizationId}/bimi/logo.svg`;
   const blob = await put(pathname, finalSvg, {
     access: 'public',
     contentType: 'image/svg+xml',
