@@ -32,9 +32,7 @@ export async function rasterToVectorSvg(buffer: Buffer): Promise<{ svg: string; 
     // Ignore tiny noise specs (2 is default, 8 is a bit cleaner)
     turdSize: 8, 
     // Optimization tolerance (higher = fewer points = smaller file, but looser curves)
-    optTolerance: 0.4, 
-    // Turn policy helps determine sharp corners vs curves
-    turnPolicy: Potrace.TURNPOLICY_MINORITY
+    optTolerance: 0.4
   };
 
   // 3. Trace the image using Potrace Posterization
