@@ -123,6 +123,19 @@ function brandingNeedsAction(
   // Otherwise, if they haven't uploaded a logo to our hosting, they need action
   if (!bimi.bimiLogoUrl.trim()) return true;
 
+  // Tailnote logo hosting provides self-asserted BIMI (no VMC).
+  // If their DNS correctly points to our logo, they are good to go.
+  if (scan.bimiDetail) {
+    const { dmarcStatus, bimiRecordStatus, svgStatus, certificateStatus } = scan.bimiDetail;
+    const isSelfAssertedBimi = 
+      dmarcStatus.status !== 'fail' && 
+      bimiRecordStatus.status === 'pass' && 
+      svgStatus.status === 'pass' &&
+      (certificateStatus.classification === 'none' || certificateStatus.classification === 'self_asserted');
+
+    if (isSelfAssertedBimi) return false;
+  }
+
   // Even if they uploaded a logo, if the DNS is still warn/fail, they need action
   if (bimiResult && (bimiResult.status === 'warn' || bimiResult.status === 'fail')) return true;
   if (categoryIssues(scan, 'bimi').length > 0) return true;

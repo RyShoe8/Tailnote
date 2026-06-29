@@ -28,12 +28,10 @@ function bimiStateForDomain(
   org: OrganizationDoc,
   canUseBimiLogoHosting: boolean,
 ): TrustCenterBimiState {
-  const orgDomain = domainFromOrgWebsite(org.website);
-  const isOrgDomain = orgDomain && domain.toLowerCase() === orgDomain.toLowerCase();
   return {
     canUseBimiLogoHosting,
-    bimiLogoUrl: isOrgDomain ? String(org.bimiLogoUrl ?? '') : '',
-    bimiSuggestedRecord: isOrgDomain ? String(org.bimiSuggestedRecord ?? '') : '',
+    bimiLogoUrl: String(org.bimiLogoUrl ?? ''),
+    bimiSuggestedRecord: String(org.bimiSuggestedRecord ?? ''),
   };
 }
 

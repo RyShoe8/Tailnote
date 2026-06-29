@@ -95,15 +95,13 @@ export function BrandTrustHubClient({
 
   const bimiForDomain = useCallback(
     (domain: string): TrustCenterBimiState => {
-      const isOrgDomain =
-        !isPublic && orgDomain && domain.toLowerCase() === orgDomain.toLowerCase();
       return {
         canUseBimiLogoHosting: isPublic ? false : canUseBimiLogoHosting,
-        bimiLogoUrl: isOrgDomain ? bimiLogoUrl : '',
-        bimiSuggestedRecord: isOrgDomain ? bimiSuggestedRecord : '',
+        bimiLogoUrl: !isPublic ? bimiLogoUrl : '',
+        bimiSuggestedRecord: !isPublic ? bimiSuggestedRecord : '',
       };
     },
-    [isPublic, orgDomain, canUseBimiLogoHosting, bimiLogoUrl, bimiSuggestedRecord],
+    [isPublic, canUseBimiLogoHosting, bimiLogoUrl, bimiSuggestedRecord],
   );
 
   const activeBimi = useMemo(
