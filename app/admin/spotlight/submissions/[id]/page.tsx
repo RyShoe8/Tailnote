@@ -94,6 +94,132 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
               </div>
             ) : null}
           </div>
+
+          {/* User Signature Profile Data */}
+          {(submission.firstName || submission.lastName || submission.title || submission.email || submission.officePhone || submission.mobilePhone || submission.avatarUrl) ? (
+            <div className="bg-card border rounded-lg p-6 space-y-4">
+              <h2 className="font-semibold text-lg border-b pb-2">User Signature Profile</h2>
+              
+              <div className="flex items-center gap-4 mb-4">
+                {submission.avatarUrl ? (
+                  <img src={submission.avatarUrl} alt="Avatar" className="w-16 h-16 rounded-full object-cover border bg-white" />
+                ) : null}
+                <div>
+                  <p className="font-semibold">{submission.firstName} {submission.lastName}</p>
+                  {submission.title && <p className="text-sm text-muted-foreground">{submission.title}</p>}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                {submission.email ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">Email</p>
+                    <p><a href={`mailto:${submission.email}`} className="text-primary hover:underline">{submission.email}</a></p>
+                  </div>
+                ) : null}
+                {submission.officePhone ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">Office Phone</p>
+                    <p>{submission.officePhone}</p>
+                  </div>
+                ) : null}
+                {submission.mobilePhone ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">Mobile Phone</p>
+                    <p>{submission.mobilePhone}</p>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Organization Brand Data */}
+          {(submission.address || submission.city || submission.state || submission.zip || submission.primaryColor || submission.secondaryColor || submission.fontFamily || submission.logoLink || submission.logoShape || submission.logoHeightPx) ? (
+            <div className="bg-card border rounded-lg p-6 space-y-4">
+              <h2 className="font-semibold text-lg border-b pb-2">Organization Brand Details</h2>
+              
+              <div className="grid grid-cols-2 gap-4">
+                {submission.address ? (
+                  <div className="col-span-2">
+                    <p className="text-sm text-muted-foreground font-medium">Address</p>
+                    <p>{submission.address}</p>
+                  </div>
+                ) : null}
+                {submission.city ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">City</p>
+                    <p>{submission.city}</p>
+                  </div>
+                ) : null}
+                {submission.state ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">State</p>
+                    <p>{submission.state}</p>
+                  </div>
+                ) : null}
+                {submission.zip ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">ZIP</p>
+                    <p>{submission.zip}</p>
+                  </div>
+                ) : null}
+                {submission.logoLink ? (
+                  <div className="col-span-2">
+                    <p className="text-sm text-muted-foreground font-medium">Logo Link</p>
+                    <p><a href={submission.logoLink} target="_blank" rel="noreferrer" className="text-primary hover:underline">{submission.logoLink}</a></p>
+                  </div>
+                ) : null}
+                {submission.primaryColor ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">Primary Color</p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded border" style={{ backgroundColor: submission.primaryColor }}></div>
+                      <p className="text-xs font-mono">{submission.primaryColor}</p>
+                    </div>
+                  </div>
+                ) : null}
+                {submission.secondaryColor ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">Secondary Color</p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded border" style={{ backgroundColor: submission.secondaryColor }}></div>
+                      <p className="text-xs font-mono">{submission.secondaryColor}</p>
+                    </div>
+                  </div>
+                ) : null}
+                {submission.fontFamily ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">Font Family</p>
+                    <p>{submission.fontFamily}</p>
+                  </div>
+                ) : null}
+                {submission.logoShape ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">Logo Shape</p>
+                    <p className="capitalize">{submission.logoShape}</p>
+                  </div>
+                ) : null}
+                {submission.logoHeightPx ? (
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">Logo Height</p>
+                    <p>{submission.logoHeightPx}px</p>
+                  </div>
+                ) : null}
+              </div>
+
+              {submission.animation?.enabled ? (
+                <div className="pt-2 border-t">
+                  <p className="text-sm text-muted-foreground font-medium">Animation</p>
+                  <p className="text-sm">Enabled</p>
+                  {submission.animation.gifUrl && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      <a href={submission.animation.gifUrl} target="_blank" rel="noreferrer" className="hover:underline">View GIF</a>
+                    </p>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
         <div className="space-y-6">

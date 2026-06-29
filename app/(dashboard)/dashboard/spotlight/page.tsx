@@ -31,16 +31,16 @@ export default async function SpotlightDashboardPage() {
           </div>
           <div className="grid sm:grid-cols-3 gap-6 text-left max-w-3xl mx-auto border-t pt-8">
             <div className="space-y-2">
-              <h3 className="font-semibold text-primary">Global Signature</h3>
-              <p className="text-sm text-muted-foreground">Your custom signature is shared in social media posts across the Tailnote network.</p>
+              <h3 className="font-semibold text-primary">Voting Week</h3>
+              <p className="text-sm text-muted-foreground">Your submission gets scheduled for a voting week where the community can support your entry.</p>
             </div>
             <div className="space-y-2">
-              <h3 className="font-semibold text-primary">Social Features</h3>
-              <p className="text-sm text-muted-foreground">Dedicated posts on Bluesky and Reddit sharing your story with the community.</p>
+              <h3 className="font-semibold text-primary">Feature Week</h3>
+              <p className="text-sm text-muted-foreground">The following week, everyone gets featured on Bluesky and Reddit. Winners also get an expanded LinkedIn post.</p>
             </div>
             <div className="space-y-2">
               <h3 className="font-semibold text-primary">Hall of Fame</h3>
-              <p className="text-sm text-muted-foreground">Potential induction into our LinkedIn Hall of Fame to reach thousands of professionals.</p>
+              <p className="text-sm text-muted-foreground">Winners are added to our Hall of Fame with a do-follow link and platform overview.</p>
             </div>
           </div>
           <Button asChild size="lg" className="mt-8">
@@ -79,9 +79,9 @@ export default async function SpotlightDashboardPage() {
             <div className="bg-muted/50 rounded-lg p-4">
               <h4 className="font-semibold text-sm mb-2">What happens when you are featured?</h4>
               <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                <li>Your company and quote are highlighted in social media posts across the Tailnote network.</li>
-                <li>You receive a dedicated feature on Bluesky and Reddit.</li>
-                <li>Potential cross-promotion on our official Tailnote LinkedIn.</li>
+                <li>Your submission is scheduled for a voting week where the community can support your entry.</li>
+                <li>The following week, everyone gets featured on Bluesky and Reddit.</li>
+                <li>Winners receive an expanded LinkedIn post and are added to the Hall of Fame with a do-follow link.</li>
               </ul>
             </div>
           </div>

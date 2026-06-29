@@ -14,6 +14,31 @@ const CampaignSubmissionSchema = new Schema(
     industry: { type: String, required: true, trim: true },
     companySize: { type: String, required: true, trim: true },
     
+    // User Signature Profile Data (snapshot at submission time)
+    firstName: { type: String, trim: true, default: '' },
+    lastName: { type: String, trim: true, default: '' },
+    title: { type: String, trim: true, default: '' },
+    email: { type: String, trim: true, default: '' },
+    officePhone: { type: String, default: '' },
+    mobilePhone: { type: String, default: '' },
+    avatarUrl: { type: String, trim: true, default: '' },
+    
+    // Organization Brand Data (snapshot at submission time)
+    logoHeightPx: { type: Number, min: 1, max: 400 },
+    logoShape: { type: String, enum: ['rectangle', 'circle'] },
+    logoLink: { type: String, trim: true, default: '' },
+    primaryColor: { type: String, trim: true, default: '' },
+    secondaryColor: { type: String, trim: true, default: '' },
+    fontFamily: { type: String, trim: true, default: '' },
+    address: { type: String, trim: true, default: '' },
+    city: { type: String, trim: true, default: '' },
+    state: { type: String, trim: true, default: '' },
+    zip: { type: String, trim: true, default: '' },
+    animation: {
+      enabled: { type: Boolean, default: false },
+      gifUrl: { type: String, trim: true, default: '' },
+    },
+    
     // Flexible content payload (for Spotlight: quote, quoteAuthor, description)
     content: { type: Schema.Types.Mixed, required: true },
     

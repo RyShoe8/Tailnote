@@ -28,7 +28,7 @@ export default async function SpotlightApplyPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Apply for Tailnote Spotlight</h1>
         <p className="text-muted-foreground mt-2">
-          Design your spotlight profile below. This acts as your live application. When featured, your company and quote will be shared in social media posts across the Tailnote network!
+          Design your spotlight profile below. This acts as your live application. After submission, you&apos;ll be scheduled for a voting week. The following week, everyone gets featured on Bluesky and Reddit, with winners receiving an expanded LinkedIn post and Hall of Fame induction.
         </p>
       </div>
       

@@ -63,31 +63,26 @@ export default async function SpotlightHomepage() {
               We hand-pick our favorite quotes submitted by founders every week to share with the community. It&apos;s a great way to support and cross-promote one another!
             </p>
           </div>
-          <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-8 text-center max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 text-center max-w-6xl mx-auto">
             <div className="space-y-4">
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">1</div>
-              <h3 className="text-xl font-semibold">Build Your Signature</h3>
-              <p className="text-muted-foreground text-sm">Use our visual editor to design the exact signature that will be featured across our network.</p>
+              <h3 className="text-xl font-semibold">Create & Submit</h3>
+              <p className="text-muted-foreground text-sm">Build your signature and submit an inspiring quote to share with the founder community.</p>
             </div>
             <div className="space-y-4">
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">2</div>
-              <h3 className="text-xl font-semibold">Share a Quote</h3>
-              <p className="text-muted-foreground text-sm">Submit a fun, short quote or thought to share with the rest of the founder community.</p>
+              <h3 className="text-xl font-semibold">Voting Week</h3>
+              <p className="text-muted-foreground text-sm">Your submission gets scheduled for a voting week where the community can support your entry.</p>
             </div>
             <div className="space-y-4">
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">3</div>
-              <h3 className="text-xl font-semibold">Community Vote</h3>
-              <p className="text-muted-foreground text-sm">The community votes on their favorite quotes and signatures each week.</p>
+              <h3 className="text-xl font-semibold">Feature Week</h3>
+              <p className="text-muted-foreground text-sm">The following week, everyone gets featured! Winners post Tuesday on Bluesky & Reddit + expanded LinkedIn post Wednesday. Runners-up post Thursday.</p>
             </div>
             <div className="space-y-4">
               <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">4</div>
-              <h3 className="text-xl font-semibold">Get Featured</h3>
-              <p className="text-muted-foreground text-sm">If selected, your quote and signature will be shared across the network to promote your business. You&apos;ll also earn a place in our Spotlight Hall of Fame with a do-follow link to your website.</p>
-            </div>
-            <div className="space-y-4">
-              <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold">5</div>
-              <h3 className="text-xl font-semibold">LinkedIn Spotlight</h3>
-              <p className="text-muted-foreground text-sm">The highest quality submissions will get a dedicated LinkedIn post by us with more information about their company.</p>
+              <h3 className="text-xl font-semibold">Hall of Fame</h3>
+              <p className="text-muted-foreground text-sm">Winners are added to our Hall of Fame with a do-follow link and platform overview.</p>
             </div>
           </div>
         </div>
