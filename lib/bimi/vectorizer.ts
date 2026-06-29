@@ -1,42 +1,46 @@
 import sharp from 'sharp';
 import { optimize } from 'svgo';
-// @ts-expect-error No type definitions for imagetracerjs
-import ImageTracer from 'imagetracerjs';
+import { posterize, Potrace } from 'potrace';
+
+function tracePosterize(buffer: Buffer, options: any): Promise<string> {
+  return new Promise((resolve, reject) => {
+    posterize(buffer, options, (err: Error, svg: string) => {
+      if (err) reject(err);
+      else resolve(svg);
+    });
+  });
+}
 
 export async function rasterToVectorSvg(buffer: Buffer): Promise<{ svg: string; warnings: string[] }> {
   const warnings: string[] = [
-    'Your logo was automatically traced into a vector. For the best quality, we recommend uploading a true vector SVG from your design team.'
+    'Your logo was automatically traced into a vector. For the absolute best crispness (especially for text), we recommend uploading a true vector SVG from your design team.'
   ];
 
-  // 1. Process image with sharp to extract raw RGBA pixels, forcing it into a small square
-  // A smaller input size (150x150) dramatically reduces path complexity/noise, shrinking the SVG file size!
-  const TARGET_SIZE = 150;
-  const { data, info } = await sharp(buffer)
-    .resize(TARGET_SIZE, TARGET_SIZE, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
+  // 1. Process image with sharp to extract a clean PNG, forced into a square
+  // A moderate input size (400x400) provides enough resolution for crisp text, 
+  // while Potrace's efficient Bezier curves keep the file size tiny.
+  const TARGET_SIZE = 400;
+  const pngBuffer = await sharp(buffer)
+    .resize(TARGET_SIZE, TARGET_SIZE, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
+    .png() // potrace requires an image format it can parse (like PNG or JPEG)
+    .toBuffer();
 
-  // 2. Prepare data for imagetracerjs
-  const imgData = { width: info.width, height: info.height, data: new Uint8Array(data) };
-
-  // 3. Trace options (aggressively tuned for low file size and smooth curves)
+  // 2. Trace options for Potrace
   const options = {
-    corshrink: 1.5,
-    scale: 1,
-    ltres: 2.0, // Higher = smoother, simpler curves (smaller file size)
-    qtres: 2.0, // Higher = smoother, simpler curves
-    blurradius: 2, // Blur away tiny noise to reduce path count
-    colorsampling: 1,
-    numberofcolors: 4, // Even fewer colors for smaller files
-    pathomit: 64, // Ignore most small chunks
-    rightangleenhance: false
+    // 4 steps means it will quantize the image into 4 dominant color layers
+    steps: 4, 
+    // Ignore tiny noise specs (2 is default, 8 is a bit cleaner)
+    turdSize: 8, 
+    // Optimization tolerance (higher = fewer points = smaller file, but looser curves)
+    optTolerance: 0.4, 
+    // Turn policy helps determine sharp corners vs curves
+    turnPolicy: Potrace.TURNPOLICY_MINORITY
   };
 
-  // 4. Trace the image
-  const svgString = ImageTracer.imagedataToSVG(imgData, options);
+  // 3. Trace the image using Potrace Posterization
+  const svgString = await tracePosterize(pngBuffer, options);
 
-  // 5. Optimize the resulting SVG to shrink file size
+  // 4. Optimize the resulting SVG to shrink file size
   let finalSvg = svgString;
   try {
     const optimized = optimize(svgString, {
@@ -58,7 +62,7 @@ export async function rasterToVectorSvg(buffer: Buffer): Promise<{ svg: string; 
     finalSvg = finalSvg.replace('<svg ', `<svg viewBox="0 0 ${TARGET_SIZE} ${TARGET_SIZE}" `);
   }
 
-  // 6. Enforce SVG tiny standard by ensuring no scripts/rasters exist
+  // 5. Enforce SVG tiny standard by ensuring no scripts/rasters exist
   const safeSvg = finalSvg
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     .replace(/<image[\s\S]*?\/image>/gi, '')
