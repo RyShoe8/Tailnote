@@ -1,6 +1,7 @@
 import { JsonLd } from '@/components/seo/JsonLd';
 import { BrandTrustHubClient } from '@/components/brand-trust/BrandTrustHubClient';
 import { EmailHealthSeoHero } from '@/components/email-health/EmailHealthSeoHero';
+import { EmailHealthScoreBreakdown } from '@/components/email-health/EmailHealthScoreBreakdown';
 import { CATEGORY_GUIDE } from '@/lib/email-health/categoryGuide';
 import { EMAIL_HEALTH_FAQS } from '@/lib/email-health/faqs';
 import {
@@ -117,16 +118,19 @@ export default function EmailHealthLandingPage() {
           </p>
         </section>
 
-        <section className="mx-auto mt-20 max-w-3xl" aria-labelledby="score-breakdown-heading">
+        <section className="mx-auto mt-20 max-w-4xl" aria-labelledby="score-breakdown-heading">
           <h2
             id="score-breakdown-heading"
-            className="text-center text-xl font-semibold tracking-tight"
+            className="text-center text-3xl font-bold tracking-tight sm:text-4xl"
           >
-            {EMAIL_HEALTH_DELIVERABILITY_AUDIT.scoreSectionHeading}
+            What we check — and how we help you fix it
           </h2>
-          <p className="mt-3 text-center text-sm text-muted-foreground">
-            {EMAIL_HEALTH_DELIVERABILITY_AUDIT.scoreSectionIntro}
+          <p className="mt-4 text-center text-lg text-muted-foreground max-w-2xl mx-auto">
+            Your domain brand trust report is broken down into three pillars. Each pillar aggregates multiple technical checks into simple, actionable guidance.
           </p>
+          <div className="mt-12">
+            <EmailHealthScoreBreakdown />
+          </div>
         </section>
 
         <section className="mx-auto mt-20 max-w-2xl">
