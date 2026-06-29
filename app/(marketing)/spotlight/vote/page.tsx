@@ -27,14 +27,14 @@ export default async function SpotlightVotePage() {
           Spotlight Community Vote 🌟
         </h1>
         <p className="text-xl text-muted-foreground">
-          Vote for your favorite startup to be featured as our top Spotlight winner this week.
+          Vote for your favorite startup and quote to be featured as our top Spotlight winner this week.
         </p>
       </div>
       
       {votingSubmissions.length === 0 ? (
         <div className="text-center py-20 bg-muted/30 rounded-2xl border border-dashed">
           <h2 className="text-2xl font-semibold mb-2">No active vote right now</h2>
-          <p className="text-muted-foreground">Check back next week to vote on the next batch of startups!</p>
+          <p className="text-muted-foreground">Check back next week to vote on the next batch of startups and quotes!</p>
         </div>
       ) : (
         <VoteClient initialSubmissions={JSON.parse(JSON.stringify(votingSubmissions))} />
