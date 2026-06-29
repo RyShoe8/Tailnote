@@ -32,7 +32,9 @@ function hasExternalReferences(svg: string): boolean {
     /<script[\s>]/i.test(svg) ||
     /xlink:href\s*=\s*["']https?:/i.test(svg) ||
     /href\s*=\s*["']https?:/i.test(svg) ||
-    /<foreignObject/i.test(svg)
+    /<foreignObject/i.test(svg) ||
+    /href\s*=\s*["']data:image\/(png|jpeg|jpg|webp|gif)/i.test(svg) ||
+    /xlink:href\s*=\s*["']data:image\/(png|jpeg|jpg|webp|gif)/i.test(svg)
   );
 }
 
@@ -100,7 +102,7 @@ export async function validateBimiSvgUrl(url: string): Promise<SvgValidationResu
   }
 
   if (hasExternalReferences(text)) {
-    issues.push('Logo SVG contains scripts or external links — BIMI requires a self-contained file');
+    issues.push('Logo SVG contains scripts, external links, or embedded raster images — BIMI requires a pure, self-contained vector file');
   }
 
   const { width, height } = parseViewBoxDimensions(text);
@@ -125,7 +127,7 @@ export async function validateBimiSvgUrl(url: string): Promise<SvgValidationResu
     };
   }
 
-  if (issues.some((i) => i.includes('not a valid') || i.includes('HTTPS'))) {
+  if (issues.some((i) => i.includes('not a valid') || i.includes('HTTPS') || i.includes('raster images'))) {
     return {
       status: 'fail',
       url,

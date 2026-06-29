@@ -162,9 +162,19 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
             </CardShell>
           )}
 
-          {(!hasUploadedLogo || svgStatus?.status === 'fail') && canManageBimiLogo && (
+          {(!hasUploadedLogo || svgStatus?.status !== 'pass') && canManageBimiLogo && (
             <div className="space-y-4">
               <h4 className="font-medium">Step {dmarcStatus?.status === 'fail' ? '2' : '1'}: Upload your logo</h4>
+              {hasUploadedLogo && svgStatus?.status !== 'pass' && svgStatus?.issues?.length > 0 && (
+                <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">
+                  <p className="font-semibold mb-1">Logo issues detected:</p>
+                  <ul className="list-disc pl-5">
+                    {svgStatus.issues.map((issue: string, i: number) => (
+                      <li key={i}>{issue}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <BimiLogoUpload
                 canUseBimiLogoHosting={data.entitlements.canUseBimiLogoHosting}
                 bimiLogoUrl={data.bimiLogoUrl}
@@ -176,7 +186,7 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
           {hasUploadedLogo && bimiRecordStatus?.status !== 'pass' && (
             <CardShell>
               <h4 className="font-medium mb-2">
-                Step {dmarcStatus?.status === 'fail' ? '3' : (!hasUploadedLogo || svgStatus?.status === 'fail' ? '2' : '1')}: Publish DNS Record
+                Step {dmarcStatus?.status === 'fail' ? '3' : (!hasUploadedLogo || svgStatus?.status !== 'pass' ? '2' : '1')}: Publish DNS Record
               </h4>
               <p className="text-sm text-muted-foreground mb-4">
                 Add the following TXT record to your domain&apos;s DNS settings to authorize your logo for display in the inbox.
