@@ -85,7 +85,7 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
     );
   }
 
-  const bimiResult = data.scan?.categories?.find((c) => c.id === 'bimi');
+  const bimiResult = data.scan?.categories?.find((c) => c.category === 'bimi');
   const dmarcStatus = data.scan?.bimiDetail?.dmarcStatus;
   const bimiRecordStatus = data.scan?.bimiDetail?.bimiRecordStatus;
   const svgStatus = data.scan?.bimiDetail?.svgStatus;
