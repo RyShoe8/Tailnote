@@ -3,7 +3,7 @@ import { getNextHeaderRules } from './lib/security/securityHeaders';
 
 const nextConfig: NextConfig = {
   transpilePackages: ['emailsignature-engine'],
-  serverExternalPackages: ['svgo', 'sharp'],
+  serverExternalPackages: ['svgo', 'sharp', 'potrace', 'jimp'],
   reactStrictMode: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
