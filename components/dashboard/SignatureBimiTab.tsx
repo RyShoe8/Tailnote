@@ -165,7 +165,7 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
           {(!hasUploadedLogo || svgStatus?.status !== 'pass') && canManageBimiLogo && (
             <div className="space-y-4">
               <h4 className="font-medium">Step {dmarcStatus?.status === 'fail' ? '2' : '1'}: Upload your logo</h4>
-              {hasUploadedLogo && svgStatus?.status !== 'pass' && svgStatus?.issues?.length > 0 && (
+              {hasUploadedLogo && svgStatus?.status !== 'pass' && (svgStatus?.issues?.length ?? 0) > 0 && (
                 <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">
                   <p className="font-semibold mb-1">Logo issues detected:</p>
                   <ul className="list-disc pl-5">
