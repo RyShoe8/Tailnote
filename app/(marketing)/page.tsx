@@ -8,6 +8,7 @@ import { HomeTemplateShowcase } from '@/components/marketing/HomeTemplateShowcas
 import { HomePricingTeaser } from '@/components/marketing/HomePricingTeaser';
 import { HomeFAQ } from '@/components/marketing/HomeFAQ';
 import { HomeFinalCta } from '@/components/marketing/HomeFinalCta';
+import { HomeSpotlightVote } from '@/components/marketing/HomeSpotlightVote';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { getPublicPricingPlans } from 'billing-engine';
 import { HOME_FAQS } from '@/lib/seo/homeFaq';
@@ -66,6 +67,7 @@ export default async function HomePage() {
       <HomeFeatures />
       <HomeTemplateShowcase presets={presets} />
       <HomeHowItWorks />
+      <HomeSpotlightVote />
       <HomePromoBlocksShowcase />
       <HomePricingTeaser plans={plans} />
       <HomeFAQ />

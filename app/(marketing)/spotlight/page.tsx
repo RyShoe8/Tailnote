@@ -101,6 +101,44 @@ export default async function SpotlightHomepage() {
         </div>
       </section>
 
+      {/* Social Links Section */}
+      <section className="py-12 border-b">
+        <div className="container px-4 md:px-6">
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl font-bold tracking-tight">Follow Our Spotlight Network</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Stay connected with our community and see featured startups across our social channels.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4 mt-6">
+              <a
+                href="https://bsky.app/profile/themediashop.bsky.social"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-md border border-input bg-background px-6 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                Bluesky
+              </a>
+              <a
+                href="https://www.reddit.com/r/TheMediaShop/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-md border border-input bg-background px-6 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                Reddit
+              </a>
+              <a
+                href="https://www.linkedin.com/in/ryanschumacher/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-md border border-input bg-background px-6 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                LinkedIn
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* What You Get Section */}
       <section className="py-24 bg-muted/30">
         <div className="container px-4 md:px-6">

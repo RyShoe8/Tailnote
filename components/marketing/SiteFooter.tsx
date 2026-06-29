@@ -6,6 +6,12 @@ import { EMAIL_HEALTH_NAV_TITLE } from '@/lib/email-health/seoCopy';
 
 const MEDIA_SHOP_URL = 'https://themediashop.co';
 
+const SOCIAL_LINKS = [
+  { href: 'https://bsky.app/profile/themediashop.bsky.social', label: 'Bluesky' },
+  { href: 'https://www.reddit.com/r/TheMediaShop/', label: 'Reddit' },
+  { href: 'https://www.linkedin.com/in/ryanschumacher/', label: 'LinkedIn' },
+] as const;
+
 const FOOTER_LINKS = {
   product: [
     { href: '/signatures', label: 'Signatures' },
@@ -133,7 +139,7 @@ export function SiteFooter({ variant = 'full' }: SiteFooterProps) {
             </Button>
           </div>
         </div>
-        <div className="grid gap-8 sm:grid-cols-3 sm:gap-10">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 sm:gap-10">
           <div>
             <p className="mb-3 text-sm font-medium text-foreground">Product</p>
             <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
@@ -164,6 +170,23 @@ export function SiteFooter({ variant = 'full' }: SiteFooterProps) {
               {FOOTER_LINKS.legal.map((item) => (
                 <li key={item.href}>
                   <FooterLink href={item.href} label={item.label} />
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="mb-3 text-sm font-medium text-foreground">Follow Us</p>
+            <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
+              {SOCIAL_LINKS.map((item) => (
+                <li key={item.href}>
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transition-colors hover:text-foreground hover:underline underline-offset-4"
+                  >
+                    {item.label}
+                  </a>
                 </li>
               ))}
             </ul>
