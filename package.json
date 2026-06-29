@@ -47,6 +47,7 @@
     "emailsignature-engine": "workspace:*",
     "framer-motion": "^12.40.0",
     "gray-matter": "^4.0.3",
+    "imagetracerjs": "^1.2.6",
     "lucide-react": "^0.468.0",
     "mongodb": "^6.12.0",
     "mongoose": "^8.9.5",

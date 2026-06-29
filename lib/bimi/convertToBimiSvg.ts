@@ -4,6 +4,7 @@ import sharp from 'sharp';
 import { optimize } from 'svgo';
 import { ALLOWED_IMAGE_MIMES, SecureImageUploadError } from '@/lib/uploads/secureImageUpload';
 import { buildBimiSuggestedRecord } from '@/lib/brandTrust/domainFromOrg';
+import { rasterToVectorSvg } from '@/lib/bimi/vectorizer';
 
 const MAX_INPUT_BYTES = 4 * 1024 * 1024;
 const BIMI_TARGET_BYTES = 32 * 1024;
@@ -34,20 +35,7 @@ function sanitizeSvg(svg: string): { svg: string; warnings: string[] } {
   return { svg: out, warnings };
 }
 
-async function rasterToSquareSvg(buffer: Buffer): Promise<{ svg: string; warnings: string[] }> {
-  const warnings = [
-    'PNG/JPEG logos are embedded in SVG — vector artwork works best for strict BIMI validators.',
-  ];
-  const meta = await sharp(buffer).metadata();
-  const size = Math.min(RASTER_SIZE, Math.max(meta.width ?? RASTER_SIZE, meta.height ?? RASTER_SIZE));
-  const png = await sharp(buffer)
-    .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-    .png({ compressionLevel: 9, palette: true })
-    .toBuffer();
-  const b64 = png.toString('base64');
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${size} ${size}"><image width="${size}" height="${size}" xlink:href="data:image/png;base64,${b64}"/></svg>`;
-  return { svg, warnings };
-}
+// removed rasterToSquareSvg
 
 export async function convertToBimiSvg(args: {
   file: File;
@@ -69,7 +57,7 @@ export async function convertToBimiSvg(args: {
   if (mime === 'image/svg+xml' || args.file.name.toLowerCase().endsWith('.svg')) {
     svgRaw = buffer.toString('utf-8');
   } else {
-    const converted = await rasterToSquareSvg(buffer);
+    const converted = await rasterToVectorSvg(buffer);
     svgRaw = converted.svg;
     warnings = converted.warnings;
   }
