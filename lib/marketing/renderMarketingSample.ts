@@ -348,21 +348,20 @@ export function renderMarketingSample(presetId: TemplatePresetId): string {
 }
 
 /** Renders a live signature HTML sample for spotlight pages with a custom quote (server-only). */
-export function renderSpotlightSample(quote: string, companyName: string): string {
+export function renderSpotlightSample(quote: string, companyName: string, presetId: TemplatePresetId = 'modern_professional'): string {
   const origin = getSignatureAssetOrigin();
-  const presetId = 'modern_professional';
   const profile = demoProfile(presetId);
   const brand = demoBrand(origin, presetId);
-  
+
   // Replace the default content blocks with just the spotlight quote block
   brand.contentBlocks = [
     marketingQuoteBlock(quote, companyName)
   ];
-  
+
   return renderSignature({
     profile,
     brand,
-    template: presetToEngineTemplate(presetId, `spotlight-mock`),
+    template: presetToEngineTemplate(presetId, `spotlight-mock-${presetId}`),
     publicSiteOrigin: origin,
     utm: MARKETING_UTM,
   });

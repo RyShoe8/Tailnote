@@ -1,5 +1,6 @@
 import React from 'react';
 import { Heart, MessageCircle, Repeat, Share, ArrowBigUp, ArrowBigDown, MessageSquare, Award, ThumbsUp, MessageSquareText } from 'lucide-react';
+import { type TemplatePresetId } from '@/lib/email/templatePresets';
 
 interface MockupProps {
   companyName: string;
@@ -7,15 +8,19 @@ interface MockupProps {
   founderName: string;
   logoInitial: string;
   quote?: string;
+  presetId?: TemplatePresetId;
+  blueskyHandle?: string;
+  redditSubreddit?: string;
+  linkedinProfile?: string;
 }
 
 import { renderMarketingSample, renderSpotlightSample } from '@/lib/marketing/renderMarketingSample';
 import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
 import { MarketingSignaturePreview } from '@/components/marketing/MarketingSignaturePreview';
 
-const SignatureCard = ({ quote, companyName }: { quote?: string; companyName: string }) => {
+const SignatureCard = ({ quote, companyName, presetId }: { quote?: string; companyName: string; presetId?: TemplatePresetId }) => {
   const signatureHtml = stripSignaturePreviewLinks(
-    quote ? renderSpotlightSample(quote, companyName) : renderMarketingSample('modern_professional')
+    quote ? renderSpotlightSample(quote, companyName, presetId) : renderMarketingSample(presetId || 'modern_professional')
   );
   return (
     <div className="mt-3 overflow-x-auto rounded-lg border bg-card p-4 shadow-sm relative">
@@ -30,16 +35,17 @@ const SignatureCard = ({ quote, companyName }: { quote?: string; companyName: st
 };
 
 export function BlueskyPostMockup(props: MockupProps) {
+  const handle = props.blueskyHandle || 'themediashop.bsky.social';
   return (
     <div className="rounded-xl border bg-background p-4 shadow-sm max-w-2xl w-full">
       <div className="flex gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0085ff] text-white font-bold">
-          T
+          {props.logoInitial}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
-            <span className="font-bold truncate">Tailnote</span>
-            <span className="text-muted-foreground text-sm truncate">@tailnote.com</span>
+            <span className="font-bold truncate">{props.companyName}</span>
+            <span className="text-muted-foreground text-sm truncate">@{handle}</span>
             <span className="text-muted-foreground text-sm">· 2h</span>
           </div>
           <p className="mt-1 text-[15px] leading-snug">
@@ -47,7 +53,7 @@ export function BlueskyPostMockup(props: MockupProps) {
             <br /><br />
             {props.description}
           </p>
-          <SignatureCard quote={props.quote} companyName={props.companyName} />
+          <SignatureCard quote={props.quote} companyName={props.companyName} presetId={props.presetId} />
           <div className="mt-3 flex items-center justify-between text-muted-foreground">
             <button className="flex items-center gap-1.5 hover:text-[#0085ff] transition-colors"><MessageCircle className="h-4 w-4" /> <span className="text-xs">12</span></button>
             <button className="flex items-center gap-1.5 hover:text-green-500 transition-colors"><Repeat className="h-4 w-4" /> <span className="text-xs">45</span></button>
@@ -61,6 +67,7 @@ export function BlueskyPostMockup(props: MockupProps) {
 }
 
 export function RedditPostMockup(props: MockupProps) {
+  const subreddit = props.redditSubreddit || 'TheMediaShop';
   return (
     <div className="rounded-xl border bg-background p-4 shadow-sm max-w-2xl w-full">
       <div className="flex gap-3">
@@ -71,7 +78,7 @@ export function RedditPostMockup(props: MockupProps) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-            <span className="font-bold text-foreground">r/startups</span>
+            <span className="font-bold text-foreground">r/{subreddit}</span>
             <span>•</span>
             <span>Posted by u/tailnote_official</span>
             <span>•</span>
@@ -83,7 +90,7 @@ export function RedditPostMockup(props: MockupProps) {
           <p className="text-sm text-foreground/90">
             {props.description}
           </p>
-          <SignatureCard quote={props.quote} companyName={props.companyName} />
+          <SignatureCard quote={props.quote} companyName={props.companyName} presetId={props.presetId} />
           <div className="mt-3 flex items-center gap-4 text-xs font-medium text-muted-foreground">
             <div className="flex items-center gap-1.5 hover:bg-muted p-1 rounded transition-colors cursor-pointer">
               <MessageSquare className="h-4 w-4" /> 142 Comments
@@ -102,14 +109,15 @@ export function RedditPostMockup(props: MockupProps) {
 }
 
 export function LinkedInPostMockup(props: MockupProps) {
+  const profile = props.linkedinProfile || 'ryanschumacher';
   return (
     <div className="rounded-xl border bg-background p-4 shadow-sm max-w-2xl w-full">
       <div className="flex items-center gap-3 mb-3">
         <div className="flex h-12 w-12 items-center justify-center rounded bg-[#0a66c2] text-white font-bold text-xl">
-          T
+          {props.logoInitial}
         </div>
         <div>
-          <div className="font-bold text-sm leading-tight">Tailnote</div>
+          <div className="font-bold text-sm leading-tight">{props.companyName}</div>
           <div className="text-xs text-muted-foreground">10,492 followers</div>
           <div className="text-xs text-muted-foreground flex items-center gap-1">
             1d • 🌎
@@ -119,14 +127,14 @@ export function LinkedInPostMockup(props: MockupProps) {
       <p className="text-sm leading-relaxed mb-3">
         🚀 We love supporting fellow founders! 🚀
         <br /><br />
-        This week we are excited to cross-promote <strong>{props.companyName}</strong> in our Spotlight. 
+        This week we are excited to cross-promote <strong>{props.companyName}</strong> in our Spotlight.
         <br />
         {props.description}
         <br /><br />
         Check out their custom signature below and join the Spotlight network today.
       </p>
       <div className="rounded-lg border bg-muted/30 p-2 mb-3">
-        <SignatureCard quote={props.quote} companyName={props.companyName} />
+        <SignatureCard quote={props.quote} companyName={props.companyName} presetId={props.presetId} />
       </div>
       <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
         <span>👍 ❤️ 👏 342</span>

@@ -115,34 +115,40 @@ export default async function SpotlightHomepage() {
             <div className="space-y-4 w-full flex flex-col items-center">
               <h3 className="font-semibold text-xl text-center">Bluesky Spotlight</h3>
               <p className="text-sm text-muted-foreground text-center max-w-xs">A dedicated post to our community featuring your signature and a brief description of what you&apos;re building.</p>
-              <BlueskyPostMockup 
-                companyName="Orbit Health"
-                description="Orbit Health is rethinking telemedicine with their new AI-powered diagnostic assistant."
-                founderName="Dr. Sarah Chen"
-                logoInitial="O"
-                quote="Move fast, but never compromise on care."
+              <BlueskyPostMockup
+                companyName="The Media Shop"
+                description="The Media Shop is a full-service digital marketing agency helping brands scale through data-driven campaigns and creative content strategies."
+                founderName="Ryan Schumacher"
+                logoInitial="M"
+                quote="Great marketing doesn't feel like marketing."
+                presetId="modern_professional"
+                blueskyHandle="themediashop.bsky.social"
               />
             </div>
             <div className="space-y-4 w-full flex flex-col items-center">
               <h3 className="font-semibold text-xl text-center">Reddit Feature</h3>
               <p className="text-sm text-muted-foreground text-center max-w-xs">We share your story with startup communities, driving high-intent traffic to your website.</p>
-              <RedditPostMockup 
-                companyName="Nexus DB"
-                description="Nexus DB is a high-performance, distributed SQL database built for the edge. They've just launched their open-source beta and the performance numbers are looking incredible. Definitely worth checking out if you're dealing with global latency issues."
-                founderName="David Kim"
-                logoInitial="N"
-                quote="Complexity is the enemy of execution."
+              <RedditPostMockup
+                companyName="The Media Shop"
+                description="The Media Shop specializes in performance marketing for B2B SaaS companies. They've helped over 50 startups achieve 3x growth through targeted campaigns and conversion optimization. Their team combines creative strategy with rigorous analytics to deliver measurable results."
+                founderName="Ryan Schumacher"
+                logoInitial="M"
+                quote="Data without insight is just noise."
+                presetId="creator"
+                redditSubreddit="TheMediaShop"
               />
             </div>
             <div className="space-y-4 w-full flex flex-col items-center">
               <h3 className="font-semibold text-xl text-center">LinkedIn Hall of Fame</h3>
               <p className="text-sm text-muted-foreground text-center max-w-xs">Top winners are inducted into our LinkedIn Hall of Fame, reaching thousands of professionals.</p>
-              <LinkedInPostMockup 
-                companyName="Lumina Design"
-                description="Lumina Design is transforming how product teams collaborate on design systems. By bridging the gap between Figma and code, they are helping teams ship consistent UI components 10x faster. We've been using their beta internally and it's already saved us countless hours of back-and-forth between our engineering and design teams. 🚀 If you're a product leader looking to streamline your workflow, you need to check them out!"
-                founderName="Elena Rodriguez"
-                logoInitial="L"
-                quote="Design is not just what it looks like and feels like. Design is how it works."
+              <LinkedInPostMockup
+                companyName="The Media Shop"
+                description="The Media Shop is transforming how B2B companies approach growth marketing. By combining creative storytelling with data-driven optimization, they help startups scale efficiently without burning through their budget. Their unique methodology focuses on sustainable growth channels that compound over time rather than one-off campaigns. 🚀 If you're a founder looking to scale your marketing with real ROI, you need to check them out!"
+                founderName="Ryan Schumacher"
+                logoInitial="M"
+                quote="Growth without strategy is just luck."
+                presetId="executive_minimalist"
+                linkedinProfile="ryanschumacher"
               />
             </div>
           </div>
