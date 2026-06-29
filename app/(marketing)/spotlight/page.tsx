@@ -149,27 +149,6 @@ export default async function SpotlightHomepage() {
         </div>
       </section>
 
-      {/* Latest Spotlight */}
-      <section className="py-24">
-        <div className="container px-4 md:px-6">
-          <h2 className="text-3xl font-bold tracking-tighter text-center mb-12">Latest Spotlights</h2>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Placeholder for Spotlight Grid */}
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-              <div className="p-6 space-y-4">
-                <div className="h-12 w-12 rounded-full bg-muted animate-pulse" />
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-xl">Acme Corp</h3>
-                  <p className="text-sm text-muted-foreground">Making the best widgets for modern teams.</p>
-                </div>
-                <Link href="/spotlight/acme-corp" className="inline-flex text-primary hover:underline text-sm font-medium">
-                  Read more →
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
