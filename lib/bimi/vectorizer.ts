@@ -4,7 +4,7 @@ import { posterize, Potrace } from 'potrace';
 
 function tracePosterize(buffer: Buffer, options: any): Promise<string> {
   return new Promise((resolve, reject) => {
-    posterize(buffer, options, (err: Error, svg: string) => {
+    posterize(buffer, options, (err: Error | null, svg: string) => {
       if (err) reject(err);
       else resolve(svg);
     });
