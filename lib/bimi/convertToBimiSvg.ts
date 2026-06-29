@@ -79,6 +79,7 @@ export async function convertToBimiSvg(args: {
     access: 'public',
     contentType: 'image/svg+xml',
     addRandomSuffix: false,
+    cacheControlMaxAge: 60, // Ensure the edge cache expires quickly so updates propagate
   });
 
   return {

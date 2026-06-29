@@ -54,7 +54,9 @@ export async function validateBimiSvgUrl(url: string): Promise<SvgValidationResu
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-    const res = await fetch(url, {
+    // Append a timestamp to bypass CDN edge cache, ensuring we validate the absolute latest upload
+    const fetchUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+    const res = await fetch(fetchUrl, {
       signal: controller.signal,
       headers: { Accept: 'image/svg+xml,text/xml,application/xml,*/*' },
       redirect: 'follow',
