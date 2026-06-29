@@ -896,7 +896,7 @@ export function SignatureWorkspace() {
           {canSeeBrandTab ? (
             <button onClick={() => setActiveTab('brand')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'brand' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Brand</button>
           ) : null}
-          <button onClick={() => setActiveTab('bimi')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'bimi' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Brand logo</button>
+          <button onClick={() => setActiveTab('bimi')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'bimi' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Brand Strength</button>
           {canSeeBlocksTab ? (
             <button onClick={() => setActiveTab('blocks')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'blocks' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Blocks</button>
           ) : null}
@@ -1176,23 +1176,7 @@ export function SignatureWorkspace() {
                 ))}
               </select>
             </div>
-            <div className="space-y-2 border-t pt-4">
-              <Label>Tailnote Spotlight</Label>
-              <p className="text-xs text-muted-foreground">
-                Join our community marketing network by featuring a curated startup in your signature.
-              </p>
-              <label className="flex items-center gap-2 text-sm cursor-pointer mt-2">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-input"
-                  checked={org.plan === 'free' || org.spotlightEnabled}
-                  disabled={org.plan === 'free'}
-                  onChange={(e) => setOrg((o) => ({ ...(o || {}), spotlightEnabled: e.target.checked }))}
-                />
-                <span>Enable Tailnote Spotlight</span>
-                {org.plan === 'free' && <span className="ml-2 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full font-medium">Free plan locked</span>}
-              </label>
-            </div>
+
             {message ? (
               <p
                 className={`text-sm ${messageIsError ? 'text-destructive' : 'text-muted-foreground'}`}
