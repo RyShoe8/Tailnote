@@ -169,7 +169,7 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
                 <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">
                   <p className="font-semibold mb-1">Logo issues detected:</p>
                   <ul className="list-disc pl-5">
-                    {svgStatus.issues.map((issue: string, i: number) => (
+                    {svgStatus?.issues?.map((issue: string, i: number) => (
                       <li key={i}>{issue}</li>
                     ))}
                   </ul>
