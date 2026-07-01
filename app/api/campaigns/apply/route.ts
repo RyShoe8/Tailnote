@@ -6,6 +6,8 @@ import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
 import { QuoteModel } from '@/models/Quote';
 import { QuoteCategoryModel } from '@/models/QuoteCategory';
 import { getServerSession } from '@/lib/auth/session';
+import { isQuoteAlreadyUsed } from '@/lib/quotes/isQuoteAlreadyUsed';
+import { normalizeQuoteText } from '@/lib/quotes/normalizeQuoteText';
 
 const urlPreprocess = (val: unknown) => {
   if (typeof val === 'string' && val.trim() !== '') {
@@ -107,6 +109,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'You have already applied for this campaign.' }, { status: 400 });
   }
 
+  const quoteCheck = await isQuoteAlreadyUsed(parsed.data.content.quote, {
+    excludeUserId: session.user.id,
+  });
+  if (quoteCheck.used) {
+    return NextResponse.json(
+      { error: 'This quote has already been used. Please write an original quote.' },
+      { status: 400 },
+    );
+  }
+
   // Create submission
   const submission = new CampaignSubmissionModel({
     campaignId: campaign._id,
@@ -147,25 +159,33 @@ export async function POST(request: Request) {
   await submission.save();
 
   if (parsed.data.allowQuoteDatabase && parsed.data.content.quote) {
-    let category = await QuoteCategoryModel.findOne({ slug: 'community-submissions' });
-    if (!category) {
-      category = await QuoteCategoryModel.create({
-        name: 'Community Submissions',
-        slug: 'community-submissions',
-        description: 'Quotes submitted by users via Spotlight applications.',
+    const normalizedNewQuote = normalizeQuoteText(parsed.data.content.quote);
+    const existingLibraryQuote = await QuoteModel.find({}).select('quoteText').lean();
+    const alreadyInLibrary = existingLibraryQuote.some(
+      (row) => normalizeQuoteText(row.quoteText) === normalizedNewQuote,
+    );
+
+    if (!alreadyInLibrary) {
+      let category = await QuoteCategoryModel.findOne({ slug: 'community-submissions' });
+      if (!category) {
+        category = await QuoteCategoryModel.create({
+          name: 'Community Submissions',
+          slug: 'community-submissions',
+          description: 'Quotes submitted by users via Spotlight applications.',
+        });
+      }
+
+      await QuoteModel.create({
+        quoteText: parsed.data.content.quote,
+        attribution: parsed.data.founder,
+        source: parsed.data.companyName,
+        sourceUrl: parsed.data.website,
+        categoryId: category._id,
+        categoryName: category.name,
+        isActive: false,
+        isFeatured: false,
       });
     }
-
-    await QuoteModel.create({
-      quoteText: parsed.data.content.quote,
-      attribution: parsed.data.founder,
-      source: parsed.data.companyName,
-      sourceUrl: parsed.data.website,
-      categoryId: category._id,
-      categoryName: category.name,
-      isActive: false, // Pending
-      isFeatured: false,
-    });
   }
 
   return NextResponse.json({ success: true, submissionId: submission._id });

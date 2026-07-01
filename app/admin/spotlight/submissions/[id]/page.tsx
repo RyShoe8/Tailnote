@@ -17,6 +17,19 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
   const quote = (submission.content as any)?.quote || '';
   const whyShouldWeFeatureYou = (submission.content as any)?.whyShouldWeFeatureYou || '';
 
+  const statusBadgeClass: Record<string, string> = {
+    pending: 'bg-yellow-100 text-yellow-800',
+    voting: 'bg-blue-100 text-blue-800',
+    approved: 'bg-green-100 text-green-800',
+    needs_changes: 'bg-orange-100 text-orange-800',
+    rejected: 'bg-red-100 text-red-800',
+    scheduled: 'bg-purple-100 text-purple-800',
+    published: 'bg-emerald-100 text-emerald-800',
+    archived: 'bg-muted text-muted-foreground',
+  };
+  const badgeClass =
+    statusBadgeClass[submission.status as string] ?? 'bg-muted text-muted-foreground';
+
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-8">
       <div className="space-y-4">
@@ -28,7 +41,9 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
             <h1 className="text-3xl font-bold">{submission.companyName}</h1>
             <a href={submission.website} target="_blank" rel="noreferrer" className="text-primary hover:underline">{submission.website}</a>
           </div>
-          <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium capitalize">{submission.status}</span>
+          <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${badgeClass}`}>
+            {String(submission.status).replace(/_/g, ' ')}
+          </span>
         </div>
       </div>
 
@@ -62,7 +77,13 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
               <p className="text-sm text-muted-foreground font-medium">Quote</p>
               <p className="italic">&quot;{quote}&quot;</p>
             </div>
-            
+
+            {submission.reviewerNotes ? (
+              <div className="rounded-md border border-orange-200 bg-orange-50 p-3">
+                <p className="text-sm text-orange-900 font-medium">Reviewer notes</p>
+                <p className="text-sm text-orange-800 mt-1 whitespace-pre-wrap">{submission.reviewerNotes}</p>
+              </div>
+            ) : null}
 
             {whyShouldWeFeatureYou ? (
               <div>

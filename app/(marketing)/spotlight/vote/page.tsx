@@ -18,6 +18,7 @@ export default async function SpotlightVotePage() {
   })
     .select('_id companyName founder industry logoUrl content votes')
     .sort({ createdAt: 1 })
+    .limit(2)
     .lean();
 
   return (
