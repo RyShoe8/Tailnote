@@ -5,6 +5,8 @@ import { connectMongoose } from '@/lib/mongoose';
 import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
 import { SubmissionActions } from './SubmissionActions';
 import { formatVotingWeekLabel, getWeekStart } from '@/lib/campaigns/votingWeekUtils';
+import { loadSubmitterSnapshotSources } from '@/lib/campaigns/loadSubmitterSnapshotSources';
+import { resolveSubmissionSnapshot } from '@/lib/campaigns/resolveSubmissionSnapshot';
 
 function DetailField({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -39,6 +41,15 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
   if (!submission) {
     notFound();
   }
+
+  const sources = await loadSubmitterSnapshotSources(submission.userId);
+  const view = resolveSubmissionSnapshot({
+    submission,
+    org: sources.org,
+    profile: sources.profile,
+    employee: sources.employee,
+    authUser: sources.authUser,
+  });
 
   const content = (submission.content ?? {}) as {
     quote?: string;
@@ -76,9 +87,9 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
         </Link>
         <div className="flex justify-between items-start gap-4">
           <div className="space-y-1">
-            <h1 className="text-3xl font-bold">{submission.companyName || 'Untitled submission'}</h1>
-            {submission.website ? (
-              <ExternalLink href={submission.website} />
+            <h1 className="text-3xl font-bold">{view.companyName || submission.companyName || 'Untitled submission'}</h1>
+            {view.website ? (
+              <ExternalLink href={view.website} />
             ) : (
               <span className="text-sm text-muted-foreground">No website provided</span>
             )}
@@ -87,6 +98,12 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
             {String(submission.status).replace(/_/g, ' ')}
           </span>
         </div>
+        {view.usedLiveFallback ? (
+          <p className="text-sm text-muted-foreground rounded-md border bg-muted/40 px-3 py-2">
+            Some contact and brand fields were loaded from the applicant&apos;s current account because this
+            submission predates full snapshot storage.
+          </p>
+        ) : null}
       </div>
 
       <div className="grid lg:grid-cols-[1fr_320px] gap-8 items-start">
@@ -95,23 +112,23 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
             <h2 className="font-semibold text-lg border-b pb-2">Company</h2>
 
             <div className="flex items-start gap-4">
-              {submission.logoUrl ? (
+              {view.logoUrl ? (
                 <img
-                  src={submission.logoUrl}
-                  alt={`${submission.companyName} logo`}
+                  src={view.logoUrl}
+                  alt={`${view.companyName} logo`}
                   className="w-20 h-20 rounded object-contain border bg-white shrink-0"
                 />
               ) : (
                 <div className="w-20 h-20 rounded border bg-muted/40 shrink-0" />
               )}
               <div className="grid sm:grid-cols-2 gap-4 flex-1">
-                <DetailField label="Company name">{displayOrDash(submission.companyName)}</DetailField>
+                <DetailField label="Company name">{displayOrDash(view.companyName)}</DetailField>
                 <DetailField label="Founder">{displayOrDash(submission.founder)}</DetailField>
                 <DetailField label="Website">
-                  {submission.website ? <ExternalLink href={submission.website} /> : displayOrDash(null)}
+                  {view.website ? <ExternalLink href={view.website} /> : displayOrDash(null)}
                 </DetailField>
                 <DetailField label="Logo URL">
-                  {submission.logoUrl ? <ExternalLink href={submission.logoUrl} label="View logo" /> : displayOrDash(null)}
+                  {view.logoUrl ? <ExternalLink href={view.logoUrl} label="View logo" /> : displayOrDash(null)}
                 </DetailField>
                 <DetailField label="Industry">{displayOrDash(submission.industry)}</DetailField>
                 <DetailField label="Company size">{displayOrDash(submission.companySize)}</DetailField>
@@ -184,9 +201,9 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
           <div className="bg-card border rounded-lg p-6 space-y-4">
             <h2 className="font-semibold text-lg border-b pb-2">Contact & signature profile</h2>
             <div className="flex items-start gap-4">
-              {submission.avatarUrl ? (
+              {view.avatarUrl ? (
                 <img
-                  src={submission.avatarUrl}
+                  src={view.avatarUrl}
                   alt="Applicant avatar"
                   className="w-16 h-16 rounded-full object-cover border bg-white shrink-0"
                 />
@@ -195,27 +212,27 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
               )}
               <div className="grid sm:grid-cols-2 gap-4 flex-1">
                 <DetailField label="Name">
-                  {[submission.firstName, submission.lastName].filter(Boolean).join(' ') || displayOrDash(null)}
+                  {[view.firstName, view.lastName].filter(Boolean).join(' ') || displayOrDash(null)}
                 </DetailField>
-                <DetailField label="Title">{displayOrDash(submission.title)}</DetailField>
+                <DetailField label="Title">{displayOrDash(view.title)}</DetailField>
                 <DetailField label="Email">
-                  {submission.email ? (
-                    <a href={`mailto:${submission.email}`} className="text-primary hover:underline break-all">
-                      {submission.email}
+                  {view.email ? (
+                    <a href={`mailto:${view.email}`} className="text-primary hover:underline break-all">
+                      {view.email}
                     </a>
                   ) : (
                     displayOrDash(null)
                   )}
                 </DetailField>
                 <DetailField label="Avatar URL">
-                  {submission.avatarUrl ? (
-                    <ExternalLink href={submission.avatarUrl} label="View avatar" />
+                  {view.avatarUrl ? (
+                    <ExternalLink href={view.avatarUrl} label="View avatar" />
                   ) : (
                     displayOrDash(null)
                   )}
                 </DetailField>
-                <DetailField label="Office phone">{displayOrDash(submission.officePhone)}</DetailField>
-                <DetailField label="Mobile phone">{displayOrDash(submission.mobilePhone)}</DetailField>
+                <DetailField label="Office phone">{displayOrDash(view.officePhone)}</DetailField>
+                <DetailField label="Mobile phone">{displayOrDash(view.mobilePhone)}</DetailField>
               </div>
             </div>
           </div>
@@ -223,52 +240,52 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
           <div className="bg-card border rounded-lg p-6 space-y-4">
             <h2 className="font-semibold text-lg border-b pb-2">Brand details</h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <DetailField label="Address">{displayOrDash(submission.address)}</DetailField>
-              <DetailField label="City">{displayOrDash(submission.city)}</DetailField>
-              <DetailField label="State">{displayOrDash(submission.state)}</DetailField>
-              <DetailField label="ZIP">{displayOrDash(submission.zip)}</DetailField>
+              <DetailField label="Address">{displayOrDash(view.address)}</DetailField>
+              <DetailField label="City">{displayOrDash(view.city)}</DetailField>
+              <DetailField label="State">{displayOrDash(view.state)}</DetailField>
+              <DetailField label="ZIP">{displayOrDash(view.zip)}</DetailField>
               <DetailField label="Logo link">
-                {submission.logoLink ? <ExternalLink href={submission.logoLink} /> : displayOrDash(null)}
+                {view.logoLink ? <ExternalLink href={view.logoLink} /> : displayOrDash(null)}
               </DetailField>
               <DetailField label="Logo shape">
-                {submission.logoShape ? (
-                  <span className="capitalize">{submission.logoShape}</span>
+                {view.logoShape ? (
+                  <span className="capitalize">{view.logoShape}</span>
                 ) : (
                   displayOrDash(null)
                 )}
               </DetailField>
               <DetailField label="Logo height">
-                {submission.logoHeightPx ? `${submission.logoHeightPx}px` : displayOrDash(null)}
+                {view.logoHeightPx ? `${view.logoHeightPx}px` : displayOrDash(null)}
               </DetailField>
-              <DetailField label="Font family">{displayOrDash(submission.fontFamily)}</DetailField>
+              <DetailField label="Font family">{displayOrDash(view.fontFamily)}</DetailField>
               <DetailField label="Primary color">
-                {submission.primaryColor ? (
+                {view.primaryColor ? (
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded border" style={{ backgroundColor: submission.primaryColor }} />
-                    <span className="font-mono text-xs">{submission.primaryColor}</span>
+                    <div className="w-6 h-6 rounded border" style={{ backgroundColor: view.primaryColor }} />
+                    <span className="font-mono text-xs">{view.primaryColor}</span>
                   </div>
                 ) : (
                   displayOrDash(null)
                 )}
               </DetailField>
               <DetailField label="Secondary color">
-                {submission.secondaryColor ? (
+                {view.secondaryColor ? (
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded border" style={{ backgroundColor: submission.secondaryColor }} />
-                    <span className="font-mono text-xs">{submission.secondaryColor}</span>
+                    <div className="w-6 h-6 rounded border" style={{ backgroundColor: view.secondaryColor }} />
+                    <span className="font-mono text-xs">{view.secondaryColor}</span>
                   </div>
                 ) : (
                   displayOrDash(null)
                 )}
               </DetailField>
               <DetailField label="Animation">
-                {submission.animation?.enabled ? (
+                {view.animation?.enabled ? (
                   <span>
                     Enabled
-                    {submission.animation.gifUrl ? (
+                    {view.animation.gifUrl ? (
                       <>
                         {' '}
-                        · <ExternalLink href={submission.animation.gifUrl} label="View GIF" />
+                        · <ExternalLink href={view.animation.gifUrl} label="View GIF" />
                       </>
                     ) : null}
                   </span>
@@ -281,7 +298,11 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
         </div>
 
         <div className="space-y-6 lg:sticky lg:top-8">
-          <SubmissionActions submissionId={id} hallOfFame={submission.hallOfFame} />
+          <SubmissionActions
+            submissionId={id}
+            hallOfFame={submission.hallOfFame}
+            isVoteWinner={submission.isVoteWinner}
+          />
         </div>
       </div>
     </div>

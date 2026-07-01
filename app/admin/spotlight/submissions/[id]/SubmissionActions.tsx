@@ -13,15 +13,18 @@ import {
   MAX_VOTING_SUBMISSIONS_PER_WEEK,
   formatWeekScheduleCount,
 } from '@/lib/campaigns/votingWeekUtils';
+import { canManageHallOfFame } from '@/lib/campaigns/hallOfFame';
 
 type NotesMode = 'needs_changes' | 'rejected' | null;
 
 export function SubmissionActions({
   submissionId,
   hallOfFame,
+  isVoteWinner,
 }: {
   submissionId: string;
   hallOfFame?: boolean;
+  isVoteWinner?: boolean;
 }) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
@@ -65,6 +68,7 @@ export function SubmissionActions({
   const selectedWeek = weekOptions.find((w) => w.weekStart === selectedWeekStart);
   const selectedWeekFull =
     (selectedWeek?.scheduledCount ?? 0) >= MAX_VOTING_SUBMISSIONS_PER_WEEK;
+  const showHallOfFame = canManageHallOfFame({ hallOfFame, isVoteWinner });
 
   function showError(err: unknown, fallback: string) {
     const text = err instanceof Error ? err.message : fallback;
@@ -116,7 +120,6 @@ export function SubmissionActions({
       setNotesMode(null);
       setReviewerNotes('');
       const labels: Record<string, string> = {
-        approved: 'Submission approved.',
         needs_changes: 'Change request sent to applicant.',
         rejected: 'Submission rejected.',
       };
@@ -133,8 +136,8 @@ export function SubmissionActions({
     try {
       await toggleHallOfFameAction(submissionId);
       router.refresh();
-    } catch {
-      showError(null, 'Failed to toggle Hall of Fame status');
+    } catch (err) {
+      showError(err, 'Failed to toggle Hall of Fame status');
     }
   }
 
@@ -187,14 +190,6 @@ export function SubmissionActions({
             Add to Scheduled Vote
           </button>
         </div>
-
-        <button
-          onClick={() => handleStatusUpdate('approved')}
-          disabled={submitting}
-          className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-md font-medium hover:bg-primary/90 transition disabled:opacity-50"
-        >
-          Approve (Skip Vote)
-        </button>
 
         {notesMode === 'needs_changes' ? (
           <div className="p-3 border rounded-md space-y-2">
@@ -282,22 +277,31 @@ export function SubmissionActions({
         )}
       </div>
 
-      <div className="pt-4 border-t mt-4 space-y-3">
-        <h3 className="font-semibold text-sm">Hall of Fame</h3>
-        <p className="text-xs text-muted-foreground">
-          Feature this submission on the public Spotlight winners page.
-        </p>
-        <button
-          onClick={handleToggleHallOfFame}
-          className={`w-full py-2 px-4 rounded-md font-medium transition ${
-            hallOfFame
-              ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
-              : 'border border-input bg-background hover:bg-accent'
-          }`}
-        >
-          {hallOfFame ? '★ Remove from Hall of Fame' : '☆ Add to Hall of Fame'}
-        </button>
-      </div>
+      {showHallOfFame ? (
+        <div className="pt-4 border-t mt-4 space-y-3">
+          <h3 className="font-semibold text-sm">Hall of Fame</h3>
+          <p className="text-xs text-muted-foreground">
+            Feature this submission on the public Spotlight winners page.
+          </p>
+          <button
+            onClick={handleToggleHallOfFame}
+            className={`w-full py-2 px-4 rounded-md font-medium transition ${
+              hallOfFame
+                ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
+                : 'border border-input bg-background hover:bg-accent'
+            }`}
+          >
+            {hallOfFame ? '★ Remove from Hall of Fame' : '☆ Add to Hall of Fame'}
+          </button>
+        </div>
+      ) : (
+        <div className="pt-4 border-t mt-4 space-y-2">
+          <h3 className="font-semibold text-sm">Hall of Fame</h3>
+          <p className="text-xs text-muted-foreground">
+            Hall of Fame is available after winning the community vote.
+          </p>
+        </div>
+      )}
 
       <div className="pt-4 border-t border-destructive/20 mt-4 space-y-3">
         <p className="text-xs text-muted-foreground">Destructive actions:</p>

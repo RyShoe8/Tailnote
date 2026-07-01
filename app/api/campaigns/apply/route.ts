@@ -6,6 +6,11 @@ import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
 import { QuoteModel } from '@/models/Quote';
 import { QuoteCategoryModel } from '@/models/QuoteCategory';
 import { getServerSession } from '@/lib/auth/session';
+import {
+  buildSubmissionCreatePayload,
+  resolveSubmissionSnapshot,
+} from '@/lib/campaigns/resolveSubmissionSnapshot';
+import { loadSubmitterSnapshotSources } from '@/lib/campaigns/loadSubmitterSnapshotSources';
 import { isQuoteAlreadyUsed } from '@/lib/quotes/isQuoteAlreadyUsed';
 import { normalizeQuoteText } from '@/lib/quotes/normalizeQuoteText';
 
@@ -119,40 +124,20 @@ export async function POST(request: Request) {
     );
   }
 
-  // Create submission
+  const sources = await loadSubmitterSnapshotSources(session.user.id);
+  const resolved = resolveSubmissionSnapshot({
+    submission: parsed.data,
+    org: sources.org,
+    profile: sources.profile,
+    employee: sources.employee,
+    authUser: sources.authUser,
+  });
+  const snapshot = buildSubmissionCreatePayload(parsed.data, resolved);
+
   const submission = new CampaignSubmissionModel({
     campaignId: campaign._id,
     userId: session.user.id,
-    companyName: parsed.data.companyName,
-    website: parsed.data.website,
-    logoUrl: parsed.data.logoUrl,
-    founder: parsed.data.founder,
-    industry: parsed.data.industry,
-    companySize: parsed.data.companySize,
-    // User Signature Profile Data
-    firstName: parsed.data.firstName,
-    lastName: parsed.data.lastName,
-    title: parsed.data.title,
-    email: parsed.data.email,
-    officePhone: parsed.data.officePhone,
-    mobilePhone: parsed.data.mobilePhone,
-    avatarUrl: parsed.data.avatarUrl,
-    // Organization Brand Data
-    logoHeightPx: parsed.data.logoHeightPx,
-    logoShape: parsed.data.logoShape,
-    logoLink: parsed.data.logoLink,
-    primaryColor: parsed.data.primaryColor,
-    secondaryColor: parsed.data.secondaryColor,
-    fontFamily: parsed.data.fontFamily,
-    address: parsed.data.address,
-    city: parsed.data.city,
-    state: parsed.data.state,
-    zip: parsed.data.zip,
-    animation: parsed.data.animation,
-    content: parsed.data.content,
-    socialPlatforms: parsed.data.socialPlatforms,
-    socialProfiles: parsed.data.socialProfiles || {},
-    agreedToTerms: parsed.data.agreedToTerms,
+    ...snapshot,
     status: 'pending',
   });
 

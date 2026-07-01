@@ -41,6 +41,7 @@ export async function resolveVoteAction() {
 
   // Process winner
   winner.status = 'scheduled';
+  winner.isVoteWinner = true;
   await winner.save();
   await CampaignScheduleModel.findOneAndUpdate(
     { submissionId: winner._id },
@@ -51,6 +52,7 @@ export async function resolveVoteAction() {
   // Process losers
   for (const loser of losers) {
     loser.status = 'scheduled';
+    loser.isVoteWinner = false;
     await loser.save();
     await CampaignScheduleModel.findOneAndUpdate(
       { submissionId: loser._id },

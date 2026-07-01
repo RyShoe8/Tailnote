@@ -9,7 +9,6 @@ import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
 import { CampaignAssetModel } from '@/models/CampaignAsset';
 import { sendEmail } from '@/lib/email/mail';
 import {
-  buildSpotlightApprovedEmail,
   buildSpotlightNeedsChangesEmail,
   buildSpotlightRejectedEmail,
   buildSpotlightVotingEmail,
@@ -20,6 +19,7 @@ import {
   getUpcomingVotingWeeks,
   getWeekStart,
 } from '@/lib/campaigns/votingWeeks';
+import { canAddToHallOfFame } from '@/lib/campaigns/hallOfFame';
 
 export type UpdateSubmissionStatusOptions = {
   votingStartDate?: Date;
@@ -69,6 +69,10 @@ export async function updateSubmissionStatusAction(
   if (!session?.user?.id) throw new Error('Unauthorized');
   if (!(await isPlatformAdmin(session.user.id))) throw new Error('Forbidden');
 
+  if (status === 'approved') {
+    throw new Error('Submissions must go through community voting. Schedule a voting week instead.');
+  }
+
   await connectMongoose();
 
   const updatePayload: Record<string, unknown> = { status };
@@ -99,7 +103,7 @@ export async function updateSubmissionStatusAction(
   const submitterEmail = submitter?.email;
   const reviewerNotes = options?.reviewerNotes ?? submission.reviewerNotes;
 
-  if (status === 'voting' || status === 'approved') {
+  if (status === 'voting') {
     const assetTypes = ['signature_image', 'social_post_1', 'social_post_2', 'landing_page_hero'];
     for (const assetType of assetTypes) {
       await CampaignAssetModel.findOneAndUpdate(
@@ -110,16 +114,11 @@ export async function updateSubmissionStatusAction(
     }
 
     if (submitterEmail) {
-      if (status === 'voting') {
-        const { subject, html, text } = buildSpotlightVotingEmail(
-          submission as any,
-          normalizedVotingStart ?? submission.votingStartDate,
-        );
-        await sendEmail({ to: submitterEmail, subject, html, text });
-      } else {
-        const { subject, html, text } = buildSpotlightApprovedEmail(submission as any);
-        await sendEmail({ to: submitterEmail, subject, html, text });
-      }
+      const { subject, html, text } = buildSpotlightVotingEmail(
+        submission as any,
+        normalizedVotingStart ?? submission.votingStartDate,
+      );
+      await sendEmail({ to: submitterEmail, subject, html, text });
     }
   } else if (status === 'needs_changes') {
     if (!options?.reviewerNotes?.trim()) {
@@ -147,6 +146,11 @@ export async function toggleHallOfFameAction(id: string) {
   await connectMongoose();
   const submission = await CampaignSubmissionModel.findById(id);
   if (!submission) throw new Error('Not found');
+
+  const turningOn = !submission.hallOfFame;
+  if (turningOn && !canAddToHallOfFame(submission)) {
+    throw new Error('Only community vote winners can be added to the Hall of Fame.');
+  }
 
   submission.hallOfFame = !submission.hallOfFame;
   await submission.save();

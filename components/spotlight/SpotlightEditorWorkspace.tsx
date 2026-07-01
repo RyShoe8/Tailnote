@@ -377,6 +377,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
           email: typeof sp.email === 'string' ? sp.email : '',
           officePhone: typeof sp.officePhone === 'string' ? sp.officePhone : '',
           mobilePhone: typeof sp.mobilePhone === 'string' ? sp.mobilePhone : '',
+          avatarUrl: typeof sp.avatarUrl === 'string' ? sp.avatarUrl : '',
         });
       }
       
