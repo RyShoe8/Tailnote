@@ -91,58 +91,8 @@ export const STANDARD_SIGNATURE_TEMPLATE = `<style type="text/css">
       </table>
     </td>
     <td class="sig-main-stack" style="vertical-align:top; border-left:2px solid {{primaryColor}}; padding-left:13px;padding-right:9px;">
-      
-      {{#if hasName}}
-      <div style="font-size:16px; font-weight:600; color:#000;">
-        {{firstName}} {{lastName}}
-      </div>
-      {{/if}}
-
-      {{#if hasTitle}}
-      <div style="font-size:13px; color:#666; margin-top:2px;">
-        {{title}}
-      </div>
-      {{/if}}
-
-      <div style="height:10px;"></div>
-
-      {{#if hasContact}}
-      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
-        {{#if hasOfficePhone}}
-        <tr>
-          <td width="1%" valign="top" style="width:1%;white-space:nowrap;padding:0 8px 4px 0; color:#000; font-weight:700;">Office:</td>
-          <td valign="top" style="padding:0 0 4px 0;">
-            <a href="{{officePhoneTelHref}}" style="color:#1a1a1a; text-decoration:none;">
-              {{officePhone}}
-            </a>
-          </td>
-        </tr>
-        {{/if}}
-        {{#if hasMobilePhone}}
-        <tr>
-          <td width="1%" valign="top" style="width:1%;white-space:nowrap;padding:0 8px 4px 0; color:#000; font-weight:700;">Mobile:</td>
-          <td valign="top" style="padding:0 0 4px 0;">
-            <a href="{{mobilePhoneTelHref}}" style="color:#1a1a1a; text-decoration:none;">
-              {{mobilePhone}}
-            </a>
-          </td>
-        </tr>
-        {{/if}}
-        <tr>
-          <td colspan="2" valign="top" style="padding:0;">
-            <a href="mailto:{{email}}" style="color:{{primaryColor}}; text-decoration:none;">
-              {{email}}
-            </a>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="2" valign="top" style="padding:0;">
-            <a href="{{website}}" style="color:#1a1a1a; text-decoration:none;">
-              {{website}}
-            </a>
-          </td>
-        </tr>
-      </table>
+      {{#if hasOrderedMainStack}}
+      {{orderedMainStackHtml}}
       {{/if}}
 
       {{#if showSocialBlock}}

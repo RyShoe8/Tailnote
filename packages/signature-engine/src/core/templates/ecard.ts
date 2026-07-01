@@ -12,7 +12,7 @@ export const ECARD_SIGNATURE_TEMPLATE = `<table class="sig-ecard-root" cellpaddi
         <tr>
           <td valign="top" style="padding-right:16px;">
             {{#if hasName}}
-            <div style="font-size:20px;font-weight:700;color:#111827;margin-bottom:2px;letter-spacing:-0.2px;">{{fullName}}</div>
+            <div data-sig-field="name" style="font-size:20px;font-weight:700;color:#111827;margin-bottom:2px;letter-spacing:-0.2px;">{{fullName}}</div>
             {{/if}}
             {{#if hasEcardRoleLine}}
             <div style="font-size:13px;font-weight:600;color:{{primaryColor}};margin-bottom:14px;letter-spacing:0.2px;">{{ecardRoleLine}}</div>

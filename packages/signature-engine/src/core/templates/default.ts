@@ -30,16 +30,8 @@ export const DEFAULT_SIGNATURE_TEMPLATE = `<table class="sig-default-layout-tabl
       </table>
     </td>
     <td valign="top" style="padding-left: 20px;">
-      {{#if hasName}}
-      <div style="font-size: 18px; font-weight: 700; color: #111111; margin-bottom: 2px;">{{fullName}}</div>
-      {{/if}}
-      {{#if hasTitle}}
-      <div style="font-size: 12px; font-weight: 600; color: {{primaryColor}}; letter-spacing: 1px; margin-bottom: 10px; text-transform: uppercase;">{{title}}</div>
-      {{/if}}
-      {{#if hasDefaultContactRow}}
-      <div style="font-size: 13px; color: #555555; margin-bottom: 12px;">
-        {{defaultContactRowHtml}}
-      </div>
+      {{#if hasOrderedMainStack}}
+      {{orderedMainStackHtml}}
       {{/if}}
       {{#if showSocialBlock}}
       <div style="margin-bottom: 16px;">

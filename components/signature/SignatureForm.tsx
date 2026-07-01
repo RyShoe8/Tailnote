@@ -5,10 +5,16 @@ import type { SignatureProfile } from 'emailsignature-engine';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Loader2, Trash2, GripVertical, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Trash2, GripVertical, Eye, EyeOff, Lock } from 'lucide-react';
 
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import {
+  formFieldToPreviewField,
+  getLayoutReorderRules,
+  isFieldReorderable,
+  type SignatureLayout,
+} from 'emailsignature-engine';
 
 const DEFAULT_ORDER = [
   'avatarUrl',
@@ -35,11 +41,15 @@ export type SortableFieldProps = {
   label?: string;
   isHidden: boolean;
   onToggle: () => void;
+  isReorderable?: boolean;
   children: React.ReactNode;
 };
 
-export function SortableField({ id, label, isHidden, onToggle, children }: SortableFieldProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+export function SortableField({ id, label, isHidden, onToggle, isReorderable = true, children }: SortableFieldProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    disabled: !isReorderable,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -57,11 +67,11 @@ export function SortableField({ id, label, isHidden, onToggle, children }: Sorta
       } ${isHidden ? 'opacity-60 bg-muted/30' : ''}`}
     >
       <div
-        {...attributes}
-        {...listeners}
-        className="mt-2 cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing"
+        {...(isReorderable ? { ...attributes, ...listeners } : {})}
+        className={`mt-2 ${isReorderable ? 'cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing' : 'cursor-not-allowed text-muted-foreground/50'}`}
+        title={isReorderable ? 'Drag to reorder' : 'Fixed in this layout'}
       >
-        <GripVertical className="h-5 w-5" />
+        {isReorderable ? <GripVertical className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
       </div>
       <div className="flex-1 space-y-3 min-w-0">
         <div className="flex items-center justify-between">
@@ -87,9 +97,10 @@ type Props = {
   value: SignatureProfile;
   onChange: (next: SignatureProfile) => void;
   disabled?: boolean;
+  layout?: SignatureLayout;
 };
 
-export function SignatureForm({ value, onChange, disabled }: Props) {
+export function SignatureForm({ value, onChange, disabled, layout }: Props) {
   const [uploading, setUploading] = useState(false);
 
   const set =
@@ -131,6 +142,11 @@ export function SignatureForm({ value, onChange, disabled }: Props) {
   const items = value.detailOrder?.length ? value.detailOrder : DEFAULT_ORDER;
   // Ensure all default fields are present in case new ones were added
   const activeItems = [...new Set([...items, ...DEFAULT_ORDER])].filter((id) => DEFAULT_ORDER.includes(id));
+  const layoutRules = layout ? getLayoutReorderRules(layout) : null;
+  const fieldIsReorderable = (id: string) => {
+    if (!layoutRules) return true;
+    return isFieldReorderable(layoutRules, formFieldToPreviewField(id));
+  };
 
   const renderField = (id: string) => {
     switch (id) {
@@ -193,6 +209,7 @@ export function SignatureForm({ value, onChange, disabled }: Props) {
               key={id}
               id={id}
               isHidden={isHidden(id)}
+              isReorderable={fieldIsReorderable(id)}
               onToggle={() => toggleHidden(id)}
             >
               {renderField(id)}

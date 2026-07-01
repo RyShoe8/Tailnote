@@ -90,68 +90,8 @@ export const PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
 
           <!-- Info column -->
           <td class="sig-corp-main-stack" style="vertical-align:top;padding-left:0;padding-right:6px;">
-            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;">
-              <tr>
-                <td bgcolor="#f0f4ff" style="background-color:#f0f4ff;border-radius:10px;padding:10px 12px 8px 12px;">
-            {{#if hasName}}
-            <div style="font-size:18px; font-weight:700; color:{{primaryColor}}; letter-spacing:-0.2px;line-height:1.2;">
-              {{firstName}} {{lastName}}
-            </div>
-            {{/if}}
-
-            {{#if hasTitle}}
-            <div style="font-size:11px; color:#5c6370; margin-top:2px; text-transform:uppercase; letter-spacing:0.6px; font-weight:600;line-height:1.3;">
-              {{title}}
-            </div>
-            {{/if}}
-                </td>
-              </tr>
-            </table>
-
-            <div style="height:6px;line-height:6px;font-size:0;">&nbsp;</div>
-
-            {{#if hasContact}}
-            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;"><tr>
-              <td bgcolor="#f0f4ff" style="background-color:#f0f4ff;border-radius:10px;padding:10px 12px;">
-            <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; font-size:12px;">
-              {{#if hasOfficePhone}}
-              <tr>
-                <td colspan="2" valign="top" style="padding:0 0 4px 0;">
-                  <a href="{{officePhoneTelHref}}" style="color:#444; text-decoration:none;">
-                    {{officePhone}}
-                  </a>
-                </td>
-              </tr>
-              {{/if}}
-              {{#if hasMobilePhone}}
-              <tr>
-                <td width="1%" valign="top" style="width:1%;white-space:nowrap;padding:0 6px 4px 0; color:{{primaryColor}}; font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:0.3px;">Mobile</td>
-                <td valign="top" style="padding:0 0 4px 0;">
-                  <a href="{{mobilePhoneTelHref}}" style="color:#444; text-decoration:none;">
-                    {{mobilePhone}}
-                  </a>
-                </td>
-              </tr>
-              {{/if}}
-              <tr>
-                <td colspan="2" valign="top" style="padding:0 0 4px 0;">
-                  <a href="mailto:{{email}}" style="color:{{primaryColor}}; text-decoration:none; font-weight:600;">
-                    {{email}}
-                  </a>
-                </td>
-              </tr>
-              {{#if hasWebsite}}
-              <tr>
-                <td colspan="2" valign="top" style="padding:0;">
-                  <a href="{{website}}" style="color:#444; text-decoration:none;">
-                    {{websiteDisplay}}
-                  </a>
-                </td>
-              </tr>
-              {{/if}}
-            </table>
-              </td>
-            </tr></table>
+            {{#if hasOrderedMainStack}}
+            {{orderedMainStackHtml}}
             {{/if}}
 
             {{#if showSocialBlock}}

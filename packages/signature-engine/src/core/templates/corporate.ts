@@ -105,58 +105,8 @@ export const CORPORATE_SIGNATURE_TEMPLATE = `<style type="text/css">
 
           <!-- Info column -->
           <td class="sig-corp-main-stack" style="vertical-align:top; border-left:3px solid {{primaryColor}}; padding-left:13px;padding-right:9px;">
-            {{#if hasName}}
-            <div style="font-size:18px; font-weight:700; color:{{primaryColor}}; letter-spacing:-0.2px;">
-              {{firstName}} {{lastName}}
-            </div>
-            {{/if}}
-
-            {{#if hasTitle}}
-            <div style="font-size:13px; color:#555; margin-top:3px; text-transform:uppercase; letter-spacing:0.5px; font-weight:500;">
-              {{title}}
-            </div>
-            {{/if}}
-
-            <div style="height:12px;"></div>
-
-            {{#if hasContact}}
-            <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; font-size:13px;">
-              {{#if hasOfficePhone}}
-              <tr>
-                <td colspan="2" valign="top" style="padding:0 0 5px 0;">
-                  <a href="{{officePhoneTelHref}}" style="color:#333; text-decoration:none;">
-                    {{officePhone}}
-                  </a>
-                </td>
-              </tr>
-              {{/if}}
-              {{#if hasMobilePhone}}
-              <tr>
-                <td width="1%" valign="top" style="width:1%;white-space:nowrap;padding:0 8px 5px 0; color:{{primaryColor}}; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.3px;">Mobile</td>
-                <td valign="top" style="padding:0 0 5px 0;">
-                  <a href="{{mobilePhoneTelHref}}" style="color:#333; text-decoration:none;">
-                    {{mobilePhone}}
-                  </a>
-                </td>
-              </tr>
-              {{/if}}
-              <tr>
-                <td colspan="2" valign="top" style="padding:0 0 5px 0;">
-                  <a href="mailto:{{email}}" style="color:{{primaryColor}}; text-decoration:none; font-weight:500;">
-                    {{email}}
-                  </a>
-                </td>
-              </tr>
-              {{#if hasWebsite}}
-              <tr>
-                <td colspan="2" valign="top" style="padding:0 0 2px 0;">
-                  <a href="{{website}}" style="color:#333; text-decoration:none;">
-                    {{websiteDisplay}}
-                  </a>
-                </td>
-              </tr>
-              {{/if}}
-            </table>
+            {{#if hasOrderedMainStack}}
+            {{orderedMainStackHtml}}
             {{/if}}
 
             {{#if showSocialBlock}}

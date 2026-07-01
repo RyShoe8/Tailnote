@@ -8,7 +8,7 @@ export const EXECUTIVE_MINIMALIST_SIGNATURE_TEMPLATE = `<table class="sig-execut
         <tr>
           <td valign="middle" style="padding-right: 20px;">
             {{#if hasName}}
-            <div style="font-family: 'Times New Roman', Times, serif; font-size: 18px; color: #222222; margin-bottom: 2px;">{{fullName}}</div>
+            <div data-sig-field="name" style="font-family: 'Times New Roman', Times, serif; font-size: 18px; color: #222222; margin-bottom: 2px;">{{fullName}}</div>
             {{/if}}
             {{#if hasExecutiveRoleLine}}
             <div style="font-size: 11px; font-weight: bold; color: #777777; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">{{executiveRoleLine}}</div>

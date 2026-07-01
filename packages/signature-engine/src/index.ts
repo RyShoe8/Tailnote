@@ -17,6 +17,15 @@ export {
   unwrapImageProxyUrl,
 } from './core/renderer';
 
+export {
+  getLayoutReorderRules,
+  resolveFieldOrder,
+  isFieldReorderable,
+  formFieldToPreviewField,
+  previewFieldToFormFields,
+  type LayoutReorderRules,
+} from './core/layoutReorderRules';
+
 export { normalizePromoUrl } from './core/normalizePromoUrl';
 
 export {

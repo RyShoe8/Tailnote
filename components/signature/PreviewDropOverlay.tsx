@@ -2,23 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-
-const REORDERABLE_FIELDS = new Set([
-  'logo',
-  'name',
-  'title',
-  'companyName',
-  'email',
-  'website',
-  'address',
-  'officePhone',
-  'mobilePhone'
-]);
-
-// DOM parser lowercases attributes, so we need a mapping back to camelCase
-const REORDERABLE_FIELDS_LOWER = new Map(
-  Array.from(REORDERABLE_FIELDS).map(f => [f.toLowerCase(), f])
-);
+import { formFieldToPreviewField, isFieldReorderable, type LayoutReorderRules } from 'emailsignature-engine';
 
 /** Human-readable labels for contact fields. */
 const FIELD_LABELS: Record<string, string> = {
@@ -33,6 +17,10 @@ const FIELD_LABELS: Record<string, string> = {
   avatar: 'Photo',
   socialLinks: 'Social links',
   address: 'Address',
+  avatarUrl: 'Profile picture',
+  firstName: 'First name',
+  lastName: 'Last name',
+  logoUrl: 'Logo',
 };
 
 type DropZone = {
@@ -40,8 +28,8 @@ type DropZone = {
   top: number;
   left: number;
   width: number;
-  /** Field name of the row above this insertion line, or null if inserting at top. */
   insertAfterField: string | null;
+  label: string;
 };
 
 type FieldHighlight = {
@@ -53,28 +41,36 @@ type FieldHighlight = {
 };
 
 type Props = {
-  /** Ref to the wrapper div that contains the preview frame. */
   wrapperRef: React.RefObject<HTMLDivElement | null>;
   isDragging: boolean;
   draggedFieldId: string | null;
+  reorderableFields: readonly string[];
+  contactDisplayOrder?: string[];
 };
 
-/**
- * Transparent overlay that sits on top of the signature preview.
- * When a drag is in progress, it highlights the dragged field's position
- * and shows glowing insertion lines between contact rows for reordering.
- */
+function zoneLabel(insertAfterField: string | null, nextField: string | null): string {
+  if (insertAfterField === null) {
+    return nextField ? `Drop at top (above ${FIELD_LABELS[nextField] ?? nextField})` : 'Drop at top';
+  }
+  return `Drop below ${FIELD_LABELS[insertAfterField] ?? insertAfterField}`;
+}
+
 export function PreviewDropOverlay({
   wrapperRef,
   isDragging,
   draggedFieldId,
+  reorderableFields,
+  contactDisplayOrder,
 }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [dropZones, setDropZones] = useState<DropZone[]>([]);
   const [fieldHighlight, setFieldHighlight] = useState<FieldHighlight | null>(null);
 
-  // Measure element positions and build drop zones + highlight
+  const reorderableSet = useRef(new Set(reorderableFields));
+  reorderableSet.current = new Set(reorderableFields);
+
   const measure = useCallback(() => {
+    void contactDisplayOrder;
     if (!isDragging || !wrapperRef.current || !overlayRef.current) {
       setDropZones([]);
       setFieldHighlight(null);
@@ -85,23 +81,14 @@ export function PreviewDropOverlay({
     if (!contentEl) return;
 
     const overlayRect = overlayRef.current.getBoundingClientRect();
+    const normalizedId = draggedFieldId ? formFieldToPreviewField(draggedFieldId) : null;
 
-    // Highlight the dragged field in the preview
-    if (draggedFieldId) {
-      // Map form field IDs to data-sig-field attribute names
-      const attrName =
-        draggedFieldId === 'firstName' || draggedFieldId === 'lastName'
-          ? 'name'
-          : draggedFieldId === 'avatarUrl'
-            ? 'avatar'
-            : draggedFieldId === 'logoUrl'
-              ? 'logo'
-              : draggedFieldId;
-      const fieldEl = contentEl.querySelector(`[data-sig-field="${attrName.toLowerCase()}"]`);
+    if (draggedFieldId && normalizedId) {
+      const fieldEl = contentEl.querySelector(`[data-sig-field="${normalizedId}"]`);
       if (fieldEl) {
         const rect = fieldEl.getBoundingClientRect();
         setFieldHighlight({
-          fieldId: attrName,
+          fieldId: normalizedId,
           top: rect.top - overlayRect.top,
           left: rect.left - overlayRect.left,
           width: rect.width,
@@ -112,37 +99,24 @@ export function PreviewDropOverlay({
       }
     }
 
-    // Only show drop zones for contact-row fields
-    const normalizedId =
-      draggedFieldId === 'firstName' || draggedFieldId === 'lastName'
-        ? 'name'
-        : draggedFieldId === 'avatarUrl'
-          ? 'avatar'
-          : draggedFieldId === 'logoUrl'
-            ? 'logo'
-            : draggedFieldId;
-    if (!normalizedId || !REORDERABLE_FIELDS.has(normalizedId)) {
+    if (!normalizedId || !reorderableSet.current.has(normalizedId)) {
       setDropZones([]);
       return;
     }
 
-    // Find visible reorderable elements in the preview
     const allSigFields = contentEl.querySelectorAll('[data-sig-field]');
     const contactEls = Array.from(allSigFields).filter((el) => {
-      const attr = el.getAttribute('data-sig-field')?.toLowerCase() || '';
-      return REORDERABLE_FIELDS_LOWER.has(attr);
+      const attr = el.getAttribute('data-sig-field') || '';
+      return reorderableSet.current.has(attr);
     });
 
     const zones: DropZone[] = [];
     for (let i = 0; i <= contactEls.length; i++) {
       const prev = i > 0 ? contactEls[i - 1] : null;
       const next = i < contactEls.length ? contactEls[i] : null;
-      const rawPrevField = prev?.getAttribute('data-sig-field')?.toLowerCase();
-      const rawNextField = next?.getAttribute('data-sig-field')?.toLowerCase();
-      const prevField = rawPrevField ? REORDERABLE_FIELDS_LOWER.get(rawPrevField) || null : null;
-      const nextField = rawNextField ? REORDERABLE_FIELDS_LOWER.get(rawNextField) || null : null;
+      const prevField = prev?.getAttribute('data-sig-field') || null;
+      const nextField = next?.getAttribute('data-sig-field') || null;
 
-      // Skip zone immediately before or after the dragged item (no-op position)
       if (prevField === normalizedId || nextField === normalizedId) continue;
 
       const prevRect = prev?.getBoundingClientRect();
@@ -166,34 +140,39 @@ export function PreviewDropOverlay({
         left: refRect.left - overlayRect.left,
         width: Math.max(refRect.width, 150),
         insertAfterField: prevField,
+        label: zoneLabel(prevField, nextField),
       });
     }
 
     setDropZones(zones);
-  }, [isDragging, draggedFieldId, wrapperRef]);
+  }, [contactDisplayOrder, draggedFieldId, isDragging, wrapperRef]);
 
-  // Re-measure when drag state changes
   useEffect(() => {
     measure();
   }, [measure]);
 
-  // Also re-measure on resize
   useEffect(() => {
     if (!isDragging) return;
+    const raf = requestAnimationFrame(() => measure());
     const handler = () => measure();
     window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', handler);
+    };
   }, [isDragging, measure]);
 
   if (!isDragging) return null;
 
+  const normalizedDragId = draggedFieldId ? formFieldToPreviewField(draggedFieldId) : null;
+  const rules: LayoutReorderRules = {
+    layout: 'default',
+    reorderableFields,
+    fixedFields: [],
+  };
   const isReorderableField =
-    draggedFieldId && REORDERABLE_FIELDS.has(
-      draggedFieldId === 'firstName' || draggedFieldId === 'lastName' ? 'name' : 
-      draggedFieldId === 'avatarUrl' ? 'avatar' : 
-      draggedFieldId === 'logoUrl' ? 'logo' : draggedFieldId
-    );
-  const label = draggedFieldId ? FIELD_LABELS[draggedFieldId] || draggedFieldId : '';
+    normalizedDragId && isFieldReorderable(rules, normalizedDragId);
+  const label = draggedFieldId ? FIELD_LABELS[draggedFieldId] || FIELD_LABELS[normalizedDragId ?? ''] || draggedFieldId : '';
 
   return (
     <div
@@ -209,20 +188,17 @@ export function PreviewDropOverlay({
         borderRadius: 8,
       }}
     >
-      {/* Subtle backdrop */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: 'rgba(59, 130, 246, 0.03)',
+          backgroundColor: 'rgba(59, 130, 246, 0.04)',
           borderRadius: 8,
-          border: '2px dashed rgba(59, 130, 246, 0.20)',
+          border: '2px dashed rgba(59, 130, 246, 0.35)',
           pointerEvents: 'none',
-          transition: 'opacity 0.2s ease',
         }}
       />
 
-      {/* Label banner */}
       <div
         style={{
           position: 'absolute',
@@ -237,16 +213,14 @@ export function PreviewDropOverlay({
           borderRadius: 16,
           pointerEvents: 'none',
           whiteSpace: 'nowrap',
-          letterSpacing: '0.01em',
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         }}
       >
         {isReorderableField
           ? `Drop "${label}" to reorder`
-          : `Position of "${label}" is fixed in this layout.`}
+          : `"${label}" is fixed in this layout`}
       </div>
 
-      {/* Field highlight */}
       {fieldHighlight && (
         <div
           style={{
@@ -255,16 +229,14 @@ export function PreviewDropOverlay({
             left: fieldHighlight.left - 4,
             width: fieldHighlight.width + 8,
             height: fieldHighlight.height + 4,
-            border: '2px solid rgba(59, 130, 246, 0.45)',
+            border: '2px solid rgba(59, 130, 246, 0.55)',
             borderRadius: 6,
-            backgroundColor: 'rgba(59, 130, 246, 0.06)',
+            backgroundColor: 'rgba(59, 130, 246, 0.08)',
             pointerEvents: 'none',
-            transition: 'all 0.15s ease',
           }}
         />
       )}
 
-      {/* Drop zone insertion lines */}
       {dropZones.map((zone) => (
         <DroppableZone key={zone.id} zone={zone} />
       ))}
@@ -275,7 +247,7 @@ export function PreviewDropOverlay({
 function DroppableZone({ zone }: { zone: DropZone }) {
   const { setNodeRef, isOver } = useDroppable({
     id: zone.id,
-    data: zone, // Pass zone data so onDragEnd can read insertAfterField
+    data: zone,
   });
 
   return (
@@ -283,42 +255,42 @@ function DroppableZone({ zone }: { zone: DropZone }) {
       ref={setNodeRef}
       style={{
         position: 'absolute',
-        top: zone.top - 16,
-        left: zone.left - 4,
-        width: zone.width + 8,
-        height: 32,
+        top: zone.top - 14,
+        left: zone.left - 8,
+        width: zone.width + 16,
+        height: 28,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
         zIndex: 30,
       }}
     >
-      {/* The drop target box */}
       <div
         style={{
           width: '100%',
-          height: '100%',
-          backgroundColor: isOver
-            ? 'rgba(59, 130, 246, 0.2)'
-            : 'rgba(59, 130, 246, 0.05)',
-          border: isOver ? '2px dashed rgba(59, 130, 246, 0.9)' : '2px dashed rgba(59, 130, 246, 0.5)',
-          borderRadius: 6,
-          transition: 'all 0.15s ease',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          height: 3,
+          backgroundColor: isOver ? 'rgba(59, 130, 246, 1)' : 'rgba(59, 130, 246, 0.65)',
+          borderRadius: 2,
+          boxShadow: isOver ? '0 0 8px rgba(59, 130, 246, 0.8)' : '0 0 4px rgba(59, 130, 246, 0.4)',
+          position: 'relative',
         }}
       >
         <span
           style={{
-            fontSize: 12,
+            position: 'absolute',
+            left: '50%',
+            top: -22,
+            transform: 'translateX(-50%)',
+            fontSize: 11,
             fontWeight: 600,
-            color: 'rgba(59, 130, 246, 0.95)',
-            opacity: isOver ? 1 : 0,
-            transition: 'opacity 0.15s ease',
+            color: isOver ? 'rgba(37, 99, 235, 1)' : 'rgba(37, 99, 235, 0.85)',
+            backgroundColor: 'rgba(255,255,255,0.95)',
+            padding: '2px 8px',
+            borderRadius: 10,
+            whiteSpace: 'nowrap',
+            border: '1px solid rgba(59, 130, 246, 0.35)',
           }}
         >
-          Drop here
+          {zone.label}
         </span>
       </div>
     </div>

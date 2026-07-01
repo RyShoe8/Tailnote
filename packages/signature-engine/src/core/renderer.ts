@@ -19,6 +19,15 @@ import { MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE } from './templates/modern_profe
 import { normalizePromoUrl } from './normalizePromoUrl';
 import { adjustHexLightness } from './colorUtils';
 import {
+  buildMpMiddleColumnHtml,
+  buildOrderedMainStackHtml,
+  buildCreatorContactTableHtmlOrdered,
+  buildExecutiveContactLineHtmlOrdered,
+  buildPortfolioContactPillsHtmlOrdered,
+  buildEcardContactTableHtmlOrdered,
+  type OrderedContactBuildInput,
+} from './orderedContactHtml';
+import {
   SOCIAL_ICON_BLUESKY,
   SOCIAL_ICON_DISCORD,
   SOCIAL_ICON_FACEBOOK,
@@ -1305,8 +1314,57 @@ export function mergeRenderContext(
   const hasDefaultListFooter = Boolean(defaultListFooterHtml);
 
   const fullName = [profile.firstName.trim(), profile.lastName.trim()].filter(Boolean).join(' ');
+
+  const orderedContactInput: OrderedContactBuildInput = {
+    layout: template.layout,
+    contactDisplayOrder: profile.contactDisplayOrder,
+    fullName,
+    title: profile.title.trim(),
+    email: profile.email.trim(),
+    officePhone,
+    mobilePhone,
+    officePhoneTelHref,
+    mobilePhoneTelHref,
+    website,
+    websiteDisplay,
+    companyName: brand.companyName.trim(),
+    primaryColor: brandPrimaryColor,
+    hasName,
+    hasTitle,
+    hasLogo,
+    hasLogoSizedHeight,
+    hasLogoAutoHeight,
+    logoUrl,
+    logoLink: logoLinkForHref,
+    logoWidthStr,
+    logoDisplayHeightStr,
+    logoImgBorderRadius,
+    pHidden,
+    bHidden,
+    addressBlockHtml,
+    showAddressBlock,
+    creatorAccentColor,
+    portfolioPanelColor,
+    portfolioBorderColor,
+    portfolioAccentColor: brandSecondaryColor,
+    portfolioCardTextColor: brandPrimaryColor,
+    formatPortfolioPhoneDisplay,
+  };
+
+  const orderedMainStackLayouts = new Set([
+    'default',
+    'standard',
+    'corporate',
+    'professional',
+    'stacked',
+  ]);
+  const orderedMainStackHtml = orderedMainStackLayouts.has(template.layout)
+    ? buildOrderedMainStackHtml(orderedContactInput)
+    : '';
+  const hasOrderedMainStack = Boolean(orderedMainStackHtml);
+
   const defaultContactRowHtml =
-    isDefaultLayout && hasContact
+    isDefaultLayout && hasContact && !hasOrderedMainStack
       ? buildDefaultContactRowHtml(
           officePhone,
           mobilePhone,
@@ -1317,7 +1375,7 @@ export function mergeRenderContext(
           websiteDisplay
         )
       : '';
-  const hasDefaultContactRow = Boolean(defaultContactRowHtml);
+  const hasDefaultContactRow = Boolean(defaultContactRowHtml) || (isDefaultLayout && hasOrderedMainStack);
 
   let defaultSocialTdLiStyle = '';
   let defaultSocialTdFbStyle = '';
@@ -1360,74 +1418,10 @@ export function mergeRenderContext(
   if (isDefaultLayout && youtube) {
     defaultSocialTdYoutubeStyle = 'padding: 0; vertical-align: middle;';
   }
-  let mpMiddleColumnHtml = '';
-  if (template.layout === 'modern_professional') {
-    const mpFieldOrder = ['logo', 'name', 'title', 'email', 'website'] as const;
-    const cdo = profile.contactDisplayOrder;
-    const order = cdo?.length
-      ? [...cdo.filter((f) => mpFieldOrder.includes(f as (typeof mpFieldOrder)[number])), ...mpFieldOrder.filter((f) => !cdo.includes(f))]
-      : [...mpFieldOrder];
-
-    const mpSecondary =
-      'font-family:inherit;font-size:14px;line-height:1.35;color:#374151;';
-
-    let contactRowsHtml = '';
-    const flushContactRows = () => {
-      if (contactRowsHtml) {
-        mpMiddleColumnHtml += `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;${mpSecondary}">${contactRowsHtml}</table>`;
-        contactRowsHtml = '';
-      }
-    };
-
-    for (const field of order) {
-      if (field === 'logo') {
-        flushContactRows();
-        if (hasLogo && !bHidden.includes('logoUrl')) {
-          const sizedImg = hasLogoSizedHeight
-            ? `<img src="${escapeHtml(logoUrl)}" width="${escapeHtml(logoWidthStr)}" height="${escapeHtml(logoDisplayHeightStr)}" border="0" alt="" style="display:block;max-width:${escapeHtml(logoWidthStr)}px;width:${escapeHtml(logoWidthStr)}px;height:${escapeHtml(logoDisplayHeightStr)}px;border:0;outline:none;text-decoration:none;border-radius:${escapeHtml(logoImgBorderRadius)};" />`
-            : '';
-          const autoImg = hasLogoAutoHeight
-            ? `<img src="${escapeHtml(logoUrl)}" width="${escapeHtml(logoWidthStr)}" border="0" alt="" style="display:block;max-width:${escapeHtml(logoWidthStr)}px;width:${escapeHtml(logoWidthStr)}px;height:auto;border:0;outline:none;text-decoration:none;border-radius:${escapeHtml(logoImgBorderRadius)};" />`
-            : '';
-          mpMiddleColumnHtml += `
-            <div data-sig-field="logo" style="margin-bottom:2px;">
-              <a href="${escapeHtml(logoLinkForHref)}" style="text-decoration:none; border:0; outline:none; display:block;">
-                ${sizedImg}
-                ${autoImg}
-              </a>
-            </div>
-          `;
-        }
-      } else if (field === 'name') {
-        flushContactRows();
-        if (hasName) {
-          mpMiddleColumnHtml += `
-            <div data-sig-field="name" style="font-size:16px;font-weight:700;color:#111827;line-height:1.3;margin-bottom:2px;letter-spacing:-0.2px;">
-              ${escapeHtml(fullName)}
-            </div>
-          `;
-        }
-      } else if (field === 'title') {
-        flushContactRows();
-        if (hasTitle) {
-          mpMiddleColumnHtml += `
-            <div data-sig-field="title" style="${mpSecondary}margin-bottom:2px;">
-              ${escapeHtml(profile.title.trim())}
-            </div>
-          `;
-        }
-      } else if (field === 'email') {
-        if (profile.email && !pHidden.includes('email')) {
-          contactRowsHtml += `<tr><td style="padding-bottom:2px;${mpSecondary}white-space:normal;"><div data-sig-field="email" style="display:inline-block;"><a href="mailto:${escapeHtml(profile.email)}" style="${mpSecondary}text-decoration:none;">${escapeHtml(profile.email)}</a></div></td></tr>`;
-        }
-      } else if (field === 'website') {
-        if (brand.website && !bHidden.includes('website')) {
-          contactRowsHtml += `<tr><td style="padding-bottom:2px;${mpSecondary}white-space:normal;"><div data-sig-field="website" style="display:inline-block;"><a href="${escapeHtml(brand.website)}" style="${mpSecondary}text-decoration:none;">${escapeHtml(websiteDisplay)}</a></div></td></tr>`;
-        }
-      }
-    }
-    flushContactRows();
-  }
+  const mpMiddleColumnHtml =
+    template.layout === 'modern_professional'
+      ? buildMpMiddleColumnHtml(orderedContactInput)
+      : '';
   const creatorTagline =
     isCreatorLayout && (hasTitle || brand.companyName.trim())
       ? buildCreatorTagline(profile.title.trim(), brand.companyName.trim())
@@ -1435,16 +1429,7 @@ export function mergeRenderContext(
   const hasCreatorTagline = Boolean(creatorTagline);
   const creatorContactTableHtml =
     isCreatorLayout && hasContact
-      ? buildCreatorContactTableHtml(
-          officePhone,
-          mobilePhone,
-          officePhoneTelHref,
-          mobilePhoneTelHref,
-          profile.email.trim(),
-          website,
-          websiteDisplay,
-          creatorAccentColor
-        )
+      ? buildCreatorContactTableHtmlOrdered(orderedContactInput)
       : '';
   const hasCreatorContactTable = Boolean(creatorContactTableHtml);
   const creatorPromoPillsHtml = isCreatorLayout
@@ -1463,16 +1448,7 @@ export function mergeRenderContext(
   const hasExecutiveRoleLine = Boolean(executiveRoleLine);
   const executiveContactLineHtml =
     isExecutiveLayout && hasContact
-      ? buildExecutiveContactLineHtml(
-          officePhone,
-          mobilePhone,
-          officePhoneTelHref,
-          mobilePhoneTelHref,
-          profile.email.trim(),
-          website,
-          websiteDisplay,
-          brand.primaryColor.trim() || '#901a1e'
-        )
+      ? buildExecutiveContactLineHtmlOrdered(orderedContactInput)
       : '';
   const hasExecutiveContactLine = Boolean(executiveContactLineHtml);
   const executiveSocialLineHtml =
@@ -1494,17 +1470,7 @@ export function mergeRenderContext(
   const portfolioPhoneTelHref = officePhone ? officePhoneTelHref : mobilePhoneTelHref;
   const portfolioContactPillsHtml =
     isPortfolioLayout && hasContact
-      ? buildPortfolioContactPillsHtml(
-          profile.email.trim(),
-          portfolioPhone,
-          portfolioPhoneTelHref,
-          website,
-          websiteDisplay,
-          brandSecondaryColor,
-          portfolioPanelColor,
-          portfolioBorderColor,
-          brandPrimaryColor
-        )
+      ? buildPortfolioContactPillsHtmlOrdered(orderedContactInput)
       : '';
   const hasPortfolioContactPills = Boolean(portfolioContactPillsHtml);
   const portfolioNetworkSectionHtml = isPortfolioLayout
@@ -1525,16 +1491,7 @@ export function mergeRenderContext(
   const ecardPhoneTelHref = officePhone ? officePhoneTelHref : mobilePhoneTelHref;
   const ecardContactTableHtml =
     isEcardLayout && hasContact
-      ? buildEcardContactTableHtml(
-          officePhone,
-          mobilePhone,
-          officePhoneTelHref,
-          mobilePhoneTelHref,
-          profile.email.trim(),
-          website,
-          websiteDisplay,
-          brandPrimaryColor
-        )
+      ? buildEcardContactTableHtmlOrdered(orderedContactInput)
       : '';
   const hasEcardContactTable = Boolean(ecardContactTableHtml);
   const ecardPortfolioSectionsHtml = isEcardLayout
@@ -1605,6 +1562,7 @@ export function mergeRenderContext(
     hasEcardPortfolioSection,
     hasEcardFooter,
     hasAvatar: Boolean(avatarUrl) && !pHidden.includes('avatarUrl'),
+    hasOrderedMainStack,
   };
 
   const stringCtx: Record<string, string> = {
@@ -1706,6 +1664,7 @@ export function mergeRenderContext(
     ecardSocialTdBlueskyStyle: ecardSocial.bs,
     ecardSocialTdYoutubeStyle: ecardSocial.yt,
     mpMiddleColumnHtml,
+    orderedMainStackHtml,
   };
 
   return { evalCtx, stringCtx };

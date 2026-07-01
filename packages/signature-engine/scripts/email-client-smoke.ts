@@ -905,7 +905,7 @@ const htmlDefault = renderSignature({
   publicSiteOrigin: origin,
 });
 assert.ok(
-  htmlDefault.includes('border-right: 2px solid') && htmlDefault.includes('font-weight: 600; color: #111111;">P:&nbsp;</'),
+  htmlDefault.includes('border-right: 2px solid') && htmlDefault.includes('P:&nbsp;</'),
   'default: accent border and P|E|W contact row'
 );
 
@@ -1260,7 +1260,7 @@ assert.ok(htmlDefault.includes('123 Main St'), 'default: address renders');
 assert.ok(htmlDefault.includes('Dallas, TX 75201'), 'default: city renders with state and zip');
 assert.match(
   htmlDefault,
-  /width="130"[\s\S]*?123 Main St[\s\S]*?font-weight: 600; color: #111111;">P:&nbsp;</,
+  /width="130"[\s\S]*?123 Main St[\s\S]*?P:&nbsp;</,
   'default: address under logo in left column'
 );
 assert.doesNotMatch(
@@ -1500,5 +1500,60 @@ assert.ok(
   htmlModernProfessional.includes('padding-bottom:16px'),
   'modern_professional: social icons use increased vertical spacing',
 );
+
+const htmlDefaultReordered = renderSignature({
+  profile: {
+    ...profile,
+    contactDisplayOrder: ['website', 'email', 'name', 'title'],
+  },
+  brand: mockSignatureBrand,
+  template: mockSignatureTemplate('default'),
+  publicSiteOrigin: origin,
+});
+const defaultWebsiteIdx = htmlDefaultReordered.indexOf('data-sig-field="website"');
+const defaultEmailIdx = htmlDefaultReordered.indexOf('data-sig-field="email"');
+assert.ok(defaultWebsiteIdx !== -1 && defaultEmailIdx !== -1, 'default reorder: tagged fields present');
+assert.ok(defaultWebsiteIdx < defaultEmailIdx, 'default reorder: website before email');
+
+const htmlStandardReordered = renderSignature({
+  profile: {
+    ...profile,
+    contactDisplayOrder: ['website', 'email', 'name', 'title'],
+  },
+  brand: mockSignatureBrand,
+  template: mockSignatureTemplate(),
+  publicSiteOrigin: origin,
+});
+const stdWebsiteIdx = htmlStandardReordered.indexOf('data-sig-field="website"');
+const stdEmailIdx = htmlStandardReordered.indexOf('data-sig-field="email"');
+assert.ok(stdWebsiteIdx < stdEmailIdx, 'standard reorder: website before email');
+
+const htmlMpReordered = renderSignature({
+  profile: {
+    ...profile,
+    avatarUrl: 'https://example.com/images/avatar.png',
+    contactDisplayOrder: ['website', 'email', 'name', 'title', 'logo'],
+  },
+  brand: {
+    ...mockSignatureBrand,
+    website: 'https://www.example.com',
+  },
+  template: {
+    id: 'modern-prof-reorder',
+    name: 'Modern Professional',
+    layout: 'modern_professional',
+    elements: [
+      { type: 'logo' },
+      { type: 'name' },
+      { type: 'title' },
+      { type: 'contact' },
+      { type: 'social' },
+    ],
+  },
+  publicSiteOrigin: origin,
+});
+const mpWebsiteIdx = htmlMpReordered.indexOf('data-sig-field="website"');
+const mpEmailIdx = htmlMpReordered.indexOf('data-sig-field="email"');
+assert.ok(mpWebsiteIdx < mpEmailIdx, 'modern_professional reorder: website before email');
 
 process.stdout.write('email-client-smoke: all checks passed.\n');

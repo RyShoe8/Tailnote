@@ -64,7 +64,7 @@ export const CREATOR_SIGNATURE_TEMPLATE = `<table class="sig-creator-root" cellp
             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse: collapse;">
               {{#if hasName}}
               <tr>
-                <td style="font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; padding-bottom: 2px; line-height: 1.2;">
+                <td data-sig-field="name" style="font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; padding-bottom: 2px; line-height: 1.2;">
                   {{fullName}}
                 </td>
               </tr>

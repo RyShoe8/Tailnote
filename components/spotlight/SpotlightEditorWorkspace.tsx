@@ -4,17 +4,9 @@ import Link from 'next/link';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-  DragStartEvent,
-  useDraggable,
   DragOverlay,
 } from '@dnd-kit/core';
-import { arrayMove, sortableKeyboardCoordinates, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Move } from 'lucide-react';
 import {
   renderSignature,
@@ -55,6 +47,8 @@ import { hasAnalytics, hasBrandingRemoval } from '@/lib/billing/subscriptionAcce
 import { SignatureBimiTab } from '@/components/dashboard/SignatureBimiTab';
 import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 import { PreviewDropOverlay } from '@/components/signature/PreviewDropOverlay';
+import { useSignatureDragDrop } from '@/lib/signature/useSignatureDragDrop';
+import { defaultProfile, profileFromApi, trackedProfilePayload } from '@/lib/signature/profileApiHelpers';
 
 type OrgResponse = {
   companyName?: string;
@@ -132,14 +126,7 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
   };
 }
 
-const defaultProfile: SignatureProfile = {
-  firstName: '',
-  lastName: '',
-  title: '',
-  email: '',
-  officePhone: '',
-  mobilePhone: '',
-};
+const BRAND_SORTABLE_IDS = ['companyName', 'website'] as const;
 
 export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string }) {
   const [org, setOrg] = useState<OrgResponse | null>(null);
@@ -188,112 +175,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
   /** Bumps after mount so signature HTML re-renders with real `window` origin (SSR memo used localhost). */
   const [assetOriginNonce, setAssetOriginNonce] = useState(0);
 
-  // ── Drag-to-preview state ──
-  const [isDraggingToPreview, setIsDraggingToPreview] = useState(false);
-  const [draggedFieldId, setDraggedFieldId] = useState<string | null>(null);
   const previewWrapperRef = useRef<HTMLDivElement>(null);
-
-  const handlePreviewDragStart = useCallback((event: DragStartEvent) => {
-    const fieldId = String(event.active.id);
-    setIsDraggingToPreview(true);
-    setDraggedFieldId(fieldId);
-  }, []);
-
-  const handlePreviewDragEnd = useCallback(() => {
-    setIsDraggingToPreview(false);
-    setDraggedFieldId(null);
-  }, []);
-
-  const handleContactReorder = useCallback(
-    (rawFieldId: string, insertAfterField: string | null) => {
-      const fieldId = rawFieldId === 'firstName' || rawFieldId === 'lastName' ? 'name' : rawFieldId === 'avatarUrl' ? 'avatar' : rawFieldId === 'logoUrl' ? 'logo' : rawFieldId;
-      const defaultOrder = ['logo', 'name', 'title', 'companyName', 'email', 'website', 'address', 'officePhone', 'mobilePhone'];
-      const currentOrder = profile.contactDisplayOrder?.length
-        ? [...profile.contactDisplayOrder]
-        : [...defaultOrder];
-
-      // Remove field from its current position
-      const curIdx = currentOrder.indexOf(fieldId);
-      if (curIdx !== -1) currentOrder.splice(curIdx, 1);
-
-      if (insertAfterField === null) {
-        // Insert at the beginning
-        currentOrder.unshift(fieldId);
-      } else {
-        const afterIdx = currentOrder.indexOf(insertAfterField);
-        if (afterIdx !== -1) {
-          currentOrder.splice(afterIdx + 1, 0, fieldId);
-        } else {
-          currentOrder.push(fieldId);
-        }
-      }
-
-      setProfile((p) => ({ ...p, contactDisplayOrder: currentOrder }));
-      // Clear drag state
-      setIsDraggingToPreview(false);
-      setDraggedFieldId(null);
-    },
-    [profile.contactDisplayOrder]
-  );
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      handlePreviewDragEnd();
-      const { active, over } = event;
-      if (!over) return;
-      
-      const activeId = String(active.id);
-      const overId = String(over.id);
-
-      // Dropped on a preview zone
-      if (overId.startsWith('zone-')) {
-        const zone = over.data.current;
-        if (zone) {
-          handleContactReorder(activeId, zone.insertAfterField);
-        }
-        return;
-      }
-
-      // Dropped on another form field (reordering details list)
-      if (activeId !== overId) {
-        setProfile((p) => {
-          const defaultOrder = ['avatarUrl', 'firstName', 'lastName', 'title', 'email', 'officePhone', 'mobilePhone'];
-          const currentOrder = p.detailOrder?.length ? p.detailOrder : defaultOrder;
-          // Ensure all fields are present
-          const activeItems = [...new Set([...currentOrder, ...defaultOrder])].filter((id) => defaultOrder.includes(id));
-          
-          const oldIndex = activeItems.indexOf(activeId);
-          const newIndex = activeItems.indexOf(overId);
-          if (oldIndex !== -1 && newIndex !== -1) {
-            const newDetailOrder = arrayMove(activeItems, oldIndex, newIndex);
-
-            // Also attempt to sync contactDisplayOrder so the preview updates
-            let newContactDisplayOrder = p.contactDisplayOrder?.length ? [...p.contactDisplayOrder] : ['logo', 'name', 'title', 'companyName', 'email', 'website', 'address', 'officePhone', 'mobilePhone'];
-            const mappedActiveId = activeId === 'firstName' || activeId === 'lastName' ? 'name' : activeId === 'avatarUrl' ? 'avatar' : activeId === 'logoUrl' ? 'logo' : activeId;
-            const mappedOverId = overId === 'firstName' || overId === 'lastName' ? 'name' : overId === 'avatarUrl' ? 'avatar' : overId === 'logoUrl' ? 'logo' : overId;
-
-            if (mappedActiveId !== mappedOverId && newContactDisplayOrder.includes(mappedActiveId) && newContactDisplayOrder.includes(mappedOverId)) {
-              const cdoOldIndex = newContactDisplayOrder.indexOf(mappedActiveId);
-              // Calculate direction of move in the form to move it relative to the target in the preview
-              const cdoNewIndex = newContactDisplayOrder.indexOf(mappedOverId);
-              if (cdoOldIndex !== -1 && cdoNewIndex !== -1) {
-                newContactDisplayOrder = arrayMove(newContactDisplayOrder, cdoOldIndex, cdoNewIndex);
-              }
-            }
-
-            return { ...p, detailOrder: newDetailOrder, contactDisplayOrder: newContactDisplayOrder };
-          }
-          return p;
-        });
-      }
-    },
-    [handleContactReorder, handlePreviewDragEnd]
-  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -368,17 +250,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
         : defaultRow ?? list[0];
       if (pick) setSelectedTemplateId(pick._id);
       if (pJson.profile && typeof pJson.profile === 'object') {
-        const sp = pJson.profile as Partial<SignatureProfile>;
-        setProfile({
-          ...defaultProfile,
-          firstName: typeof sp.firstName === 'string' ? sp.firstName : '',
-          lastName: typeof sp.lastName === 'string' ? sp.lastName : '',
-          title: typeof sp.title === 'string' ? sp.title : '',
-          email: typeof sp.email === 'string' ? sp.email : '',
-          officePhone: typeof sp.officePhone === 'string' ? sp.officePhone : '',
-          mobilePhone: typeof sp.mobilePhone === 'string' ? sp.mobilePhone : '',
-          avatarUrl: typeof sp.avatarUrl === 'string' ? sp.avatarUrl : '',
-        });
+        setProfile(profileFromApi(pJson.profile as Partial<SignatureProfile>));
       }
       
       // For Spotlight applications, we always start with an empty quote block,
@@ -460,6 +332,27 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
     });
   }, [selectedTemplate, org?.plan, org?.subscriptionStatus]);
 
+  const setBrandOrder = useCallback((order: string[]) => {
+    setOrg((o) => (o ? { ...o, brandOrder: order } : o));
+  }, []);
+
+  const {
+    isDraggingToPreview,
+    draggedFieldId,
+    reorderableFields,
+    sensors,
+    collisionDetection,
+    handlePreviewDragStart,
+    handleDragEnd,
+  } = useSignatureDragDrop({
+    layout: engineTemplate?.layout ?? 'default',
+    profile,
+    setProfile,
+    brandOrder: org?.brandOrder,
+    setBrandOrder,
+    previewWrapperRef,
+  });
+
   const hydratedContentBlocks = useHydratedContentBlocks(contentBlocks);
 
   const html = useMemo(() => {
@@ -531,16 +424,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               templateId: selectedTemplateId,
-              profile: {
-                firstName: filteredProfile.firstName,
-                lastName: filteredProfile.lastName,
-                title: filteredProfile.title,
-                email: filteredProfile.email,
-                officePhone: filteredProfile.officePhone ?? '',
-                mobilePhone: filteredProfile.mobilePhone ?? '',
-                avatarUrl: filteredProfile.avatarUrl ?? '',
-                contentBlocks,
-              },
+              profile: trackedProfilePayload(filteredProfile, contentBlocks),
               brandOverride: {
                 fontFamily: brand.hiddenFields?.includes('fontFamily') ? '' : brand.fontFamily,
                 primaryColor: brand.hiddenFields?.includes('primaryColor') ? '' : brand.primaryColor,
@@ -585,6 +469,10 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
     profile.email,
     profile.officePhone,
     profile.mobilePhone,
+    profile.avatarUrl,
+    profile.hiddenFields,
+    profile.detailOrder,
+    profile.contactDisplayOrder,
     brand.companyName,
     brand.website,
     brand.logoUrl,
@@ -667,6 +555,9 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
           officePhone: profile.officePhone,
           mobilePhone: profile.mobilePhone,
           avatarUrl: profile.avatarUrl,
+          detailOrder: profile.detailOrder ?? [],
+          contactDisplayOrder: profile.contactDisplayOrder ?? [],
+          hiddenFields: profile.hiddenFields ?? [],
           // Organization Brand Data
           logoHeightPx: org.logoHeightPx,
           logoShape: org.logoShape,
@@ -777,7 +668,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
     const showPreviewColumn = isLgUp || mobilePane === 'preview';
 
     return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handlePreviewDragStart} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={collisionDetection} onDragStart={handlePreviewDragStart} onDragEnd={handleDragEnd}>
       <div
         className={cn(
           'grid lg:grid-cols-12 gap-8 items-start max-w-full min-w-0',
@@ -1128,6 +1019,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
                 <SignatureForm
                   value={profile}
                   onChange={setProfile}
+                  layout={engineTemplate?.layout}
                 />
               </CardContent>
             </Card>
@@ -1239,6 +1131,8 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
                 wrapperRef={previewWrapperRef}
                 isDragging={isDraggingToPreview}
                 draggedFieldId={draggedFieldId}
+                reorderableFields={reorderableFields}
+                contactDisplayOrder={profile.contactDisplayOrder}
               />
             )}
           </div>

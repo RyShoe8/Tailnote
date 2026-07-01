@@ -4,17 +4,9 @@ import Link from 'next/link';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-  DragStartEvent,
-  useDraggable,
   DragOverlay,
 } from '@dnd-kit/core';
-import { arrayMove, sortableKeyboardCoordinates, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Move } from 'lucide-react';
 import {
   renderSignature,
@@ -55,6 +47,13 @@ import { hasAnalytics, hasBrandingRemoval } from '@/lib/billing/subscriptionAcce
 import { SignatureBimiTab } from '@/components/dashboard/SignatureBimiTab';
 import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 import { PreviewDropOverlay } from '@/components/signature/PreviewDropOverlay';
+import { useSignatureDragDrop } from '@/lib/signature/useSignatureDragDrop';
+import {
+  defaultProfile,
+  profileFromApi,
+  profileToPatchBody,
+  trackedProfilePayload,
+} from '@/lib/signature/profileApiHelpers';
 
 type OrgResponse = {
   companyName?: string;
@@ -132,14 +131,7 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
   };
 }
 
-const defaultProfile: SignatureProfile = {
-  firstName: '',
-  lastName: '',
-  title: '',
-  email: '',
-  officePhone: '',
-  mobilePhone: '',
-};
+const BRAND_SORTABLE_IDS = ['companyName', 'website'] as const;
 
 export function SignatureWorkspace() {
   const [org, setOrg] = useState<OrgResponse | null>(null);
@@ -184,112 +176,7 @@ export function SignatureWorkspace() {
   /** Bumps after mount so signature HTML re-renders with real `window` origin (SSR memo used localhost). */
   const [assetOriginNonce, setAssetOriginNonce] = useState(0);
 
-  // ── Drag-to-preview state ──
-  const [isDraggingToPreview, setIsDraggingToPreview] = useState(false);
-  const [draggedFieldId, setDraggedFieldId] = useState<string | null>(null);
   const previewWrapperRef = useRef<HTMLDivElement>(null);
-
-  const handlePreviewDragStart = useCallback((event: DragStartEvent) => {
-    const fieldId = String(event.active.id);
-    setIsDraggingToPreview(true);
-    setDraggedFieldId(fieldId);
-  }, []);
-
-  const handlePreviewDragEnd = useCallback(() => {
-    setIsDraggingToPreview(false);
-    setDraggedFieldId(null);
-  }, []);
-
-  const handleContactReorder = useCallback(
-    (rawFieldId: string, insertAfterField: string | null) => {
-      const fieldId = rawFieldId === 'firstName' || rawFieldId === 'lastName' ? 'name' : rawFieldId === 'avatarUrl' ? 'avatar' : rawFieldId === 'logoUrl' ? 'logo' : rawFieldId;
-      const defaultOrder = ['logo', 'name', 'title', 'companyName', 'email', 'website', 'address', 'officePhone', 'mobilePhone'];
-      const currentOrder = profile.contactDisplayOrder?.length
-        ? [...profile.contactDisplayOrder]
-        : [...defaultOrder];
-
-      // Remove field from its current position
-      const curIdx = currentOrder.indexOf(fieldId);
-      if (curIdx !== -1) currentOrder.splice(curIdx, 1);
-
-      if (insertAfterField === null) {
-        // Insert at the beginning
-        currentOrder.unshift(fieldId);
-      } else {
-        const afterIdx = currentOrder.indexOf(insertAfterField);
-        if (afterIdx !== -1) {
-          currentOrder.splice(afterIdx + 1, 0, fieldId);
-        } else {
-          currentOrder.push(fieldId);
-        }
-      }
-
-      setProfile((p) => ({ ...p, contactDisplayOrder: currentOrder }));
-      // Clear drag state
-      setIsDraggingToPreview(false);
-      setDraggedFieldId(null);
-    },
-    [profile.contactDisplayOrder]
-  );
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      handlePreviewDragEnd();
-      const { active, over } = event;
-      if (!over) return;
-      
-      const activeId = String(active.id);
-      const overId = String(over.id);
-
-      // Dropped on a preview zone
-      if (overId.startsWith('zone-')) {
-        const zone = over.data.current;
-        if (zone) {
-          handleContactReorder(activeId, zone.insertAfterField);
-        }
-        return;
-      }
-
-      // Dropped on another form field (reordering details list)
-      if (activeId !== overId) {
-        setProfile((p) => {
-          const defaultOrder = ['avatarUrl', 'firstName', 'lastName', 'title', 'email', 'officePhone', 'mobilePhone'];
-          const currentOrder = p.detailOrder?.length ? p.detailOrder : defaultOrder;
-          // Ensure all fields are present
-          const activeItems = [...new Set([...currentOrder, ...defaultOrder])].filter((id) => defaultOrder.includes(id));
-          
-          const oldIndex = activeItems.indexOf(activeId);
-          const newIndex = activeItems.indexOf(overId);
-          if (oldIndex !== -1 && newIndex !== -1) {
-            const newDetailOrder = arrayMove(activeItems, oldIndex, newIndex);
-
-            // Also attempt to sync contactDisplayOrder so the preview updates
-            let newContactDisplayOrder = p.contactDisplayOrder?.length ? [...p.contactDisplayOrder] : ['logo', 'name', 'title', 'companyName', 'email', 'website', 'address', 'officePhone', 'mobilePhone'];
-            const mappedActiveId = activeId === 'firstName' || activeId === 'lastName' ? 'name' : activeId === 'avatarUrl' ? 'avatar' : activeId === 'logoUrl' ? 'logo' : activeId;
-            const mappedOverId = overId === 'firstName' || overId === 'lastName' ? 'name' : overId === 'avatarUrl' ? 'avatar' : overId === 'logoUrl' ? 'logo' : overId;
-
-            if (mappedActiveId !== mappedOverId && newContactDisplayOrder.includes(mappedActiveId) && newContactDisplayOrder.includes(mappedOverId)) {
-              const cdoOldIndex = newContactDisplayOrder.indexOf(mappedActiveId);
-              // Calculate direction of move in the form to move it relative to the target in the preview
-              const cdoNewIndex = newContactDisplayOrder.indexOf(mappedOverId);
-              if (cdoOldIndex !== -1 && cdoNewIndex !== -1) {
-                newContactDisplayOrder = arrayMove(newContactDisplayOrder, cdoOldIndex, cdoNewIndex);
-              }
-            }
-
-            return { ...p, detailOrder: newDetailOrder, contactDisplayOrder: newContactDisplayOrder };
-          }
-          return p;
-        });
-      }
-    },
-    [handleContactReorder, handlePreviewDragEnd]
-  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -364,18 +251,10 @@ export function SignatureWorkspace() {
         : defaultRow ?? list[0];
       if (pick) setSelectedTemplateId(pick._id);
       if (pJson.profile && typeof pJson.profile === 'object') {
-        const sp = pJson.profile as Partial<SignatureProfile>;
-        setProfile({
-          ...defaultProfile,
-          firstName: typeof sp.firstName === 'string' ? sp.firstName : '',
-          lastName: typeof sp.lastName === 'string' ? sp.lastName : '',
-          title: typeof sp.title === 'string' ? sp.title : '',
-          email: typeof sp.email === 'string' ? sp.email : '',
-          officePhone: typeof sp.officePhone === 'string' ? sp.officePhone : '',
-          mobilePhone: typeof sp.mobilePhone === 'string' ? sp.mobilePhone : '',
-        });
-        if ((sp as any).contentBlocks) {
-          setContentBlocks((sp as any).contentBlocks);
+        setProfile(profileFromApi(pJson.profile as Partial<SignatureProfile>));
+        const sp = pJson.profile as { contentBlocks?: ContentBlockData[] };
+        if (Array.isArray(sp.contentBlocks)) {
+          setContentBlocks(sp.contentBlocks);
         }
       }
     } finally {
@@ -455,6 +334,34 @@ export function SignatureWorkspace() {
     });
   }, [selectedTemplate, org?.plan, org?.subscriptionStatus]);
 
+  const setBrandOrder = useCallback((order: string[]) => {
+    setOrg((o) => (o ? { ...o, brandOrder: order } : o));
+  }, []);
+
+  const brandSortableItems = useMemo(() => {
+    const order = org?.brandOrder?.length ? org.brandOrder : [...BRAND_SORTABLE_IDS];
+    return [...new Set([...order, ...BRAND_SORTABLE_IDS])].filter((id) =>
+      BRAND_SORTABLE_IDS.includes(id as (typeof BRAND_SORTABLE_IDS)[number]),
+    );
+  }, [org?.brandOrder]);
+
+  const {
+    isDraggingToPreview,
+    draggedFieldId,
+    reorderableFields,
+    sensors,
+    collisionDetection,
+    handlePreviewDragStart,
+    handleDragEnd,
+  } = useSignatureDragDrop({
+    layout: engineTemplate?.layout ?? 'default',
+    profile,
+    setProfile,
+    brandOrder: org?.brandOrder,
+    setBrandOrder,
+    previewWrapperRef,
+  });
+
   const hydratedContentBlocks = useHydratedContentBlocks(contentBlocks);
 
   const html = useMemo(() => {
@@ -526,16 +433,7 @@ export function SignatureWorkspace() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               templateId: selectedTemplateId,
-              profile: {
-                firstName: filteredProfile.firstName,
-                lastName: filteredProfile.lastName,
-                title: filteredProfile.title,
-                email: filteredProfile.email,
-                officePhone: filteredProfile.officePhone ?? '',
-                mobilePhone: filteredProfile.mobilePhone ?? '',
-                avatarUrl: filteredProfile.avatarUrl ?? '',
-                contentBlocks,
-              },
+              profile: trackedProfilePayload(filteredProfile, contentBlocks),
               brandOverride: {
                 fontFamily: brand.hiddenFields?.includes('fontFamily') ? '' : brand.fontFamily,
                 primaryColor: brand.hiddenFields?.includes('primaryColor') ? '' : brand.primaryColor,
@@ -580,6 +478,10 @@ export function SignatureWorkspace() {
     profile.email,
     profile.officePhone,
     profile.mobilePhone,
+    profile.avatarUrl,
+    profile.hiddenFields,
+    profile.detailOrder,
+    profile.contactDisplayOrder,
     brand.companyName,
     brand.website,
     brand.logoUrl,
@@ -620,20 +522,12 @@ export function SignatureWorkspace() {
   const patchSignatureProfile = async (opts?: { includeBlocks?: boolean; includeTemplate?: boolean }) => {
     const includeBlocks = opts?.includeBlocks === true;
     const includeTemplate = opts?.includeTemplate === true;
-    const body: Record<string, unknown> = {
-      firstName: profile.firstName,
-      lastName: profile.lastName,
-      title: profile.title,
-      email: profile.email,
-      officePhone: profile.officePhone ?? '',
-      mobilePhone: profile.mobilePhone ?? '',
-    };
-    if (includeBlocks && promoBlocksEditable) {
-      body.contentBlocks = contentBlocks;
-    }
-    if (includeTemplate && promoBlocksEditable && selectedTemplateId) {
-      body.templateId = selectedTemplateId;
-    }
+    const body = profileToPatchBody(profile, {
+      ...(includeBlocks && promoBlocksEditable ? { contentBlocks } : {}),
+      ...(includeTemplate && promoBlocksEditable && selectedTemplateId
+        ? { templateId: selectedTemplateId }
+        : {}),
+    });
     return fetch('/api/dashboard/me/signature-profile', {
       method: 'PATCH',
       credentials: 'include',
@@ -714,15 +608,7 @@ export function SignatureWorkspace() {
       }
       if (j.profile && typeof j.profile === 'object') {
         const sp = j.profile as Partial<SignatureProfile> & { contentBlocks?: ContentBlockData[] };
-        setProfile({
-          ...defaultProfile,
-          firstName: typeof sp.firstName === 'string' ? sp.firstName : '',
-          lastName: typeof sp.lastName === 'string' ? sp.lastName : '',
-          title: typeof sp.title === 'string' ? sp.title : '',
-          email: typeof sp.email === 'string' ? sp.email : '',
-          officePhone: typeof sp.officePhone === 'string' ? sp.officePhone : '',
-          mobilePhone: typeof sp.mobilePhone === 'string' ? sp.mobilePhone : '',
-        });
+        setProfile(profileFromApi(sp));
         if (Array.isArray(sp.contentBlocks)) {
           setContentBlocks(sp.contentBlocks);
         }
@@ -763,6 +649,8 @@ export function SignatureWorkspace() {
           zip: org.zip,
           animation: org.animation,
           spotlightEnabled: org.spotlightEnabled,
+          brandOrder: org.brandOrder ?? [],
+          hiddenFields: org.hiddenFields ?? [],
         }),
       });
       const j = await res.json().catch(() => ({}));
@@ -874,7 +762,7 @@ export function SignatureWorkspace() {
     const showPreviewColumn = isLgUp || mobilePane === 'preview';
 
     return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handlePreviewDragStart} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={collisionDetection} onDragStart={handlePreviewDragStart} onDragEnd={handleDragEnd}>
       <div
         className={cn(
           'grid lg:grid-cols-12 gap-8 items-start max-w-full min-w-0',
@@ -917,7 +805,7 @@ export function SignatureWorkspace() {
                 These values feed the signature engine for every employee. Drag fields to reorder them in your signature.
               </p>
             </div>
-            <SortableContext items={['companyName', 'website']} strategy={verticalListSortingStrategy}>
+            <SortableContext items={brandSortableItems} strategy={verticalListSortingStrategy}>
               <div className="space-y-4">
                 <SortableField
                   id="companyName"
@@ -1251,6 +1139,7 @@ export function SignatureWorkspace() {
                 <SignatureForm
                   value={profile}
                   onChange={setProfile}
+                  layout={engineTemplate?.layout}
                 />
                 <div className="flex flex-wrap items-center gap-3">
                   <Button type="button" disabled={savingProfile} onClick={() => void handleSaveProfile()}>
@@ -1310,6 +1199,8 @@ export function SignatureWorkspace() {
                 wrapperRef={previewWrapperRef}
                 isDragging={isDraggingToPreview}
                 draggedFieldId={draggedFieldId}
+                reorderableFields={reorderableFields}
+                contactDisplayOrder={profile.contactDisplayOrder}
               />
             )}
           </div>
