@@ -1,6 +1,8 @@
 import { cache } from 'react';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getServerSession } from '@/lib/auth/session';
+import { sanitizeInternalRedirect } from '@/lib/auth/sanitizeInternalRedirect';
 import { isPlatformAdmin } from '@/lib/auth/platformAdmin';
 import { connectMongoose } from '@/lib/mongoose';
 import { OrganizationModel, type OrganizationDoc } from '@/models/Organization';
@@ -24,6 +26,14 @@ export const getDashboardSession = cache(async (): Promise<{ user: DashboardUser
     role?: string;
   };
   if (!raw.organizationId) {
+    const headersList = await headers();
+    const pathname = headersList.get('x-pathname');
+    if (pathname?.startsWith('/dashboard')) {
+      const safe = sanitizeInternalRedirect(pathname);
+      if (safe) {
+        redirect(`/onboarding?redirect=${encodeURIComponent(safe)}`);
+      }
+    }
     redirect('/onboarding');
   }
   return {

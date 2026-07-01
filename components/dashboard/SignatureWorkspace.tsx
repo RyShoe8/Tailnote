@@ -810,6 +810,20 @@ export function SignatureWorkspace() {
                 These values feed the signature engine for every employee. Drag fields to reorder them in your signature.
               </p>
             </div>
+            <div className="space-y-2">
+              <Label>Signature layout</Label>
+              <select
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                value={selectedTemplateId}
+                onChange={(e) => setSelectedTemplateId(e.target.value)}
+              >
+                {templates.map((t) => (
+                  <option key={t._id} value={t._id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <SortableContext items={brandSortableItems} strategy={verticalListSortingStrategy}>
               <div className="space-y-4">
                 {brandSortableItems.map((fieldId) => {
@@ -1064,20 +1078,6 @@ export function SignatureWorkspace() {
                       </option>
                     ))}
                   </optgroup>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label>Signature layout</Label>
-              <select
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-                value={selectedTemplateId}
-                onChange={(e) => setSelectedTemplateId(e.target.value)}
-              >
-                {templates.map((t) => (
-                  <option key={t._id} value={t._id}>
-                    {t.name}
-                  </option>
                 ))}
               </select>
             </div>

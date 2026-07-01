@@ -62,4 +62,12 @@ describe('layoutReorderRules', () => {
     );
     assert.ok(order.indexOf('website') < order.indexOf('companyName'));
   });
+
+  it('default layout reorderable fields include companyName', () => {
+    const rules = getLayoutReorderRules('default');
+    assert.ok(rules.reorderableFields.includes('companyName'));
+    const order = resolveFieldOrder(rules, []);
+    assert.ok(order.includes('companyName'));
+    assert.ok(order.indexOf('companyName') > order.indexOf('title'));
+  });
 });

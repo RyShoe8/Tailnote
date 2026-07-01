@@ -30,6 +30,12 @@ export type SubmissionSnapshotInput = {
   socialPlatforms?: string[];
   socialProfiles?: Record<string, string>;
   agreedToTerms?: boolean;
+  templateId?: string;
+  brandOrder?: string[];
+  hiddenFields?: string[];
+  detailOrder?: string[];
+  contactDisplayOrder?: string[];
+  contentBlocks?: unknown[];
 };
 
 export type ProfileSource = {
@@ -277,5 +283,11 @@ export function buildSubmissionCreatePayload(
     socialPlatforms: client.socialPlatforms,
     socialProfiles: client.socialProfiles,
     agreedToTerms: client.agreedToTerms,
+    templateId: client.templateId,
+    brandOrder: client.brandOrder,
+    hiddenFields: client.hiddenFields,
+    detailOrder: client.detailOrder,
+    contactDisplayOrder: client.contactDisplayOrder,
+    contentBlocks: client.contentBlocks,
   };
 }

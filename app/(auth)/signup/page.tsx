@@ -15,29 +15,14 @@ import { formatOAuthCallbackError, formatSignupError } from '@/lib/auth/formatAu
 import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha/config';
 import { authCaptchaFetchOptions, useRecaptcha } from '@/lib/recaptcha/client';
 import { sessionMatchesInvitedEmail } from '@/lib/auth/inviteAccountSwitch';
+import { buildPostSignupPath } from '@/lib/auth/buildPostSignupPath';
 
-function buildPostSignupPath(
+function postSignupPathFromSearch(
   searchParams: URLSearchParams,
   inviteToken: string | null,
-  joinToken: string | null
+  joinToken: string | null,
 ): string {
-  if (joinToken) {
-    return `/join/${encodeURIComponent(joinToken)}?accept=1`;
-  }
-  if (inviteToken) {
-    return `/invite/${encodeURIComponent(inviteToken)}?accept=1`;
-  }
-  const redirect = searchParams.get('redirect');
-  if (redirect && redirect.startsWith('/')) {
-    return redirect;
-  }
-  const qs = new URLSearchParams();
-  const subscriptionPlanId = searchParams.get('subscriptionPlanId');
-  const plan = searchParams.get('plan');
-  if (subscriptionPlanId) qs.set('subscriptionPlanId', subscriptionPlanId);
-  if (plan) qs.set('plan', plan);
-  const query = qs.toString();
-  return query ? `/onboarding?${query}` : '/onboarding';
+  return buildPostSignupPath({ searchParams, inviteToken, joinToken });
 }
 
 function SignupForm() {
@@ -46,7 +31,7 @@ function SignupForm() {
   const inviteToken = searchParams.get('invite');
   const joinToken = searchParams.get('join');
   const inviteEmail = searchParams.get('email');
-  const googleCallback = buildPostSignupPath(searchParams, inviteToken, joinToken);
+  const googleCallback = postSignupPathFromSearch(searchParams, inviteToken, joinToken);
   const [name, setName] = useState('');
   const [email, setEmail] = useState(inviteEmail || '');
   const [password, setPassword] = useState('');
@@ -62,7 +47,7 @@ function SignupForm() {
   const loginRecaptcha = useRecaptcha(RECAPTCHA_ACTIONS.login);
   const recaptchaEnabled = signupRecaptcha.enabled;
   const { data: session, isPending: sessionPending } = authClient.useSession();
-  const postSignupPath = buildPostSignupPath(searchParams, inviteToken, joinToken);
+  const postSignupPath = postSignupPathFromSearch(searchParams, inviteToken, joinToken);
 
   useEffect(() => {
     if (sessionPending || !session?.user) return;
@@ -139,7 +124,7 @@ function SignupForm() {
         window.location.href = `/invite/${encodeURIComponent(inviteToken)}?accept=1`;
         return;
       }
-      router.push(buildPostSignupPath(searchParams, inviteToken, joinToken));
+      router.push(postSignupPathFromSearch(searchParams, inviteToken, joinToken));
       router.refresh();
     } catch {
       setError('Sign up failed');

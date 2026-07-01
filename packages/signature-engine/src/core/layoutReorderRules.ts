@@ -9,7 +9,7 @@ export type LayoutReorderRules = {
 };
 
 const MP_FIELDS = ['logo', 'name', 'title', 'email', 'website'] as const;
-const DEFAULT_MAIN_FIELDS = ['name', 'title', 'email', 'officePhone', 'mobilePhone', 'website'] as const;
+const DEFAULT_MAIN_FIELDS = ['name', 'title', 'companyName', 'email', 'officePhone', 'mobilePhone', 'website'] as const;
 const CORPORATE_FIELDS = ['name', 'title', 'companyName', 'email', 'officePhone', 'mobilePhone', 'website'] as const;
 const STACKED_FIELDS = ['logo', 'name', 'title', 'email', 'officePhone', 'mobilePhone', 'website', 'address'] as const;
 const CREATOR_FIELDS = ['name', 'title', 'email', 'officePhone', 'mobilePhone', 'website'] as const;

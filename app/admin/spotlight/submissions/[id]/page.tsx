@@ -7,6 +7,10 @@ import { SubmissionActions } from './SubmissionActions';
 import { formatVotingWeekLabel, getWeekStart } from '@/lib/campaigns/votingWeekUtils';
 import { loadSubmitterSnapshotSources } from '@/lib/campaigns/loadSubmitterSnapshotSources';
 import { resolveSubmissionSnapshot } from '@/lib/campaigns/resolveSubmissionSnapshot';
+import {
+  submissionStatusBadgeClass,
+  submissionStatusLabel,
+} from '@/lib/campaigns/submissionStatusDisplay';
 
 function DetailField({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -70,7 +74,8 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
     archived: 'bg-muted text-muted-foreground',
   };
   const badgeClass =
-    statusBadgeClass[submission.status as string] ?? 'bg-muted text-muted-foreground';
+    statusBadgeClass[submission.status as string] ?? submissionStatusBadgeClass(String(submission.status));
+  const statusLabel = submissionStatusLabel(String(submission.status));
 
   const appliedAt = submission.createdAt
     ? new Date(submission.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
@@ -94,10 +99,20 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
               <span className="text-sm text-muted-foreground">No website provided</span>
             )}
           </div>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize shrink-0 ${badgeClass}`}>
-            {String(submission.status).replace(/_/g, ' ')}
+          <span className={`px-3 py-1 rounded-full text-sm font-medium shrink-0 ${badgeClass}`}>
+            {statusLabel}
           </span>
         </div>
+        {submission.resubmittedAt ? (
+          <p className="text-sm rounded-md border border-blue-200 bg-blue-50 text-blue-900 px-3 py-2">
+            Applicant resubmitted on{' '}
+            {new Date(submission.resubmittedAt).toLocaleString('en-US', {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+            })}
+            .
+          </p>
+        ) : null}
         {view.usedLiveFallback ? (
           <p className="text-sm text-muted-foreground rounded-md border bg-muted/40 px-3 py-2">
             Some contact and brand fields were loaded from the applicant&apos;s current account because this

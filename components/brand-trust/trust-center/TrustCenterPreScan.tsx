@@ -75,10 +75,15 @@ export function TrustCenterPreScan({
         </form>
       </div>
 
-      <section className="space-y-4">
-        <h2 className="text-center text-sm font-medium text-foreground">
-          What we check — and how we help you fix it
-        </h2>
+      <section className="space-y-3">
+        <div className="text-center space-y-1">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            What we check — and how we help you fix it
+          </h2>
+          <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+            Every scan shows what&apos;s working, what&apos;s missing, and the exact steps to fix it.
+          </p>
+        </div>
         <TrustCenterScanExplainer variant="full" />
       </section>
 

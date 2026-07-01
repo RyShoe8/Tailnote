@@ -130,7 +130,48 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
 
 const BRAND_SORTABLE_IDS = ['companyName', 'website'] as const;
 
-export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string }) {
+export type ExistingSpotlightSubmission = {
+  status?: string;
+  companyName?: string;
+  website?: string;
+  logoUrl?: string;
+  logoHeightPx?: number;
+  logoShape?: 'rectangle' | 'circle';
+  logoLink?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  fontFamily?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  animation?: { enabled?: boolean; gifUrl?: string };
+  socialProfiles?: Record<string, string>;
+  brandOrder?: string[];
+  hiddenFields?: string[];
+  detailOrder?: string[];
+  contactDisplayOrder?: string[];
+  templateId?: string;
+  contentBlocks?: ContentBlockData[];
+  firstName?: string;
+  lastName?: string;
+  title?: string;
+  email?: string;
+  officePhone?: string;
+  mobilePhone?: string;
+  avatarUrl?: string;
+  industry?: string;
+  companySize?: string;
+  content?: { quote?: string; description?: string; whyShouldWeFeatureYou?: string };
+};
+
+export function SpotlightEditorWorkspace({
+  campaignId,
+  existingSubmission,
+}: {
+  campaignId: string;
+  existingSubmission?: ExistingSpotlightSubmission;
+}) {
   const [org, setOrg] = useState<OrgResponse | null>(null);
   const [orgName, setOrgName] = useState('');
   const [contentBlocks, setContentBlocks] = useState<ContentBlockData[]>([]);
@@ -178,6 +219,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
   const [assetOriginNonce, setAssetOriginNonce] = useState(0);
 
   const previewWrapperRef = useRef<HTMLDivElement>(null);
+  const isResubmit = existingSubmission?.status === 'needs_changes';
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -225,7 +267,37 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
 
       const o = oJson.organization as OrgResponse;
       setOrg(o);
-      setOrgName(String(o.name || ''));
+
+      const submission = existingSubmission;
+      if (submission) {
+        setOrgName(String(submission.companyName || o.name || ''));
+        setOrg((prev) => ({
+          ...(prev || o),
+          website: submission.website ?? prev?.website,
+          logoUrl: submission.logoUrl ?? prev?.logoUrl,
+          logoHeightPx: submission.logoHeightPx ?? prev?.logoHeightPx,
+          logoShape: submission.logoShape ?? prev?.logoShape,
+          logoLink: submission.logoLink ?? prev?.logoLink,
+          primaryColor: submission.primaryColor ?? prev?.primaryColor,
+          secondaryColor: submission.secondaryColor ?? prev?.secondaryColor,
+          fontFamily: submission.fontFamily ?? prev?.fontFamily,
+          address: submission.address ?? prev?.address,
+          city: submission.city ?? prev?.city,
+          state: submission.state ?? prev?.state,
+          zip: submission.zip ?? prev?.zip,
+          animation: submission.animation ?? prev?.animation,
+          socialLinks: (submission.socialProfiles as OrgResponse['socialLinks']) ?? prev?.socialLinks,
+          brandOrder: submission.brandOrder ?? prev?.brandOrder,
+          hiddenFields: submission.hiddenFields ?? prev?.hiddenFields,
+        }));
+        if (submission.industry) setIndustry(submission.industry);
+        if (submission.companySize) setCompanySize(submission.companySize);
+        if (submission.content?.whyShouldWeFeatureYou) {
+          setWhyShouldWeFeatureYou(submission.content.whyShouldWeFeatureYou);
+        }
+      } else {
+        setOrgName(String(o.name || ''));
+      }
 
       if (!tRes.ok) {
         setLoadError(
@@ -240,7 +312,9 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
       const list: TemplateRow[] = tJson.templates || [];
       setTemplates(list);
       let savedTemplateId: string | undefined;
-      if (pJson.profile && typeof pJson.profile === 'object') {
+      if (submission?.templateId && list.some((t) => t._id === submission.templateId)) {
+        savedTemplateId = submission.templateId;
+      } else if (pJson.profile && typeof pJson.profile === 'object') {
         const tid = (pJson.profile as { templateId?: string }).templateId;
         if (typeof tid === 'string' && tid && list.some((t) => t._id === tid)) {
           savedTemplateId = tid;
@@ -251,18 +325,45 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
         ? list.find((t) => t._id === savedTemplateId) ?? defaultRow ?? list[0]
         : defaultRow ?? list[0];
       if (pick) setSelectedTemplateId(pick._id);
-      if (pJson.profile && typeof pJson.profile === 'object') {
-        setProfile(profileFromApi(pJson.profile as Partial<SignatureProfile>));
+
+      if (submission) {
+        setProfile({
+          ...defaultProfile,
+          firstName: submission.firstName ?? '',
+          lastName: submission.lastName ?? '',
+          title: submission.title ?? '',
+          email: submission.email ?? defaultProfile.email,
+          officePhone: submission.officePhone ?? '',
+          mobilePhone: submission.mobilePhone ?? '',
+          avatarUrl: submission.avatarUrl ?? '',
+          detailOrder: submission.detailOrder ?? [],
+          contactDisplayOrder: submission.contactDisplayOrder ?? [],
+          hiddenFields: submission.hiddenFields ?? [],
+        });
+        if (Array.isArray(submission.contentBlocks) && submission.contentBlocks.length > 0) {
+          setContentBlocks(submission.contentBlocks);
+        } else if (submission.content?.quote) {
+          setContentBlocks([
+            {
+              type: 'quote',
+              quoteSource: 'custom',
+              quoteText: submission.content.quote,
+              enabled: true,
+            },
+          ]);
+        } else {
+          setContentBlocks([{ type: 'quote', quoteSource: 'custom', quoteText: '', enabled: true }]);
+        }
+      } else {
+        if (pJson.profile && typeof pJson.profile === 'object') {
+          setProfile(profileFromApi(pJson.profile as Partial<SignatureProfile>));
+        }
+        setContentBlocks([{ type: 'quote', quoteSource: 'custom', quoteText: '', enabled: true }]);
       }
-      
-      // For Spotlight applications, we always start with an empty quote block,
-      // ignoring any blocks they may have saved on their normal signature profile.
-      // This does not overwrite their real profile because this workspace only posts to /api/campaigns/apply.
-      setContentBlocks([{ type: 'quote', quoteSource: 'custom', quoteText: '', enabled: true }]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [existingSubmission]);
 
   useEffect(() => {
     load();
@@ -549,7 +650,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
       }
 
       const res = await fetch('/api/campaigns/apply', {
-        method: 'POST',
+        method: isResubmit ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           campaignId,
@@ -559,7 +660,6 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
           founder: `${profile.firstName} ${profile.lastName}`.trim(),
           industry,
           companySize,
-          // User Signature Profile Data
           firstName: profile.firstName,
           lastName: profile.lastName,
           title: profile.title,
@@ -570,7 +670,9 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
           detailOrder: profile.detailOrder ?? [],
           contactDisplayOrder: profile.contactDisplayOrder ?? [],
           hiddenFields: profile.hiddenFields ?? [],
-          // Organization Brand Data
+          brandOrder: org.brandOrder ?? [],
+          templateId: selectedTemplateId,
+          contentBlocks,
           logoHeightPx: org.logoHeightPx,
           logoShape: org.logoShape,
           logoLink: org.logoLink,
@@ -722,6 +824,20 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
               <p className="text-sm text-muted-foreground">
                 These values feed the signature engine for every employee. Drag fields to reorder them in your signature.
               </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Signature layout</Label>
+              <select
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                value={selectedTemplateId}
+                onChange={(e) => setSelectedTemplateId(e.target.value)}
+              >
+                {templates.map((t) => (
+                  <option key={t._id} value={t._id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <SortableContext items={brandSortableItems} strategy={verticalListSortingStrategy}>
               <div className="space-y-4">
@@ -980,36 +1096,37 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
                 ))}
               </select>
             </div>
-            <div className="space-y-2">
-              <Label>Signature layout</Label>
-              <select
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-                value={selectedTemplateId}
-                onChange={(e) => setSelectedTemplateId(e.target.value)}
-              >
-                {templates.map((t) => (
-                  <option key={t._id} value={t._id}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-            </div>
             <div className="space-y-2 border-t pt-4">
-              <Label>Tailnote Spotlight</Label>
-              <p className="text-xs text-muted-foreground">
-                Join our community marketing network by featuring a curated startup in your signature.
-              </p>
-              <label className="flex items-center gap-2 text-sm cursor-pointer mt-2">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-input"
-                  checked={org.plan === 'free' || org.spotlightEnabled}
-                  disabled={org.plan === 'free'}
-                  onChange={(e) => setOrg((o) => ({ ...(o || {}), spotlightEnabled: e.target.checked }))}
-                />
-                <span>Enable Tailnote Spotlight</span>
-                {org.plan === 'free' && <span className="ml-2 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full font-medium">Free plan locked</span>}
-              </label>
+              <Label>Signature footer</Label>
+              {showUpgradeNotice ? (
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    Free signatures include a small &ldquo;Powered by Tailnote&rdquo; link at the bottom.
+                  </p>
+                  <label className="flex flex-wrap items-center gap-2 text-sm mt-2 text-muted-foreground cursor-not-allowed">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-input"
+                      checked={false}
+                      disabled
+                      readOnly
+                    />
+                    <span>Remove Powered by Tailnote</span>
+                    <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full font-medium">
+                      Upgrade to remove
+                    </span>
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    <Link href={DASHBOARD_UPGRADE_HREF} className="underline underline-offset-4">
+                      View upgrade options
+                    </Link>
+                  </p>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Your plan does not include Powered by Tailnote attribution on exported signatures.
+                </p>
+              )}
             </div>
             {message ? (
               <p
@@ -1105,7 +1222,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
 
                 <div className="pt-6 border-t flex flex-col items-start gap-3">
                   <Button type="button" size="lg" className="w-full" disabled={saving} onClick={() => void handleSubmitSpotlight()}>
-                    {saving ? 'Submitting...' : 'Submit Spotlight Application'}
+                    {saving ? (isResubmit ? 'Resubmitting…' : 'Submitting…') : isResubmit ? 'Resubmit application' : 'Submit Spotlight Application'}
                   </Button>
                   {message ? (
                     <p className={`text-sm ${messageIsError ? 'text-destructive' : 'text-primary'}`}>{message}</p>

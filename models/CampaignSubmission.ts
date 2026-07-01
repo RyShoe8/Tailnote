@@ -69,6 +69,13 @@ const CampaignSubmissionSchema = new Schema(
     isVoteWinner: { type: Boolean, default: false },
 
     reviewerNotes: { type: String, default: '' },
+    resubmittedAt: { type: Date },
+    templateId: { type: String, trim: true, default: '' },
+    brandOrder: { type: [String], default: [] },
+    hiddenFields: { type: [String], default: [] },
+    detailOrder: { type: [String], default: [] },
+    contactDisplayOrder: { type: [String], default: [] },
+    contentBlocks: { type: Schema.Types.Mixed, default: [] },
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } }
 );

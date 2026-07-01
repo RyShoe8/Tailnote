@@ -27,12 +27,14 @@ import {
 import { stripeBillingEnabled } from 'billing-engine';
 import { linkUserToOrganization } from '@/lib/onboarding/linkUserToOrganization';
 import { getAppBaseUrl } from '@/lib/email/appUrl';
+import { sanitizeInternalRedirect } from '@/lib/auth/sanitizeInternalRedirect';
 
 export const dynamic = 'force-dynamic';
 
 const BodySchema = z.object({
   name: z.string().min(1).max(120),
   subscriptionPlanId: z.string().min(1),
+  redirect: z.string().optional(),
 });
 
 async function rollbackOrg(orgId: mongoose.Types.ObjectId) {
@@ -144,14 +146,16 @@ export async function POST(request: Request) {
       }
 
       const base = getAppBaseUrl();
+      const safeRedirect = sanitizeInternalRedirect(parsed.data.redirect);
+      const postSetupPath = safeRedirect ?? '/dashboard';
       const checkoutUrl = assignWithoutCheckout
-        ? `${base}/dashboard`
+        ? `${base}${postSetupPath}`
         : (
             await createCheckoutSessionForOrganization({
               org,
               userEmail: user.email,
               subscriptionPlanId: planId,
-              successUrl: `${base}/dashboard?checkout=success`,
+              successUrl: `${base}${postSetupPath}`,
               cancelUrl: `${base}/onboarding?checkout=cancelled`,
             })
           ).url;

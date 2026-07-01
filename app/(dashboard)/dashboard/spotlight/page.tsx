@@ -4,6 +4,10 @@ import { Button } from '@/components/ui/button';
 import { getServerSession } from '@/lib/auth/session';
 import { connectMongoose } from '@/lib/mongoose';
 import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
+import {
+  submissionStatusBadgeClass,
+  submissionStatusLabel,
+} from '@/lib/campaigns/submissionStatusDisplay';
 
 export default async function SpotlightDashboardPage() {
   const session = await getServerSession();
@@ -12,7 +16,20 @@ export default async function SpotlightDashboardPage() {
   }
 
   await connectMongoose();
-  const submission = (await CampaignSubmissionModel.findOne({ userId: session.user.id }).lean()) as any;
+  const submission = (await CampaignSubmissionModel.findOne({ userId: session.user.id }).lean()) as {
+    companyName?: string;
+    website?: string;
+    founder?: string;
+    industry?: string;
+    status?: string;
+    reviewerNotes?: string;
+    content?: { quote?: string };
+  } | null;
+
+  const status = submission?.status ?? '';
+  const needsChanges = status === 'needs_changes';
+  const badgeClass = submissionStatusBadgeClass(status);
+  const statusLabel = submissionStatusLabel(status);
 
   return (
     <div className="max-w-4xl space-y-8">
@@ -49,29 +66,44 @@ export default async function SpotlightDashboardPage() {
         </div>
       ) : (
         <div className="rounded-lg border bg-card p-6 space-y-6">
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between items-start gap-4">
             <div>
-              <h2 className="text-xl font-semibold">{submission.companyName as string}</h2>
-              <p className="text-muted-foreground">{submission.website as string}</p>
+              <h2 className="text-xl font-semibold">{submission.companyName}</h2>
+              <p className="text-muted-foreground">{submission.website}</p>
             </div>
-            <div className="px-3 py-1 bg-muted rounded-full text-sm font-medium capitalize">
-              Status: {submission.status as string}
-            </div>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium shrink-0 ${badgeClass}`}>
+              {statusLabel}
+            </span>
           </div>
-          
+
+          {needsChanges ? (
+            <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 space-y-3">
+              <p className="text-sm font-medium text-orange-900">Your application needs a few updates before we can move forward.</p>
+              {submission.reviewerNotes?.trim() ? (
+                <div className="text-sm text-orange-800">
+                  <p className="font-medium mb-1">Reviewer notes</p>
+                  <p className="whitespace-pre-wrap">{submission.reviewerNotes}</p>
+                </div>
+              ) : null}
+              <Button asChild>
+                <Link href="/dashboard/spotlight/apply">Edit application</Link>
+              </Button>
+            </div>
+          ) : null}
+
           <div className="border-t pt-4">
             <h3 className="font-medium mb-2">Application Details</h3>
             <div className="grid sm:grid-cols-2 gap-4 text-sm mb-6">
               <div>
-                <span className="text-muted-foreground">Founder:</span> {submission.founder as string}
+                <span className="text-muted-foreground">Founder:</span> {submission.founder}
               </div>
               <div>
-                <span className="text-muted-foreground">Industry:</span> {submission.industry as string}
+                <span className="text-muted-foreground">Industry:</span> {submission.industry}
               </div>
               <div className="sm:col-span-2">
                 <span className="text-muted-foreground block mb-1">Quote:</span>
                 <blockquote className="italic border-l-2 pl-4 text-muted-foreground">
-                  &quot;{(submission.content as any)?.quote}&quot;
+                  &quot;{submission.content?.quote}&quot;
                 </blockquote>
               </div>
             </div>

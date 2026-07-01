@@ -2,13 +2,11 @@
 
 import { getServerSession } from '@/lib/auth/session';
 import { isPlatformAdmin } from '@/lib/auth/platformAdmin';
-import mongoose from 'mongoose';
 import { connectMongoose } from '@/lib/mongoose';
 import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
-
 import { CampaignAssetModel } from '@/models/CampaignAsset';
-import { sendEmail } from '@/lib/email/mail';
 import {
+  buildSpotlightHallOfFameEmail,
   buildSpotlightNeedsChangesEmail,
   buildSpotlightRejectedEmail,
   buildSpotlightVotingEmail,
@@ -20,6 +18,11 @@ import {
   getWeekStart,
 } from '@/lib/campaigns/votingWeeks';
 import { canAddToHallOfFame } from '@/lib/campaigns/hallOfFame';
+import {
+  notifySpotlightSubmitter,
+  spotlightEmailWarningMessage,
+} from '@/lib/campaigns/notifySpotlightSubmitter';
+import type { CampaignSubmissionDoc } from '@/models/CampaignSubmission';
 
 export type UpdateSubmissionStatusOptions = {
   votingStartDate?: Date;
@@ -30,6 +33,12 @@ export type VotingWeekOptionDto = {
   weekStart: string;
   label: string;
   scheduledCount: number;
+};
+
+export type SpotlightActionResult = {
+  success: boolean;
+  emailWarning?: string;
+  hallOfFame?: boolean;
 };
 
 export async function getVotingWeekOptionsAction(submissionId?: string): Promise<VotingWeekOptionDto[]> {
@@ -64,7 +73,7 @@ export async function updateSubmissionStatusAction(
   id: string,
   status: string,
   options?: UpdateSubmissionStatusOptions,
-) {
+): Promise<SpotlightActionResult> {
   const session = await getServerSession();
   if (!session?.user?.id) throw new Error('Unauthorized');
   if (!(await isPlatformAdmin(session.user.id))) throw new Error('Forbidden');
@@ -95,13 +104,12 @@ export async function updateSubmissionStatusAction(
 
   const submission = await CampaignSubmissionModel.findByIdAndUpdate(id, updatePayload, {
     new: true,
-  }).populate('userId');
+  });
   if (!submission) throw new Error('Submission not found');
 
-  const db = mongoose.connection.db;
-  const submitter = db ? await db.collection('user').findOne({ id: submission.userId }) : null;
-  const submitterEmail = submitter?.email;
   const reviewerNotes = options?.reviewerNotes ?? submission.reviewerNotes;
+  const doc = submission as unknown as CampaignSubmissionDoc;
+  let emailWarning: string | undefined;
 
   if (status === 'voting') {
     const assetTypes = ['signature_image', 'social_post_1', 'social_post_2', 'landing_page_hero'];
@@ -113,32 +121,36 @@ export async function updateSubmissionStatusAction(
       );
     }
 
-    if (submitterEmail) {
-      const { subject, html, text } = buildSpotlightVotingEmail(
-        submission as any,
-        normalizedVotingStart ?? submission.votingStartDate,
-      );
-      await sendEmail({ to: submitterEmail, subject, html, text });
-    }
+    const notify = await notifySpotlightSubmitter(
+      submission.userId,
+      (s) =>
+        buildSpotlightVotingEmail(s, normalizedVotingStart ?? submission.votingStartDate),
+      doc,
+    );
+    emailWarning = spotlightEmailWarningMessage(notify);
   } else if (status === 'needs_changes') {
     if (!options?.reviewerNotes?.trim()) {
       throw new Error('Please describe what the applicant should change.');
     }
-    if (submitterEmail) {
-      const { subject, html, text } = buildSpotlightNeedsChangesEmail(submission as any, reviewerNotes);
-      await sendEmail({ to: submitterEmail, subject, html, text });
-    }
+    const notify = await notifySpotlightSubmitter(
+      submission.userId,
+      (s) => buildSpotlightNeedsChangesEmail(s, reviewerNotes),
+      doc,
+    );
+    emailWarning = spotlightEmailWarningMessage(notify);
   } else if (status === 'rejected') {
-    if (submitterEmail) {
-      const { subject, html, text } = buildSpotlightRejectedEmail(submission as any, reviewerNotes);
-      await sendEmail({ to: submitterEmail, subject, html, text });
-    }
+    const notify = await notifySpotlightSubmitter(
+      submission.userId,
+      (s) => buildSpotlightRejectedEmail(s, reviewerNotes),
+      doc,
+    );
+    emailWarning = spotlightEmailWarningMessage(notify);
   }
 
-  return { success: true };
+  return { success: true, ...(emailWarning ? { emailWarning } : {}) };
 }
 
-export async function toggleHallOfFameAction(id: string) {
+export async function toggleHallOfFameAction(id: string): Promise<SpotlightActionResult> {
   const session = await getServerSession();
   if (!session?.user?.id) throw new Error('Unauthorized');
   if (!(await isPlatformAdmin(session.user.id))) throw new Error('Forbidden');
@@ -155,5 +167,19 @@ export async function toggleHallOfFameAction(id: string) {
   submission.hallOfFame = !submission.hallOfFame;
   await submission.save();
 
-  return { success: true, hallOfFame: submission.hallOfFame };
+  let emailWarning: string | undefined;
+  if (turningOn) {
+    const notify = await notifySpotlightSubmitter(
+      submission.userId,
+      buildSpotlightHallOfFameEmail,
+      submission as unknown as CampaignSubmissionDoc,
+    );
+    emailWarning = spotlightEmailWarningMessage(notify);
+  }
+
+  return {
+    success: true,
+    hallOfFame: submission.hallOfFame,
+    ...(emailWarning ? { emailWarning } : {}),
+  };
 }

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { PublicPricingPlan } from 'billing-engine';
 import { CORE_PRODUCT_FEATURE_BULLETS } from '@/lib/marketing/productFeatures';
+import { sanitizeInternalRedirect } from '@/lib/auth/sanitizeInternalRedirect';
 
 type OnboardingFormProps = {
   plans: PublicPricingPlan[];
@@ -104,9 +105,17 @@ export function OnboardingForm({ plans, resumeMode = false, organizationName }: 
     setLoading(true);
     try {
       const endpoint = resumeMode ? '/api/onboarding/checkout' : '/api/onboarding/organization';
+      const safeRedirect = sanitizeInternalRedirect(searchParams.get('redirect'));
       const body = resumeMode
-        ? { subscriptionPlanId: selectedPlanId }
-        : { name: name.trim(), subscriptionPlanId: selectedPlanId };
+        ? {
+            subscriptionPlanId: selectedPlanId,
+            ...(safeRedirect ? { redirect: safeRedirect } : {}),
+          }
+        : {
+            name: name.trim(),
+            subscriptionPlanId: selectedPlanId,
+            ...(safeRedirect ? { redirect: safeRedirect } : {}),
+          };
 
       const res = await fetch(endpoint, {
         method: 'POST',

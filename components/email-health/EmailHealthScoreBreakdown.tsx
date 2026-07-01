@@ -1,4 +1,6 @@
 import { Mail, Shield, Badge, Lock, Globe, FileKey, CheckCircle2 } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { ScanCheckRow, type ScanCheckRowAccent } from '@/components/brand-trust/trust-center/ScanCheckRow';
 
 const CHECK_ITEMS = {
   inboxDelivery: [
@@ -54,7 +56,16 @@ const CHECK_ITEMS = {
   ],
 };
 
-const PILLARS = [
+const PILLARS: Array<{
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: ReactNode;
+  gradient: string;
+  iconBg: string;
+  accent: ScanCheckRowAccent;
+  checks: (typeof CHECK_ITEMS)[keyof typeof CHECK_ITEMS];
+}> = [
   {
     id: 'inboxDelivery',
     title: 'Inbox delivery',
@@ -62,6 +73,7 @@ const PILLARS = [
     icon: <Mail className="h-6 w-6" />,
     gradient: 'from-blue-500/10 to-cyan-500/10 border-blue-200/60',
     iconBg: 'text-blue-600 bg-blue-100',
+    accent: 'blue',
     checks: CHECK_ITEMS.inboxDelivery,
   },
   {
@@ -71,6 +83,7 @@ const PILLARS = [
     icon: <Shield className="h-6 w-6" />,
     gradient: 'from-emerald-500/10 to-teal-500/10 border-emerald-200/60',
     iconBg: 'text-emerald-600 bg-emerald-100',
+    accent: 'emerald',
     checks: CHECK_ITEMS.antiSpoofing,
   },
   {
@@ -80,6 +93,7 @@ const PILLARS = [
     icon: <Badge className="h-6 w-6" />,
     gradient: 'from-amber-500/10 to-orange-500/10 border-amber-200/60',
     iconBg: 'text-amber-600 bg-amber-100',
+    accent: 'amber',
     checks: CHECK_ITEMS.inboxLogo,
   },
 ];
@@ -103,22 +117,14 @@ export function EmailHealthScoreBreakdown() {
           </div>
 
           <div className="space-y-4">
-            {pillar.checks.map((check, idx) => (
-              <div key={idx} className="rounded-lg bg-white/50 border border-border/50 p-4">
-                <div className="flex items-start gap-3">
-                  <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${pillar.iconBg} opacity-70`}>
-                    {check.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-semibold text-foreground">What we check</h4>
-                    <p className="mt-1 text-sm font-medium text-foreground">{check.name}</p>
-                    <div className="mt-3 pt-3 border-t border-border/50">
-                      <h4 className="text-sm font-semibold text-foreground">How we solve it</h4>
-                      <p className="mt-1 text-sm text-muted-foreground">{check.solution}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {pillar.checks.map((check) => (
+              <ScanCheckRow
+                key={check.name}
+                label={check.name}
+                solution={check.solution}
+                accent={pillar.accent}
+                icon={check.icon}
+              />
             ))}
           </div>
         </div>

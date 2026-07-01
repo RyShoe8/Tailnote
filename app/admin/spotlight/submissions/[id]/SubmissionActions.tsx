@@ -98,10 +98,14 @@ export function SubmissionActions({
     setSubmitting(true);
     setMessage(null);
     try {
-      await updateSubmissionStatusAction(submissionId, 'voting', {
+      const result = await updateSubmissionStatusAction(submissionId, 'voting', {
         votingStartDate: new Date(selectedWeekStart),
       });
-      showSuccess('Submission scheduled for voting.');
+      showSuccess(
+        result.emailWarning
+          ? `Submission scheduled for voting. ${result.emailWarning}`
+          : 'Submission scheduled for voting.',
+      );
       router.refresh();
     } catch (err) {
       showError(err, 'Failed to schedule voting');
@@ -114,7 +118,7 @@ export function SubmissionActions({
     setSubmitting(true);
     setMessage(null);
     try {
-      await updateSubmissionStatusAction(submissionId, status, {
+      const result = await updateSubmissionStatusAction(submissionId, status, {
         reviewerNotes: notes,
       });
       setNotesMode(null);
@@ -123,7 +127,8 @@ export function SubmissionActions({
         needs_changes: 'Change request sent to applicant.',
         rejected: 'Submission rejected.',
       };
-      showSuccess(labels[status] ?? 'Status updated.');
+      const base = labels[status] ?? 'Status updated.';
+      showSuccess(result.emailWarning ? `${base} ${result.emailWarning}` : base);
       router.refresh();
     } catch (err) {
       showError(err, 'Failed to update status');
@@ -134,7 +139,10 @@ export function SubmissionActions({
 
   async function handleToggleHallOfFame() {
     try {
-      await toggleHallOfFameAction(submissionId);
+      const result = await toggleHallOfFameAction(submissionId);
+      if (result.emailWarning) {
+        showSuccess(result.emailWarning);
+      }
       router.refresh();
     } catch (err) {
       showError(err, 'Failed to toggle Hall of Fame status');
