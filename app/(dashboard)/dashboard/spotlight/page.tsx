@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { getServerSession } from '@/lib/auth/session';
+import { loginRedirectPath } from '@/lib/auth/redirectToLogin';
 import { connectMongoose } from '@/lib/mongoose';
 import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
 import {
@@ -17,7 +18,7 @@ import {
 export default async function SpotlightDashboardPage() {
   const session = await getServerSession();
   if (!session?.user?.id) {
-    redirect('/login');
+    redirect(loginRedirectPath('/dashboard/spotlight'));
   }
 
   await connectMongoose();

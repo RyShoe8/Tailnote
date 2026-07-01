@@ -4,11 +4,12 @@ import { CampaignModel } from '@/models/Campaign';
 import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
 import { SpotlightEditorWorkspace } from '@/components/spotlight/SpotlightEditorWorkspace';
 import { getServerSession } from '@/lib/auth/session';
+import { loginRedirectPath } from '@/lib/auth/redirectToLogin';
 
 export default async function SpotlightApplyPage() {
   const session = await getServerSession();
   if (!session?.user?.id) {
-    redirect('/spotlight/join');
+    redirect(loginRedirectPath('/dashboard/spotlight/apply'));
   }
 
   await connectMongoose();

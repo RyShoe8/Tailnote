@@ -19,6 +19,7 @@ import {
 } from '@/lib/campaigns/votingWeeks';
 import { coerceToDate, MAX_VOTING_SUBMISSIONS_PER_WEEK } from '@/lib/campaigns/votingWeekUtils';
 import { canAddToHallOfFame } from '@/lib/campaigns/hallOfFame';
+import { ensureVotingWeek } from '@/lib/campaigns/spotlightVotingWeeks';
 import {
   notifySpotlightSubmitter,
   spotlightEmailWarningMessage,
@@ -99,6 +100,7 @@ export async function updateSubmissionStatusAction(
     }
     normalizedVotingStart = getWeekStart(coerceToDate(options.votingStartDate));
     await assertCanScheduleForWeek(normalizedVotingStart, id);
+    await ensureVotingWeek(normalizedVotingStart);
     updatePayload.votingStartDate = normalizedVotingStart;
   } else if (options?.votingStartDate) {
     updatePayload.votingStartDate = getWeekStart(coerceToDate(options.votingStartDate));

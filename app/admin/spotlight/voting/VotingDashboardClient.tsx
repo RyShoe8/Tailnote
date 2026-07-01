@@ -2,107 +2,180 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { resolveVoteAction } from './actions';
+import type { SpotlightVotingWeekStatus } from '@/models/SpotlightVotingWeek';
+import type { VotingWeekGroup } from '@/lib/campaigns/spotlightVotingWeeks';
+import { endVotingWeekAction, setVotingWeekStatusAction } from './actions';
 
-export function VotingDashboardClient({ submissions }: { submissions: any[] }) {
-  const router = useRouter();
-  const [resolving, setResolving] = useState(false);
-  const totalVotes = submissions.reduce((sum, sub) => sum + (sub.votes ?? 0), 0);
+const STATUS_LABELS: Record<SpotlightVotingWeekStatus, string> = {
+  scheduled: 'Scheduled',
+  open: 'Open',
+  paused: 'Paused',
+  ended: 'Ended',
+};
 
-  const handleResolve = async () => {
-    if (!confirm('Are you sure you want to end the voting phase? The winner will be scheduled for next Tuesday, and the runners-up for Thursday.')) return;
+const STATUS_BADGE: Record<SpotlightVotingWeekStatus, string> = {
+  scheduled: 'bg-blue-100 text-blue-800',
+  open: 'bg-green-100 text-green-800',
+  paused: 'bg-amber-100 text-amber-800',
+  ended: 'bg-muted text-muted-foreground',
+};
 
-    setResolving(true);
+function WeekSection({
+  week,
+  onRefresh,
+}: {
+  week: VotingWeekGroup;
+  onRefresh: () => void;
+}) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function runAction(
+    key: string,
+    fn: () => Promise<{ success: boolean; message?: string; emailWarnings?: string[] }>,
+    confirmText?: string,
+  ) {
+    if (confirmText && !confirm(confirmText)) return;
+    setBusy(key);
+    setMessage(null);
     try {
-      const res = await resolveVoteAction();
-      if (res.success) {
-        const warning =
-          'emailWarnings' in res && Array.isArray(res.emailWarnings) && res.emailWarnings.length > 0
-            ? `\n\nEmail warnings:\n${res.emailWarnings.join('\n')}`
-            : '';
-        alert(`Voting resolved and submissions scheduled!${warning}`);
-        router.refresh();
-      } else {
-        alert(res.message || 'Failed to resolve vote');
+      const res = await fn();
+      if (!res.success) {
+        setMessage(res.message ?? 'Action failed');
+        return;
       }
-    } catch {
-      alert('An error occurred');
+      if (res.emailWarnings?.length) {
+        setMessage(`Done with email warnings: ${res.emailWarnings.join('; ')}`);
+      }
+      onRefresh();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Action failed');
     } finally {
-      setResolving(false);
+      setBusy(null);
     }
-  };
+  }
+
+  const canOpen = week.status === 'scheduled' || week.status === 'paused';
+  const canPause = week.status === 'open';
+  const canEnd = week.status === 'open' || week.status === 'paused';
 
   return (
-    <div className="space-y-6">
-      {submissions.length === 2 && totalVotes > 0 ? (
-        <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
-          <p className="text-sm font-medium">{totalVotes} total votes</p>
-          <div className="flex h-3 rounded-full overflow-hidden bg-muted">
-            {submissions.map((sub, idx) => {
-              const votes = sub.votes ?? 0;
-              const pct = Math.round((votes / totalVotes) * 100);
+    <div className="bg-card border rounded-lg overflow-hidden space-y-0">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-b bg-muted/30">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="font-semibold text-lg">{week.label}</h2>
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_BADGE[week.status]}`}>
+              {STATUS_LABELS[week.status]}
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {week.submissions.length} entrant{week.submissions.length === 1 ? '' : 's'} · {week.totalVotes} total
+            votes
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {canOpen ? (
+            <button
+              type="button"
+              disabled={!!busy || week.submissions.length === 0}
+              onClick={() =>
+                runAction('open', () => setVotingWeekStatusAction(week.weekStart, 'open'))
+              }
+              className="text-sm font-medium px-3 py-1.5 rounded-md border bg-background hover:bg-muted disabled:opacity-50"
+            >
+              {busy === 'open' ? 'Opening…' : 'Open'}
+            </button>
+          ) : null}
+          {canPause ? (
+            <button
+              type="button"
+              disabled={!!busy}
+              onClick={() =>
+                runAction('pause', () => setVotingWeekStatusAction(week.weekStart, 'paused'))
+              }
+              className="text-sm font-medium px-3 py-1.5 rounded-md border bg-background hover:bg-muted disabled:opacity-50"
+            >
+              {busy === 'pause' ? 'Pausing…' : 'Pause'}
+            </button>
+          ) : null}
+          {canEnd ? (
+            <button
+              type="button"
+              disabled={!!busy}
+              onClick={() =>
+                runAction(
+                  'end',
+                  () => endVotingWeekAction(week.weekStart),
+                  'End voting for this week? The winner will be scheduled for Tuesday and runners-up for Thursday.',
+                )
+              }
+              className="text-sm font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {busy === 'end' ? 'Ending…' : 'End'}
+            </button>
+          ) : null}
+        </div>
+      </div>
+
+      {message ? (
+        <p className="text-sm px-4 py-2 bg-amber-50 text-amber-900 border-b border-amber-100">{message}</p>
+      ) : null}
+
+      {week.submissions.length === 0 ? (
+        <p className="p-6 text-sm text-muted-foreground">No submissions scheduled for this week.</p>
+      ) : (
+        <table className="w-full text-left text-sm">
+          <thead className="bg-muted/50 text-muted-foreground">
+            <tr>
+              <th className="p-4 font-medium">Rank</th>
+              <th className="p-4 font-medium">Company</th>
+              <th className="p-4 font-medium">Founder</th>
+              <th className="p-4 font-medium">Votes</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {week.submissions.map((sub, idx) => (
+              <tr key={sub._id} className={idx === 0 && week.totalVotes > 0 ? 'bg-amber-50/40' : ''}>
+                <td className="p-4 font-semibold">{idx + 1}</td>
+                <td className="p-4">{sub.companyName}</td>
+                <td className="p-4">{sub.founder}</td>
+                <td className="p-4 font-bold tabular-nums">{sub.votes}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {week.submissions.length === 2 && week.totalVotes > 0 ? (
+        <div className="p-4 border-t">
+          <div className="flex h-2 rounded-full overflow-hidden bg-muted">
+            {week.submissions.map((sub, idx) => {
+              const pct = Math.round((sub.votes / week.totalVotes) * 100);
               return (
                 <div
                   key={sub._id}
                   className={idx === 0 ? 'bg-primary' : 'bg-primary/40'}
                   style={{ width: `${pct}%` }}
-                  title={`${sub.companyName}: ${votes} (${pct}%)`}
+                  title={`${sub.companyName}: ${sub.votes}`}
                 />
-              );
-            })}
-          </div>
-          <div className="flex justify-between text-xs text-muted-foreground">
-            {submissions.map((sub) => {
-              const votes = sub.votes ?? 0;
-              const pct = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
-              return (
-                <span key={sub._id}>
-                  {sub.companyName}: {votes} ({pct}%)
-                </span>
               );
             })}
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
 
-      <div className="bg-card border rounded-lg overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-muted-foreground">
-            <tr>
-              <th className="p-4 font-medium">Rank</th>
-              <th className="p-4 font-medium">Company</th>
-              <th className="p-4 font-medium">Founder</th>
-              <th className="p-4 font-medium">Start Date</th>
-              <th className="p-4 font-medium">Votes</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {submissions.map((sub, idx) => (
-              <tr key={sub._id} className={idx === 0 ? 'bg-amber-50/50' : ''}>
-                <td className="p-4 font-semibold">
-                  {idx === 0 ? '1st' : '2nd'}
-                </td>
-                <td className="p-4">{sub.companyName}</td>
-                <td className="p-4">{sub.founder}</td>
-                <td className="p-4 text-muted-foreground text-xs">
-                  {sub.votingStartDate ? new Date(sub.votingStartDate).toLocaleDateString() : 'Immediate'}
-                </td>
-                <td className="p-4 font-bold text-lg tabular-nums">{sub.votes || 0}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+export function VotingDashboardClient({ weeks }: { weeks: VotingWeekGroup[] }) {
+  const router = useRouter();
 
-      <div className="flex justify-end">
-        <button
-          onClick={handleResolve}
-          disabled={resolving}
-          className="bg-primary text-primary-foreground font-medium px-6 py-2 rounded-md hover:bg-primary/90 transition disabled:opacity-50"
-        >
-          {resolving ? 'Resolving...' : 'End Vote & Schedule Posts'}
-        </button>
-      </div>
+  return (
+    <div className="space-y-6">
+      {weeks.map((week) => (
+        <WeekSection key={week.weekStart} week={week} onRefresh={() => router.refresh()} />
+      ))}
     </div>
   );
 }

@@ -15,6 +15,7 @@ import { formatLoginError, formatOAuthCallbackError } from '@/lib/auth/formatAut
 import { RECAPTCHA_ACTIONS } from '@/lib/recaptcha/config';
 import { authCaptchaFetchOptions, useRecaptcha } from '@/lib/recaptcha/client';
 import { sessionMatchesInvitedEmail } from '@/lib/auth/inviteAccountSwitch';
+import { sanitizeInternalRedirect } from '@/lib/auth/sanitizeInternalRedirect';
 
 function LoginForm() {
   const router = useRouter();
@@ -26,7 +27,7 @@ function LoginForm() {
     ? `/join/${encodeURIComponent(joinToken)}?accept=1`
     : inviteToken
       ? `/invite/${encodeURIComponent(inviteToken)}?accept=1`
-      : searchParams.get('next') || '/dashboard';
+      : sanitizeInternalRedirect(searchParams.get('next')) ?? '/dashboard';
   const [email, setEmail] = useState(inviteEmail || '');
   const [password, setPassword] = useState('');
   const oauthError = searchParams.get('error');

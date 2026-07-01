@@ -2,6 +2,7 @@ import { cache } from 'react';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getServerSession } from '@/lib/auth/session';
+import { loginRedirectPath } from '@/lib/auth/redirectToLogin';
 import { sanitizeInternalRedirect } from '@/lib/auth/sanitizeInternalRedirect';
 import { isPlatformAdmin } from '@/lib/auth/platformAdmin';
 import { connectMongoose } from '@/lib/mongoose';
@@ -17,7 +18,8 @@ export type DashboardUser = {
 export const getDashboardSession = cache(async (): Promise<{ user: DashboardUser }> => {
   const session = await getServerSession();
   if (!session?.user) {
-    redirect('/login');
+    const headersList = await headers();
+    redirect(loginRedirectPath(headersList.get('x-pathname')));
   }
   const raw = session.user as {
     id?: string;

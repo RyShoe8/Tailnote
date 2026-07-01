@@ -9,11 +9,29 @@ import {
 import {
   formatVotingWeekLabel,
   getWeekStart,
-  isVotingWeekLive,
 } from '@/lib/campaigns/votingWeekUtils';
+import { getOpenVotingWeekSubmissions } from '@/lib/campaigns/spotlightVotingWeeks';
+import type { SpotlightVotingWeekStatus } from '@/models/SpotlightVotingWeek';
+
+function weekStatusLabel(status: SpotlightVotingWeekStatus | null): string {
+  if (status === 'open') return 'Live vote';
+  if (status === 'paused') return 'Voting paused';
+  if (status === 'scheduled') return 'Scheduled for voting';
+  if (status === 'ended') return 'Ended';
+  return 'Scheduled for voting';
+}
+
+function weekStatusBadgeClass(status: SpotlightVotingWeekStatus | null): string {
+  if (status === 'open') return 'text-green-800 bg-green-100';
+  if (status === 'paused') return 'text-amber-800 bg-amber-100';
+  if (status === 'ended') return 'text-muted-foreground bg-muted';
+  return 'text-blue-800 bg-blue-100';
+}
 
 function ActiveVoteCard({
   submissions,
+  weekLabel,
+  weekStatus,
 }: {
   submissions: Array<{
     _id: { toString(): string };
@@ -22,6 +40,8 @@ function ActiveVoteCard({
     votes?: number;
     votingStartDate?: Date | string;
   }>;
+  weekLabel?: string | null;
+  weekStatus?: SpotlightVotingWeekStatus | null;
 }) {
   const totalVotes = submissions.reduce((sum, s) => sum + (s.votes ?? 0), 0);
   const leaderVotes = submissions[0]?.votes ?? 0;
@@ -32,11 +52,12 @@ function ActiveVoteCard({
         <div>
           <h2 className="font-semibold text-lg">Active community vote</h2>
           <p className="text-sm text-muted-foreground">
+            {weekLabel ? `${weekLabel} · ` : ''}
             {submissions.length === 2
               ? `${totalVotes} total vote${totalVotes === 1 ? '' : 's'} cast`
               : submissions.length === 1
                 ? 'Waiting for a second entrant this week'
-                : 'No submissions in voting status'}
+                : 'No open voting week — open a week from the voting dashboard'}
           </p>
         </div>
         <Link
@@ -57,10 +78,9 @@ function ActiveVoteCard({
             const votes = sub.votes ?? 0;
             const isLeader = submissions.length === 2 && votes === leaderVotes && votes > 0 && idx === 0;
             const pct = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
-            const weekLabel = sub.votingStartDate
+            const weekLabelEntry = sub.votingStartDate
               ? formatVotingWeekLabel(getWeekStart(new Date(sub.votingStartDate)))
               : null;
-            const voteLive = isVotingWeekLive(sub.votingStartDate);
             return (
               <div
                 key={sub._id.toString()}
@@ -72,8 +92,8 @@ function ActiveVoteCard({
                   <div>
                     <p className="font-semibold">{sub.companyName}</p>
                     <p className="text-sm text-muted-foreground">{sub.founder}</p>
-                    {weekLabel ? (
-                      <p className="text-xs text-muted-foreground mt-1">{weekLabel}</p>
+                    {weekLabelEntry ? (
+                      <p className="text-xs text-muted-foreground mt-1">{weekLabelEntry}</p>
                     ) : null}
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
@@ -83,13 +103,9 @@ function ActiveVoteCard({
                       </span>
                     ) : null}
                     <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                        voteLive
-                          ? 'text-green-800 bg-green-100'
-                          : 'text-blue-800 bg-blue-100'
-                      }`}
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${weekStatusBadgeClass(weekStatus ?? null)}`}
                     >
-                      {voteLive ? 'Live vote' : 'Scheduled for voting'}
+                      {weekStatusLabel(weekStatus ?? null)}
                     </span>
                   </div>
                 </div>
@@ -120,10 +136,14 @@ export default async function SpotlightAdminPage() {
   const pendingCount = await CampaignSubmissionModel.countDocuments({ status: 'pending' });
   const scheduledCount = await CampaignSubmissionModel.countDocuments({ status: 'scheduled' });
 
-  const votingSubmissions = await CampaignSubmissionModel.find({ status: 'voting' })
-    .sort({ votes: -1, createdAt: 1 })
-    .limit(2)
-    .lean();
+  const activeWeek = await getOpenVotingWeekSubmissions();
+  const votingSubmissions = activeWeek.submissions.map((s) => ({
+    _id: { toString: () => s._id },
+    companyName: s.companyName,
+    founder: s.founder,
+    votes: s.votes,
+    votingStartDate: s.votingStartDate,
+  }));
 
   const now = new Date();
   const activeSchedule = (await CampaignScheduleModel.findOne({
@@ -160,9 +180,9 @@ export default async function SpotlightAdminPage() {
       </div>
 
       <ActiveVoteCard
-        submissions={
-          votingSubmissions as unknown as Parameters<typeof ActiveVoteCard>[0]['submissions']
-        }
+        submissions={votingSubmissions}
+        weekLabel={activeWeek.label}
+        weekStatus={activeWeek.status}
       />
 
       <div className="grid gap-4 md:grid-cols-3">

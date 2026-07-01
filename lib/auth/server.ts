@@ -15,6 +15,36 @@ function normalizeUserEmail(email: string | undefined | null): string | undefine
   return normalized || undefined;
 }
 
+function getAuthBaseUrl(): string {
+  return process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+}
+
+function getCrossSubDomainCookieConfig():
+  | { enabled: true; domain: string }
+  | undefined {
+  try {
+    const hostname = new URL(getAuthBaseUrl()).hostname;
+    if (hostname === 'tailnote.io' || hostname === 'www.tailnote.io') {
+      return { enabled: true, domain: 'tailnote.io' };
+    }
+  } catch {
+    // ignore invalid base URL
+  }
+  return undefined;
+}
+
+function getTrustedOrigins(): string[] | undefined {
+  try {
+    const hostname = new URL(getAuthBaseUrl()).hostname;
+    if (hostname === 'tailnote.io' || hostname === 'www.tailnote.io') {
+      return ['https://tailnote.io', 'https://www.tailnote.io'];
+    }
+  } catch {
+    // ignore
+  }
+  return undefined;
+}
+
 export async function getAuth() {
   if (authInstance) return authInstance;
   const { connectMongoose, getMongoDb, getMongoClient } = await import('@/lib/mongoose');
@@ -27,9 +57,14 @@ export async function getAuth() {
     throw new Error('BETTER_AUTH_SECRET is required');
   }
 
+  const crossSubDomainCookies = getCrossSubDomainCookieConfig();
+  const trustedOrigins = getTrustedOrigins();
+
   authInstance = betterAuth({
     secret,
-    baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    baseURL: getAuthBaseUrl(),
+    ...(trustedOrigins ? { trustedOrigins } : {}),
+    ...(crossSubDomainCookies ? { advanced: { crossSubDomainCookies } } : {}),
     session: {
       expiresIn: 60 * 60 * 24 * 30,
       updateAge: 60 * 60 * 24,
