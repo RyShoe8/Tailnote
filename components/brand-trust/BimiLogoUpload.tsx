@@ -17,6 +17,8 @@ type Props = {
   variant?: 'default' | 'embedded';
   upgradeHref?: string;
   hidePreview?: boolean;
+  hideTitle?: boolean;
+  dnsTitle?: string;
 };
 
 export function BimiLogoUpload({
@@ -27,6 +29,8 @@ export function BimiLogoUpload({
   variant = 'default',
   upgradeHref = DASHBOARD_UPGRADE_HREF,
   hidePreview = false,
+  hideTitle = false,
+  dnsTitle = 'BIMI DNS record',
 }: Props) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,16 +110,16 @@ export function BimiLogoUpload({
           : 'space-y-4 rounded-lg border border-border p-4'
       }
     >
-      {!embedded ? (
+      {!embedded && !hideTitle ? (
         <div>
-          <p className="font-medium">{hasLogo ? 'Replace BIMI logo' : 'Upload BIMI logo'}</p>
+          <p className="font-medium">{hasLogo ? 'Replace inbox logo' : 'Upload inbox logo'}</p>
           <p className="mt-1 text-sm text-muted-foreground">{RASTER_SVG_HONESTY}</p>
         </div>
-      ) : (
+      ) : embedded ? (
         <p className="text-sm text-muted-foreground">
           Choose a square logo file. We&apos;ll prepare it and give you the DNS record to copy.
         </p>
-      )}
+      ) : null}
       <div className="space-y-2">
         <Label htmlFor="bimi-logo-file">Logo file (PNG, JPEG, WebP, or SVG)</Label>
         <Input
@@ -153,7 +157,7 @@ export function BimiLogoUpload({
       ) : null}
       {record ? (
         <div className="space-y-2">
-          <p className="text-sm font-medium">Suggested BIMI DNS record</p>
+          <p className="text-sm font-medium">{dnsTitle}</p>
           <DnsRecordCopy
             record={{
               type: 'TXT',

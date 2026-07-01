@@ -6,7 +6,6 @@ import { BimiLogoUpload } from '@/components/brand-trust/BimiLogoUpload';
 import { BimiCurrentLogoPanel } from '@/components/brand-trust/BimiCurrentLogoPanel';
 import { BimiCertificateGuide } from '@/components/email-health/BimiCertificateGuide';
 import { BimiInboxPreview } from '@/components/email-health/BimiInboxPreview';
-import { DnsRecordCopy } from '@/components/email-health/DnsRecordCopy';
 import { SIGNATURE_VS_INBOX_LOGO } from '@/lib/email-health/bimiCopy';
 
 import { Button } from '@/components/ui/button';
@@ -190,25 +189,10 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
             bimiLogoUrl={data.bimiLogoUrl}
             bimiSuggestedRecord={data.bimiSuggestedRecord}
             hidePreview
+            hideTitle
             onUploaded={() => void load()}
           />
         </div>
-      ) : null}
-
-      {data.bimiSuggestedRecord ? (
-        <CardShell>
-          <h4 className="font-medium mb-2">BIMI DNS record</h4>
-          <p className="text-sm text-muted-foreground mb-4">
-            Add this TXT record to your domain&apos;s DNS settings to authorize your logo for display in the inbox.
-          </p>
-          <DnsRecordCopy
-            record={{
-              type: 'TXT',
-              host: 'default._bimi',
-              value: data.bimiSuggestedRecord,
-            }}
-          />
-        </CardShell>
       ) : null}
 
       <BimiInboxPreview compact />
