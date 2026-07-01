@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { MarketingSignaturePreview } from '@/components/marketing/MarketingSignaturePreview';
 
 export type VoteSubmission = {
   _id: string;
@@ -9,7 +10,7 @@ export type VoteSubmission = {
   founder?: string;
   industry?: string;
   logoUrl?: string;
-  content?: { quote?: string; description?: string; quoteAuthor?: string };
+  signatureHtml: string;
   votes?: number;
 };
 
@@ -90,12 +91,13 @@ export function VoteClient({
               </div>
             </div>
 
-            <div className="bg-muted/50 p-6 rounded-xl border relative mb-6">
-              <span className="absolute -top-3 -left-2 text-4xl text-primary/30 font-serif">&quot;</span>
-              <p className="text-lg italic text-foreground mb-4 relative z-10">
-                {sub.content?.quote || sub.content?.description || 'No quote provided.'}
-              </p>
-              <p className="font-semibold">— {sub.content?.quoteAuthor || sub.founder}</p>
+            <div className="overflow-x-auto rounded-xl border bg-card p-4 shadow-sm relative">
+              <div className="absolute top-2 right-2 z-10 text-[10px] font-bold text-muted-foreground uppercase tracking-wider bg-background/80 px-1 rounded">
+                Tailnote Signature
+              </div>
+              <div className="pt-2 min-w-[400px]">
+                <MarketingSignaturePreview html={sub.signatureHtml} />
+              </div>
             </div>
           </div>
 

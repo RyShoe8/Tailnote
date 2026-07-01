@@ -9,11 +9,8 @@ import {
   submissionStatusBadgeClass,
   submissionStatusLabel,
 } from '@/lib/campaigns/submissionStatusDisplay';
-import {
-  formatVotingWeekLabel,
-  getWeekStart,
-  isVotingWeekLive,
-} from '@/lib/campaigns/votingWeekUtils';
+import { formatVotingWeekLabel, getWeekStart } from '@/lib/campaigns/votingWeekUtils';
+import { getVotingWeekStatusForDate } from '@/lib/campaigns/spotlightVotingWeeks';
 
 export default async function SpotlightDashboardPage() {
   const session = await getServerSession();
@@ -40,10 +37,16 @@ export default async function SpotlightDashboardPage() {
     isVoting && submission?.votingStartDate
       ? formatVotingWeekLabel(getWeekStart(new Date(submission.votingStartDate)))
       : null;
-  const votingWeekIsFuture =
-    isVoting && submission?.votingStartDate
-      ? !isVotingWeekLive(submission.votingStartDate)
-      : false;
+
+  let votingWeekStatus: Awaited<ReturnType<typeof getVotingWeekStatusForDate>> = null;
+  if (isVoting && submission?.votingStartDate) {
+    votingWeekStatus = await getVotingWeekStatusForDate(
+      getWeekStart(new Date(submission.votingStartDate)),
+    );
+  }
+
+  const votingIsLive = votingWeekStatus === 'open' || votingWeekStatus === 'paused';
+  const votingHasEnded = votingWeekStatus === 'ended';
   const badgeClass = submissionStatusBadgeClass(status);
   const statusLabel = submissionStatusLabel(status);
 
@@ -108,13 +111,26 @@ export default async function SpotlightDashboardPage() {
           ) : null}
 
           {isVoting && votingWeekLabel ? (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-1">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-3">
               <p className="text-sm font-medium text-blue-900">
                 Scheduled voting week: {votingWeekLabel}
               </p>
-              {votingWeekIsFuture ? (
-                <p className="text-sm text-blue-800">Community voting opens that week.</p>
-              ) : null}
+              {votingIsLive ? (
+                <>
+                  <p className="text-sm text-blue-800">
+                    {votingWeekStatus === 'paused'
+                      ? 'Community voting is temporarily paused. Check back soon.'
+                      : 'Community voting is live — share the public vote page so others can support your signature.'}
+                  </p>
+                  <Button asChild variant="secondary" size="sm">
+                    <Link href="/spotlight/vote">View public vote page</Link>
+                  </Button>
+                </>
+              ) : votingHasEnded ? (
+                <p className="text-sm text-blue-800">Voting for this week has closed.</p>
+              ) : (
+                <p className="text-sm text-blue-800">Community voting opens when the admin starts this week.</p>
+              )}
             </div>
           ) : null}
 

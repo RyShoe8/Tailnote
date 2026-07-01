@@ -2,16 +2,13 @@ import Link from 'next/link';
 import { connectMongoose } from '@/lib/mongoose';
 import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
 import { CampaignScheduleModel } from '@/models/CampaignSchedule';
-import {
-  submissionStatusBadgeClass,
-  submissionStatusLabel,
-} from '@/lib/campaigns/submissionStatusDisplay';
+import { getOpenVotingWeekSubmissions } from '@/lib/campaigns/spotlightVotingWeeks';
+import type { SpotlightVotingWeekStatus } from '@/models/SpotlightVotingWeek';
 import {
   formatVotingWeekLabel,
   getWeekStart,
 } from '@/lib/campaigns/votingWeekUtils';
-import { getOpenVotingWeekSubmissions } from '@/lib/campaigns/spotlightVotingWeeks';
-import type { SpotlightVotingWeekStatus } from '@/models/SpotlightVotingWeek';
+import { SpotlightSubmissionsTable, type SpotlightSubmissionRow } from './SpotlightSubmissionsTable';
 
 function weekStatusLabel(status: SpotlightVotingWeekStatus | null): string {
   if (status === 'open') return 'Live vote';
@@ -130,11 +127,18 @@ function ActiveVoteCard({
   );
 }
 
-export default async function SpotlightAdminPage() {
+export default async function SpotlightAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
   await connectMongoose();
+  const { view } = await searchParams;
+  const showArchived = view === 'archived';
 
   const pendingCount = await CampaignSubmissionModel.countDocuments({ status: 'pending' });
   const scheduledCount = await CampaignSubmissionModel.countDocuments({ status: 'scheduled' });
+  const archivedCount = await CampaignSubmissionModel.countDocuments({ status: 'archived' });
 
   const activeWeek = await getOpenVotingWeekSubmissions();
   const votingSubmissions = activeWeek.submissions.map((s) => ({
@@ -155,9 +159,11 @@ export default async function SpotlightAdminPage() {
 
   const activeCompanyName = activeSchedule?.submissionId?.companyName || 'None';
 
-  const recentSubmissions = (await CampaignSubmissionModel.find()
+  const recentSubmissions = (await CampaignSubmissionModel.find(
+    showArchived ? { status: 'archived' } : { status: { $ne: 'archived' } },
+  )
     .sort({ createdAt: -1 })
-    .limit(10)
+    .limit(showArchived ? 50 : 10)
     .lean()) as unknown as Array<{
     _id: { toString(): string };
     companyName: string;
@@ -169,6 +175,18 @@ export default async function SpotlightAdminPage() {
     resubmittedAt?: Date;
     createdAt: Date;
   }>;
+
+  const submissionRows: SpotlightSubmissionRow[] = recentSubmissions.map((sub) => ({
+    id: sub._id.toString(),
+    companyName: sub.companyName,
+    website: sub.website,
+    industry: sub.industry,
+    status: sub.status,
+    votes: sub.votes,
+    votingStartDate: sub.votingStartDate?.toISOString(),
+    resubmittedAt: sub.resubmittedAt?.toISOString(),
+    createdAt: sub.createdAt.toISOString(),
+  }));
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-8">
@@ -201,92 +219,29 @@ export default async function SpotlightAdminPage() {
       </div>
 
       <div className="bg-card border rounded-lg overflow-hidden">
-        <div className="p-4 border-b flex justify-between items-center bg-muted/50">
-          <h2 className="font-semibold text-lg">Recent Submissions</h2>
+        <div className="p-4 border-b flex justify-between items-center gap-4 bg-muted/50">
+          <h2 className="font-semibold text-lg">
+            {showArchived ? 'Archived Submissions' : 'Recent Submissions'}
+          </h2>
+          <div className="flex items-center gap-3 text-sm">
+            {showArchived ? (
+              <Link href="/admin/spotlight" className="text-primary hover:underline font-medium">
+                ← Back to active submissions
+              </Link>
+            ) : archivedCount > 0 ? (
+              <Link
+                href="/admin/spotlight?view=archived"
+                className="text-muted-foreground hover:text-primary font-medium"
+              >
+                View archived ({archivedCount})
+              </Link>
+            ) : null}
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs text-muted-foreground uppercase bg-muted/30">
-              <tr>
-                <th className="px-6 py-3">Company</th>
-                <th className="px-6 py-3">Website</th>
-                <th className="px-6 py-3">Industry</th>
-                <th className="px-6 py-3">Status</th>
-                <th className="px-6 py-3">Voting week</th>
-                <th className="px-6 py-3">Votes</th>
-                <th className="px-6 py-3">Date Applied</th>
-                <th className="px-6 py-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentSubmissions.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-muted-foreground">
-                    No submissions found.
-                  </td>
-                </tr>
-              ) : (
-                recentSubmissions.map((sub) => (
-                  <tr key={sub._id.toString()} className="border-b hover:bg-muted/30">
-                    <td className="px-6 py-4 font-medium">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {sub.companyName}
-                        {sub.resubmittedAt ? (
-                          <span className="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
-                            Updated
-                          </span>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {sub.website ? (
-                        <a
-                          href={sub.website}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-primary hover:underline break-all"
-                        >
-                          {sub.website.replace(/^https?:\/\//i, '')}
-                        </a>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">{sub.industry}</td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${submissionStatusBadgeClass(sub.status)}`}
-                      >
-                        {submissionStatusLabel(sub.status)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground">
-                      {sub.status === 'voting' && sub.votingStartDate
-                        ? formatVotingWeekLabel(getWeekStart(new Date(sub.votingStartDate)))
-                        : '—'}
-                    </td>
-                    <td className="px-6 py-4 tabular-nums">
-                      {sub.status === 'voting' ? (
-                        <span className="font-semibold">{sub.votes ?? 0}</span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">{new Date(sub.createdAt).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 text-right">
-                      <Link
-                        href={`/admin/spotlight/submissions/${sub._id.toString()}`}
-                        className="text-primary hover:underline font-medium"
-                      >
-                        {sub.status === 'pending' ? 'Review' : 'View'}
-                      </Link>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <SpotlightSubmissionsTable
+          submissions={submissionRows}
+          showArchiveAction={!showArchived}
+        />
       </div>
     </div>
   );

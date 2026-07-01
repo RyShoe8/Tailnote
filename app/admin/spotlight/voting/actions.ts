@@ -13,6 +13,7 @@ import type { CampaignSubmissionDoc } from '@/models/CampaignSubmission';
 import type { SpotlightVotingWeekStatus } from '@/models/SpotlightVotingWeek';
 import {
   getSubmissionsForWeek,
+  getVotingWeekRecord,
   resolveVotingWeek,
   setVotingWeekStatus,
 } from '@/lib/campaigns/spotlightVotingWeeks';
@@ -29,6 +30,18 @@ export async function setVotingWeekStatusAction(weekStartIso: string, status: Sp
   await connectMongoose();
   const weekStart = getWeekStart(coerceToDate(weekStartIso));
   await setVotingWeekStatus(weekStart, status);
+  return { success: true };
+}
+
+export async function archiveVotingWeekAction(weekStartIso: string) {
+  await requirePlatformAdmin();
+  await connectMongoose();
+  const weekStart = getWeekStart(coerceToDate(weekStartIso));
+  const record = await getVotingWeekRecord(weekStart);
+  if (!record || record.status !== 'ended') {
+    return { success: false, message: 'Only ended voting weeks can be archived' };
+  }
+  await setVotingWeekStatus(weekStart, 'archived');
   return { success: true };
 }
 

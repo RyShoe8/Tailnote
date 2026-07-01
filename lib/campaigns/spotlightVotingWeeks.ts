@@ -11,6 +11,10 @@ import {
   getWeekStart,
   votingWeekStartIso,
 } from '@/lib/campaigns/votingWeekUtils';
+import {
+  renderSubmissionSignature,
+  type RenderSubmissionSignatureInput,
+} from '@/lib/campaigns/renderSubmissionSignature';
 
 export type VotingWeekSubmission = {
   _id: string;
@@ -21,6 +25,7 @@ export type VotingWeekSubmission = {
   content?: { quote?: string; quoteAuthor?: string };
   votes: number;
   votingStartDate?: string;
+  signatureHtml: string;
 };
 
 export type VotingWeekGroup = {
@@ -85,6 +90,9 @@ export async function setVotingWeekStatus(
   if (status === 'ended') {
     update.endedAt = now;
   }
+  if (status === 'archived') {
+    update.archivedAt = now;
+  }
 
   const doc = await SpotlightVotingWeekModel.findOneAndUpdate(
     { weekStart: normalized },
@@ -95,7 +103,10 @@ export async function setVotingWeekStatus(
   return doc as SpotlightVotingWeekDoc;
 }
 
-function serializeSubmission(sub: Record<string, unknown>): VotingWeekSubmission {
+function serializeSubmission(
+  sub: Record<string, unknown>,
+  signatureHtml: string,
+): VotingWeekSubmission {
   return {
     _id: String(sub._id),
     companyName: String(sub.companyName ?? ''),
@@ -107,62 +118,73 @@ function serializeSubmission(sub: Record<string, unknown>): VotingWeekSubmission
     votingStartDate: sub.votingStartDate
       ? new Date(sub.votingStartDate as Date).toISOString()
       : undefined,
+    signatureHtml,
   };
 }
 
-export async function getSubmissionsForWeek(weekStart: Date) {
+async function fetchSubmissionDocsForWeek(
+  weekStart: Date,
+  options?: { votingStatusOnly?: boolean },
+) {
   const normalized = getWeekStart(weekStart);
   const weekEnd = getWeekEnd(normalized);
-  const subs = await CampaignSubmissionModel.find({
-    status: 'voting',
+  const filter: Record<string, unknown> = {
     votingStartDate: { $gte: normalized, $lt: weekEnd },
-  })
+  };
+  if (options?.votingStatusOnly !== false) {
+    filter.status = 'voting';
+  }
+  return CampaignSubmissionModel.find(filter)
     .sort({ votes: -1, createdAt: 1 })
     .lean();
+}
 
-  return subs.map((s) => serializeSubmission(s as Record<string, unknown>));
+async function serializeSubmissionsWithSignatures(
+  subs: Record<string, unknown>[],
+): Promise<VotingWeekSubmission[]> {
+  return Promise.all(
+    subs.map(async (sub) => {
+      const signatureHtml = await renderSubmissionSignature({
+        ...(sub as RenderSubmissionSignatureInput),
+        userId: typeof sub.userId === 'string' ? sub.userId : String(sub.userId ?? ''),
+      });
+      return serializeSubmission(sub, signatureHtml);
+    }),
+  );
+}
+
+export async function getSubmissionsForWeek(
+  weekStart: Date,
+  options?: { votingStatusOnly?: boolean },
+) {
+  const subs = await fetchSubmissionDocsForWeek(weekStart, options);
+  return serializeSubmissionsWithSignatures(subs as Record<string, unknown>[]);
 }
 
 export async function getVotingWeeksWithSubmissions(): Promise<VotingWeekGroup[]> {
-  const submissions = await CampaignSubmissionModel.find({ status: 'voting' })
-    .sort({ votingStartDate: -1, votes: -1, createdAt: 1 })
+  const weekRecords = await SpotlightVotingWeekModel.find({ status: { $ne: 'archived' } })
+    .sort({ weekStart: -1 })
     .lean();
 
-  const weekMap = new Map<string, Record<string, unknown>[]>();
-  for (const sub of submissions) {
-    if (!sub.votingStartDate) continue;
-    const iso = votingWeekStartIso(sub.votingStartDate);
-    const list = weekMap.get(iso) ?? [];
-    list.push(sub as Record<string, unknown>);
-    weekMap.set(iso, list);
-  }
+  if (weekRecords.length === 0) return [];
 
-  if (weekMap.size === 0) return [];
-
-  const weekStarts = [...weekMap.keys()].map((iso) => new Date(iso));
-  const weekRecords = await SpotlightVotingWeekModel.find({
-    weekStart: { $in: weekStarts },
-  }).lean();
-
-  const statusByIso = new Map<string, SpotlightVotingWeekStatus>();
-  for (const record of weekRecords) {
-    statusByIso.set(votingWeekStartIso(record.weekStart), record.status as SpotlightVotingWeekStatus);
-  }
-
-  const groups: VotingWeekGroup[] = [...weekMap.entries()]
-    .map(([iso, subs]) => {
-      const weekStartDate = new Date(iso);
-      const serialized = subs.map((s) => serializeSubmission(s));
+  const groups = await Promise.all(
+    weekRecords.map(async (record) => {
+      const weekStartDate = getWeekStart(record.weekStart);
+      const iso = votingWeekStartIso(weekStartDate);
+      const status = record.status as SpotlightVotingWeekStatus;
+      const votingStatusOnly = status !== 'ended';
+      const submissions = await getSubmissionsForWeek(weekStartDate, { votingStatusOnly });
       return {
         weekStart: iso,
         weekStartDate,
         label: formatVotingWeekLabel(weekStartDate),
-        status: statusByIso.get(iso) ?? 'scheduled',
-        submissions: serialized,
-        totalVotes: serialized.reduce((sum, s) => sum + s.votes, 0),
+        status,
+        submissions,
+        totalVotes: submissions.reduce((sum, s) => sum + s.votes, 0),
       };
-    })
-    .sort((a, b) => b.weekStartDate.getTime() - a.weekStartDate.getTime());
+    }),
+  );
 
   return groups;
 }
@@ -181,7 +203,7 @@ export async function getOpenVotingWeekSubmissions(): Promise<{
     return { weekStart: null, label: null, status: null, submissions: [] };
   }
 
-  const submissions = await getSubmissionsForWeek(openWeek.weekStart);
+  const submissions = await getSubmissionsForWeek(openWeek.weekStart, { votingStatusOnly: true });
   return {
     weekStart: votingWeekStartIso(openWeek.weekStart),
     label: formatVotingWeekLabel(openWeek.weekStart),
@@ -204,7 +226,7 @@ export async function getNextWeekPreviewSubmissions(fromDate = new Date()): Prom
     return { weekStart: null, label: null, submissions: [] };
   }
 
-  const submissions = await getSubmissionsForWeek(nextWeekStart);
+  const submissions = await getSubmissionsForWeek(nextWeekStart, { votingStatusOnly: true });
   if (submissions.length === 0) {
     return { weekStart: null, label: null, submissions: [] };
   }

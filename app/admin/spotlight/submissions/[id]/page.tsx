@@ -11,6 +11,11 @@ import {
   submissionStatusBadgeClass,
   submissionStatusLabel,
 } from '@/lib/campaigns/submissionStatusDisplay';
+import {
+  renderSubmissionSignature,
+  resolveSubmissionTemplateInfo,
+} from '@/lib/campaigns/renderSubmissionSignature';
+import { MarketingSignaturePreview } from '@/components/marketing/MarketingSignaturePreview';
 
 function DetailField({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -82,6 +87,14 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
   const votingWeekLabel = submission.votingStartDate
     ? formatVotingWeekLabel(getWeekStart(new Date(submission.votingStartDate)))
     : null;
+
+  const [signatureHtml, templateInfo] = await Promise.all([
+    renderSubmissionSignature({
+      ...submission,
+      userId: String(submission.userId ?? ''),
+    }),
+    resolveSubmissionTemplateInfo(submission.templateId),
+  ]);
 
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-8">
@@ -160,6 +173,21 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
                 ) : null}
               </div>
             </div>
+          </div>
+
+          <div className="bg-card border rounded-lg p-6 space-y-4">
+            <h2 className="font-semibold text-lg border-b pb-2">Submitted signature</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <DetailField label="Layout template">{templateInfo.templateName}</DetailField>
+              <DetailField label="Preset">{templateInfo.presetLabel}</DetailField>
+            </div>
+            <div className="overflow-x-auto rounded-lg border bg-card p-4 shadow-sm">
+              <MarketingSignaturePreview html={signatureHtml} />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Rendered from the applicant&apos;s snapshot at submission time — same signature shown on the
+              public vote page.
+            </p>
           </div>
 
           <div className="bg-card border rounded-lg p-6 space-y-4">

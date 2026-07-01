@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+  archiveSubmissionAction,
   deleteSubmissionAction,
   getVotingWeekOptionsAction,
   toggleHallOfFameAction,
@@ -89,6 +90,7 @@ export function SubmissionActions({
     votingWeekStartIso(votingStartDate) === selectedWeekStart;
   const selectedWeekFull = (selectedWeek?.remainingSlots ?? 0) === 0 && !isOnSelectedWeek;
   const showHallOfFame = canManageHallOfFame({ hallOfFame, isVoteWinner });
+  const isArchived = status === 'archived';
 
   const scheduledWeekLabel = useMemo(() => {
     if (status !== 'voting' || !votingStartDate) return null;
@@ -178,6 +180,28 @@ export function SubmissionActions({
     }
   }
 
+  async function handleArchive() {
+    if (
+      !confirm(
+        'Archive this submission? It will be hidden from the main submissions list but can be viewed under archived submissions.',
+      )
+    ) {
+      return;
+    }
+
+    setSubmitting(true);
+    setMessage(null);
+    setEmailWarning(null);
+    try {
+      await archiveSubmissionAction(submissionId);
+      router.push('/admin/spotlight');
+      router.refresh();
+    } catch (err) {
+      showError(err, 'Failed to archive submission');
+      setSubmitting(false);
+    }
+  }
+
   return (
     <div className="bg-card border rounded-lg p-6 space-y-4">
       <h2 className="font-semibold text-lg border-b pb-2">Admin Actions</h2>
@@ -199,6 +223,13 @@ export function SubmissionActions({
       ) : null}
 
       <div className="space-y-3">
+        {isArchived ? (
+          <p className="text-sm text-muted-foreground rounded-md border bg-muted/30 px-3 py-2">
+            This submission is archived. Restore it by changing status in the database if needed, or delete it
+            permanently below.
+          </p>
+        ) : (
+          <>
         <div className="p-3 border rounded-md bg-muted/30 space-y-2">
           {scheduledWeekLabel ? (
             <p className="text-sm rounded-md border border-blue-200 bg-blue-50 text-blue-900 px-3 py-2">
@@ -323,6 +354,8 @@ export function SubmissionActions({
             Reject Submission
           </button>
         )}
+          </>
+        )}
       </div>
 
       {showHallOfFame ? (
@@ -352,7 +385,18 @@ export function SubmissionActions({
       )}
 
       <div className="pt-4 border-t border-destructive/20 mt-4 space-y-3">
-        <p className="text-xs text-muted-foreground">Destructive actions:</p>
+        <p className="text-xs text-muted-foreground">Cleanup actions:</p>
+        {status !== 'archived' ? (
+          <button
+            onClick={handleArchive}
+            disabled={submitting}
+            className="w-full border border-muted-foreground/40 text-foreground py-2 px-4 rounded-md font-medium hover:bg-muted transition disabled:opacity-50"
+          >
+            Archive Submission
+          </button>
+        ) : (
+          <p className="text-sm text-muted-foreground">This submission is archived.</p>
+        )}
         <button
           onClick={handleDelete}
           className="w-full border border-destructive text-destructive py-2 px-4 rounded-md font-medium hover:bg-destructive/10 transition"

@@ -1,6 +1,6 @@
 import mongoose, { Schema, type InferSchemaType } from 'mongoose';
 
-export const SPOTLIGHT_VOTING_WEEK_STATUSES = ['scheduled', 'open', 'paused', 'ended'] as const;
+export const SPOTLIGHT_VOTING_WEEK_STATUSES = ['scheduled', 'open', 'paused', 'ended', 'archived'] as const;
 export type SpotlightVotingWeekStatus = (typeof SPOTLIGHT_VOTING_WEEK_STATUSES)[number];
 
 const SpotlightVotingWeekSchema = new Schema(
@@ -14,6 +14,7 @@ const SpotlightVotingWeekSchema = new Schema(
     },
     openedAt: { type: Date },
     endedAt: { type: Date },
+    archivedAt: { type: Date },
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } },
 );

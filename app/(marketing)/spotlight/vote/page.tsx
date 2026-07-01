@@ -25,7 +25,7 @@ export default async function SpotlightVotePage() {
           Spotlight Community Vote
         </h1>
         <p className="text-xl text-muted-foreground">
-          Vote for your favorite startup and quote to be featured as our top Spotlight winner this week.
+          Vote for your favorite Spotlight signature to be featured as our top winner this week.
         </p>
       </div>
 

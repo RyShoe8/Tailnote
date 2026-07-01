@@ -19,7 +19,7 @@ import {
 } from '@/lib/campaigns/votingWeeks';
 import { coerceToDate, MAX_VOTING_SUBMISSIONS_PER_WEEK } from '@/lib/campaigns/votingWeekUtils';
 import { canAddToHallOfFame } from '@/lib/campaigns/hallOfFame';
-import { ensureVotingWeek } from '@/lib/campaigns/spotlightVotingWeeks';
+import { ensureVotingWeek, getVotingWeekStatusForDate } from '@/lib/campaigns/spotlightVotingWeeks';
 import {
   notifySpotlightSubmitter,
   spotlightEmailWarningMessage,
@@ -194,4 +194,31 @@ export async function toggleHallOfFameAction(id: string): Promise<SpotlightActio
     hallOfFame: submission.hallOfFame,
     ...(emailWarning ? { emailWarning } : {}),
   };
+}
+
+export async function archiveSubmissionAction(id: string): Promise<{ success: boolean }> {
+  const session = await getServerSession();
+  if (!session?.user?.id) throw new Error('Unauthorized');
+  if (!(await isPlatformAdmin(session.user.id))) throw new Error('Forbidden');
+
+  await connectMongoose();
+  const submission = await CampaignSubmissionModel.findById(id);
+  if (!submission) throw new Error('Submission not found');
+  if (submission.status === 'archived') {
+    throw new Error('This submission is already archived.');
+  }
+
+  if (submission.status === 'voting' && submission.votingStartDate) {
+    const weekStatus = await getVotingWeekStatusForDate(getWeekStart(submission.votingStartDate));
+    if (weekStatus === 'open' || weekStatus === 'paused') {
+      throw new Error(
+        'Cannot archive while this submission is in an active voting week. Pause or end the week first.',
+      );
+    }
+  }
+
+  submission.status = 'archived';
+  await submission.save();
+
+  return { success: true };
 }

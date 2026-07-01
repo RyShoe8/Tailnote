@@ -1,29 +1,15 @@
 import Link from 'next/link';
 import { connectMongoose } from '@/lib/mongoose';
-import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { RevealOnScroll } from './RevealOnScroll';
-import { renderSpotlightSample } from '@/lib/marketing/renderMarketingSample';
-import { stripSignaturePreviewLinks } from '@/lib/marketing/stripSignaturePreviewLinks';
 import { MarketingSignaturePreview } from '@/components/marketing/MarketingSignaturePreview';
+import { getOpenVotingWeekSubmissions } from '@/lib/campaigns/spotlightVotingWeeks';
 
 export async function HomeSpotlightVote() {
   await connectMongoose();
 
-  // Fetch active voting submissions
-  const votingSubmissions = await CampaignSubmissionModel.find({
-    status: 'voting',
-    $or: [
-      { votingStartDate: { $exists: false } },
-      { votingStartDate: null },
-      { votingStartDate: { $lte: new Date() } }
-    ]
-  })
-    .select('_id companyName founder industry logoUrl content votes')
-    .sort({ createdAt: 1 })
-    .limit(2)
-    .lean();
-
+  const activeWeek = await getOpenVotingWeekSubmissions();
+  const votingSubmissions = activeWeek.submissions;
   const hasActiveVoting = votingSubmissions.length > 0;
 
   return (
@@ -41,44 +27,39 @@ export async function HomeSpotlightVote() {
                   Vote for this week&apos;s Spotlight winner
                 </h2>
                 <p className="mt-4 text-lg text-muted-foreground">
-                  Help choose the next startup to be featured across our network. Vote for your favorite founder and their inspiring quote.
+                  Help choose the next startup to be featured across our network. Vote for your favorite signature.
                 </p>
 
                 <div className="mt-12 grid md:grid-cols-2 gap-8 text-left">
-                  {votingSubmissions.map((submission: any) => {
-                    const quote = (submission.content as any)?.quote || '';
-                    const signatureHtml = stripSignaturePreviewLinks(
-                      renderSpotlightSample(quote, submission.companyName, 'modern_professional')
-                    );
-                    return (
-                      <div key={submission._id.toString()} className="rounded-lg border bg-card p-6 shadow-sm">
-                        <div className="flex items-center gap-4 mb-4">
-                          {submission.logoUrl ? (
-                            <img src={submission.logoUrl} alt={`${submission.companyName} logo`} className="h-12 w-12 rounded-full object-cover border" />
-                          ) : (
-                            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground">
-                              {submission.companyName.substring(0, 1).toUpperCase()}
-                            </div>
-                          )}
-                          <div>
-                            <h3 className="font-semibold">{submission.companyName}</h3>
-                            <p className="text-sm text-muted-foreground">{submission.founder}</p>
+                  {votingSubmissions.map((submission) => (
+                    <div key={submission._id} className="rounded-lg border bg-card p-6 shadow-sm">
+                      <div className="flex items-center gap-4 mb-4">
+                        {submission.logoUrl ? (
+                          <img
+                            src={submission.logoUrl}
+                            alt={`${submission.companyName} logo`}
+                            className="h-12 w-12 rounded-full object-cover border"
+                          />
+                        ) : (
+                          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground">
+                            {submission.companyName.substring(0, 1).toUpperCase()}
                           </div>
-                        </div>
-                        <blockquote className="italic text-muted-foreground mb-4">
-                          &quot;{quote}&quot;
-                        </blockquote>
-                        <div className="overflow-x-auto rounded-lg border bg-card p-4 shadow-sm relative">
-                          <div className="absolute top-2 right-2 z-10 text-[10px] font-bold text-muted-foreground uppercase tracking-wider bg-background/80 px-1 rounded">
-                            Tailnote Signature
-                          </div>
-                          <div className="pt-2 min-w-[400px]">
-                            <MarketingSignaturePreview html={signatureHtml} />
-                          </div>
+                        )}
+                        <div>
+                          <h3 className="font-semibold">{submission.companyName}</h3>
+                          <p className="text-sm text-muted-foreground">{submission.founder}</p>
                         </div>
                       </div>
-                    );
-                  })}
+                      <div className="overflow-x-auto rounded-lg border bg-card p-4 shadow-sm relative">
+                        <div className="absolute top-2 right-2 z-10 text-[10px] font-bold text-muted-foreground uppercase tracking-wider bg-background/80 px-1 rounded">
+                          Tailnote Signature
+                        </div>
+                        <div className="pt-2 min-w-[400px]">
+                          <MarketingSignaturePreview html={submission.signatureHtml} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 <Link

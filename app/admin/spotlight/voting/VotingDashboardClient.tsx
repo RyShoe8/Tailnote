@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { SpotlightVotingWeekStatus } from '@/models/SpotlightVotingWeek';
 import type { VotingWeekGroup } from '@/lib/campaigns/spotlightVotingWeeks';
-import { endVotingWeekAction, setVotingWeekStatusAction } from './actions';
+import { endVotingWeekAction, archiveVotingWeekAction, setVotingWeekStatusAction } from './actions';
 
 const STATUS_LABELS: Record<SpotlightVotingWeekStatus, string> = {
   scheduled: 'Scheduled',
   open: 'Open',
   paused: 'Paused',
   ended: 'Ended',
+  archived: 'Archived',
 };
 
 const STATUS_BADGE: Record<SpotlightVotingWeekStatus, string> = {
@@ -18,6 +19,7 @@ const STATUS_BADGE: Record<SpotlightVotingWeekStatus, string> = {
   open: 'bg-green-100 text-green-800',
   paused: 'bg-amber-100 text-amber-800',
   ended: 'bg-muted text-muted-foreground',
+  archived: 'bg-muted text-muted-foreground',
 };
 
 function WeekSection({
@@ -58,6 +60,7 @@ function WeekSection({
   const canOpen = week.status === 'scheduled' || week.status === 'paused';
   const canPause = week.status === 'open';
   const canEnd = week.status === 'open' || week.status === 'paused';
+  const canArchive = week.status === 'ended';
 
   return (
     <div className="bg-card border rounded-lg overflow-hidden space-y-0">
@@ -113,6 +116,22 @@ function WeekSection({
               className="text-sm font-medium px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {busy === 'end' ? 'Ending…' : 'End'}
+            </button>
+          ) : null}
+          {canArchive ? (
+            <button
+              type="button"
+              disabled={!!busy}
+              onClick={() =>
+                runAction(
+                  'archive',
+                  () => archiveVotingWeekAction(week.weekStart),
+                  'Archive this voting week? It will be removed from this list.',
+                )
+              }
+              className="text-sm font-medium px-3 py-1.5 rounded-md border bg-background hover:bg-muted disabled:opacity-50"
+            >
+              {busy === 'archive' ? 'Archiving…' : 'Archive'}
             </button>
           ) : null}
         </div>
