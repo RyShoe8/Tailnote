@@ -15,16 +15,7 @@ import {
   isFieldReorderable,
   type SignatureLayout,
 } from 'emailsignature-engine';
-
-const DEFAULT_ORDER = [
-  'avatarUrl',
-  'firstName',
-  'lastName',
-  'title',
-  'email',
-  'officePhone',
-  'mobilePhone',
-];
+import { buildDetailOrderForSidebar } from '@/lib/signature/fieldOrder';
 
 const LABELS: Record<string, string> = {
   avatarUrl: 'Profile Picture',
@@ -139,10 +130,13 @@ export function SignatureForm({ value, onChange, disabled, layout }: Props) {
     onChange({ ...value, hiddenFields: Array.from(hidden) });
   };
 
-  const items = value.detailOrder?.length ? value.detailOrder : DEFAULT_ORDER;
-  // Ensure all default fields are present in case new ones were added
-  const activeItems = [...new Set([...items, ...DEFAULT_ORDER])].filter((id) => DEFAULT_ORDER.includes(id));
   const layoutRules = layout ? getLayoutReorderRules(layout) : null;
+  const reorderableFields = layoutRules?.reorderableFields ?? [];
+  const activeItems = buildDetailOrderForSidebar(
+    value.detailOrder,
+    value.contactDisplayOrder,
+    reorderableFields,
+  );
   const fieldIsReorderable = (id: string) => {
     if (!layoutRules) return true;
     return isFieldReorderable(layoutRules, formFieldToPreviewField(id));

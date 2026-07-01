@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   closestCenter,
   pointerWithin,
@@ -20,11 +20,21 @@ import {
 } from 'emailsignature-engine';
 import type { SignatureProfile } from 'emailsignature-engine';
 import {
+  applyBrandFieldsToContactOrder,
+  fromSigOrderId,
+  hitTestDropZone,
+  type MeasuredDropZone,
+  reorderPreviewFields,
+  toPreviewFieldId,
+  brandOrderFromContactOrder,
+} from '@/lib/signature/fieldOrder';
+import {
   defaultContactDisplayOrder,
   reorderContactDisplayOrder,
   reorderDetailAndContact,
   reorderBrandOrder,
   resolvePreviewDropTarget,
+  profileAfterContactReorder,
   type PendingPreviewDrop,
 } from '@/lib/signature/reorderDragDrop';
 import {
@@ -67,15 +77,22 @@ export function useSignatureDragDrop({
   const [dragStatus, setDragStatus] = useState<SignatureDragStatus>(EMPTY_DRAG_STATUS);
   const [dropFailedMessage, setDropFailedMessage] = useState<string | null>(null);
   const pendingPreviewDropRef = useRef<PendingPreviewDrop | null>(null);
+  const dropZonesRef = useRef<MeasuredDropZone[]>([]);
+  const lastPointerRef = useRef<{ x: number; y: number } | null>(null);
 
   const reorderableFields = useMemo(
     () => getLayoutReorderRules(layout).reorderableFields,
     [layout],
   );
 
+  const setDropZones = useCallback((zones: MeasuredDropZone[]) => {
+    dropZonesRef.current = zones;
+  }, []);
+
   const handlePreviewDragStart = useCallback((event: DragStartEvent) => {
     const fieldId = String(event.active.id);
     pendingPreviewDropRef.current = null;
+    lastPointerRef.current = null;
     setDropFailedMessage(null);
     setIsDraggingToPreview(true);
     setDraggedFieldId(fieldId);
@@ -88,10 +105,29 @@ export function useSignatureDragDrop({
 
   const clearDragState = useCallback(() => {
     pendingPreviewDropRef.current = null;
+    lastPointerRef.current = null;
     setIsDraggingToPreview(false);
     setDraggedFieldId(null);
     setDragStatus(EMPTY_DRAG_STATUS);
   }, []);
+
+  useEffect(() => {
+    if (!isDraggingToPreview) return;
+    const onPointerMove = (event: PointerEvent) => {
+      lastPointerRef.current = { x: event.clientX, y: event.clientY };
+      const hit = hitTestDropZone(dropZonesRef.current, event.clientX, event.clientY);
+      if (hit) {
+        pendingPreviewDropRef.current = { insertAfterField: hit.insertAfterField };
+        setDragStatus((prev) => ({
+          ...prev,
+          overTarget: 'preview-zone',
+          zoneInsertAfter: hit.insertAfterField,
+        }));
+      }
+    };
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    return () => window.removeEventListener('pointermove', onPointerMove);
+  }, [isDraggingToPreview]);
 
   const handleDragOver = useCallback((event: DragOverEvent) => {
     const overId = event.over ? String(event.over.id) : null;
@@ -113,16 +149,19 @@ export function useSignatureDragDrop({
 
   const handleContactReorder = useCallback(
     (rawFieldId: string, insertAfterField: string | null) => {
-      setProfile((p) => ({
-        ...p,
-        contactDisplayOrder: reorderContactDisplayOrder(
-          p.contactDisplayOrder?.length
-            ? p.contactDisplayOrder
-            : defaultContactDisplayOrder(reorderableFields),
-          rawFieldId,
-          insertAfterField,
+      setProfile((p) =>
+        profileAfterContactReorder(
+          p,
+          reorderContactDisplayOrder(
+            p.contactDisplayOrder?.length
+              ? p.contactDisplayOrder
+              : defaultContactDisplayOrder(reorderableFields),
+            rawFieldId,
+            insertAfterField,
+          ),
+          reorderableFields,
         ),
-      }));
+      );
       setDropFailedMessage(null);
       clearDragState();
     },
@@ -139,6 +178,8 @@ export function useSignatureDragDrop({
       const pointerCollisions = pointerWithin(args);
       const zoneHit = pointerCollisions.find((c) => String(c.id).startsWith('zone-'));
       if (zoneHit) return [zoneHit];
+      const sigOrderHit = pointerCollisions.find((c) => String(c.id).startsWith('sig-order:'));
+      if (sigOrderHit) return [sigOrderHit];
       if (isDraggingToPreview && previewWrapperRef.current) {
         const rect = previewWrapperRef.current.getBoundingClientRect();
         const pointer = args.pointerCoordinates;
@@ -171,13 +212,60 @@ export function useSignatureDragDrop({
       const overId = over ? String(over.id) : null;
       const hadPendingPreviewDrop = pendingPreviewDropRef.current !== null;
 
-      const previewDrop = resolvePreviewDropTarget(
-        overId,
-        pendingPreviewDropRef.current,
-        over?.data.current as { insertAfterField?: string | null } | undefined,
-      );
+      const pointer = lastPointerRef.current;
+      const pointerHit = pointer
+        ? hitTestDropZone(dropZonesRef.current, pointer.x, pointer.y)
+        : null;
 
-      if (previewDrop) {
+      const previewDrop =
+        resolvePreviewDropTarget(
+          overId,
+          pendingPreviewDropRef.current,
+          over?.data.current as { insertAfterField?: string | null } | undefined,
+        ) ??
+        (pointerHit ? { insertAfterField: pointerHit.insertAfterField } : null);
+
+      const activePreview = toPreviewFieldId(activeId);
+      const overPreview = overId ? toPreviewFieldId(overId) : null;
+
+      if (
+        activePreview &&
+        overPreview &&
+        activePreview !== overPreview &&
+        reorderableFields.includes(activePreview) &&
+        reorderableFields.includes(overPreview)
+      ) {
+        setProfile((p) => {
+          const base = p.contactDisplayOrder?.length
+            ? p.contactDisplayOrder
+            : defaultContactDisplayOrder(reorderableFields);
+          const nextContact = reorderPreviewFields(
+            base,
+            activePreview,
+            overPreview,
+            reorderableFields,
+          );
+          const nextProfile = profileAfterContactReorder(p, nextContact, reorderableFields);
+          const touchesBrand =
+            activePreview === 'companyName' ||
+            activePreview === 'website' ||
+            overPreview === 'companyName' ||
+            overPreview === 'website';
+          if (touchesBrand && setBrandOrder) {
+            setBrandOrder(brandOrderFromContactOrder(nextProfile.contactDisplayOrder ?? nextContact));
+          }
+          return nextProfile;
+        });
+        setDropFailedMessage(null);
+        clearDragState();
+        return;
+      }
+
+      if (
+        previewDrop &&
+        activePreview &&
+        reorderableFields.includes(activePreview)
+      ) {
         handleContactReorder(activeId, previewDrop.insertAfterField);
         return;
       }
@@ -190,13 +278,26 @@ export function useSignatureDragDrop({
       if (overId && activeId !== overId) {
         if (BRAND_SORTABLE_IDS.includes(activeId as (typeof BRAND_SORTABLE_IDS)[number])) {
           if (setBrandOrder && BRAND_SORTABLE_IDS.includes(overId as (typeof BRAND_SORTABLE_IDS)[number])) {
-            const next = reorderBrandOrder(
+            const nextBrand = reorderBrandOrder(
               brandOrder ?? [],
               activeId,
               overId,
               BRAND_SORTABLE_IDS,
             );
-            setBrandOrder(next);
+            setBrandOrder(nextBrand);
+            setProfile((p) =>
+              profileAfterContactReorder(
+                p,
+                applyBrandFieldsToContactOrder(
+                  p.contactDisplayOrder?.length
+                    ? p.contactDisplayOrder
+                    : defaultContactDisplayOrder(reorderableFields),
+                  nextBrand,
+                  reorderableFields,
+                ),
+                reorderableFields,
+              ),
+            );
           }
           clearDragState();
           return;
@@ -204,8 +305,8 @@ export function useSignatureDragDrop({
 
         setProfile((p) => reorderDetailAndContact(p, activeId, overId, reorderableFields));
         setDropFailedMessage(null);
-      } else if (hadPendingPreviewDrop && isLgUp) {
-        setDropFailedMessage('Could not place the field — try releasing directly over a highlighted slot.');
+      } else if ((hadPendingPreviewDrop || pointerHit) && isLgUp && activePreview) {
+        setDropFailedMessage('Could not place the field — try the Signature field order list below the preview.');
       }
 
       clearDragState();
@@ -245,5 +346,6 @@ export function useSignatureDragDrop({
     handlePreviewDragStart,
     handleDragOver,
     handleDragEnd,
+    setDropZones,
   };
 }

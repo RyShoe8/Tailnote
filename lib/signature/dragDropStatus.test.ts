@@ -79,7 +79,7 @@ describe('dragDropStatus', () => {
       dropZoneCount: 2,
     });
     assert.equal(result?.variant, 'muted');
-    assert.match(result?.message ?? '', /field list/i);
+    assert.match(result?.message ?? '', /field order/i);
   });
 
   it('getDragDropStatus shows muted hint when no preview slots', () => {

@@ -1,19 +1,15 @@
 import { arrayMove } from '@dnd-kit/sortable';
 import { formFieldToPreviewField } from 'emailsignature-engine';
 import type { SignatureProfile } from 'emailsignature-engine';
-
-const DEFAULT_DETAIL_ORDER = [
-  'avatarUrl',
-  'firstName',
-  'lastName',
-  'title',
-  'email',
-  'officePhone',
-  'mobilePhone',
-];
+import {
+  DEFAULT_DETAIL_ORDER,
+  deriveContactOrderFromDetailOrder,
+  syncDetailOrderFromContact,
+  defaultContactOrder,
+} from '@/lib/signature/fieldOrder';
 
 export function defaultContactDisplayOrder(reorderableFields: readonly string[]): string[] {
-  return [...reorderableFields];
+  return defaultContactOrder(reorderableFields);
 }
 
 export function reorderContactDisplayOrder(
@@ -45,10 +41,9 @@ export function reorderDetailAndContact(
   overId: string,
   reorderableFields: readonly string[],
 ): SignatureProfile {
-  const defaultOrder = DEFAULT_DETAIL_ORDER;
-  const currentOrder = profile.detailOrder?.length ? profile.detailOrder : defaultOrder;
-  const activeItems = [...new Set([...currentOrder, ...defaultOrder])].filter((id) =>
-    defaultOrder.includes(id),
+  const currentOrder = profile.detailOrder?.length ? profile.detailOrder : [...DEFAULT_DETAIL_ORDER];
+  const activeItems = [...new Set([...currentOrder, ...DEFAULT_DETAIL_ORDER])].filter((id) =>
+    DEFAULT_DETAIL_ORDER.includes(id as (typeof DEFAULT_DETAIL_ORDER)[number]),
   );
 
   const oldIndex = activeItems.indexOf(activeId);
@@ -62,23 +57,11 @@ export function reorderDetailAndContact(
     ? [...profile.contactDisplayOrder]
     : defaultContactDisplayOrder(reorderableFields);
 
-  const mappedActiveId = formFieldToPreviewField(activeId);
-  const mappedOverId = formFieldToPreviewField(overId);
-
-  let newContactDisplayOrder = baseContact;
-  if (
-    mappedActiveId !== mappedOverId &&
-    reorderableFields.includes(mappedActiveId) &&
-    reorderableFields.includes(mappedOverId) &&
-    baseContact.includes(mappedActiveId) &&
-    baseContact.includes(mappedOverId)
-  ) {
-    const cdoOldIndex = baseContact.indexOf(mappedActiveId);
-    const cdoNewIndex = baseContact.indexOf(mappedOverId);
-    if (cdoOldIndex !== -1 && cdoNewIndex !== -1) {
-      newContactDisplayOrder = arrayMove(baseContact, cdoOldIndex, cdoNewIndex);
-    }
-  }
+  const newContactDisplayOrder = deriveContactOrderFromDetailOrder(
+    newDetailOrder,
+    reorderableFields,
+    baseContact,
+  );
 
   return {
     ...profile,
@@ -93,9 +76,7 @@ export function reorderBrandOrder(
   overId: string,
   allowedIds: readonly string[],
 ): string[] {
-  const items = currentOrder.length
-    ? [...currentOrder]
-    : [...allowedIds];
+  const items = currentOrder.length ? [...currentOrder] : [...allowedIds];
   const activeItems = [...new Set([...items, ...allowedIds])].filter((id) => allowedIds.includes(id));
   const oldIndex = activeItems.indexOf(activeId);
   const newIndex = activeItems.indexOf(overId);
@@ -117,4 +98,16 @@ export function resolvePreviewDropTarget(
     return { insertAfterField: overZoneData.insertAfterField ?? null };
   }
   return pending;
+}
+
+export function profileAfterContactReorder(
+  profile: SignatureProfile,
+  newContactDisplayOrder: string[],
+  reorderableFields: readonly string[],
+): SignatureProfile {
+  return {
+    ...profile,
+    contactDisplayOrder: newContactDisplayOrder,
+    detailOrder: syncDetailOrderFromContact(profile.detailOrder, newContactDisplayOrder, reorderableFields),
+  };
 }

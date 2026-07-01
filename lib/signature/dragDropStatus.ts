@@ -72,6 +72,9 @@ export function classifyDragOverTarget(overId: string | null): {
   if (overId.startsWith('zone-')) {
     return { overTarget: 'preview-zone', zoneInsertAfter: null };
   }
+  if (overId.startsWith('sig-order:')) {
+    return { overTarget: 'sidebar-field', zoneInsertAfter: null };
+  }
   if (BRAND_FIELD_IDS.has(overId)) {
     return { overTarget: 'brand-field', zoneInsertAfter: null };
   }
@@ -109,7 +112,7 @@ export function getDragDropStatus(input: GetDragDropStatusInput): DragDropStatus
 
   if (!isLgUp) {
     return {
-      message: 'Reorder using the field list on the left.',
+      message: 'Use Signature field order below the preview to reorder.',
       variant: 'muted',
     };
   }
@@ -136,7 +139,7 @@ export function getDragDropStatus(input: GetDragDropStatusInput): DragDropStatus
   }
 
   return {
-    message: `Move ${label} into a highlighted slot in the preview.`,
+    message: `Drag in the list below, or drop ${label} into a highlighted slot in the preview.`,
     variant: 'info',
   };
 }

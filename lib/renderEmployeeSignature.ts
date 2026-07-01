@@ -45,6 +45,7 @@ export function orgToBrandInput(org: OrganizationDoc, contentBlocks?: ContentBlo
     zip: org.zip ?? undefined,
     animation: org.animation as OrgBrandInput['animation'],
     contentBlocks,
+    brandOrder: Array.isArray(org.brandOrder) ? org.brandOrder : undefined,
     ...(typeof org.logoHeightPx === 'number' && org.logoHeightPx > 0
       ? { logoHeightPx: org.logoHeightPx }
       : {}),

@@ -32,6 +32,7 @@ export type OrgBrandInput = {
   animation?: { enabled: boolean; gifUrl?: string };
   contentBlocks?: ContentBlockData[];
   logoHeightPx?: number;
+  brandOrder?: string[];
 };
 
 export type EmployeeProfileInput = {
@@ -72,6 +73,7 @@ export function toSignatureBrand(input: OrgBrandInput): SignatureBrand {
       gifUrl: input.animation?.gifUrl?.trim() || undefined,
     },
     contentBlocks: input.contentBlocks,
+    brandOrder: input.brandOrder?.length ? [...input.brandOrder] : undefined,
     ...(typeof input.logoHeightPx === 'number' &&
     Number.isFinite(input.logoHeightPx) &&
     input.logoHeightPx > 0

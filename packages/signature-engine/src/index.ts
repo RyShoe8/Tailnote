@@ -23,6 +23,7 @@ export {
   isFieldReorderable,
   formFieldToPreviewField,
   previewFieldToFormFields,
+  applyBrandFieldOrder,
   type LayoutReorderRules,
 } from './core/layoutReorderRules';
 

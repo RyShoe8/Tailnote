@@ -62,6 +62,7 @@ const BrandOverrideSchema = z
         gifUrl: z.string().max(2000).optional(),
       })
       .optional(),
+    brandOrder: z.array(z.string()).optional(),
   })
   .partial();
 
@@ -223,6 +224,7 @@ export async function POST(request: Request) {
             },
           }
         : {}),
+      ...(override.brandOrder !== undefined ? { brandOrder: override.brandOrder } : {}),
     };
   }
 

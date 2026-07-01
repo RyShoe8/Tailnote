@@ -48,6 +48,7 @@ import { SignatureBimiTab } from '@/components/dashboard/SignatureBimiTab';
 import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 import { PreviewDropOverlay } from '@/components/signature/PreviewDropOverlay';
 import { SignatureDragStatusBar } from '@/components/signature/SignatureDragStatusBar';
+import { SignatureFieldOrderPanel } from '@/components/signature/SignatureFieldOrderPanel';
 import { useSignatureDragDrop } from '@/lib/signature/useSignatureDragDrop';
 import { fieldLabel } from '@/lib/signature/dragDropStatus';
 import { defaultProfile, profileFromApi, trackedProfilePayload } from '@/lib/signature/profileApiHelpers';
@@ -356,6 +357,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
     handlePreviewDragStart,
     handleDragOver,
     handleDragEnd,
+    setDropZones,
   } = useSignatureDragDrop({
     layout: engineTemplate?.layout ?? 'default',
     profile,
@@ -454,6 +456,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
                 state: brand.hiddenFields?.includes('state') ? '' : brand.state,
                 zip: brand.hiddenFields?.includes('zip') ? '' : brand.zip,
                 animation: brand.hiddenFields?.includes('animation') ? undefined : brand.animation,
+                brandOrder: org?.brandOrder ?? [],
               },
             }),
           });
@@ -487,6 +490,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
     profile.hiddenFields,
     profile.detailOrder,
     profile.contactDisplayOrder,
+    org?.brandOrder,
     brand.companyName,
     brand.website,
     brand.logoUrl,
@@ -1161,10 +1165,18 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
                 layout={engineTemplate?.layout ?? 'default'}
                 contactDisplayOrder={profile.contactDisplayOrder}
                 onZoneCountChange={setDropZoneCount}
+                onDropZonesChange={setDropZones}
               />
             )}
           </div>
           {dragStatusMessage ? <SignatureDragStatusBar status={dragStatusMessage} /> : null}
+          <SignatureFieldOrderPanel
+            layout={engineTemplate?.layout ?? 'default'}
+            contactDisplayOrder={profile.contactDisplayOrder}
+            brandOrder={org?.brandOrder}
+            hiddenProfileFields={profile.hiddenFields ?? []}
+            hiddenBrandFields={org?.hiddenFields ?? []}
+          />
         </CardContent>
       </Card>
       </LivePreviewStickyColumn>
