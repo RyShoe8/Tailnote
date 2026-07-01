@@ -47,7 +47,9 @@ import { hasAnalytics, hasBrandingRemoval } from '@/lib/billing/subscriptionAcce
 import { SignatureBimiTab } from '@/components/dashboard/SignatureBimiTab';
 import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 import { PreviewDropOverlay } from '@/components/signature/PreviewDropOverlay';
+import { SignatureDragStatusBar } from '@/components/signature/SignatureDragStatusBar';
 import { useSignatureDragDrop } from '@/lib/signature/useSignatureDragDrop';
+import { fieldLabel } from '@/lib/signature/dragDropStatus';
 import { defaultProfile, profileFromApi, trackedProfilePayload } from '@/lib/signature/profileApiHelpers';
 
 type OrgResponse = {
@@ -176,6 +178,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
   const [assetOriginNonce, setAssetOriginNonce] = useState(0);
 
   const previewWrapperRef = useRef<HTMLDivElement>(null);
+  const [dropZoneCount, setDropZoneCount] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -339,10 +342,12 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
   const {
     isDraggingToPreview,
     draggedFieldId,
+    dragStatusMessage,
     reorderableFields,
     sensors,
     collisionDetection,
     handlePreviewDragStart,
+    handleDragOver,
     handleDragEnd,
   } = useSignatureDragDrop({
     layout: engineTemplate?.layout ?? 'default',
@@ -351,6 +356,8 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
     brandOrder: org?.brandOrder,
     setBrandOrder,
     previewWrapperRef,
+    isLgUp,
+    dropZoneCount,
   });
 
   const hydratedContentBlocks = useHydratedContentBlocks(contentBlocks);
@@ -668,7 +675,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
     const showPreviewColumn = isLgUp || mobilePane === 'preview';
 
     return (
-    <DndContext sensors={sensors} collisionDetection={collisionDetection} onDragStart={handlePreviewDragStart} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={collisionDetection} onDragStart={handlePreviewDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
       <div
         className={cn(
           'grid lg:grid-cols-12 gap-8 items-start max-w-full min-w-0',
@@ -1132,10 +1139,13 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
                 isDragging={isDraggingToPreview}
                 draggedFieldId={draggedFieldId}
                 reorderableFields={reorderableFields}
+                layout={engineTemplate?.layout ?? 'default'}
                 contactDisplayOrder={profile.contactDisplayOrder}
+                onZoneCountChange={setDropZoneCount}
               />
             )}
           </div>
+          {isDraggingToPreview ? <SignatureDragStatusBar status={dragStatusMessage} /> : null}
         </CardContent>
       </Card>
       </LivePreviewStickyColumn>
@@ -1149,7 +1159,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
       {draggedFieldId ? (
         <div className="rounded-xl border bg-card p-4 shadow-xl opacity-90 ring-1 ring-primary flex items-center">
           <Move className="mr-2 h-5 w-5 text-muted-foreground" />
-          <span className="font-medium">Moving field</span>
+          <span className="font-medium">Moving {fieldLabel(draggedFieldId)}</span>
         </div>
       ) : null}
     </DragOverlay>

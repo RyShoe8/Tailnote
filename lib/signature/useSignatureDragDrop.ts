@@ -10,6 +10,7 @@ import {
   useSensors,
   type CollisionDetection,
   type DragEndEvent,
+  type DragOverEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
@@ -24,8 +25,19 @@ import {
   reorderDetailAndContact,
   reorderBrandOrder,
 } from '@/lib/signature/reorderDragDrop';
+import {
+  classifyDragOverTarget,
+  getDragDropStatus,
+  type SignatureDragStatus,
+} from '@/lib/signature/dragDropStatus';
 
 const BRAND_SORTABLE_IDS = ['companyName', 'website'] as const;
+
+const EMPTY_DRAG_STATUS: SignatureDragStatus = {
+  draggedFieldId: null,
+  overTarget: 'none',
+  zoneInsertAfter: null,
+};
 
 type UseSignatureDragDropOptions = {
   layout: SignatureLayout;
@@ -34,6 +46,8 @@ type UseSignatureDragDropOptions = {
   brandOrder?: string[];
   setBrandOrder?: (order: string[]) => void;
   previewWrapperRef: React.RefObject<HTMLDivElement | null>;
+  isLgUp: boolean;
+  dropZoneCount: number;
 };
 
 export function useSignatureDragDrop({
@@ -43,9 +57,12 @@ export function useSignatureDragDrop({
   brandOrder,
   setBrandOrder,
   previewWrapperRef,
+  isLgUp,
+  dropZoneCount,
 }: UseSignatureDragDropOptions) {
   const [isDraggingToPreview, setIsDraggingToPreview] = useState(false);
   const [draggedFieldId, setDraggedFieldId] = useState<string | null>(null);
+  const [dragStatus, setDragStatus] = useState<SignatureDragStatus>(EMPTY_DRAG_STATUS);
 
   const reorderableFields = useMemo(
     () => getLayoutReorderRules(layout).reorderableFields,
@@ -53,13 +70,35 @@ export function useSignatureDragDrop({
   );
 
   const handlePreviewDragStart = useCallback((event: DragStartEvent) => {
+    const fieldId = String(event.active.id);
     setIsDraggingToPreview(true);
-    setDraggedFieldId(String(event.active.id));
+    setDraggedFieldId(fieldId);
+    setDragStatus({
+      draggedFieldId: fieldId,
+      overTarget: 'none',
+      zoneInsertAfter: null,
+    });
   }, []);
 
   const clearDragState = useCallback(() => {
     setIsDraggingToPreview(false);
     setDraggedFieldId(null);
+    setDragStatus(EMPTY_DRAG_STATUS);
+  }, []);
+
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const overId = event.over ? String(event.over.id) : null;
+    const { overTarget } = classifyDragOverTarget(overId);
+    let zoneInsertAfter: string | null = null;
+    if (overTarget === 'preview-zone' && event.over?.data.current) {
+      const zone = event.over.data.current as { insertAfterField?: string | null };
+      zoneInsertAfter = zone.insertAfterField ?? null;
+    }
+    setDragStatus((prev) => ({
+      ...prev,
+      overTarget,
+      zoneInsertAfter,
+    }));
   }, []);
 
   const handleContactReorder = useCallback(
@@ -160,13 +199,29 @@ export function useSignatureDragDrop({
     ],
   );
 
+  const dragStatusMessage = useMemo(
+    () =>
+      isDraggingToPreview
+        ? getDragDropStatus({
+            dragStatus,
+            layout,
+            reorderableFields,
+            isLgUp,
+            dropZoneCount,
+          })
+        : null,
+    [dragStatus, dropZoneCount, isDraggingToPreview, isLgUp, layout, reorderableFields],
+  );
+
   return {
     isDraggingToPreview,
     draggedFieldId,
+    dragStatusMessage,
     reorderableFields,
     sensors,
     collisionDetection,
     handlePreviewDragStart,
+    handleDragOver,
     handleDragEnd,
   };
 }
