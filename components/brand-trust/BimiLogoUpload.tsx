@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ type Props = {
   onUploaded?: (payload: { url: string; suggestedRecord: string }) => void;
   variant?: 'default' | 'embedded';
   upgradeHref?: string;
+  hidePreview?: boolean;
 };
 
 export function BimiLogoUpload({
@@ -25,6 +26,7 @@ export function BimiLogoUpload({
   onUploaded,
   variant = 'default',
   upgradeHref = DASHBOARD_UPGRADE_HREF,
+  hidePreview = false,
 }: Props) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +34,16 @@ export function BimiLogoUpload({
   const [hostedUrl, setHostedUrl] = useState(bimiLogoUrl ?? '');
   const [record, setRecord] = useState(bimiSuggestedRecord ?? '');
 
+  useEffect(() => {
+    setHostedUrl(bimiLogoUrl ?? '');
+  }, [bimiLogoUrl]);
+
+  useEffect(() => {
+    setRecord(bimiSuggestedRecord ?? '');
+  }, [bimiSuggestedRecord]);
+
   const embedded = variant === 'embedded';
+  const hasLogo = Boolean(hostedUrl?.trim());
 
   if (!canUseBimiLogoHosting) {
     return (
@@ -97,7 +108,7 @@ export function BimiLogoUpload({
     >
       {!embedded ? (
         <div>
-          <p className="font-medium">Upload BIMI logo</p>
+          <p className="font-medium">{hasLogo ? 'Replace BIMI logo' : 'Upload BIMI logo'}</p>
           <p className="mt-1 text-sm text-muted-foreground">{RASTER_SVG_HONESTY}</p>
         </div>
       ) : (
@@ -123,7 +134,7 @@ export function BimiLogoUpload({
           ))}
         </ul>
       ) : null}
-      {hostedUrl ? (
+      {hostedUrl && !hidePreview ? (
         <div className="space-y-3">
           <div>
             <p className="text-sm font-medium mb-2">Hosted BIMI Logo</p>

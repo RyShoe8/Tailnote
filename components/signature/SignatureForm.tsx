@@ -10,9 +10,7 @@ import { Loader2, Trash2, GripVertical, Eye, EyeOff, Lock } from 'lucide-react';
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
-  formFieldToPreviewField,
-  getLayoutReorderRules,
-  isFieldReorderable,
+  getLayoutEditorFields,
   type SignatureLayout,
 } from 'emailsignature-engine';
 import { buildDetailOrderForSidebar } from '@/lib/signature/fieldOrder';
@@ -130,16 +128,15 @@ export function SignatureForm({ value, onChange, disabled, layout }: Props) {
     onChange({ ...value, hiddenFields: Array.from(hidden) });
   };
 
-  const layoutRules = layout ? getLayoutReorderRules(layout) : null;
-  const reorderableFields = layoutRules?.reorderableFields ?? [];
+  const editorFields = layout ? getLayoutEditorFields(layout) : null;
   const activeItems = buildDetailOrderForSidebar(
     value.detailOrder,
     value.contactDisplayOrder,
-    reorderableFields,
+    layout ?? 'default',
   );
   const fieldIsReorderable = (id: string) => {
-    if (!layoutRules) return true;
-    return isFieldReorderable(layoutRules, formFieldToPreviewField(id));
+    if (!editorFields) return true;
+    return editorFields.reorderableFormFields.includes(id);
   };
 
   const renderField = (id: string) => {
@@ -192,7 +189,8 @@ export function SignatureForm({ value, onChange, disabled, layout }: Props) {
     <fieldset disabled={disabled || uploading} className="space-y-4">
       <div className="mb-4 space-y-1">
         <p className="text-sm text-muted-foreground">
-          Drag fields here or on the live preview to reorder your signature. Use the eye icon to hide a field.
+          Fields and drag targets depend on your chosen template. Only fields that appear in this layout can be
+          reordered. Use the eye icon to hide a field.
         </p>
       </div>
 

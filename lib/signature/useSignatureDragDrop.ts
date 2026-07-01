@@ -15,7 +15,7 @@ import {
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import {
-  getLayoutReorderRules,
+  getLayoutEditorFields,
   type SignatureLayout,
 } from 'emailsignature-engine';
 import type { SignatureProfile } from 'emailsignature-engine';
@@ -39,8 +39,6 @@ import {
   getDragDropStatus,
   type SignatureDragStatus,
 } from '@/lib/signature/dragDropStatus';
-
-const BRAND_SORTABLE_IDS = ['companyName', 'website'] as const;
 
 const EMPTY_DRAG_STATUS: SignatureDragStatus = {
   draggedFieldId: null,
@@ -68,10 +66,12 @@ export function useSignatureDragDrop({
   const [dragStatus, setDragStatus] = useState<SignatureDragStatus>(EMPTY_DRAG_STATUS);
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
 
-  const reorderableFields = useMemo(
-    () => getLayoutReorderRules(layout).reorderableFields,
+  const { reorderablePreviewFields, brandFieldsInLayout } = useMemo(
+    () => getLayoutEditorFields(layout),
     [layout],
   );
+
+  const reorderableFields = reorderablePreviewFields;
 
   const applyContactReorder = useCallback(
     (nextContact: string[]) => {
@@ -169,13 +169,19 @@ export function useSignatureDragDrop({
       }
 
       if (overId && activeId !== overId) {
-        if (BRAND_SORTABLE_IDS.includes(activeId as (typeof BRAND_SORTABLE_IDS)[number])) {
-          if (setBrandOrder && BRAND_SORTABLE_IDS.includes(overId as (typeof BRAND_SORTABLE_IDS)[number])) {
+        const brandSortableIds = brandFieldsInLayout.length
+          ? brandFieldsInLayout
+          : ([] as readonly string[]);
+        if (brandSortableIds.includes(activeId)) {
+          if (
+            setBrandOrder &&
+            brandSortableIds.includes(overId)
+          ) {
             const nextBrand = reorderBrandOrder(
               brandOrder ?? [],
               activeId,
               overId,
-              BRAND_SORTABLE_IDS,
+              brandSortableIds,
             );
             setBrandOrder(nextBrand);
             setProfile((p) =>
@@ -209,7 +215,16 @@ export function useSignatureDragDrop({
           return;
         }
 
-        setProfile((p) => reorderDetailAndContact(p, activeId, overId, reorderableFields));
+        const overPreviewFromSidebar = toPreviewFieldId(overId);
+        if (
+          sidebarPreview &&
+          overPreviewFromSidebar &&
+          sidebarPreview !== overPreviewFromSidebar &&
+          reorderableFields.includes(sidebarPreview) &&
+          reorderableFields.includes(overPreviewFromSidebar)
+        ) {
+          setProfile((p) => reorderDetailAndContact(p, activeId, overId, layout));
+        }
       }
 
       clearDragState();
@@ -218,6 +233,8 @@ export function useSignatureDragDrop({
       applyContactReorder,
       brandOrder,
       clearDragState,
+      layout,
+      brandFieldsInLayout,
       profile.contactDisplayOrder,
       reorderableFields,
       setBrandOrder,

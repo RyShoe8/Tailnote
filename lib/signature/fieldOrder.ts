@@ -1,6 +1,7 @@
 import {
   applyBrandFieldOrder,
   formFieldToPreviewField,
+  getLayoutEditorFields,
   getLayoutReorderRules,
   isFieldReorderable,
   resolveFieldOrder,
@@ -160,14 +161,17 @@ export function syncDetailOrderFromContact(
 export function buildDetailOrderForSidebar(
   detailOrder: readonly string[] | undefined,
   contactDisplayOrder: readonly string[] | undefined,
-  reorderableFields: readonly string[],
+  layout: SignatureLayout,
 ): string[] {
-  const baseDetail = detailOrder?.length ? [...detailOrder] : [...DEFAULT_DETAIL_ORDER];
-  const activeDetail = [...new Set([...baseDetail, ...DEFAULT_DETAIL_ORDER])].filter((id) =>
-    DEFAULT_DETAIL_ORDER.includes(id as (typeof DEFAULT_DETAIL_ORDER)[number]),
+  const { editableFormFields, reorderablePreviewFields } = getLayoutEditorFields(layout);
+  const baseDetail = detailOrder?.length
+    ? detailOrder.filter((id) => editableFormFields.includes(id))
+    : [...editableFormFields];
+  const activeDetail = [...new Set([...baseDetail, ...editableFormFields])].filter((id) =>
+    editableFormFields.includes(id),
   );
   if (!contactDisplayOrder?.length) return activeDetail;
-  return syncDetailOrderFromContact(activeDetail, contactDisplayOrder, reorderableFields);
+  return syncDetailOrderFromContact(activeDetail, contactDisplayOrder, reorderablePreviewFields);
 }
 
 export function applyBrandFieldsToContactOrder(

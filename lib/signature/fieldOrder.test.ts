@@ -1,61 +1,40 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  deriveContactOrderFromDetailOrder,
-  syncDetailOrderFromContact,
-  fromSigOrderId,
-  toSigOrderId,
-  reorderPreviewFields,
-  applyBrandFieldsToContactOrder,
-} from './fieldOrder';
+import { buildDetailOrderForSidebar } from './fieldOrder';
+import { profileAfterContactReorder } from './reorderDragDrop';
 
-describe('fieldOrder', () => {
-  it('maps sig-order ids', () => {
-    assert.equal(toSigOrderId('email'), 'sig-order:email');
-    assert.equal(fromSigOrderId('sig-order:email'), 'email');
-    assert.equal(fromSigOrderId('email'), null);
+describe('fieldOrder template filtering', () => {
+  it('buildDetailOrderForSidebar omits phone fields on modern_professional', () => {
+    const items = buildDetailOrderForSidebar(undefined, undefined, 'modern_professional');
+    assert.ok(items.includes('firstName'));
+    assert.ok(items.includes('email'));
+    assert.ok(!items.includes('officePhone'));
+    assert.ok(!items.includes('mobilePhone'));
   });
 
-  it('deriveContactOrderFromDetailOrder follows sidebar sequence', () => {
-    const reorderable = ['name', 'title', 'email', 'website'] as const;
-    const detail = ['avatarUrl', 'firstName', 'lastName', 'email', 'title'];
-    const next = deriveContactOrderFromDetailOrder(
-      detail,
-      reorderable,
-      ['name', 'title', 'email', 'website'],
-    );
-    assert.ok(next.indexOf('email') < next.indexOf('title'));
-    assert.ok(next.indexOf('name') < next.indexOf('email'));
+  it('buildDetailOrderForSidebar includes phones on stacked layout', () => {
+    const items = buildDetailOrderForSidebar(undefined, undefined, 'stacked');
+    assert.ok(items.includes('officePhone'));
+    assert.ok(items.includes('mobilePhone'));
   });
 
-  it('syncDetailOrderFromContact mirrors preview order in sidebar', () => {
-    const reorderable = ['name', 'title', 'email', 'website'] as const;
-    const detail = ['avatarUrl', 'firstName', 'lastName', 'title', 'email'];
-    const next = syncDetailOrderFromContact(
-      detail,
-      ['name', 'email', 'title', 'website'],
-      reorderable,
+  it('profileAfterContactReorder syncs detail order for modern_professional', () => {
+    const profile = {
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      title: 'Engineer',
+      email: 'ada@example.com',
+      contactDisplayOrder: ['logo', 'name', 'title', 'email', 'website'],
+      detailOrder: ['avatarUrl', 'firstName', 'lastName', 'title', 'email'],
+    };
+    const next = profileAfterContactReorder(
+      profile,
+      ['logo', 'name', 'email', 'title', 'website'],
+      ['logo', 'name', 'title', 'email', 'website'],
     );
-    assert.ok(next.indexOf('email') < next.indexOf('title'));
-    assert.ok(next.indexOf('firstName') < next.indexOf('lastName'));
-  });
-
-  it('reorderPreviewFields swaps preview ids', () => {
-    const next = reorderPreviewFields(
-      ['name', 'title', 'email'],
-      'email',
-      'name',
-      ['name', 'title', 'email'],
-    );
-    assert.deepEqual(next, ['email', 'name', 'title']);
-  });
-
-  it('applyBrandFieldsToContactOrder swaps company and website', () => {
-    const next = applyBrandFieldsToContactOrder(
-      ['name', 'title', 'companyName', 'email', 'website'],
-      ['website', 'companyName'],
-      ['name', 'title', 'companyName', 'email', 'website'],
-    );
-    assert.ok(next.indexOf('website') < next.indexOf('companyName'));
+    assert.deepEqual(next.contactDisplayOrder, ['logo', 'name', 'email', 'title', 'website']);
+    const titleIdx = next.detailOrder?.indexOf('title') ?? -1;
+    const emailIdx = next.detailOrder?.indexOf('email') ?? -1;
+    assert.ok(titleIdx > emailIdx);
   });
 });

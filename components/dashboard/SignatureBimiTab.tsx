@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { BimiLogoUpload } from '@/components/brand-trust/BimiLogoUpload';
+import { BimiCurrentLogoPanel } from '@/components/brand-trust/BimiCurrentLogoPanel';
 import { BimiCertificateGuide } from '@/components/email-health/BimiCertificateGuide';
 import { BimiInboxPreview } from '@/components/email-health/BimiInboxPreview';
+import { DnsRecordCopy } from '@/components/email-health/DnsRecordCopy';
 import { SIGNATURE_VS_INBOX_LOGO } from '@/lib/email-health/bimiCopy';
 
 import { Button } from '@/components/ui/button';
@@ -16,6 +18,7 @@ type BrandTrustPayload = {
   scan: SerializedEmailHealthScan | null;
   bimiLogoUrl?: string;
   bimiSuggestedRecord?: string;
+  bimiLogoUploadedAt?: string | null;
   entitlements: { canUseBimiLogoHosting: boolean };
 };
 
@@ -125,93 +128,105 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
       </CardShell>
 
       {passed ? (
-        <CardShell>
-          <div className="space-y-2">
-            <h4 className="font-medium text-green-600">Your brand logo is ready for the inbox!</h4>
-            <p className="text-sm text-muted-foreground">
-              You have successfully configured self-asserted BIMI for <strong>{data.orgDomain}</strong>. 
-              Supporting providers like Yahoo and Apple Mail will now show your logo next to your emails.
-            </p>
-          </div>
-        </CardShell>
-      ) : (
-        <div className="space-y-6">
-          <CardShell>
-            <h4 className="font-medium mb-2">How to get your logo in the inbox</h4>
-            <p className="text-sm text-muted-foreground mb-4">{SIGNATURE_VS_INBOX_LOGO}</p>
-            {!canManageBimiLogo ? (
-              <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-                Brand inbox logo upload is managed by your organization owner or admin. You can still
-                review DNS requirements and preview how your logo may appear.
-              </p>
-            ) : null}
-          </CardShell>
-
-          {dmarcStatus?.status === 'fail' && (
-            <CardShell>
-              <h4 className="font-medium text-amber-600 mb-2">Step 1: Upgrade DMARC Security</h4>
-              <p className="text-sm text-muted-foreground mb-4">
-                BIMI requires strict email security. Your domain&apos;s DMARC policy must be set to <code>quarantine</code> or <code>reject</code>.
-              </p>
-              <Link
-                href="/dashboard/brand-trust"
-                className="text-sm font-medium text-primary underline"
-              >
-                Fix this in Brand Strength
-              </Link>
-            </CardShell>
-          )}
-
-          {(!hasUploadedLogo || svgStatus?.status !== 'pass') && canManageBimiLogo && (
-            <div className="space-y-4">
-              <h4 className="font-medium">Step {dmarcStatus?.status === 'fail' ? '2' : '1'}: Upload your logo</h4>
-              {hasUploadedLogo && svgStatus?.status !== 'pass' && (svgStatus?.issues?.length ?? 0) > 0 && (
-                <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">
-                  <p className="font-semibold mb-1">Logo issues detected:</p>
-                  <ul className="list-disc pl-5">
-                    {svgStatus?.issues?.map((issue: string, i: number) => (
-                      <li key={i}>{issue}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <BimiLogoUpload
-                canUseBimiLogoHosting={data.entitlements.canUseBimiLogoHosting}
-                bimiLogoUrl={data.bimiLogoUrl}
-                bimiSuggestedRecord={data.bimiSuggestedRecord}
-              />
-            </div>
-          )}
-
-          {hasUploadedLogo && bimiRecordStatus?.status !== 'pass' && (
-            <CardShell>
-              <h4 className="font-medium mb-2">
-                Step {dmarcStatus?.status === 'fail' ? '3' : (!hasUploadedLogo || svgStatus?.status !== 'pass' ? '2' : '1')}: Publish DNS Record
-              </h4>
-              <p className="text-sm text-muted-foreground mb-4">
-                Add the following TXT record to your domain&apos;s DNS settings to authorize your logo for display in the inbox.
-              </p>
-              <div className="bg-muted p-3 rounded-md overflow-x-auto text-xs font-mono">
-                {data.bimiSuggestedRecord || 'v=BIMI1; l=YOUR_LOGO_URL; a=;'}
-              </div>
-            </CardShell>
-          )}
+        <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800 dark:border-green-900 dark:bg-green-950/30 dark:text-green-200">
+          Your brand logo is ready for supporting inboxes on <strong>{data.orgDomain}</strong>. You can review
+          specs or replace the file below.
         </div>
-      )}
+      ) : null}
+
+      <BimiCurrentLogoPanel
+        bimiLogoUrl={data.bimiLogoUrl}
+        bimiLogoUploadedAt={data.bimiLogoUploadedAt}
+        bimiDetail={data.scan?.bimiDetail}
+      />
+
+      {!passed ? (
+        <CardShell>
+          <h4 className="font-medium mb-2">How to get your logo in the inbox</h4>
+          <p className="text-sm text-muted-foreground mb-4">{SIGNATURE_VS_INBOX_LOGO}</p>
+          {!canManageBimiLogo ? (
+            <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+              Brand inbox logo upload is managed by your organization owner or admin. You can still review DNS
+              requirements and preview how your logo may appear.
+            </p>
+          ) : null}
+        </CardShell>
+      ) : null}
+
+      {!passed && dmarcStatus?.status === 'fail' ? (
+        <CardShell>
+          <h4 className="font-medium text-amber-600 mb-2">Step 1: Upgrade DMARC Security</h4>
+          <p className="text-sm text-muted-foreground mb-4">
+            BIMI requires strict email security. Your domain&apos;s DMARC policy must be set to{' '}
+            <code>quarantine</code> or <code>reject</code>.
+          </p>
+          <Link href="/dashboard/brand-trust" className="text-sm font-medium text-primary underline">
+            Fix this in Brand Strength
+          </Link>
+        </CardShell>
+      ) : null}
+
+      {canManageBimiLogo ? (
+        <div className="space-y-4">
+          {!passed ? (
+            <h4 className="font-medium">
+              Step {dmarcStatus?.status === 'fail' ? '2' : '1'}: {hasUploadedLogo ? 'Replace' : 'Upload'} your logo
+            </h4>
+          ) : (
+            <h4 className="font-medium">{hasUploadedLogo ? 'Replace inbox logo' : 'Upload inbox logo'}</h4>
+          )}
+          {!passed && hasUploadedLogo && svgStatus?.status !== 'pass' && (svgStatus?.issues?.length ?? 0) > 0 ? (
+            <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">
+              <p className="font-semibold mb-1">Logo issues detected:</p>
+              <ul className="list-disc pl-5">
+                {svgStatus?.issues?.map((issue: string, i: number) => (
+                  <li key={i}>{issue}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          <BimiLogoUpload
+            canUseBimiLogoHosting={data.entitlements.canUseBimiLogoHosting}
+            bimiLogoUrl={data.bimiLogoUrl}
+            bimiSuggestedRecord={data.bimiSuggestedRecord}
+            hidePreview
+            onUploaded={() => void load()}
+          />
+        </div>
+      ) : null}
+
+      {data.bimiSuggestedRecord ? (
+        <CardShell>
+          <h4 className="font-medium mb-2">BIMI DNS record</h4>
+          <p className="text-sm text-muted-foreground mb-4">
+            Add this TXT record to your domain&apos;s DNS settings to authorize your logo for display in the inbox.
+          </p>
+          <DnsRecordCopy
+            record={{
+              type: 'TXT',
+              host: 'default._bimi',
+              value: data.bimiSuggestedRecord,
+            }}
+          />
+        </CardShell>
+      ) : null}
 
       <BimiInboxPreview compact />
 
       <CardShell>
         <div className="space-y-4">
           <BimiCertificateGuide compact />
-          {missingVmc && (
+          {missingVmc ? (
             <div className="mt-4 pt-4 border-t border-border">
               <p className="text-sm font-medium text-amber-600">Note for small businesses</p>
               <p className="text-sm text-muted-foreground mt-1">
-                We detected that your domain does not have a VMC certificate. These certificates cost around $1,500/year and are generally only needed for enterprise brands aiming for Gmail compatibility. <strong>Most small companies do not need a VMC certificate</strong> and should simply use the self-asserted setup provided above.
+                We detected that your domain does not have a VMC certificate. These certificates cost around
+                $1,500/year and are generally only needed for enterprise brands aiming for Gmail compatibility.{' '}
+                <strong>Most small companies do not need a VMC certificate</strong> and should simply use the
+                self-asserted setup provided above.
               </p>
             </div>
-          )}
+          ) : null}
         </div>
       </CardShell>
     </div>

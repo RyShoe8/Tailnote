@@ -4,12 +4,11 @@ import Link from 'next/link';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   DndContext,
-  DragOverlay,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Move } from 'lucide-react';
 import {
   renderSignature,
+  getLayoutEditorFields,
   type SignatureBrand,
   type SignatureProfile,
   type SignatureTemplate,
@@ -49,7 +48,6 @@ import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 import { SignatureDragStatusBar } from '@/components/signature/SignatureDragStatusBar';
 import { SignaturePreviewReorderLayer } from '@/components/signature/SignaturePreviewReorderLayer';
 import { useSignatureDragDrop } from '@/lib/signature/useSignatureDragDrop';
-import { fieldLabel } from '@/lib/signature/dragDropStatus';
 import {
   defaultProfile,
   profileFromApi,
@@ -133,7 +131,7 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
   };
 }
 
-const BRAND_SORTABLE_IDS = ['companyName', 'website'] as const;
+const BRAND_FIELD_IDS = ['companyName', 'website'] as const;
 
 export function SignatureWorkspace() {
   const [org, setOrg] = useState<OrgResponse | null>(null);
@@ -340,16 +338,22 @@ export function SignatureWorkspace() {
     setOrg((o) => (o ? { ...o, brandOrder: order } : o));
   }, []);
 
+  const activeLayout = engineTemplate?.layout ?? 'default';
+  const brandFieldsInLayout = useMemo(
+    () => getLayoutEditorFields(activeLayout).brandFieldsInLayout,
+    [activeLayout],
+  );
+
   const brandSortableItems = useMemo(() => {
-    const order = org?.brandOrder?.length ? org.brandOrder : [...BRAND_SORTABLE_IDS];
-    return [...new Set([...order, ...BRAND_SORTABLE_IDS])].filter((id) =>
-      BRAND_SORTABLE_IDS.includes(id as (typeof BRAND_SORTABLE_IDS)[number]),
+    if (!brandFieldsInLayout.length) return [];
+    const order = org?.brandOrder?.length ? org.brandOrder : [...brandFieldsInLayout];
+    return [...new Set([...order, ...brandFieldsInLayout])].filter((id) =>
+      brandFieldsInLayout.includes(id),
     );
-  }, [org?.brandOrder]);
+  }, [org?.brandOrder, brandFieldsInLayout]);
 
   const {
     isDragging,
-    draggedFieldId,
     dragStatusMessage,
     activeZoneId,
     sensors,
@@ -515,6 +519,12 @@ export function SignatureWorkspace() {
   ]);
 
   const previewHtml = trackedHtml ?? html;
+
+  const previewReorderKey = useMemo(
+    () =>
+      `${previewHtml.length}-${org?.fontFamily ?? ''}-${(profile.contactDisplayOrder ?? []).join(',')}-${(org?.brandOrder ?? []).join(',')}`,
+    [previewHtml.length, org?.fontFamily, profile.contactDisplayOrder, org?.brandOrder],
+  );
 
   const canCopy = Boolean(
     profile.firstName.trim() && profile.lastName.trim() && profile.email.trim() && engineTemplate
@@ -807,7 +817,8 @@ export function SignatureWorkspace() {
           <CardContent className="space-y-4">
             <div className="mb-2 space-y-1">
               <p className="text-sm text-muted-foreground">
-                These values feed the signature engine for every employee. Drag fields to reorder them in your signature.
+                These values feed the signature engine for every employee. Drag fields to reorder them when your
+                template supports it.
               </p>
             </div>
             <div className="space-y-2">
@@ -826,7 +837,8 @@ export function SignatureWorkspace() {
             </div>
             <SortableContext items={brandSortableItems} strategy={verticalListSortingStrategy}>
               <div className="space-y-4">
-                {brandSortableItems.map((fieldId) => {
+                {BRAND_FIELD_IDS.map((fieldId) => {
+                  const isReorderable = brandFieldsInLayout.includes(fieldId);
                   if (fieldId === 'companyName') {
                     return (
                       <SortableField
@@ -834,6 +846,7 @@ export function SignatureWorkspace() {
                         id={fieldId}
                         label="Organization name"
                         isHidden={isBrandHidden('companyName')}
+                        isReorderable={isReorderable}
                         onToggle={() => toggleBrandHidden('companyName')}
                       >
                         <Input
@@ -851,6 +864,7 @@ export function SignatureWorkspace() {
                         id={fieldId}
                         label="Website"
                         isHidden={isBrandHidden('website')}
+                        isReorderable={isReorderable}
                         onToggle={() => toggleBrandHidden('website')}
                       >
                         <Input
@@ -1217,7 +1231,7 @@ export function SignatureWorkspace() {
               brandOrder={org?.brandOrder}
               isDragging={isDragging}
               activeZoneId={activeZoneId}
-              htmlKey={`${previewHtml.length}-${org?.fontFamily ?? ''}`}
+              htmlKey={previewReorderKey}
             />
           </div>
           {isDragging && dragStatusMessage ? <SignatureDragStatusBar status={dragStatusMessage} /> : null}
@@ -1230,14 +1244,6 @@ export function SignatureWorkspace() {
         <MobileSignaturePaneBar pane={mobilePane} onPaneChange={setMobilePane} />
       ) : null}
     </div>
-    <DragOverlay dropAnimation={null}>
-      {draggedFieldId ? (
-        <div className="rounded-xl border bg-card p-4 shadow-xl opacity-90 ring-1 ring-primary flex items-center">
-          <Move className="mr-2 h-5 w-5 text-muted-foreground" />
-          <span className="font-medium">Moving {fieldLabel(draggedFieldId)}</span>
-        </div>
-      ) : null}
-    </DragOverlay>
     </DndContext>
   );
 }

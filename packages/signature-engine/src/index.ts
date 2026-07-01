@@ -19,12 +19,14 @@ export {
 
 export {
   getLayoutReorderRules,
+  getLayoutEditorFields,
   resolveFieldOrder,
   isFieldReorderable,
   formFieldToPreviewField,
   previewFieldToFormFields,
   applyBrandFieldOrder,
   type LayoutReorderRules,
+  type LayoutEditorFields,
 } from './core/layoutReorderRules';
 
 export { normalizePromoUrl } from './core/normalizePromoUrl';

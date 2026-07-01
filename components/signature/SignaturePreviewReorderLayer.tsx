@@ -5,8 +5,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
-  getLayoutReorderRules,
-  isFieldReorderable,
+  getLayoutEditorFields,
   type SignatureLayout,
 } from 'emailsignature-engine';
 import { fieldLabel } from '@/lib/signature/dragDropStatus';
@@ -16,10 +15,9 @@ import {
   toPreviewDragId,
   toZoneId,
 } from '@/lib/signature/fieldOrder';
-import { GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const ZONE_HIT_HEIGHT = 10;
+const ZONE_HIT_HEIGHT = 12;
 
 type MeasuredField = {
   fieldId: string;
@@ -85,18 +83,33 @@ function InsertionZone({
   top,
   left,
   width,
-  active,
+  visible,
 }: {
   id: string;
   top: number;
   left: number;
   width: number;
-  active: boolean;
+  visible: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id,
     data: { insertAfterField: parseZoneInsertAfter(id) },
   });
+
+  if (!visible && !isOver) {
+    return (
+      <div
+        ref={setNodeRef}
+        className="absolute z-20 pointer-events-auto opacity-0"
+        style={{
+          top: top - ZONE_HIT_HEIGHT / 2,
+          left,
+          width,
+          height: ZONE_HIT_HEIGHT,
+        }}
+      />
+    );
+  }
 
   return (
     <div
@@ -111,8 +124,8 @@ function InsertionZone({
     >
       <div
         className={cn(
-          'absolute left-0 right-0 top-1/2 h-0.5 -translate-y-1/2 rounded-full transition-opacity',
-          isOver || active ? 'bg-primary opacity-100' : 'bg-primary/40 opacity-0',
+          'absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 rounded-full transition-all',
+          isOver ? 'bg-primary h-0.5 opacity-100' : 'bg-primary/50 opacity-60',
         )}
       />
     </div>
@@ -147,21 +160,29 @@ function FieldHandle({
         transform: CSS.Transform.toString(transform),
         transition,
         top,
-        left: Math.max(0, left - 22),
-        width: 20,
-        height: Math.max(height, 20),
+        left,
+        width,
+        height,
       }}
       className={cn(
-        'absolute z-10 flex items-center justify-center rounded border bg-background/90 text-muted-foreground shadow-sm transition-opacity',
-        show || isDragging ? 'opacity-100' : 'opacity-0 pointer-events-none',
-        'hover:text-foreground hover:border-primary/40 cursor-grab active:cursor-grabbing',
-        isDragging && 'border-primary ring-1 ring-primary',
+        'absolute z-10 rounded-sm border border-dashed transition-opacity',
+        show || isDragging ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
+        isDragging
+          ? 'border-primary/70 bg-primary/5'
+          : 'border-transparent hover:border-primary/40 hover:bg-primary/5',
+        'cursor-grab active:cursor-grabbing',
       )}
       aria-label={`Drag to reorder ${fieldLabel(fieldId)}`}
       {...attributes}
       {...listeners}
     >
-      <GripVertical className="h-3.5 w-3.5" />
+      <span className="sr-only">Drag {fieldLabel(fieldId)}</span>
+      <span
+        className={cn(
+          'absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-primary/50',
+          isDragging && 'bg-primary',
+        )}
+      />
     </button>
   );
 }
@@ -178,11 +199,11 @@ export function SignaturePreviewReorderLayer({
   const [fields, setFields] = useState<MeasuredField[]>([]);
   const [hovered, setHovered] = useState(false);
 
-  const rules = getLayoutReorderRules(layout);
+  const { reorderablePreviewFields } = getLayoutEditorFields(layout);
   const orderedFields = resolvePreviewFieldOrder(layout, contactDisplayOrder, brandOrder).filter(
-    (field) => isFieldReorderable(rules, field),
+    (field) => reorderablePreviewFields.includes(field),
   );
-  const sortableIds = orderedFields.map((field) => toPreviewDragId(field));
+  const sortableIds = fields.map((field) => toPreviewDragId(field.fieldId));
   const orderedFieldsKey = orderedFields.join(',');
 
   useLayoutEffect(() => {
@@ -220,16 +241,19 @@ export function SignaturePreviewReorderLayer({
     >
       <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
         {isDragging
-          ? fields.map((field, index) => (
-              <InsertionZone
-                key={toZoneId(index === 0 ? null : fields[index - 1]!.fieldId)}
-                id={toZoneId(index === 0 ? null : fields[index - 1]!.fieldId)}
-                top={field.top}
-                left={field.left}
-                width={field.width}
-                active={activeZoneId === toZoneId(index === 0 ? null : fields[index - 1]!.fieldId)}
-              />
-            ))
+          ? fields.map((field, index) => {
+              const zoneId = toZoneId(index === 0 ? null : fields[index - 1]!.fieldId);
+              return (
+                <InsertionZone
+                  key={zoneId}
+                  id={zoneId}
+                  top={field.top}
+                  left={field.left}
+                  width={field.width}
+                  visible={activeZoneId === zoneId}
+                />
+              );
+            })
           : null}
         {isDragging && fields.length > 0 ? (
           <InsertionZone
@@ -238,20 +262,19 @@ export function SignaturePreviewReorderLayer({
             top={fields[fields.length - 1]!.top + fields[fields.length - 1]!.height}
             left={fields[fields.length - 1]!.left}
             width={fields[fields.length - 1]!.width}
-            active={activeZoneId === toZoneId(fields[fields.length - 1]!.fieldId)}
+            visible={activeZoneId === toZoneId(fields[fields.length - 1]!.fieldId)}
           />
         ) : null}
         {fields.map((field) => (
-          <div key={field.fieldId} className="pointer-events-auto">
-            <FieldHandle
-              fieldId={field.fieldId}
-              top={field.top}
-              left={field.left}
-              width={field.width}
-              height={field.height}
-              show={showHandles}
-            />
-          </div>
+          <FieldHandle
+            key={field.fieldId}
+            fieldId={field.fieldId}
+            top={field.top}
+            left={field.left}
+            width={field.width}
+            height={field.height}
+            show={showHandles}
+          />
         ))}
       </SortableContext>
     </div>

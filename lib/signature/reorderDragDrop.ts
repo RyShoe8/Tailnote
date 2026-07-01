@@ -1,8 +1,7 @@
 import { arrayMove } from '@dnd-kit/sortable';
-import { formFieldToPreviewField } from 'emailsignature-engine';
+import { formFieldToPreviewField, getLayoutEditorFields, type SignatureLayout } from 'emailsignature-engine';
 import type { SignatureProfile } from 'emailsignature-engine';
 import {
-  DEFAULT_DETAIL_ORDER,
   deriveContactOrderFromDetailOrder,
   syncDetailOrderFromContact,
   defaultContactOrder,
@@ -39,11 +38,14 @@ export function reorderDetailAndContact(
   profile: SignatureProfile,
   activeId: string,
   overId: string,
-  reorderableFields: readonly string[],
+  layout: SignatureLayout,
 ): SignatureProfile {
-  const currentOrder = profile.detailOrder?.length ? profile.detailOrder : [...DEFAULT_DETAIL_ORDER];
-  const activeItems = [...new Set([...currentOrder, ...DEFAULT_DETAIL_ORDER])].filter((id) =>
-    DEFAULT_DETAIL_ORDER.includes(id as (typeof DEFAULT_DETAIL_ORDER)[number]),
+  const { editableFormFields, reorderablePreviewFields } = getLayoutEditorFields(layout);
+  const currentOrder = profile.detailOrder?.length
+    ? profile.detailOrder.filter((id) => editableFormFields.includes(id))
+    : [...editableFormFields];
+  const activeItems = [...new Set([...currentOrder, ...editableFormFields])].filter((id) =>
+    editableFormFields.includes(id),
   );
 
   const oldIndex = activeItems.indexOf(activeId);
@@ -52,14 +54,23 @@ export function reorderDetailAndContact(
     return profile;
   }
 
+  const activePreview = formFieldToPreviewField(activeId);
+  const overPreview = formFieldToPreviewField(overId);
+  if (
+    !reorderablePreviewFields.includes(activePreview) ||
+    !reorderablePreviewFields.includes(overPreview)
+  ) {
+    return profile;
+  }
+
   const newDetailOrder = arrayMove(activeItems, oldIndex, newIndex);
   const baseContact = profile.contactDisplayOrder?.length
     ? [...profile.contactDisplayOrder]
-    : defaultContactDisplayOrder(reorderableFields);
+    : defaultContactDisplayOrder(reorderablePreviewFields);
 
   const newContactDisplayOrder = deriveContactOrderFromDetailOrder(
     newDetailOrder,
-    reorderableFields,
+    reorderablePreviewFields,
     baseContact,
   );
 

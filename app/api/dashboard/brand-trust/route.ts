@@ -54,6 +54,7 @@ export async function GET() {
     domains,
     bimiLogoUrl: org.bimiLogoUrl ?? '',
     bimiSuggestedRecord: org.bimiSuggestedRecord ?? '',
+    bimiLogoUploadedAt: org.bimiLogoUploadedAt ?? null,
     bimiScan: bimiRow,
     entitlements: {
       canUseBimiLogoHosting: entitlements.canUseBimiLogoHosting,

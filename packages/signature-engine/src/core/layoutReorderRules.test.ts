@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   getLayoutReorderRules,
+  getLayoutEditorFields,
   resolveFieldOrder,
   isFieldReorderable,
   formFieldToPreviewField,
@@ -69,5 +70,20 @@ describe('layoutReorderRules', () => {
     const order = resolveFieldOrder(rules, []);
     assert.ok(order.includes('companyName'));
     assert.ok(order.indexOf('companyName') > order.indexOf('title'));
+  });
+
+  it('getLayoutEditorFields limits sidebar fields per template', () => {
+    const mp = getLayoutEditorFields('modern_professional');
+    assert.ok(mp.editableFormFields.includes('firstName'));
+    assert.ok(mp.editableFormFields.includes('email'));
+    assert.ok(!mp.editableFormFields.includes('officePhone'));
+    assert.ok(!mp.editableFormFields.includes('mobilePhone'));
+    assert.deepEqual(mp.brandFieldsInLayout, ['website']);
+
+    const stacked = getLayoutEditorFields('stacked');
+    assert.ok(stacked.editableFormFields.includes('officePhone'));
+    assert.ok(stacked.editableFormFields.includes('mobilePhone'));
+    assert.ok(stacked.brandFieldsInLayout.includes('website'));
+    assert.ok(!stacked.brandFieldsInLayout.includes('companyName'));
   });
 });

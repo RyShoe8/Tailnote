@@ -146,3 +146,55 @@ export function previewFieldToFormFields(previewFieldId: string): string[] {
   if (previewFieldId === 'logo') return ['logoUrl'];
   return [previewFieldId];
 }
+
+const BRAND_PREVIEW_FIELDS = new Set(['companyName', 'website', 'address', 'logo']);
+const NON_SIDEBAR_PREVIEW_FIELDS = new Set(['socialLinks', 'contentBlocks', ...BRAND_PREVIEW_FIELDS]);
+
+export type LayoutEditorFields = LayoutReorderRules & {
+  reorderablePreviewFields: readonly string[];
+  fixedPreviewFields: readonly string[];
+  editableFormFields: readonly string[];
+  reorderableFormFields: readonly string[];
+  brandFieldsInLayout: readonly string[];
+};
+
+/** Map template layout to sidebar inputs and drag targets. */
+export function getLayoutEditorFields(layout: SignatureLayout): LayoutEditorFields {
+  const rules = getLayoutReorderRules(layout);
+  const sidebarPreviewFields = [
+    ...rules.reorderableFields,
+    ...rules.fixedFields,
+  ].filter((field) => !NON_SIDEBAR_PREVIEW_FIELDS.has(field));
+
+  const editableFormFields: string[] = [];
+  for (const previewField of sidebarPreviewFields) {
+    for (const formField of previewFieldToFormFields(previewField)) {
+      if (!editableFormFields.includes(formField)) {
+        editableFormFields.push(formField);
+      }
+    }
+  }
+
+  const reorderableFormFields: string[] = [];
+  for (const previewField of rules.reorderableFields) {
+    if (NON_SIDEBAR_PREVIEW_FIELDS.has(previewField)) continue;
+    for (const formField of previewFieldToFormFields(previewField)) {
+      if (editableFormFields.includes(formField) && !reorderableFormFields.includes(formField)) {
+        reorderableFormFields.push(formField);
+      }
+    }
+  }
+
+  const brandFieldsInLayout = rules.reorderableFields.filter(
+    (field) => field === 'companyName' || field === 'website',
+  );
+
+  return {
+    ...rules,
+    reorderablePreviewFields: rules.reorderableFields,
+    fixedPreviewFields: rules.fixedFields,
+    editableFormFields,
+    reorderableFormFields,
+    brandFieldsInLayout,
+  };
+}
