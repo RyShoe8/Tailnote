@@ -5,6 +5,7 @@ import {
   reorderContactDisplayOrder,
   reorderDetailAndContact,
   reorderBrandOrder,
+  resolvePreviewDropTarget,
 } from './reorderDragDrop';
 
 const baseProfile: SignatureProfile = {
@@ -46,5 +47,17 @@ describe('reorderDragDrop', () => {
   it('reorderBrandOrder moves brand fields', () => {
     const next = reorderBrandOrder([], 'website', 'companyName', ['companyName', 'website']);
     assert.deepEqual(next, ['website', 'companyName']);
+  });
+
+  it('resolvePreviewDropTarget prefers zone hit then pending hover', () => {
+    assert.deepEqual(
+      resolvePreviewDropTarget('zone-1', { insertAfterField: 'title' }, { insertAfterField: 'name' }),
+      { insertAfterField: 'name' },
+    );
+    assert.deepEqual(
+      resolvePreviewDropTarget(null, { insertAfterField: 'title' }),
+      { insertAfterField: 'title' },
+    );
+    assert.equal(resolvePreviewDropTarget(null, null), null);
   });
 });

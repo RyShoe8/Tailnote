@@ -102,3 +102,19 @@ export function reorderBrandOrder(
   if (oldIndex === -1 || newIndex === -1) return currentOrder;
   return arrayMove(activeItems, oldIndex, newIndex);
 }
+
+export type PendingPreviewDrop = {
+  insertAfterField: string | null;
+};
+
+/** Prefer explicit zone hit on drag end; fall back to last hovered preview zone. */
+export function resolvePreviewDropTarget(
+  overId: string | null,
+  pending: PendingPreviewDrop | null,
+  overZoneData?: { insertAfterField?: string | null } | null,
+): PendingPreviewDrop | null {
+  if (overId?.startsWith('zone-') && overZoneData) {
+    return { insertAfterField: overZoneData.insertAfterField ?? null };
+  }
+  return pending;
+}

@@ -5,6 +5,7 @@ import {
   resolveFieldOrder,
   isFieldReorderable,
   formFieldToPreviewField,
+  applyBrandFieldOrder,
 } from './layoutReorderRules';
 
 describe('layoutReorderRules', () => {
@@ -42,5 +43,23 @@ describe('layoutReorderRules', () => {
     assert.equal(formFieldToPreviewField('firstName'), 'name');
     assert.equal(formFieldToPreviewField('avatarUrl'), 'avatar');
     assert.equal(formFieldToPreviewField('logoUrl'), 'logo');
+  });
+
+  it('applyBrandFieldOrder swaps companyName and website', () => {
+    const base = ['name', 'title', 'companyName', 'email', 'website'];
+    const swapped = applyBrandFieldOrder(base, ['website', 'companyName']);
+    assert.ok(swapped.indexOf('website') < swapped.indexOf('companyName'));
+    assert.equal(swapped.indexOf('name'), 0);
+    assert.equal(swapped.indexOf('email'), 3);
+  });
+
+  it('resolveFieldOrder applies brandOrder after contact display order', () => {
+    const rules = getLayoutReorderRules('corporate');
+    const order = resolveFieldOrder(
+      rules,
+      ['name', 'title', 'companyName', 'email', 'website'],
+      ['website', 'companyName'],
+    );
+    assert.ok(order.indexOf('website') < order.indexOf('companyName'));
   });
 });

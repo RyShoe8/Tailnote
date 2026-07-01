@@ -339,6 +339,13 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
     setOrg((o) => (o ? { ...o, brandOrder: order } : o));
   }, []);
 
+  const brandSortableItems = useMemo(() => {
+    const order = org?.brandOrder?.length ? org.brandOrder : [...BRAND_SORTABLE_IDS];
+    return [...new Set([...order, ...BRAND_SORTABLE_IDS])].filter((id) =>
+      BRAND_SORTABLE_IDS.includes(id as (typeof BRAND_SORTABLE_IDS)[number]),
+    );
+  }, [org?.brandOrder]);
+
   const {
     isDraggingToPreview,
     draggedFieldId,
@@ -718,33 +725,45 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
                 These values feed the signature engine for every employee. Drag fields to reorder them in your signature.
               </p>
             </div>
-            <SortableContext items={['companyName', 'website']} strategy={verticalListSortingStrategy}>
+            <SortableContext items={brandSortableItems} strategy={verticalListSortingStrategy}>
               <div className="space-y-4">
-                <SortableField
-                  id="companyName"
-                  label="Organization name"
-                  isHidden={isBrandHidden('companyName')}
-                  onToggle={() => toggleBrandHidden('companyName')}
-                >
-                  <Input
-                    value={orgName}
-                    onChange={(e) => setOrgName(e.target.value)}
-                    placeholder="Acme Corp"
-                  />
-                </SortableField>
-
-                <SortableField
-                  id="website"
-                  label="Website"
-                  isHidden={isBrandHidden('website')}
-                  onToggle={() => toggleBrandHidden('website')}
-                >
-                  <Input
-                    value={org.website ?? ''}
-                    onChange={(e) => setOrg((o) => ({ ...(o || {}), website: e.target.value }))}
-                    placeholder="acme.com"
-                  />
-                </SortableField>
+                {brandSortableItems.map((fieldId) => {
+                  if (fieldId === 'companyName') {
+                    return (
+                      <SortableField
+                        key={fieldId}
+                        id={fieldId}
+                        label="Organization name"
+                        isHidden={isBrandHidden('companyName')}
+                        onToggle={() => toggleBrandHidden('companyName')}
+                      >
+                        <Input
+                          value={orgName}
+                          onChange={(e) => setOrgName(e.target.value)}
+                          placeholder="Acme Corp"
+                        />
+                      </SortableField>
+                    );
+                  }
+                  if (fieldId === 'website') {
+                    return (
+                      <SortableField
+                        key={fieldId}
+                        id={fieldId}
+                        label="Website"
+                        isHidden={isBrandHidden('website')}
+                        onToggle={() => toggleBrandHidden('website')}
+                      >
+                        <Input
+                          value={org.website ?? ''}
+                          onChange={(e) => setOrg((o) => ({ ...(o || {}), website: e.target.value }))}
+                          placeholder="acme.com"
+                        />
+                      </SortableField>
+                    );
+                  }
+                  return null;
+                })}
               </div>
             </SortableContext>
             <div className="space-y-3">
@@ -1145,7 +1164,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
               />
             )}
           </div>
-          {isDraggingToPreview ? <SignatureDragStatusBar status={dragStatusMessage} /> : null}
+          {dragStatusMessage ? <SignatureDragStatusBar status={dragStatusMessage} /> : null}
         </CardContent>
       </Card>
       </LivePreviewStickyColumn>

@@ -1318,6 +1318,7 @@ export function mergeRenderContext(
   const orderedContactInput: OrderedContactBuildInput = {
     layout: template.layout,
     contactDisplayOrder: profile.contactDisplayOrder,
+    brandOrder: brand.brandOrder,
     fullName,
     title: profile.title.trim(),
     email: profile.email.trim(),

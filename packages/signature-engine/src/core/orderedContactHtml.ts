@@ -27,6 +27,7 @@ function buildOrderedFieldHtml(
 export type OrderedContactBuildInput = {
   layout: SignatureLayout;
   contactDisplayOrder?: string[];
+  brandOrder?: string[];
   fullName: string;
   title: string;
   email: string;
@@ -89,6 +90,106 @@ function companyBlock(input: OrderedContactBuildInput, style: string): string | 
 function addressBlock(input: OrderedContactBuildInput): string | undefined {
   if (!input.showAddressBlock || !input.addressBlockHtml) return undefined;
   return `<div data-sig-field="address" style="font-size:12px;color:#555;line-height:1.35;margin-bottom:8px;">${input.addressBlockHtml}</div>`;
+}
+
+function websiteBlock(input: OrderedContactBuildInput, style: string): string | undefined {
+  if (!input.website || input.bHidden.includes('website')) return undefined;
+  return `<div data-sig-field="website" style="${style}"><a href="${escapeHtml(input.website)}" style="color:inherit;text-decoration:none;">${escapeHtml(input.websiteDisplay)}</a></div>`;
+}
+
+const CONTACT_TABLE_START_FIELDS = new Set(['email', 'officePhone', 'mobilePhone']);
+
+function splitHeaderAndContactOrder(order: readonly string[]): { header: string[]; contact: string[] } {
+  const firstContactIdx = order.findIndex((field) => CONTACT_TABLE_START_FIELDS.has(field));
+  if (firstContactIdx === -1) {
+    return { header: [...order], contact: [] };
+  }
+  return {
+    header: order.slice(0, firstContactIdx),
+    contact: order.slice(firstContactIdx),
+  };
+}
+
+function resolvedOrder(input: OrderedContactBuildInput, layout: SignatureLayout): string[] {
+  const rules = getLayoutReorderRules(layout);
+  return resolveFieldOrder(rules, input.contactDisplayOrder, input.brandOrder);
+}
+
+function corporateContactRow(input: OrderedContactBuildInput, field: string): string | undefined {
+  if (field === 'officePhone' && input.officePhone) {
+    return `<tr><td colspan="2" valign="top" style="padding:0 0 5px 0;"><span data-sig-field="officePhone"><a href="${escapeHtml(input.officePhoneTelHref)}" style="color:#333;text-decoration:none;">${escapeHtml(input.officePhone)}</a></span></td></tr>`;
+  }
+  if (field === 'mobilePhone' && input.mobilePhone) {
+    return `<tr><td width="1%" valign="top" style="width:1%;white-space:nowrap;padding:0 8px 5px 0;color:${escapeHtml(input.primaryColor)};font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;">Mobile</td><td valign="top" style="padding:0 0 5px 0;"><span data-sig-field="mobilePhone"><a href="${escapeHtml(input.mobilePhoneTelHref)}" style="color:#333;text-decoration:none;">${escapeHtml(input.mobilePhone)}</a></span></td></tr>`;
+  }
+  if (field === 'email' && input.email && !input.pHidden.includes('email')) {
+    return `<tr><td colspan="2" valign="top" style="padding:0 0 5px 0;"><span data-sig-field="email"><a href="mailto:${escapeHtml(input.email)}" style="color:${escapeHtml(input.primaryColor)};text-decoration:none;font-weight:500;">${escapeHtml(input.email)}</a></span></td></tr>`;
+  }
+  if (field === 'website' && input.website && !input.bHidden.includes('website')) {
+    return `<tr><td colspan="2" valign="top" style="padding:0 0 2px 0;"><span data-sig-field="website"><a href="${escapeHtml(input.website)}" style="color:#333;text-decoration:none;">${escapeHtml(input.websiteDisplay)}</a></span></td></tr>`;
+  }
+  return undefined;
+}
+
+function standardContactRow(input: OrderedContactBuildInput, field: string): string | undefined {
+  if (field === 'officePhone' && input.officePhone) {
+    return `<tr><td width="1%" valign="top" style="width:1%;white-space:nowrap;padding:0 8px 4px 0;color:#000;font-weight:700;">Office:</td><td valign="top" style="padding:0 0 4px 0;"><span data-sig-field="officePhone"><a href="${escapeHtml(input.officePhoneTelHref)}" style="color:#1a1a1a;text-decoration:none;">${escapeHtml(input.officePhone)}</a></span></td></tr>`;
+  }
+  if (field === 'mobilePhone' && input.mobilePhone) {
+    return `<tr><td width="1%" valign="top" style="width:1%;white-space:nowrap;padding:0 8px 4px 0;color:#000;font-weight:700;">Mobile:</td><td valign="top" style="padding:0 0 4px 0;"><span data-sig-field="mobilePhone"><a href="${escapeHtml(input.mobilePhoneTelHref)}" style="color:#1a1a1a;text-decoration:none;">${escapeHtml(input.mobilePhone)}</a></span></td></tr>`;
+  }
+  if (field === 'email' && input.email && !input.pHidden.includes('email')) {
+    return `<tr><td colspan="2" valign="top" style="padding:0;"><span data-sig-field="email"><a href="mailto:${escapeHtml(input.email)}" style="color:${escapeHtml(input.primaryColor)};text-decoration:none;">${escapeHtml(input.email)}</a></span></td></tr>`;
+  }
+  if (field === 'website' && input.website && !input.bHidden.includes('website')) {
+    return `<tr><td colspan="2" valign="top" style="padding:0;"><span data-sig-field="website"><a href="${escapeHtml(input.website)}" style="color:#1a1a1a;text-decoration:none;">${escapeHtml(input.websiteDisplay)}</a></span></td></tr>`;
+  }
+  return undefined;
+}
+
+function professionalContactRow(input: OrderedContactBuildInput, field: string): string | undefined {
+  if (field === 'officePhone' && input.officePhone) {
+    return `<tr><td colspan="2" valign="top" style="padding:0 0 4px 0;"><span data-sig-field="officePhone"><a href="${escapeHtml(input.officePhoneTelHref)}" style="color:#444;text-decoration:none;">${escapeHtml(input.officePhone)}</a></span></td></tr>`;
+  }
+  if (field === 'mobilePhone' && input.mobilePhone) {
+    return `<tr><td width="1%" valign="top" style="width:1%;white-space:nowrap;padding:0 6px 4px 0;color:${escapeHtml(input.primaryColor)};font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:0.3px;">Mobile</td><td valign="top" style="padding:0 0 4px 0;"><span data-sig-field="mobilePhone"><a href="${escapeHtml(input.mobilePhoneTelHref)}" style="color:#444;text-decoration:none;">${escapeHtml(input.mobilePhone)}</a></span></td></tr>`;
+  }
+  if (field === 'email' && input.email && !input.pHidden.includes('email')) {
+    return `<tr><td colspan="2" valign="top" style="padding:0 0 4px 0;"><span data-sig-field="email"><a href="mailto:${escapeHtml(input.email)}" style="color:${escapeHtml(input.primaryColor)};text-decoration:none;font-weight:600;">${escapeHtml(input.email)}</a></span></td></tr>`;
+  }
+  if (field === 'website' && input.website && !input.bHidden.includes('website')) {
+    return `<tr><td colspan="2" valign="top" style="padding:0;"><span data-sig-field="website"><a href="${escapeHtml(input.website)}" style="color:#444;text-decoration:none;">${escapeHtml(input.websiteDisplay)}</a></span></td></tr>`;
+  }
+  return undefined;
+}
+
+function buildHeaderStackHtml(
+  input: OrderedContactBuildInput,
+  headerOrder: readonly string[],
+  styles: {
+    name: string;
+    title: string;
+    companyName: string;
+    website: string;
+  },
+): string {
+  return buildOrderedFieldHtml(headerOrder, {
+    name: () => nameBlock(input, styles.name),
+    title: () => titleBlock(input, styles.title),
+    companyName: () => companyBlock(input, styles.companyName),
+    website: () => websiteBlock(input, styles.website),
+  });
+}
+
+function wrapContactTable(rows: string[], style: 'corporate' | 'standard' | 'professional'): string {
+  if (!rows.length) return '';
+  if (style === 'corporate') {
+    return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:13px;">${rows.join('')}</table>`;
+  }
+  if (style === 'professional') {
+    return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;"><tr><td bgcolor="#f0f4ff" style="background-color:#f0f4ff;border-radius:10px;padding:10px 12px;"><table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:12px;">${rows.join('')}</table></td></tr></table>`;
+  }
+  return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">${rows.join('')}</table>`;
 }
 
 function standardContactTableRows(input: OrderedContactBuildInput, order: readonly string[]): string {
@@ -159,8 +260,7 @@ function defaultContactRowOrdered(input: OrderedContactBuildInput, order: readon
 }
 
 export function buildMpMiddleColumnHtml(input: OrderedContactBuildInput): string {
-  const rules = getLayoutReorderRules('modern_professional');
-  const order = resolveFieldOrder(rules, input.contactDisplayOrder);
+  const order = resolvedOrder(input, 'modern_professional');
   const mpSecondary = 'font-family:inherit;font-size:14px;line-height:1.35;color:#374151;';
   let contactRowsHtml = '';
   let html = '';
@@ -196,8 +296,7 @@ export function buildMpMiddleColumnHtml(input: OrderedContactBuildInput): string
 }
 
 export function buildOrderedMainStackHtml(input: OrderedContactBuildInput): string {
-  const rules = getLayoutReorderRules(input.layout);
-  const order = resolveFieldOrder(rules, input.contactDisplayOrder);
+  const order = resolvedOrder(input, input.layout);
   const contactFields = new Set(['email', 'officePhone', 'mobilePhone', 'website']);
   const contactOrder = order.filter((f) => contactFields.has(f));
 
@@ -233,49 +332,53 @@ export function buildOrderedMainStackHtml(input: OrderedContactBuildInput): stri
   }
 
   if (input.layout === 'corporate') {
-    const blocks: Record<string, () => string | undefined> = {
-      name: () =>
-        nameBlock(
-          input,
-          `font-size:18px;font-weight:700;color:${escapeHtml(input.primaryColor)};letter-spacing:-0.2px;`,
-        ),
-      title: () =>
-        titleBlock(
-          input,
-          'font-size:13px;color:#555;margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;font-weight:500;',
-        ),
-      companyName: () => companyBlock(input, 'font-size:13px;color:#444;margin-top:2px;'),
-    };
-    let html = buildOrderedFieldHtml(order.filter((f) => !contactFields.has(f)), blocks);
-    const table = corporateContactTableRows(input, contactOrder);
-    if (table) {
-      html += `<div style="height:12px;"></div>${table}`;
-    }
-    return html;
+    const { header, contact } = splitHeaderAndContactOrder(order);
+    const headerHtml = buildHeaderStackHtml(input, header, {
+      name: `font-size:18px;font-weight:700;color:${escapeHtml(input.primaryColor)};letter-spacing:-0.2px;`,
+      title:
+        'font-size:13px;color:#555;margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;font-weight:500;',
+      companyName: 'font-size:13px;color:#444;margin-top:2px;',
+      website: 'font-size:13px;color:#444;margin-top:2px;',
+    });
+    const rows = contact
+      .map((field) => corporateContactRow(input, field))
+      .filter((row): row is string => Boolean(row));
+    const table = wrapContactTable(rows, 'corporate');
+    return table ? `${headerHtml}${headerHtml ? '<div style="height:12px;"></div>' : ''}${table}` : headerHtml;
   }
 
   if (input.layout === 'professional') {
-    const nameTitle = buildOrderedFieldHtml(
-      order.filter((f) => f === 'name' || f === 'title' || f === 'companyName'),
-      {
-        name: () =>
-          nameBlock(
-            input,
-            `font-size:18px;font-weight:700;color:${escapeHtml(input.primaryColor)};letter-spacing:-0.2px;line-height:1.2;`,
-          ),
-        title: () =>
-          titleBlock(
-            input,
-            'font-size:11px;color:#5c6370;margin-top:2px;text-transform:uppercase;letter-spacing:0.6px;font-weight:600;line-height:1.3;',
-          ),
-        companyName: () => companyBlock(input, 'font-size:11px;color:#5c6370;margin-top:2px;'),
-      },
-    );
-    const wrappedNameTitle = nameTitle
-      ? `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;"><tr><td bgcolor="#f0f4ff" style="background-color:#f0f4ff;border-radius:10px;padding:10px 12px 8px 12px;">${nameTitle}</td></tr></table>`
+    const { header, contact } = splitHeaderAndContactOrder(order);
+    const headerInner = buildHeaderStackHtml(input, header, {
+      name: `font-size:18px;font-weight:700;color:${escapeHtml(input.primaryColor)};letter-spacing:-0.2px;line-height:1.2;`,
+      title:
+        'font-size:11px;color:#5c6370;margin-top:2px;text-transform:uppercase;letter-spacing:0.6px;font-weight:600;line-height:1.3;',
+      companyName: 'font-size:11px;color:#5c6370;margin-top:2px;',
+      website: 'font-size:11px;color:#5c6370;margin-top:2px;',
+    });
+    const wrappedHeader = headerInner
+      ? `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;"><tr><td bgcolor="#f0f4ff" style="background-color:#f0f4ff;border-radius:10px;padding:10px 12px 8px 12px;">${headerInner}</td></tr></table>`
       : '';
-    const table = professionalContactTableRows(input, contactOrder);
-    return `${wrappedNameTitle}${table ? `<div style="height:6px;line-height:6px;font-size:0;">&nbsp;</div>${table}` : ''}`;
+    const rows = contact
+      .map((field) => professionalContactRow(input, field))
+      .filter((row): row is string => Boolean(row));
+    const table = wrapContactTable(rows, 'professional');
+    return `${wrappedHeader}${table ? `<div style="height:6px;line-height:6px;font-size:0;">&nbsp;</div>${table}` : ''}`;
+  }
+
+  if (input.layout === 'standard') {
+    const { header, contact } = splitHeaderAndContactOrder(order);
+    const headerHtml = buildHeaderStackHtml(input, header, {
+      name: 'font-size:16px;font-weight:600;color:#000;',
+      title: 'font-size:13px;color:#666;margin-top:2px;',
+      companyName: 'font-size:13px;color:#444;margin-top:2px;',
+      website: 'font-size:13px;color:#444;margin-top:2px;',
+    });
+    const rows = contact
+      .map((field) => standardContactRow(input, field))
+      .filter((row): row is string => Boolean(row));
+    const table = wrapContactTable(rows, 'standard');
+    return table ? `${headerHtml}${headerHtml ? '<div style="height:10px;"></div>' : ''}${table}` : headerHtml;
   }
 
   const blocks: Record<string, () => string | undefined> = {
@@ -292,8 +395,7 @@ export function buildOrderedMainStackHtml(input: OrderedContactBuildInput): stri
 }
 
 export function buildCreatorContactTableHtmlOrdered(input: OrderedContactBuildInput): string {
-  const rules = getLayoutReorderRules('creator');
-  const order = resolveFieldOrder(rules, input.contactDisplayOrder);
+  const order = resolvedOrder(input, 'creator');
   const accent = escapeHtml(input.creatorAccentColor || '#5865f2');
   const rows: string[] = [];
   const phone = input.officePhone || input.mobilePhone;
@@ -314,8 +416,7 @@ export function buildCreatorContactTableHtmlOrdered(input: OrderedContactBuildIn
 }
 
 export function buildExecutiveContactLineHtmlOrdered(input: OrderedContactBuildInput): string {
-  const rules = getLayoutReorderRules('executive_minimalist');
-  const order = resolveFieldOrder(rules, input.contactDisplayOrder);
+  const order = resolvedOrder(input, 'executive_minimalist');
   const parts: string[] = [];
   const phone = input.officePhone || input.mobilePhone;
   const phoneHref = input.officePhone ? input.officePhoneTelHref : input.mobilePhoneTelHref;
@@ -335,8 +436,7 @@ export function buildExecutiveContactLineHtmlOrdered(input: OrderedContactBuildI
 }
 
 export function buildPortfolioContactPillsHtmlOrdered(input: OrderedContactBuildInput): string {
-  const rules = getLayoutReorderRules('portfolio');
-  const order = resolveFieldOrder(rules, input.contactDisplayOrder);
+  const order = resolvedOrder(input, 'portfolio');
   const accent = escapeHtml(input.portfolioAccentColor || input.primaryColor);
   const panel = escapeHtml(input.portfolioPanelColor || '#1a2e2b');
   const border = escapeHtml(input.portfolioBorderColor || '#2d4a46');
@@ -366,8 +466,7 @@ export function buildPortfolioContactPillsHtmlOrdered(input: OrderedContactBuild
 }
 
 export function buildEcardContactTableHtmlOrdered(input: OrderedContactBuildInput): string {
-  const rules = getLayoutReorderRules('ecard');
-  const order = resolveFieldOrder(rules, input.contactDisplayOrder);
+  const order = resolvedOrder(input, 'ecard');
   const accent = escapeHtml(input.primaryColor);
   const phone = input.officePhone || input.mobilePhone;
   const phoneHref = input.officePhone ? input.officePhoneTelHref : input.mobilePhoneTelHref;
@@ -394,8 +493,7 @@ export function buildOrderedNameTitleHtml(
   nameStyle: string,
   titleStyle: string,
 ): string {
-  const rules = getLayoutReorderRules(input.layout);
-  const order = resolveFieldOrder(rules, input.contactDisplayOrder).filter((f) => f === 'name' || f === 'title');
+  const order = resolvedOrder(input, input.layout).filter((f) => f === 'name' || f === 'title');
   return buildOrderedFieldHtml(order, {
     name: () => nameBlock(input, nameStyle),
     title: () => titleBlock(input, titleStyle),

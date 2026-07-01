@@ -72,27 +72,57 @@ export function getLayoutReorderRules(layout: SignatureLayout): LayoutReorderRul
   return RULES[layout] ?? RULES.standard;
 }
 
+const BRAND_ORDER_FIELDS = ['companyName', 'website'] as const;
+
+/** Reorder companyName vs website relative to each other within a resolved field list. */
+export function applyBrandFieldOrder(order: string[], brandOrder?: string[]): string[] {
+  if (!brandOrder?.length) return order;
+
+  const present = BRAND_ORDER_FIELDS.filter((field) => order.includes(field));
+  if (present.length < 2) return order;
+
+  const brandSequence: string[] = [];
+  for (const field of brandOrder) {
+    if (present.includes(field as (typeof BRAND_ORDER_FIELDS)[number]) && !brandSequence.includes(field)) {
+      brandSequence.push(field);
+    }
+  }
+  for (const field of present) {
+    if (!brandSequence.includes(field)) brandSequence.push(field);
+  }
+
+  const indices = present.map((field) => order.indexOf(field)).sort((a, b) => a - b);
+  const next = [...order];
+  brandSequence.forEach((field, index) => {
+    next[indices[index]!] = field;
+  });
+  return next;
+}
+
 export function resolveFieldOrder(
   rules: LayoutReorderRules,
   contactDisplayOrder?: string[],
+  brandOrder?: string[],
 ): string[] {
   const allowed = new Set(rules.reorderableFields);
   const base = [...rules.reorderableFields];
+  let ordered: string[];
   if (!contactDisplayOrder?.length) {
-    return base;
-  }
-  const ordered: string[] = [];
-  for (const field of contactDisplayOrder) {
-    if (allowed.has(field) && !ordered.includes(field)) {
-      ordered.push(field);
+    ordered = base;
+  } else {
+    ordered = [];
+    for (const field of contactDisplayOrder) {
+      if (allowed.has(field) && !ordered.includes(field)) {
+        ordered.push(field);
+      }
+    }
+    for (const field of base) {
+      if (!ordered.includes(field)) {
+        ordered.push(field);
+      }
     }
   }
-  for (const field of base) {
-    if (!ordered.includes(field)) {
-      ordered.push(field);
-    }
-  }
-  return ordered;
+  return applyBrandFieldOrder(ordered, brandOrder);
 }
 
 export function isFieldReorderable(

@@ -1,14 +1,13 @@
 // import removed
 import { put } from '@vercel/blob';
-import sharp from 'sharp';
 import { optimize } from 'svgo';
 import { ALLOWED_IMAGE_MIMES, SecureImageUploadError } from '@/lib/uploads/secureImageUpload';
 import { buildBimiSuggestedRecord } from '@/lib/brandTrust/domainFromOrg';
-import { rasterToVectorSvg } from '@/lib/bimi/vectorizer';
+import { rasterToVectorSvg, normalizeSvgViewBox } from '@/lib/bimi/vectorizer';
 
 const MAX_INPUT_BYTES = 4 * 1024 * 1024;
 const BIMI_TARGET_BYTES = 32 * 1024;
-const RASTER_SIZE = 512;
+const BIMI_VIEWBOX_SIZE = 512;
 
 export type BimiSvgConversionResult = {
   url: string;
@@ -55,7 +54,7 @@ export async function convertToBimiSvg(args: {
   let warnings: string[] = [];
 
   if (mime === 'image/svg+xml' || args.file.name.toLowerCase().endsWith('.svg')) {
-    svgRaw = buffer.toString('utf-8');
+    svgRaw = normalizeSvgViewBox(buffer.toString('utf-8'), BIMI_VIEWBOX_SIZE);
   } else {
     const converted = await rasterToVectorSvg(buffer);
     svgRaw = converted.svg;

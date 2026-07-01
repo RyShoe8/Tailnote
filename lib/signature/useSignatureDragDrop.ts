@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   closestCenter,
   pointerWithin,
@@ -24,6 +24,8 @@ import {
   reorderContactDisplayOrder,
   reorderDetailAndContact,
   reorderBrandOrder,
+  resolvePreviewDropTarget,
+  type PendingPreviewDrop,
 } from '@/lib/signature/reorderDragDrop';
 import {
   classifyDragOverTarget,
@@ -63,6 +65,8 @@ export function useSignatureDragDrop({
   const [isDraggingToPreview, setIsDraggingToPreview] = useState(false);
   const [draggedFieldId, setDraggedFieldId] = useState<string | null>(null);
   const [dragStatus, setDragStatus] = useState<SignatureDragStatus>(EMPTY_DRAG_STATUS);
+  const [dropFailedMessage, setDropFailedMessage] = useState<string | null>(null);
+  const pendingPreviewDropRef = useRef<PendingPreviewDrop | null>(null);
 
   const reorderableFields = useMemo(
     () => getLayoutReorderRules(layout).reorderableFields,
@@ -71,6 +75,8 @@ export function useSignatureDragDrop({
 
   const handlePreviewDragStart = useCallback((event: DragStartEvent) => {
     const fieldId = String(event.active.id);
+    pendingPreviewDropRef.current = null;
+    setDropFailedMessage(null);
     setIsDraggingToPreview(true);
     setDraggedFieldId(fieldId);
     setDragStatus({
@@ -81,6 +87,7 @@ export function useSignatureDragDrop({
   }, []);
 
   const clearDragState = useCallback(() => {
+    pendingPreviewDropRef.current = null;
     setIsDraggingToPreview(false);
     setDraggedFieldId(null);
     setDragStatus(EMPTY_DRAG_STATUS);
@@ -93,6 +100,9 @@ export function useSignatureDragDrop({
     if (overTarget === 'preview-zone' && event.over?.data.current) {
       const zone = event.over.data.current as { insertAfterField?: string | null };
       zoneInsertAfter = zone.insertAfterField ?? null;
+      pendingPreviewDropRef.current = { insertAfterField: zoneInsertAfter };
+    } else if (overTarget !== 'preview-zone') {
+      pendingPreviewDropRef.current = null;
     }
     setDragStatus((prev) => ({
       ...prev,
@@ -113,13 +123,14 @@ export function useSignatureDragDrop({
           insertAfterField,
         ),
       }));
+      setDropFailedMessage(null);
       clearDragState();
     },
     [clearDragState, reorderableFields, setProfile],
   );
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
@@ -158,14 +169,21 @@ export function useSignatureDragDrop({
       const { active, over } = event;
       const activeId = String(active.id);
       const overId = over ? String(over.id) : null;
+      const hadPendingPreviewDrop = pendingPreviewDropRef.current !== null;
+
+      const previewDrop = resolvePreviewDropTarget(
+        overId,
+        pendingPreviewDropRef.current,
+        over?.data.current as { insertAfterField?: string | null } | undefined,
+      );
+
+      if (previewDrop) {
+        handleContactReorder(activeId, previewDrop.insertAfterField);
+        return;
+      }
 
       if (overId?.startsWith('zone-')) {
-        const zone = over?.data.current as { insertAfterField?: string | null } | undefined;
-        if (zone) {
-          handleContactReorder(activeId, zone.insertAfterField ?? null);
-        } else {
-          clearDragState();
-        }
+        clearDragState();
         return;
       }
 
@@ -185,6 +203,9 @@ export function useSignatureDragDrop({
         }
 
         setProfile((p) => reorderDetailAndContact(p, activeId, overId, reorderableFields));
+        setDropFailedMessage(null);
+      } else if (hadPendingPreviewDrop && isLgUp) {
+        setDropFailedMessage('Could not place the field — try releasing directly over a highlighted slot.');
       }
 
       clearDragState();
@@ -193,25 +214,26 @@ export function useSignatureDragDrop({
       brandOrder,
       clearDragState,
       handleContactReorder,
+      isLgUp,
       reorderableFields,
       setBrandOrder,
       setProfile,
     ],
   );
 
-  const dragStatusMessage = useMemo(
-    () =>
-      isDraggingToPreview
-        ? getDragDropStatus({
-            dragStatus,
-            layout,
-            reorderableFields,
-            isLgUp,
-            dropZoneCount,
-          })
-        : null,
-    [dragStatus, dropZoneCount, isDraggingToPreview, isLgUp, layout, reorderableFields],
-  );
+  const dragStatusMessage = useMemo(() => {
+    if (dropFailedMessage) {
+      return { message: dropFailedMessage, variant: 'warning' as const };
+    }
+    if (!isDraggingToPreview) return null;
+    return getDragDropStatus({
+      dragStatus,
+      layout,
+      reorderableFields,
+      isLgUp,
+      dropZoneCount,
+    });
+  }, [dragStatus, dropFailedMessage, dropZoneCount, isDraggingToPreview, isLgUp, layout, reorderableFields]);
 
   return {
     isDraggingToPreview,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { formFieldToPreviewField, isFieldReorderable, getLayoutReorderRules } from 'emailsignature-engine';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,9 @@ type Props = {
   onZoneCountChange?: (count: number) => void;
 };
 
+const SLOT_HEIGHT = 52;
+const SLOT_INSET_X = 8;
+
 export function PreviewDropOverlay({
   wrapperRef,
   isDragging,
@@ -41,7 +44,7 @@ export function PreviewDropOverlay({
 
   const measure = useCallback(() => {
     void contactDisplayOrder;
-    if (!isDragging || !wrapperRef.current || !overlayRef.current) {
+    if (!isDragging || !wrapperRef.current) {
       setDropZones([]);
       onZoneCountChange?.(0);
       return;
@@ -49,11 +52,15 @@ export function PreviewDropOverlay({
 
     const contentEl = wrapperRef.current.querySelector('.mobile-signature-scale-root');
     if (!contentEl) {
+      setDropZones([]);
       onZoneCountChange?.(0);
       return;
     }
 
-    const overlayRect = overlayRef.current.getBoundingClientRect();
+    const overlayEl = overlayRef.current;
+    const overlayRect = overlayEl
+      ? overlayEl.getBoundingClientRect()
+      : wrapperRef.current.getBoundingClientRect();
     const normalizedId = draggedFieldId ? formFieldToPreviewField(draggedFieldId) : null;
     const rules = getLayoutReorderRules(layout);
 
@@ -69,7 +76,7 @@ export function PreviewDropOverlay({
       return reorderableSet.current.has(attr);
     });
 
-    const slotHeight = 40;
+    const overlayWidth = overlayRect.width;
     const zones: DropZone[] = [];
     for (let i = 0; i <= contactEls.length; i++) {
       const prev = i > 0 ? contactEls[i - 1] : null;
@@ -86,20 +93,19 @@ export function PreviewDropOverlay({
       if (prevRect && nextRect) {
         centerY = (prevRect.bottom + nextRect.top) / 2;
       } else if (prevRect) {
-        centerY = prevRect.bottom + slotHeight / 2;
+        centerY = prevRect.bottom + SLOT_HEIGHT / 2;
       } else if (nextRect) {
-        centerY = nextRect.top - slotHeight / 2;
+        centerY = nextRect.top - SLOT_HEIGHT / 2;
       } else {
         continue;
       }
 
-      const refRect = nextRect || prevRect!;
       zones.push({
         id: `zone-${i}`,
-        top: centerY - slotHeight / 2 - overlayRect.top,
-        left: refRect.left - overlayRect.left,
-        width: Math.max(refRect.width, 150),
-        height: slotHeight,
+        top: centerY - SLOT_HEIGHT / 2 - overlayRect.top,
+        left: SLOT_INSET_X,
+        width: Math.max(overlayWidth - SLOT_INSET_X * 2, 150),
+        height: SLOT_HEIGHT,
         insertAfterField: prevField,
       });
     }
@@ -108,11 +114,11 @@ export function PreviewDropOverlay({
     onZoneCountChange?.(zones.length);
   }, [contactDisplayOrder, draggedFieldId, isDragging, layout, onZoneCountChange, wrapperRef]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     measure();
   }, [measure]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isDragging) return;
     const raf = requestAnimationFrame(() => measure());
     const handler = () => measure();
@@ -164,10 +170,10 @@ function DroppableZone({ zone }: { zone: DropZone }) {
     >
       <div
         className={cn(
-          'h-full w-full rounded-md border border-dashed transition-colors',
+          'h-full w-full rounded-md border-2 border-dashed transition-colors',
           isOver
-            ? 'border-primary bg-primary/12 ring-1 ring-primary/30'
-            : 'border-primary/35 bg-primary/5',
+            ? 'border-primary bg-primary/20 ring-2 ring-primary/40'
+            : 'border-primary/60 bg-primary/12',
         )}
       />
     </div>
