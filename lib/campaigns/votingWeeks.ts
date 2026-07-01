@@ -2,11 +2,14 @@ import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
 import {
   MAX_VOTING_SUBMISSIONS_PER_WEEK,
   getWeekEnd,
+  isSchedulableWeekStart,
 } from '@/lib/campaigns/votingWeekUtils';
 
 export {
   MAX_VOTING_SUBMISSIONS_PER_WEEK,
   getUpcomingVotingWeeks,
+  getFirstSchedulableWeekStart,
+  isSchedulableWeekStart,
   getWeekEnd,
   getWeekStart,
   formatVotingWeekLabel,
@@ -35,6 +38,10 @@ export async function assertCanScheduleForWeek(
   weekStart: Date,
   excludeSubmissionId?: string,
 ): Promise<void> {
+  if (!isSchedulableWeekStart(weekStart)) {
+    throw new Error('Voting can only be scheduled for today or a future week.');
+  }
+
   const count = await countVotingSubmissionsForWeek(weekStart, excludeSubmissionId);
   if (count >= MAX_VOTING_SUBMISSIONS_PER_WEEK) {
     throw new Error(

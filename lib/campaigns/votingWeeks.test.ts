@@ -4,9 +4,11 @@ import {
   MAX_VOTING_SUBMISSIONS_PER_WEEK,
   formatVotingWeekLabel,
   formatWeekScheduleCount,
+  getFirstSchedulableWeekStart,
   getUpcomingVotingWeeks,
   getWeekEnd,
   getWeekStart,
+  isSchedulableWeekStart,
 } from './votingWeekUtils';
 
 describe('votingWeeks', () => {
@@ -34,13 +36,25 @@ describe('votingWeeks', () => {
     assert.match(label, /^Week of Jun 9, 2026$/);
   });
 
-  it('returns consecutive upcoming weeks', () => {
+  it('skips past weeks when building schedulable options', () => {
+    const tuesday = new Date('2026-06-03T00:00:00.000Z');
+    assert.equal(getFirstSchedulableWeekStart(tuesday).toISOString(), '2026-06-08T00:00:00.000Z');
+    assert.equal(isSchedulableWeekStart(new Date('2026-06-01T00:00:00.000Z'), tuesday), false);
+    assert.equal(isSchedulableWeekStart(new Date('2026-06-08T00:00:00.000Z'), tuesday), true);
+  });
+
+  it('allows the current week when today is Monday', () => {
+    const monday = new Date('2026-06-08T00:00:00.000Z');
+    assert.equal(getFirstSchedulableWeekStart(monday).toISOString(), '2026-06-08T00:00:00.000Z');
+  });
+
+  it('returns consecutive upcoming schedulable weeks', () => {
     const from = new Date('2026-06-03T00:00:00.000Z');
     const weeks = getUpcomingVotingWeeks(3, from);
     assert.equal(weeks.length, 3);
-    assert.equal(weeks[0].weekStart.toISOString(), '2026-06-01T00:00:00.000Z');
-    assert.equal(weeks[1].weekStart.toISOString(), '2026-06-08T00:00:00.000Z');
-    assert.equal(weeks[2].weekStart.toISOString(), '2026-06-15T00:00:00.000Z');
+    assert.equal(weeks[0].weekStart.toISOString(), '2026-06-08T00:00:00.000Z');
+    assert.equal(weeks[1].weekStart.toISOString(), '2026-06-15T00:00:00.000Z');
+    assert.equal(weeks[2].weekStart.toISOString(), '2026-06-22T00:00:00.000Z');
   });
 
   it('describes schedule counts for the two-per-week cap', () => {

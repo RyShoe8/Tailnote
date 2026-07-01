@@ -55,6 +55,7 @@ export default async function SpotlightAdminPage() {
             <thead className="text-xs text-muted-foreground uppercase bg-muted/30">
               <tr>
                 <th className="px-6 py-3">Company</th>
+                <th className="px-6 py-3">Website</th>
                 <th className="px-6 py-3">Industry</th>
                 <th className="px-6 py-3">Status</th>
                 <th className="px-6 py-3">Date Applied</th>
@@ -64,7 +65,7 @@ export default async function SpotlightAdminPage() {
             <tbody>
               {recentSubmissions.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
+                  <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
                     No submissions found.
                   </td>
                 </tr>
@@ -72,6 +73,20 @@ export default async function SpotlightAdminPage() {
                 recentSubmissions.map((sub) => (
                   <tr key={sub._id.toString()} className="border-b hover:bg-muted/30">
                     <td className="px-6 py-4 font-medium">{sub.companyName}</td>
+                    <td className="px-6 py-4">
+                      {sub.website ? (
+                        <a
+                          href={sub.website}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary hover:underline break-all"
+                        >
+                          {sub.website.replace(/^https?:\/\//i, '')}
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4">{sub.industry}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${

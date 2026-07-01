@@ -32,8 +32,26 @@ export function formatVotingWeekLabel(weekStart: Date): string {
   return `Week of ${formatted}`;
 }
 
+/** Earliest Monday (UTC) that may be selected for scheduling — today or a future week, never a past week. */
+export function getFirstSchedulableWeekStart(fromDate = new Date()): Date {
+  const todayUtc = new Date(
+    Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), fromDate.getUTCDate()),
+  );
+  let weekStart = getWeekStart(fromDate);
+  if (weekStart.getTime() < todayUtc.getTime()) {
+    weekStart = new Date(weekStart);
+    weekStart.setUTCDate(weekStart.getUTCDate() + 7);
+  }
+  return weekStart;
+}
+
+export function isSchedulableWeekStart(weekStart: Date, fromDate = new Date()): boolean {
+  const normalized = getWeekStart(weekStart);
+  return normalized.getTime() >= getFirstSchedulableWeekStart(fromDate).getTime();
+}
+
 export function getUpcomingVotingWeeks(count = 12, fromDate = new Date()): VotingWeekOption[] {
-  const firstWeek = getWeekStart(fromDate);
+  const firstWeek = getFirstSchedulableWeekStart(fromDate);
   const weeks: VotingWeekOption[] = [];
 
   for (let i = 0; i < count; i++) {

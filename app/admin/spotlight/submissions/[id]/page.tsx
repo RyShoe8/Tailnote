@@ -1,21 +1,52 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { connectMongoose } from '@/lib/mongoose';
 import { CampaignSubmissionModel } from '@/models/CampaignSubmission';
 import { SubmissionActions } from './SubmissionActions';
+import { formatVotingWeekLabel, getWeekStart } from '@/lib/campaigns/votingWeekUtils';
+
+function DetailField({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <p className="text-sm text-muted-foreground font-medium">{label}</p>
+      <div className="mt-0.5 text-sm">{children}</div>
+    </div>
+  );
+}
+
+function displayOrDash(value?: string | null) {
+  const text = typeof value === 'string' ? value.trim() : '';
+  if (!text) return <span className="text-muted-foreground">—</span>;
+  return text;
+}
+
+function ExternalLink({ href, label }: { href: string; label?: string }) {
+  const text = label ?? href;
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="text-primary hover:underline break-all">
+      {text}
+    </a>
+  );
+}
 
 export default async function SpotlightSubmissionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
+
   await connectMongoose();
   const submission = (await CampaignSubmissionModel.findById(id).lean()) as any;
-  
+
   if (!submission) {
     notFound();
   }
 
-  const quote = (submission.content as any)?.quote || '';
-  const whyShouldWeFeatureYou = (submission.content as any)?.whyShouldWeFeatureYou || '';
+  const content = (submission.content ?? {}) as {
+    quote?: string;
+    description?: string;
+    whyShouldWeFeatureYou?: string;
+  };
+  const socialProfiles = (submission.socialProfiles ?? {}) as Record<string, string>;
+  const socialEntries = Object.entries(socialProfiles).filter(([, url]) => typeof url === 'string' && url.trim());
 
   const statusBadgeClass: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',
@@ -30,53 +61,90 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
   const badgeClass =
     statusBadgeClass[submission.status as string] ?? 'bg-muted text-muted-foreground';
 
+  const appliedAt = submission.createdAt
+    ? new Date(submission.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+    : '—';
+  const votingWeekLabel = submission.votingStartDate
+    ? formatVotingWeekLabel(getWeekStart(new Date(submission.votingStartDate)))
+    : null;
+
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8">
+    <div className="p-8 max-w-5xl mx-auto space-y-8">
       <div className="space-y-4">
         <Link href="/admin/spotlight" className="text-sm text-muted-foreground hover:underline">
           ← Back to Submissions
         </Link>
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold">{submission.companyName}</h1>
-            <a href={submission.website} target="_blank" rel="noreferrer" className="text-primary hover:underline">{submission.website}</a>
+        <div className="flex justify-between items-start gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold">{submission.companyName || 'Untitled submission'}</h1>
+            {submission.website ? (
+              <ExternalLink href={submission.website} />
+            ) : (
+              <span className="text-sm text-muted-foreground">No website provided</span>
+            )}
           </div>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${badgeClass}`}>
+          <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize shrink-0 ${badgeClass}`}>
             {String(submission.status).replace(/_/g, ' ')}
           </span>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid lg:grid-cols-[1fr_320px] gap-8 items-start">
         <div className="space-y-6">
           <div className="bg-card border rounded-lg p-6 space-y-4">
-            <h2 className="font-semibold text-lg border-b pb-2">Application Details</h2>
-            
-            <div className="flex items-center gap-4 mb-4">
+            <h2 className="font-semibold text-lg border-b pb-2">Company</h2>
+
+            <div className="flex items-start gap-4">
               {submission.logoUrl ? (
-                <img src={submission.logoUrl} alt="Logo" className="w-16 h-16 rounded object-contain border bg-white" />
-              ) : null}
-              <div>
-                <p className="font-semibold">{submission.founder}</p>
-                <p className="text-sm text-muted-foreground">Founder</p>
+                <img
+                  src={submission.logoUrl}
+                  alt={`${submission.companyName} logo`}
+                  className="w-20 h-20 rounded object-contain border bg-white shrink-0"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded border bg-muted/40 shrink-0" />
+              )}
+              <div className="grid sm:grid-cols-2 gap-4 flex-1">
+                <DetailField label="Company name">{displayOrDash(submission.companyName)}</DetailField>
+                <DetailField label="Founder">{displayOrDash(submission.founder)}</DetailField>
+                <DetailField label="Website">
+                  {submission.website ? <ExternalLink href={submission.website} /> : displayOrDash(null)}
+                </DetailField>
+                <DetailField label="Logo URL">
+                  {submission.logoUrl ? <ExternalLink href={submission.logoUrl} label="View logo" /> : displayOrDash(null)}
+                </DetailField>
+                <DetailField label="Industry">{displayOrDash(submission.industry)}</DetailField>
+                <DetailField label="Company size">{displayOrDash(submission.companySize)}</DetailField>
+                <DetailField label="Applied">{appliedAt}</DetailField>
+                <DetailField label="Agreed to terms">
+                  {submission.agreedToTerms ? 'Yes' : <span className="text-muted-foreground">No</span>}
+                </DetailField>
+                {votingWeekLabel ? (
+                  <DetailField label="Scheduled voting week">{votingWeekLabel}</DetailField>
+                ) : null}
               </div>
             </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground font-medium">Industry</p>
-                <p>{submission.industry}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground font-medium">Company Size</p>
-                <p>{submission.companySize}</p>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-sm text-muted-foreground font-medium">Quote</p>
-              <p className="italic">&quot;{quote}&quot;</p>
-            </div>
+          <div className="bg-card border rounded-lg p-6 space-y-4">
+            <h2 className="font-semibold text-lg border-b pb-2">Spotlight content</h2>
+            <DetailField label="Quote">
+              {content.quote ? <p className="italic">&quot;{content.quote}&quot;</p> : displayOrDash(null)}
+            </DetailField>
+            <DetailField label="Description">
+              {content.description ? (
+                <p className="whitespace-pre-wrap">{content.description}</p>
+              ) : (
+                displayOrDash(null)
+              )}
+            </DetailField>
+            <DetailField label="Why should we feature you?">
+              {content.whyShouldWeFeatureYou ? (
+                <p className="whitespace-pre-wrap">{content.whyShouldWeFeatureYou}</p>
+              ) : (
+                displayOrDash(null)
+              )}
+            </DetailField>
 
             {submission.reviewerNotes ? (
               <div className="rounded-md border border-orange-200 bg-orange-50 p-3">
@@ -84,166 +152,135 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
                 <p className="text-sm text-orange-800 mt-1 whitespace-pre-wrap">{submission.reviewerNotes}</p>
               </div>
             ) : null}
-
-            {whyShouldWeFeatureYou ? (
-              <div>
-                <p className="text-sm text-muted-foreground font-medium">Why should we feature you?</p>
-                <p>{whyShouldWeFeatureYou}</p>
-              </div>
-            ) : null}
-
-            {submission.socialPlatforms && submission.socialPlatforms.length > 0 ? (
-              <div>
-                <p className="text-sm text-muted-foreground font-medium">Social Profiles</p>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {submission.socialPlatforms.map((platform: string) => {
-                    const url = submission.socialProfiles?.[platform] as string | undefined;
-                    if (url) {
-                      return (
-                        <a key={platform} href={url} target="_blank" rel="noreferrer" className="px-2 py-1 bg-primary/10 text-primary hover:bg-primary/20 text-xs rounded capitalize transition">
-                          {platform}
-                        </a>
-                      );
-                    }
-                    return (
-                      <span key={platform} className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded capitalize">
-                        {platform}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
           </div>
 
-          {/* User Signature Profile Data */}
-          {(submission.firstName || submission.lastName || submission.title || submission.email || submission.officePhone || submission.mobilePhone || submission.avatarUrl) ? (
-            <div className="bg-card border rounded-lg p-6 space-y-4">
-              <h2 className="font-semibold text-lg border-b pb-2">User Signature Profile</h2>
-              
-              <div className="flex items-center gap-4 mb-4">
-                {submission.avatarUrl ? (
-                  <img src={submission.avatarUrl} alt="Avatar" className="w-16 h-16 rounded-full object-cover border bg-white" />
-                ) : null}
-                <div>
-                  <p className="font-semibold">{submission.firstName} {submission.lastName}</p>
-                  {submission.title && <p className="text-sm text-muted-foreground">{submission.title}</p>}
-                </div>
+          <div className="bg-card border rounded-lg p-6 space-y-4">
+            <h2 className="font-semibold text-lg border-b pb-2">Social profiles</h2>
+            {socialEntries.length > 0 ? (
+              <ul className="space-y-2">
+                {socialEntries.map(([platform, url]) => (
+                  <li key={platform} className="flex flex-col sm:flex-row sm:items-center sm:gap-3 text-sm">
+                    <span className="font-medium capitalize min-w-[7rem]">{platform}</span>
+                    <ExternalLink href={url} />
+                  </li>
+                ))}
+              </ul>
+            ) : submission.socialPlatforms?.length ? (
+              <div className="flex flex-wrap gap-2">
+                {submission.socialPlatforms.map((platform: string) => (
+                  <span
+                    key={platform}
+                    className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded capitalize"
+                  >
+                    {platform}
+                  </span>
+                ))}
               </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">—</p>
+            )}
+          </div>
 
-              <div className="grid grid-cols-1 gap-4">
-                {submission.email ? (
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">Email</p>
-                    <p><a href={`mailto:${submission.email}`} className="text-primary hover:underline">{submission.email}</a></p>
-                  </div>
-                ) : null}
-                {submission.officePhone ? (
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">Office Phone</p>
-                    <p>{submission.officePhone}</p>
-                  </div>
-                ) : null}
-                {submission.mobilePhone ? (
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">Mobile Phone</p>
-                    <p>{submission.mobilePhone}</p>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
-
-          {/* Organization Brand Data */}
-          {(submission.address || submission.city || submission.state || submission.zip || submission.primaryColor || submission.secondaryColor || submission.fontFamily || submission.logoLink || submission.logoShape || submission.logoHeightPx) ? (
-            <div className="bg-card border rounded-lg p-6 space-y-4">
-              <h2 className="font-semibold text-lg border-b pb-2">Organization Brand Details</h2>
-              
-              <div className="grid grid-cols-2 gap-4">
-                {submission.address ? (
-                  <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground font-medium">Address</p>
-                    <p>{submission.address}</p>
-                  </div>
-                ) : null}
-                {submission.city ? (
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">City</p>
-                    <p>{submission.city}</p>
-                  </div>
-                ) : null}
-                {submission.state ? (
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">State</p>
-                    <p>{submission.state}</p>
-                  </div>
-                ) : null}
-                {submission.zip ? (
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">ZIP</p>
-                    <p>{submission.zip}</p>
-                  </div>
-                ) : null}
-                {submission.logoLink ? (
-                  <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground font-medium">Logo Link</p>
-                    <p><a href={submission.logoLink} target="_blank" rel="noreferrer" className="text-primary hover:underline">{submission.logoLink}</a></p>
-                  </div>
-                ) : null}
-                {submission.primaryColor ? (
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">Primary Color</p>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded border" style={{ backgroundColor: submission.primaryColor }}></div>
-                      <p className="text-xs font-mono">{submission.primaryColor}</p>
-                    </div>
-                  </div>
-                ) : null}
-                {submission.secondaryColor ? (
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">Secondary Color</p>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded border" style={{ backgroundColor: submission.secondaryColor }}></div>
-                      <p className="text-xs font-mono">{submission.secondaryColor}</p>
-                    </div>
-                  </div>
-                ) : null}
-                {submission.fontFamily ? (
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">Font Family</p>
-                    <p>{submission.fontFamily}</p>
-                  </div>
-                ) : null}
-                {submission.logoShape ? (
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">Logo Shape</p>
-                    <p className="capitalize">{submission.logoShape}</p>
-                  </div>
-                ) : null}
-                {submission.logoHeightPx ? (
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">Logo Height</p>
-                    <p>{submission.logoHeightPx}px</p>
-                  </div>
-                ) : null}
-              </div>
-
-              {submission.animation?.enabled ? (
-                <div className="pt-2 border-t">
-                  <p className="text-sm text-muted-foreground font-medium">Animation</p>
-                  <p className="text-sm">Enabled</p>
-                  {submission.animation.gifUrl && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      <a href={submission.animation.gifUrl} target="_blank" rel="noreferrer" className="hover:underline">View GIF</a>
-                    </p>
+          <div className="bg-card border rounded-lg p-6 space-y-4">
+            <h2 className="font-semibold text-lg border-b pb-2">Contact & signature profile</h2>
+            <div className="flex items-start gap-4">
+              {submission.avatarUrl ? (
+                <img
+                  src={submission.avatarUrl}
+                  alt="Applicant avatar"
+                  className="w-16 h-16 rounded-full object-cover border bg-white shrink-0"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full border bg-muted/40 shrink-0" />
+              )}
+              <div className="grid sm:grid-cols-2 gap-4 flex-1">
+                <DetailField label="Name">
+                  {[submission.firstName, submission.lastName].filter(Boolean).join(' ') || displayOrDash(null)}
+                </DetailField>
+                <DetailField label="Title">{displayOrDash(submission.title)}</DetailField>
+                <DetailField label="Email">
+                  {submission.email ? (
+                    <a href={`mailto:${submission.email}`} className="text-primary hover:underline break-all">
+                      {submission.email}
+                    </a>
+                  ) : (
+                    displayOrDash(null)
                   )}
-                </div>
-              ) : null}
+                </DetailField>
+                <DetailField label="Avatar URL">
+                  {submission.avatarUrl ? (
+                    <ExternalLink href={submission.avatarUrl} label="View avatar" />
+                  ) : (
+                    displayOrDash(null)
+                  )}
+                </DetailField>
+                <DetailField label="Office phone">{displayOrDash(submission.officePhone)}</DetailField>
+                <DetailField label="Mobile phone">{displayOrDash(submission.mobilePhone)}</DetailField>
+              </div>
             </div>
-          ) : null}
+          </div>
+
+          <div className="bg-card border rounded-lg p-6 space-y-4">
+            <h2 className="font-semibold text-lg border-b pb-2">Brand details</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <DetailField label="Address">{displayOrDash(submission.address)}</DetailField>
+              <DetailField label="City">{displayOrDash(submission.city)}</DetailField>
+              <DetailField label="State">{displayOrDash(submission.state)}</DetailField>
+              <DetailField label="ZIP">{displayOrDash(submission.zip)}</DetailField>
+              <DetailField label="Logo link">
+                {submission.logoLink ? <ExternalLink href={submission.logoLink} /> : displayOrDash(null)}
+              </DetailField>
+              <DetailField label="Logo shape">
+                {submission.logoShape ? (
+                  <span className="capitalize">{submission.logoShape}</span>
+                ) : (
+                  displayOrDash(null)
+                )}
+              </DetailField>
+              <DetailField label="Logo height">
+                {submission.logoHeightPx ? `${submission.logoHeightPx}px` : displayOrDash(null)}
+              </DetailField>
+              <DetailField label="Font family">{displayOrDash(submission.fontFamily)}</DetailField>
+              <DetailField label="Primary color">
+                {submission.primaryColor ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded border" style={{ backgroundColor: submission.primaryColor }} />
+                    <span className="font-mono text-xs">{submission.primaryColor}</span>
+                  </div>
+                ) : (
+                  displayOrDash(null)
+                )}
+              </DetailField>
+              <DetailField label="Secondary color">
+                {submission.secondaryColor ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded border" style={{ backgroundColor: submission.secondaryColor }} />
+                    <span className="font-mono text-xs">{submission.secondaryColor}</span>
+                  </div>
+                ) : (
+                  displayOrDash(null)
+                )}
+              </DetailField>
+              <DetailField label="Animation">
+                {submission.animation?.enabled ? (
+                  <span>
+                    Enabled
+                    {submission.animation.gifUrl ? (
+                      <>
+                        {' '}
+                        · <ExternalLink href={submission.animation.gifUrl} label="View GIF" />
+                      </>
+                    ) : null}
+                  </span>
+                ) : (
+                  displayOrDash(null)
+                )}
+              </DetailField>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-6 lg:sticky lg:top-8">
           <SubmissionActions submissionId={id} hallOfFame={submission.hallOfFame} />
         </div>
       </div>
