@@ -48,13 +48,24 @@ export async function GET() {
 
   const domains = await listOrgBrandTrustDomainRows(org);
 
+  const uploadedAtRaw = org.bimiLogoUploadedAt;
+  const bimiLogoUploadedAt =
+    uploadedAtRaw instanceof Date
+      ? uploadedAtRaw.toISOString()
+      : uploadedAtRaw
+        ? new Date(uploadedAtRaw).toISOString()
+        : null;
+
   return NextResponse.json({
     orgDomain,
     scan,
     domains,
     bimiLogoUrl: org.bimiLogoUrl ?? '',
     bimiSuggestedRecord: org.bimiSuggestedRecord ?? '',
-    bimiLogoUploadedAt: org.bimiLogoUploadedAt ?? null,
+    bimiLogoUploadedAt:
+      bimiLogoUploadedAt && !Number.isNaN(new Date(bimiLogoUploadedAt).getTime())
+        ? bimiLogoUploadedAt
+        : null,
     bimiScan: bimiRow,
     entitlements: {
       canUseBimiLogoHosting: entitlements.canUseBimiLogoHosting,

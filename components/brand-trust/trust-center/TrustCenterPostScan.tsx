@@ -2,6 +2,8 @@
 
 import { Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { BimiCurrentLogoPanel } from '@/components/brand-trust/BimiCurrentLogoPanel';
+import { BimiLogoUpload } from '@/components/brand-trust/BimiLogoUpload';
 import { TrustCenterPillarCard } from '@/components/brand-trust/trust-center/TrustCenterPillarCard';
 import {
   TRUST_CENTER_PILLAR_ORDER,
@@ -18,6 +20,8 @@ type Props = {
   rescanning: boolean;
   onRescan: () => void;
   onBimiUploaded?: (payload: { url: string; suggestedRecord: string; uploadedAt: string }) => void;
+  onRescanAfterUpload?: () => void;
+  showLogoManagement?: boolean;
   upgradeHref?: string;
 };
 
@@ -28,6 +32,8 @@ export function TrustCenterPostScan({
   rescanning,
   onRescan,
   onBimiUploaded,
+  onRescanAfterUpload,
+  showLogoManagement = false,
   upgradeHref,
 }: Props) {
   const pillars = buildTrustCenterPillars(scan, bimi);
@@ -62,6 +68,30 @@ export function TrustCenterPostScan({
           Rescan
         </Button>
       </div>
+
+      {showLogoManagement && bimi.bimiLogoUrl.trim() ? (
+        <div className="space-y-4">
+          <BimiCurrentLogoPanel
+            bimiLogoUrl={bimi.bimiLogoUrl}
+            bimiLogoUploadedAt={bimiLogoUploadedAt}
+            bimiDetail={scan.bimiDetail}
+          />
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium">Replace inbox logo</h3>
+            <BimiLogoUpload
+              canUseBimiLogoHosting={bimi.canUseBimiLogoHosting}
+              bimiLogoUrl={bimi.bimiLogoUrl}
+              bimiLogoUploadedAt={bimiLogoUploadedAt}
+              bimiSuggestedRecord={bimi.bimiSuggestedRecord}
+              hidePreview
+              hideTitle
+              upgradeHref={upgradeHref}
+              onUploaded={onBimiUploaded}
+              onRescanRequested={onRescanAfterUpload}
+            />
+          </div>
+        </div>
+      ) : null}
 
       <div className="space-y-5" key={scan.domain}>
         {ordered.map((pillar) => (

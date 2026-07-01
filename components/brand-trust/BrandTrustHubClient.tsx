@@ -264,6 +264,11 @@ export function BrandTrustHubClient({
           rescanning={rescanningDomain !== null || switching}
           onRescan={() => void handleRescan()}
           onBimiUploaded={handleBimiUploaded}
+          onRescanAfterUpload={() => {
+            const domain = scan?.domain ?? orgDomain;
+            if (domain) void runScan(domain, true).catch(() => undefined);
+          }}
+          showLogoManagement={!isPublic && canUseBimiLogoHosting && Boolean(bimiLogoUrl.trim())}
           upgradeHref={upgradeHref}
         />
       ) : null}

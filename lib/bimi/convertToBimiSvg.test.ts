@@ -4,7 +4,7 @@ import sharp from 'sharp';
 import { pickBestTraceResult, RASTER_TRACE_PASSES } from './vectorizer';
 
 // Import internal helpers via module re-exports
-import { oversizeErrorMessage, getBimiLogoBlobPath } from './convertToBimiSvg';
+import { oversizeErrorMessage, getBimiLogoBlobPath, BIMI_BLOB_PUT_OPTIONS } from './convertToBimiSvg';
 
 describe('convertToBimiSvg helpers', () => {
   it('oversizeErrorMessage mentions 32KB and designer SVG', () => {
@@ -36,6 +36,12 @@ describe('convertToBimiSvg helpers', () => {
     const orgId = 'org123';
     assert.equal(getBimiLogoBlobPath(orgId), `tailnote/orgs/${orgId}/bimi/bimi-logo.svg`);
     assert.equal(getBimiLogoBlobPath(orgId), getBimiLogoBlobPath(orgId));
+  });
+
+  it('BIMI_BLOB_PUT_OPTIONS allows overwriting the stable logo path', () => {
+    assert.equal(BIMI_BLOB_PUT_OPTIONS.allowOverwrite, true);
+    assert.equal(BIMI_BLOB_PUT_OPTIONS.cacheControlMaxAge, 60);
+    assert.equal(BIMI_BLOB_PUT_OPTIONS.access, 'public');
   });
 });
 

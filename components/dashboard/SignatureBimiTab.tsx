@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BimiLogoUpload } from '@/components/brand-trust/BimiLogoUpload';
 import { BimiCurrentLogoPanel } from '@/components/brand-trust/BimiCurrentLogoPanel';
 import { BimiCertificateGuide } from '@/components/email-health/BimiCertificateGuide';
@@ -21,11 +21,21 @@ type BrandTrustPayload = {
   entitlements: { canUseBimiLogoHosting: boolean };
 };
 
+function newerIsoTimestamp(a?: string | null, b?: string | null): string | null {
+  const aTime = a ? new Date(a).getTime() : NaN;
+  const bTime = b ? new Date(b).getTime() : NaN;
+  if (Number.isNaN(aTime) && Number.isNaN(bTime)) return null;
+  if (Number.isNaN(aTime)) return b ?? null;
+  if (Number.isNaN(bTime)) return a ?? null;
+  return aTime >= bTime ? (a ?? null) : (b ?? null);
+}
+
 export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLogo?: boolean }) {
   const [data, setData] = useState<BrandTrustPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const latestUploadAtRef = useRef<string | null>(null);
 
   const load = async (opts?: { silent?: boolean }) => {
     if (!opts?.silent) {
@@ -39,7 +49,14 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
         setError(typeof json.error === 'string' ? json.error : 'Could not load BIMI status');
         return;
       }
-      setData(json as BrandTrustPayload);
+      const fresh = json as BrandTrustPayload;
+      setData((prev) => ({
+        ...fresh,
+        bimiLogoUploadedAt: newerIsoTimestamp(
+          latestUploadAtRef.current ?? prev?.bimiLogoUploadedAt,
+          fresh.bimiLogoUploadedAt,
+        ),
+      }));
     } catch {
       setError('Could not load BIMI status');
     } finally {
@@ -75,6 +92,7 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
     suggestedRecord: string;
     uploadedAt: string;
   }) => {
+    latestUploadAtRef.current = payload.uploadedAt;
     setData((prev) =>
       prev
         ? {

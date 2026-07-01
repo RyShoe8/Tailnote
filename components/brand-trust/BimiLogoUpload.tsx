@@ -39,6 +39,7 @@ export function BimiLogoUpload({
 }: Props) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [hostedUrl, setHostedUrl] = useState(bimiLogoUrl ?? '');
   const [uploadedAt, setUploadedAt] = useState<string | null>(
@@ -94,6 +95,7 @@ export function BimiLogoUpload({
     if (!file) return;
     setUploading(true);
     setError(null);
+    setSuccess(null);
     setWarnings([]);
     try {
       const form = new FormData();
@@ -116,6 +118,7 @@ export function BimiLogoUpload({
           : new Date().toISOString();
       setUploadedAt(nextUploadedAt);
       setWarnings(Array.isArray(json.warnings) ? json.warnings : []);
+      setSuccess(hasLogo ? 'Logo updated' : 'Logo uploaded');
       onUploaded?.({
         url: String(json.url ?? ''),
         suggestedRecord: String(json.suggestedRecord ?? ''),
@@ -160,6 +163,7 @@ export function BimiLogoUpload({
         />
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {success ? <p className="text-sm text-green-600 dark:text-green-400">{success}</p> : null}
       {warnings.length > 0 ? (
         <ul className="text-sm text-amber-800 dark:text-amber-200">
           {warnings.map((w) => (

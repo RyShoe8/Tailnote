@@ -11,6 +11,20 @@ export const runtime = 'nodejs';
 
 type SessionUser = { organizationId?: string; role?: string };
 
+function bimiLogoReplaceErrorMessage(err: unknown): string | null {
+  const message = err instanceof Error ? err.message : String(err ?? '');
+  const lower = message.toLowerCase();
+  if (
+    lower.includes('already exists') ||
+    lower.includes('allowoverwrite') ||
+    lower.includes('precondition') ||
+    lower.includes('overwrite')
+  ) {
+    return 'Could not replace your hosted logo. Please try again in a moment.';
+  }
+  return null;
+}
+
 export async function POST(request: Request) {
   const session = await getServerSession();
   if (!session?.user) {
@@ -71,6 +85,11 @@ export async function POST(request: Request) {
   } catch (err) {
     if (err instanceof SecureImageUploadError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    const replaceError = bimiLogoReplaceErrorMessage(err);
+    if (replaceError) {
+      logError('api/dashboard/bimi/logo/replace', err);
+      return NextResponse.json({ error: replaceError }, { status: 409 });
     }
     logError('api/dashboard/bimi/logo', err);
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });

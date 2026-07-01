@@ -17,6 +17,14 @@ const MAX_INPUT_BYTES = 4 * 1024 * 1024;
 const BIMI_VIEWBOX_SIZE = DEFAULT_TARGET_SIZE;
 
 /** @internal Exported for unit tests */
+export const BIMI_BLOB_PUT_OPTIONS = {
+  access: 'public' as const,
+  contentType: 'image/svg+xml',
+  cacheControlMaxAge: 60,
+  allowOverwrite: true,
+};
+
+/** @internal Exported for unit tests */
 export function getBimiLogoBlobPath(organizationId: string): string {
   return `tailnote/orgs/${organizationId}/bimi/bimi-logo.svg`;
 }
@@ -118,11 +126,7 @@ export async function convertToBimiSvg(args: {
   }
 
   const pathname = getBimiLogoBlobPath(args.organizationId);
-  const blob = await put(pathname, svgRaw, {
-    access: 'public',
-    contentType: 'image/svg+xml',
-    cacheControlMaxAge: 60,
-  });
+  const blob = await put(pathname, svgRaw, BIMI_BLOB_PUT_OPTIONS);
 
   return {
     url: blob.url,
