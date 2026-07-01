@@ -69,10 +69,10 @@ export async function loadSubmitterSnapshotSources(userId: string): Promise<Subm
       }
     : null;
 
-  const organizationId =
-    authUserDoc && typeof (authUserDoc as { organizationId?: unknown }).organizationId === 'string'
-      ? (authUserDoc as { organizationId: string }).organizationId
-      : null;
+  const rawOrgId = authUserDoc
+    ? (authUserDoc as unknown as { organizationId?: unknown }).organizationId
+    : undefined;
+  const organizationId = typeof rawOrgId === 'string' ? rawOrgId : null;
 
   const [org, profileRow, employeeRow] = await Promise.all([
     organizationId ? OrganizationModel.findById(organizationId).lean() : null,
