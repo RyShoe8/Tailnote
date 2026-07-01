@@ -19,6 +19,32 @@ export const DEFAULT_DETAIL_ORDER = [
 ] as const;
 
 export const SIG_ORDER_PREFIX = 'sig-order:';
+export const PREVIEW_DRAG_PREFIX = 'preview:';
+export const ZONE_PREFIX = 'zone:';
+
+export function toPreviewDragId(previewFieldId: string): string {
+  return `${PREVIEW_DRAG_PREFIX}${previewFieldId}`;
+}
+
+export function fromPreviewDragId(sortableId: string): string | null {
+  return sortableId.startsWith(PREVIEW_DRAG_PREFIX)
+    ? sortableId.slice(PREVIEW_DRAG_PREFIX.length)
+    : null;
+}
+
+export function toZoneId(insertAfterField: string | null): string {
+  return `${ZONE_PREFIX}${insertAfterField ?? '__start__'}`;
+}
+
+export function parseZoneInsertAfter(zoneId: string): string | null {
+  if (!zoneId.startsWith(ZONE_PREFIX)) return null;
+  const rest = zoneId.slice(ZONE_PREFIX.length);
+  return rest === '__start__' ? null : rest;
+}
+
+export function isZoneId(id: string): boolean {
+  return id.startsWith(ZONE_PREFIX);
+}
 
 export function toSigOrderId(previewFieldId: string): string {
   return `${SIG_ORDER_PREFIX}${previewFieldId}`;
@@ -30,6 +56,8 @@ export function fromSigOrderId(sortableId: string): string | null {
 
 /** Normalize any editor sortable id to a preview field id when possible. */
 export function toPreviewFieldId(sortableId: string): string | null {
+  const fromPreview = fromPreviewDragId(sortableId);
+  if (fromPreview) return fromPreview;
   const fromSig = fromSigOrderId(sortableId);
   if (fromSig) return fromSig;
   if (sortableId === 'companyName' || sortableId === 'website') return sortableId;
@@ -153,17 +181,6 @@ export function applyBrandFieldsToContactOrder(
   if (!hasBrand) return [...contactOrder];
   const base = contactOrder.length ? [...contactOrder] : defaultContactOrder(reorderableFields);
   return applyBrandFieldOrder(base, [...brandOrder]);
-}
-
-export function contactOrderFromPanelReorder(
-  panelOrder: readonly string[],
-  reorderableFields: readonly string[],
-): string[] {
-  const result = [...panelOrder];
-  for (const field of reorderableFields) {
-    if (!result.includes(field)) result.push(field);
-  }
-  return result;
 }
 
 export function reorderPreviewFields(

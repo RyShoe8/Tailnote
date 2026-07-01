@@ -4,6 +4,7 @@ import {
   getLayoutReorderRules,
   type SignatureLayout,
 } from 'emailsignature-engine';
+import { fromPreviewDragId, isZoneId, parseZoneInsertAfter, toPreviewFieldId } from '@/lib/signature/fieldOrder';
 
 /** Human-readable labels for form and preview field ids. */
 export const FIELD_LABELS: Record<string, string> = {
@@ -24,7 +25,7 @@ export const FIELD_LABELS: Record<string, string> = {
   logoUrl: 'Logo',
 };
 
-export type DragOverTarget = 'none' | 'sidebar-field' | 'brand-field';
+export type DragOverTarget = 'none' | 'sidebar-field' | 'brand-field' | 'preview-field' | 'preview-zone';
 
 export type SignatureDragStatus = {
   draggedFieldId: string | null;
@@ -41,8 +42,14 @@ export type DragDropStatusResult = {
 
 export function fieldLabel(fieldId: string | null): string {
   if (!fieldId) return 'Field';
-  const previewId = formFieldToPreviewField(fieldId);
+  const fromPreview = fromPreviewDragId(fieldId);
+  const previewId = formFieldToPreviewField(fromPreview ?? fieldId);
   return FIELD_LABELS[fieldId] ?? FIELD_LABELS[previewId] ?? fieldId;
+}
+
+export function zonePlacementLabel(insertAfterField: string | null): string {
+  if (insertAfterField === null) return 'at the top';
+  return `below ${FIELD_LABELS[insertAfterField] ?? insertAfterField}`;
 }
 
 const DETAIL_FIELD_IDS = new Set([
@@ -64,6 +71,12 @@ export function classifyDragOverTarget(overId: string | null): {
   if (!overId) {
     return { overTarget: 'none', zoneInsertAfter: null };
   }
+  if (isZoneId(overId)) {
+    return { overTarget: 'preview-zone', zoneInsertAfter: parseZoneInsertAfter(overId) };
+  }
+  if (overId.startsWith('preview:')) {
+    return { overTarget: 'preview-field', zoneInsertAfter: null };
+  }
   if (BRAND_FIELD_IDS.has(overId)) {
     return { overTarget: 'brand-field', zoneInsertAfter: null };
   }
@@ -81,12 +94,12 @@ export type GetDragDropStatusInput = {
 
 export function getDragDropStatus(input: GetDragDropStatusInput): DragDropStatusResult | null {
   const { dragStatus, layout, reorderableFields } = input;
-  const { draggedFieldId, overTarget } = dragStatus;
+  const { draggedFieldId, overTarget, zoneInsertAfter } = dragStatus;
 
   if (!draggedFieldId) return null;
 
   const label = fieldLabel(draggedFieldId);
-  const previewId = formFieldToPreviewField(draggedFieldId);
+  const previewId = toPreviewFieldId(draggedFieldId) ?? formFieldToPreviewField(draggedFieldId);
   const rules = getLayoutReorderRules(layout);
   const isReorderable = isFieldReorderable(rules, previewId);
 
@@ -94,6 +107,20 @@ export function getDragDropStatus(input: GetDragDropStatusInput): DragDropStatus
     return {
       message: `${label} is fixed in this layout.`,
       variant: 'warning',
+    };
+  }
+
+  if (overTarget === 'preview-zone') {
+    return {
+      message: `Release to place ${label} ${zonePlacementLabel(zoneInsertAfter)}.`,
+      variant: 'active',
+    };
+  }
+
+  if (overTarget === 'preview-field') {
+    return {
+      message: 'Release to swap position with another field in the preview.',
+      variant: 'active',
     };
   }
 
@@ -105,7 +132,7 @@ export function getDragDropStatus(input: GetDragDropStatusInput): DragDropStatus
   }
 
   return {
-    message: 'Use Signature field order in My Details to change preview order.',
+    message: `Drag ${label} in the list or drop it on the live preview to reorder.`,
     variant: 'muted',
   };
 }

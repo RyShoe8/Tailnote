@@ -192,7 +192,7 @@ export function SignatureForm({ value, onChange, disabled, layout }: Props) {
     <fieldset disabled={disabled || uploading} className="space-y-4">
       <div className="mb-4 space-y-1">
         <p className="text-sm text-muted-foreground">
-          Drag fields to reorder them in your signature. Click <Eye className="inline h-3 w-3" /> Visible to hide a field completely.
+          Drag fields here or on the live preview to reorder your signature. Use the eye icon to hide a field.
         </p>
       </div>
 

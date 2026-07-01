@@ -47,14 +47,9 @@ import { hasAnalytics, hasBrandingRemoval } from '@/lib/billing/subscriptionAcce
 import { SignatureBimiTab } from '@/components/dashboard/SignatureBimiTab';
 import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 import { SignatureDragStatusBar } from '@/components/signature/SignatureDragStatusBar';
-import { SignatureFieldOrderPanel } from '@/components/signature/SignatureFieldOrderPanel';
+import { SignaturePreviewReorderLayer } from '@/components/signature/SignaturePreviewReorderLayer';
 import { useSignatureDragDrop } from '@/lib/signature/useSignatureDragDrop';
 import { fieldLabel } from '@/lib/signature/dragDropStatus';
-import {
-  brandOrderFromContactOrder,
-  contactOrderFromPanelReorder,
-} from '@/lib/signature/fieldOrder';
-import { profileAfterContactReorder } from '@/lib/signature/reorderDragDrop';
 import { defaultProfile, profileFromApi, trackedProfilePayload } from '@/lib/signature/profileApiHelpers';
 
 type OrgResponse = {
@@ -181,6 +176,8 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
   const [trackedHtml, setTrackedHtml] = useState<string | null>(null);
   /** Bumps after mount so signature HTML re-renders with real `window` origin (SSR memo used localhost). */
   const [assetOriginNonce, setAssetOriginNonce] = useState(0);
+
+  const previewWrapperRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -352,7 +349,7 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
     isDragging,
     draggedFieldId,
     dragStatusMessage,
-    reorderableFields,
+    activeZoneId,
     sensors,
     collisionDetection,
     handlePreviewDragStart,
@@ -365,15 +362,6 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
     brandOrder: org?.brandOrder,
     setBrandOrder,
   });
-
-  const handleFieldOrderChange = useCallback(
-    (panelOrder: string[]) => {
-      const nextContact = contactOrderFromPanelReorder(panelOrder, reorderableFields);
-      setProfile((p) => profileAfterContactReorder(p, nextContact, reorderableFields));
-      setBrandOrder(brandOrderFromContactOrder(nextContact));
-    },
-    [reorderableFields, setBrandOrder],
-  );
 
   const hydratedContentBlocks = useHydratedContentBlocks(contentBlocks);
 
@@ -1052,14 +1040,6 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
                 <CardDescription>Enter the founder details to display on your signature.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <SignatureFieldOrderPanel
-                  layout={engineTemplate?.layout ?? 'default'}
-                  contactDisplayOrder={profile.contactDisplayOrder}
-                  brandOrder={org?.brandOrder}
-                  hiddenProfileFields={profile.hiddenFields ?? []}
-                  hiddenBrandFields={org?.hiddenFields ?? []}
-                  onOrderChange={handleFieldOrderChange}
-                />
                 <SignatureForm
                   value={profile}
                   onChange={setProfile}
@@ -1158,13 +1138,25 @@ export function SpotlightEditorWorkspace({ campaignId }: { campaignId: string })
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 max-w-full min-w-0 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto lg:overscroll-contain">
-          <div className="min-w-0 overflow-hidden select-all [&_.signature-email-preview]:select-all">
+          <div
+            ref={previewWrapperRef}
+            className="group/preview relative min-w-0 overflow-hidden select-all [&_.signature-email-preview]:select-all"
+          >
             <SignaturePreviewFrame
               html={previewHtml}
               variant="mobile"
               appearance="flat"
               animationKey={org?.fontFamily}
               mobileFrameWidth={mobileFrameWidthForLayout(engineTemplate?.layout)}
+            />
+            <SignaturePreviewReorderLayer
+              wrapperRef={previewWrapperRef}
+              layout={engineTemplate?.layout ?? 'default'}
+              contactDisplayOrder={profile.contactDisplayOrder}
+              brandOrder={org?.brandOrder}
+              isDragging={isDragging}
+              activeZoneId={activeZoneId}
+              htmlKey={`${previewHtml.length}-${org?.fontFamily ?? ''}`}
             />
           </div>
           {isDragging && dragStatusMessage ? <SignatureDragStatusBar status={dragStatusMessage} /> : null}

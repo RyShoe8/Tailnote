@@ -3,10 +3,12 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
   closestCenter,
+  pointerWithin,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
@@ -17,9 +19,17 @@ import {
   type SignatureLayout,
 } from 'emailsignature-engine';
 import type { SignatureProfile } from 'emailsignature-engine';
-import { applyBrandFieldsToContactOrder } from '@/lib/signature/fieldOrder';
+import {
+  applyBrandFieldsToContactOrder,
+  brandOrderFromContactOrder,
+  isZoneId,
+  parseZoneInsertAfter,
+  reorderPreviewFields,
+  toPreviewFieldId,
+} from '@/lib/signature/fieldOrder';
 import {
   defaultContactDisplayOrder,
+  reorderContactDisplayOrder,
   reorderDetailAndContact,
   reorderBrandOrder,
   profileAfterContactReorder,
@@ -56,16 +66,31 @@ export function useSignatureDragDrop({
   const [isDragging, setIsDragging] = useState(false);
   const [draggedFieldId, setDraggedFieldId] = useState<string | null>(null);
   const [dragStatus, setDragStatus] = useState<SignatureDragStatus>(EMPTY_DRAG_STATUS);
+  const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
 
   const reorderableFields = useMemo(
     () => getLayoutReorderRules(layout).reorderableFields,
     [layout],
   );
 
+  const applyContactReorder = useCallback(
+    (nextContact: string[]) => {
+      setProfile((p) => profileAfterContactReorder(p, nextContact, reorderableFields));
+      if (
+        setBrandOrder &&
+        nextContact.some((field) => field === 'companyName' || field === 'website')
+      ) {
+        setBrandOrder(brandOrderFromContactOrder(nextContact));
+      }
+    },
+    [reorderableFields, setBrandOrder, setProfile],
+  );
+
   const handlePreviewDragStart = useCallback((event: DragStartEvent) => {
     const fieldId = String(event.active.id);
     setIsDragging(true);
     setDraggedFieldId(fieldId);
+    setActiveZoneId(null);
     setDragStatus({
       draggedFieldId: fieldId,
       overTarget: 'none',
@@ -76,16 +101,18 @@ export function useSignatureDragDrop({
   const clearDragState = useCallback(() => {
     setIsDragging(false);
     setDraggedFieldId(null);
+    setActiveZoneId(null);
     setDragStatus(EMPTY_DRAG_STATUS);
   }, []);
 
   const handleDragOver = useCallback((event: DragOverEvent) => {
     const overId = event.over ? String(event.over.id) : null;
-    const { overTarget } = classifyDragOverTarget(overId);
+    const { overTarget, zoneInsertAfter } = classifyDragOverTarget(overId);
+    setActiveZoneId(isZoneId(overId ?? '') ? overId : null);
     setDragStatus((prev) => ({
       ...prev,
       overTarget,
-      zoneInsertAfter: null,
+      zoneInsertAfter,
     }));
   }, []);
 
@@ -94,11 +121,52 @@ export function useSignatureDragDrop({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
+  const collisionDetection: CollisionDetection = useCallback((args) => {
+    const pointerCollisions = pointerWithin(args);
+    const zoneHit = pointerCollisions.find((c) => isZoneId(String(c.id)));
+    if (zoneHit) return [zoneHit];
+    const previewHit = pointerCollisions.find((c) => String(c.id).startsWith('preview:'));
+    if (previewHit) return [previewHit];
+    return closestCenter(args);
+  }, []);
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
       const activeId = String(active.id);
       const overId = over ? String(over.id) : null;
+
+      const activePreview = toPreviewFieldId(activeId);
+      const overPreview = overId ? toPreviewFieldId(overId) : null;
+
+      if (
+        activePreview &&
+        overPreview &&
+        activePreview !== overPreview &&
+        reorderableFields.includes(activePreview) &&
+        reorderableFields.includes(overPreview)
+      ) {
+        const base = profile.contactDisplayOrder?.length
+          ? profile.contactDisplayOrder
+          : defaultContactDisplayOrder(reorderableFields);
+        applyContactReorder(
+          reorderPreviewFields(base, activePreview, overPreview, reorderableFields),
+        );
+        clearDragState();
+        return;
+      }
+
+      if (activePreview && overId && isZoneId(overId) && reorderableFields.includes(activePreview)) {
+        const insertAfterField = parseZoneInsertAfter(overId);
+        const base = profile.contactDisplayOrder?.length
+          ? profile.contactDisplayOrder
+          : defaultContactDisplayOrder(reorderableFields);
+        applyContactReorder(
+          reorderContactDisplayOrder(base, activePreview, insertAfterField),
+        );
+        clearDragState();
+        return;
+      }
 
       if (overId && activeId !== overId) {
         if (BRAND_SORTABLE_IDS.includes(activeId as (typeof BRAND_SORTABLE_IDS)[number])) {
@@ -128,12 +196,33 @@ export function useSignatureDragDrop({
           return;
         }
 
+        const sidebarPreview = toPreviewFieldId(activeId);
+        if (sidebarPreview && overId && isZoneId(overId) && reorderableFields.includes(sidebarPreview)) {
+          const insertAfterField = parseZoneInsertAfter(overId);
+          const base = profile.contactDisplayOrder?.length
+            ? profile.contactDisplayOrder
+            : defaultContactDisplayOrder(reorderableFields);
+          applyContactReorder(
+            reorderContactDisplayOrder(base, activeId, insertAfterField),
+          );
+          clearDragState();
+          return;
+        }
+
         setProfile((p) => reorderDetailAndContact(p, activeId, overId, reorderableFields));
       }
 
       clearDragState();
     },
-    [brandOrder, clearDragState, reorderableFields, setBrandOrder, setProfile],
+    [
+      applyContactReorder,
+      brandOrder,
+      clearDragState,
+      profile.contactDisplayOrder,
+      reorderableFields,
+      setBrandOrder,
+      setProfile,
+    ],
   );
 
   const dragStatusMessage = useMemo(() => {
@@ -149,9 +238,10 @@ export function useSignatureDragDrop({
     isDragging,
     draggedFieldId,
     dragStatusMessage,
+    activeZoneId,
     reorderableFields,
     sensors,
-    collisionDetection: closestCenter,
+    collisionDetection,
     handlePreviewDragStart,
     handleDragOver,
     handleDragEnd,
