@@ -233,7 +233,7 @@ export function BrandTrustHubClient({
             </p>
           </div>
         ) : (
-          <h1 className="sr-only">{isPublic ? 'Email health checker' : 'Brand Trust Center'}</h1>
+          <h1 className="sr-only">{isPublic ? 'Email health checker' : 'Brand Strength'}</h1>
         )}
         <TrustCenterPreScan
           initialDomain={orgDomain ?? ''}
@@ -246,7 +246,7 @@ export function BrandTrustHubClient({
 
   return (
     <div className="mx-auto max-w-3xl space-y-10">
-      <h1 className="sr-only">{isPublic ? 'Email health checker' : 'Brand Trust Center'}</h1>
+      <h1 className="sr-only">{isPublic ? 'Email health checker' : 'Brand Strength'}</h1>
 
       {scan ? (
         <TrustCenterPostScan

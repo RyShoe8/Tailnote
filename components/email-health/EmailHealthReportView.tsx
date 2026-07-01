@@ -41,7 +41,7 @@ export function EmailHealthReportView({
           <li aria-hidden="true">/</li>
           <li>
             <Link href={indexHref} className="transition-colors hover:text-foreground">
-              {indexHref.includes('brand-trust') ? 'Brand Trust Center' : 'Email Health'}
+              {indexHref.includes('brand-trust') ? 'Brand Strength' : 'Email Health'}
             </Link>
           </li>
           <li aria-hidden="true">/</li>

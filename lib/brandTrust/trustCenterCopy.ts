@@ -95,7 +95,7 @@ export const TRUST_CENTER_SCAN_EXPLAINER_COMPACT =
   'We check inbox delivery, anti-spoofing, and inbox logo setup — then show you exactly what to fix.';
 
 export const TRUST_CENTER_NO_DOMAIN = {
-  title: 'Brand Trust Center',
+  title: 'Brand Strength',
   beforeLink: 'Add your company website on the ',
   signatureLinkLabel: 'Signature',
   afterLink: ' tab so we know which domain to check. You can also scan any domain below.',

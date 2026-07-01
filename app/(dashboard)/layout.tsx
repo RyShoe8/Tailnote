@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 const links = [
   { href: '/dashboard', label: 'Overview' },
-  { href: '/dashboard/brand-trust', label: 'Brand Trust Center' },
+  { href: '/dashboard/brand-trust', label: 'Brand Strength' },
   { href: '/dashboard/signature', label: 'Signature' },
   { href: '/dashboard/analytics', label: 'Analytics' },
   { href: '/dashboard/spotlight', label: 'Spotlight' },

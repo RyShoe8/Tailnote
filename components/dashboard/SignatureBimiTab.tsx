@@ -79,7 +79,7 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
           Add your company website on the Brand tab so we can check Brand Strength readiness for your domain.
         </p>
         <Link href="/dashboard/brand-trust" className="text-sm font-medium text-primary underline">
-          Open Brand Trust Center
+          Open Brand Strength
         </Link>
       </CardShell>
     );
@@ -157,7 +157,7 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
                 href="/dashboard/brand-trust"
                 className="text-sm font-medium text-primary underline"
               >
-                Fix this in the Brand Trust Center
+                Fix this in Brand Strength
               </Link>
             </CardShell>
           )}
