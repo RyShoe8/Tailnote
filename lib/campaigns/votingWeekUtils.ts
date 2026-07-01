@@ -74,3 +74,31 @@ export function formatWeekScheduleCount(count: number): string {
   }
   return `${count} of ${MAX_VOTING_SUBMISSIONS_PER_WEEK} companies scheduled`;
 }
+
+/** Parse server-action or API date values (Date instance or ISO string). */
+export function coerceToDate(value: unknown): Date {
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) {
+      throw new Error('Invalid date');
+    }
+    return value;
+  }
+  if (typeof value === 'string' || typeof value === 'number') {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      throw new Error('Invalid date');
+    }
+    return parsed;
+  }
+  throw new Error('Invalid date');
+}
+
+export function votingWeekStartIso(date: Date | string): string {
+  return getWeekStart(coerceToDate(date)).toISOString();
+}
+
+/** True when community voting is open (matches public vote page filter). */
+export function isVotingWeekLive(votingStartDate: Date | string | null | undefined, now = new Date()): boolean {
+  if (!votingStartDate) return true;
+  return coerceToDate(votingStartDate).getTime() <= now.getTime();
+}

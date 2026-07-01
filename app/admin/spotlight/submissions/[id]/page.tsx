@@ -57,7 +57,6 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
 
   const content = (submission.content ?? {}) as {
     quote?: string;
-    description?: string;
     whyShouldWeFeatureYou?: string;
   };
   const socialProfiles = (submission.socialProfiles ?? {}) as Record<string, string>;
@@ -99,9 +98,14 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
               <span className="text-sm text-muted-foreground">No website provided</span>
             )}
           </div>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium shrink-0 ${badgeClass}`}>
-            {statusLabel}
-          </span>
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${badgeClass}`}>
+              {statusLabel}
+            </span>
+            {submission.status === 'voting' && votingWeekLabel ? (
+              <span className="text-sm text-blue-800 font-medium">{votingWeekLabel}</span>
+            ) : null}
+          </div>
         </div>
         {submission.resubmittedAt ? (
           <p className="text-sm rounded-md border border-blue-200 bg-blue-50 text-blue-900 px-3 py-2">
@@ -162,13 +166,6 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
             <h2 className="font-semibold text-lg border-b pb-2">Spotlight content</h2>
             <DetailField label="Quote">
               {content.quote ? <p className="italic">&quot;{content.quote}&quot;</p> : displayOrDash(null)}
-            </DetailField>
-            <DetailField label="Description">
-              {content.description ? (
-                <p className="whitespace-pre-wrap">{content.description}</p>
-              ) : (
-                displayOrDash(null)
-              )}
             </DetailField>
             <DetailField label="Why should we feature you?">
               {content.whyShouldWeFeatureYou ? (
@@ -315,6 +312,10 @@ export default async function SpotlightSubmissionPage({ params }: { params: Prom
         <div className="space-y-6 lg:sticky lg:top-8">
           <SubmissionActions
             submissionId={id}
+            status={String(submission.status)}
+            votingStartDate={
+              submission.votingStartDate ? new Date(submission.votingStartDate).toISOString() : null
+            }
             hallOfFame={submission.hallOfFame}
             isVoteWinner={submission.isVoteWinner}
           />

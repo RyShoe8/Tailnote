@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   deleteSubmissionAction,
@@ -10,25 +10,46 @@ import {
   type VotingWeekOptionDto,
 } from './actions';
 import {
-  MAX_VOTING_SUBMISSIONS_PER_WEEK,
+  formatVotingWeekLabel,
   formatWeekScheduleCount,
+  getWeekStart,
+  votingWeekStartIso,
 } from '@/lib/campaigns/votingWeekUtils';
 import { canManageHallOfFame } from '@/lib/campaigns/hallOfFame';
 
 type NotesMode = 'needs_changes' | 'rejected' | null;
 
+function pickInitialWeek(
+  options: VotingWeekOptionDto[],
+  status: string,
+  votingStartDate: string | null | undefined,
+): string {
+  if (status === 'voting' && votingStartDate) {
+    const savedIso = votingWeekStartIso(votingStartDate);
+    const match = options.find((o) => o.weekStart === savedIso);
+    if (match) return match.weekStart;
+  }
+  const firstAvailable = options.find((o) => o.remainingSlots > 0) ?? options[0];
+  return firstAvailable?.weekStart ?? '';
+}
+
 export function SubmissionActions({
   submissionId,
+  status,
+  votingStartDate,
   hallOfFame,
   isVoteWinner,
 }: {
   submissionId: string;
+  status: string;
+  votingStartDate?: string | null;
   hallOfFame?: boolean;
   isVoteWinner?: boolean;
 }) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [messageIsError, setMessageIsError] = useState(false);
+  const [emailWarning, setEmailWarning] = useState<string | null>(null);
   const [weekOptions, setWeekOptions] = useState<VotingWeekOptionDto[]>([]);
   const [weeksLoading, setWeeksLoading] = useState(true);
   const [selectedWeekStart, setSelectedWeekStart] = useState('');
@@ -36,49 +57,57 @@ export function SubmissionActions({
   const [reviewerNotes, setReviewerNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadWeeks() {
+  const loadWeeks = useCallback(
+    async (weekToSelect?: string) => {
+      setWeeksLoading(true);
       try {
-        const options = await getVotingWeekOptionsAction(submissionId);
-        if (cancelled) return;
+        const options = await getVotingWeekOptionsAction();
         setWeekOptions(options);
-        if (options.length > 0) {
-          const firstAvailable =
-            options.find((o) => o.scheduledCount < MAX_VOTING_SUBMISSIONS_PER_WEEK) ?? options[0];
-          setSelectedWeekStart(firstAvailable.weekStart);
+        if (weekToSelect) {
+          setSelectedWeekStart(weekToSelect);
+        } else if (options.length > 0) {
+          setSelectedWeekStart(pickInitialWeek(options, status, votingStartDate));
         }
       } catch {
-        if (!cancelled) {
-          setMessage('Failed to load voting weeks.');
-          setMessageIsError(true);
-        }
+        setMessage('Failed to load voting weeks.');
+        setMessageIsError(true);
       } finally {
-        if (!cancelled) setWeeksLoading(false);
+        setWeeksLoading(false);
       }
-    }
+    },
+    [status, votingStartDate],
+  );
 
+  useEffect(() => {
     loadWeeks();
-    return () => {
-      cancelled = true;
-    };
-  }, [submissionId]);
+  }, [submissionId, loadWeeks]);
 
   const selectedWeek = weekOptions.find((w) => w.weekStart === selectedWeekStart);
-  const selectedWeekFull =
-    (selectedWeek?.scheduledCount ?? 0) >= MAX_VOTING_SUBMISSIONS_PER_WEEK;
+  const isOnSelectedWeek =
+    status === 'voting' &&
+    !!votingStartDate &&
+    votingWeekStartIso(votingStartDate) === selectedWeekStart;
+  const selectedWeekFull = (selectedWeek?.remainingSlots ?? 0) === 0 && !isOnSelectedWeek;
   const showHallOfFame = canManageHallOfFame({ hallOfFame, isVoteWinner });
+
+  const scheduledWeekLabel = useMemo(() => {
+    if (status !== 'voting' || !votingStartDate) return null;
+    const savedIso = votingWeekStartIso(votingStartDate);
+    const match = weekOptions.find((w) => w.weekStart === savedIso);
+    return match?.label ?? formatVotingWeekLabel(getWeekStart(new Date(votingStartDate)));
+  }, [status, votingStartDate, weekOptions]);
 
   function showError(err: unknown, fallback: string) {
     const text = err instanceof Error ? err.message : fallback;
     setMessage(text);
     setMessageIsError(true);
+    setEmailWarning(null);
   }
 
-  function showSuccess(text: string) {
+  function showSuccess(text: string, warning?: string) {
     setMessage(text);
     setMessageIsError(false);
+    setEmailWarning(warning ?? null);
   }
 
   async function handleDelete() {
@@ -97,15 +126,13 @@ export function SubmissionActions({
 
     setSubmitting(true);
     setMessage(null);
+    setEmailWarning(null);
     try {
       const result = await updateSubmissionStatusAction(submissionId, 'voting', {
         votingStartDate: new Date(selectedWeekStart),
       });
-      showSuccess(
-        result.emailWarning
-          ? `Submission scheduled for voting. ${result.emailWarning}`
-          : 'Submission scheduled for voting.',
-      );
+      await loadWeeks(selectedWeekStart);
+      showSuccess('Submission scheduled for voting.', result.emailWarning);
       router.refresh();
     } catch (err) {
       showError(err, 'Failed to schedule voting');
@@ -117,6 +144,7 @@ export function SubmissionActions({
   async function handleStatusUpdate(status: string, notes?: string) {
     setSubmitting(true);
     setMessage(null);
+    setEmailWarning(null);
     try {
       const result = await updateSubmissionStatusAction(submissionId, status, {
         reviewerNotes: notes,
@@ -128,7 +156,7 @@ export function SubmissionActions({
         rejected: 'Submission rejected.',
       };
       const base = labels[status] ?? 'Status updated.';
-      showSuccess(result.emailWarning ? `${base} ${result.emailWarning}` : base);
+      showSuccess(base, result.emailWarning);
       router.refresh();
     } catch (err) {
       showError(err, 'Failed to update status');
@@ -140,9 +168,10 @@ export function SubmissionActions({
   async function handleToggleHallOfFame() {
     try {
       const result = await toggleHallOfFameAction(submissionId);
-      if (result.emailWarning) {
-        showSuccess(result.emailWarning);
-      }
+      showSuccess(
+        result.hallOfFame ? 'Added to Hall of Fame.' : 'Removed from Hall of Fame.',
+        result.emailWarning,
+      );
       router.refresh();
     } catch (err) {
       showError(err, 'Failed to toggle Hall of Fame status');
@@ -163,8 +192,19 @@ export function SubmissionActions({
         </p>
       ) : null}
 
+      {emailWarning ? (
+        <p className="text-sm rounded-md px-3 py-2 bg-amber-50 text-amber-900 border border-amber-200">
+          {emailWarning}
+        </p>
+      ) : null}
+
       <div className="space-y-3">
         <div className="p-3 border rounded-md bg-muted/30 space-y-2">
+          {scheduledWeekLabel ? (
+            <p className="text-sm rounded-md border border-blue-200 bg-blue-50 text-blue-900 px-3 py-2">
+              Scheduled for: {scheduledWeekLabel}
+            </p>
+          ) : null}
           <label htmlFor="votingWeek" className="text-sm font-medium">
             Voting week
           </label>
@@ -195,7 +235,7 @@ export function SubmissionActions({
             disabled={submitting || weeksLoading || !selectedWeekStart || selectedWeekFull}
             className="w-full bg-blue-600 text-white py-1.5 px-4 rounded-md font-medium text-sm hover:bg-blue-700 transition mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Add to Scheduled Vote
+            {isOnSelectedWeek ? 'Update scheduled week' : 'Add to Scheduled Vote'}
           </button>
         </div>
 

@@ -51,7 +51,6 @@ export const SpotlightApplySchema = z.object({
     .optional(),
   content: z.object({
     quote: z.string().trim().min(1).max(500),
-    description: z.string().trim().min(1).max(1000),
     whyShouldWeFeatureYou: z.string().trim().min(1).max(2000),
   }),
   socialPlatforms: z.array(z.string()).min(1),

@@ -65,9 +65,10 @@ export async function resolveVoteAction() {
 
   for (const submission of votingSubmissions) {
     const notify = await notifySpotlightSubmitter(
-      submission.userId,
+      String(submission.userId),
       buildSpotlightApprovedEmail,
       submission as unknown as CampaignSubmissionDoc,
+      submission.email,
     );
     const warning = spotlightEmailWarningMessage(notify);
     if (warning) emailWarnings.push(`${submission.companyName}: ${warning}`);

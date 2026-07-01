@@ -12,12 +12,27 @@ export type NotifySpotlightSubmitterResult =
   | { ok: true }
   | { ok: false; error: string; code: 'no_email' | 'send_failed' };
 
+function normalizeEmail(value: string | null | undefined): string | null {
+  const email = typeof value === 'string' ? value.trim() : '';
+  return email || null;
+}
+
+async function resolveSubmitterEmail(
+  userId: string,
+  fallbackEmail?: string | null,
+): Promise<string | null> {
+  const authEmail = await getSubmitterEmail(String(userId).trim());
+  if (authEmail) return authEmail;
+  return normalizeEmail(fallbackEmail);
+}
+
 export async function notifySpotlightSubmitter(
   userId: string,
   buildContent: (submission: CampaignSubmissionDoc) => SpotlightEmailContent,
   submission: CampaignSubmissionDoc,
+  fallbackEmail?: string | null,
 ): Promise<NotifySpotlightSubmitterResult> {
-  const email = await getSubmitterEmail(userId);
+  const email = await resolveSubmitterEmail(userId, fallbackEmail ?? submission.email);
   if (!email) {
     console.error('[Tailnote] Spotlight email skipped: no submitter email for userId', userId);
     return { ok: false, error: 'Could not find submitter email address.', code: 'no_email' };

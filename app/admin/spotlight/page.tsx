@@ -6,6 +6,11 @@ import {
   submissionStatusBadgeClass,
   submissionStatusLabel,
 } from '@/lib/campaigns/submissionStatusDisplay';
+import {
+  formatVotingWeekLabel,
+  getWeekStart,
+  isVotingWeekLive,
+} from '@/lib/campaigns/votingWeekUtils';
 
 function ActiveVoteCard({
   submissions,
@@ -15,6 +20,7 @@ function ActiveVoteCard({
     companyName: string;
     founder: string;
     votes?: number;
+    votingStartDate?: Date | string;
   }>;
 }) {
   const totalVotes = submissions.reduce((sum, s) => sum + (s.votes ?? 0), 0);
@@ -51,6 +57,10 @@ function ActiveVoteCard({
             const votes = sub.votes ?? 0;
             const isLeader = submissions.length === 2 && votes === leaderVotes && votes > 0 && idx === 0;
             const pct = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+            const weekLabel = sub.votingStartDate
+              ? formatVotingWeekLabel(getWeekStart(new Date(sub.votingStartDate)))
+              : null;
+            const voteLive = isVotingWeekLive(sub.votingStartDate);
             return (
               <div
                 key={sub._id.toString()}
@@ -62,12 +72,26 @@ function ActiveVoteCard({
                   <div>
                     <p className="font-semibold">{sub.companyName}</p>
                     <p className="text-sm text-muted-foreground">{sub.founder}</p>
+                    {weekLabel ? (
+                      <p className="text-xs text-muted-foreground mt-1">{weekLabel}</p>
+                    ) : null}
                   </div>
-                  {isLeader ? (
-                    <span className="text-xs font-medium text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">
-                      Leading
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    {isLeader ? (
+                      <span className="text-xs font-medium text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+                        Leading
+                      </span>
+                    ) : null}
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        voteLive
+                          ? 'text-green-800 bg-green-100'
+                          : 'text-blue-800 bg-blue-100'
+                      }`}
+                    >
+                      {voteLive ? 'Live vote' : 'Scheduled for voting'}
                     </span>
-                  ) : null}
+                  </div>
                 </div>
                 <p className="text-3xl font-bold tabular-nums">{votes}</p>
                 {submissions.length === 2 && totalVotes > 0 ? (
@@ -121,6 +145,7 @@ export default async function SpotlightAdminPage() {
     industry: string;
     status: string;
     votes?: number;
+    votingStartDate?: Date;
     resubmittedAt?: Date;
     createdAt: Date;
   }>;
@@ -167,6 +192,7 @@ export default async function SpotlightAdminPage() {
                 <th className="px-6 py-3">Website</th>
                 <th className="px-6 py-3">Industry</th>
                 <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3">Voting week</th>
                 <th className="px-6 py-3">Votes</th>
                 <th className="px-6 py-3">Date Applied</th>
                 <th className="px-6 py-3 text-right">Action</th>
@@ -175,7 +201,7 @@ export default async function SpotlightAdminPage() {
             <tbody>
               {recentSubmissions.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-6 py-8 text-center text-muted-foreground">
                     No submissions found.
                   </td>
                 </tr>
@@ -213,6 +239,11 @@ export default async function SpotlightAdminPage() {
                       >
                         {submissionStatusLabel(sub.status)}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 text-muted-foreground">
+                      {sub.status === 'voting' && sub.votingStartDate
+                        ? formatVotingWeekLabel(getWeekStart(new Date(sub.votingStartDate)))
+                        : '—'}
                     </td>
                     <td className="px-6 py-4 tabular-nums">
                       {sub.status === 'voting' ? (

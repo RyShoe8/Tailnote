@@ -8,6 +8,11 @@ import {
   submissionStatusBadgeClass,
   submissionStatusLabel,
 } from '@/lib/campaigns/submissionStatusDisplay';
+import {
+  formatVotingWeekLabel,
+  getWeekStart,
+  isVotingWeekLive,
+} from '@/lib/campaigns/votingWeekUtils';
 
 export default async function SpotlightDashboardPage() {
   const session = await getServerSession();
@@ -23,11 +28,21 @@ export default async function SpotlightDashboardPage() {
     industry?: string;
     status?: string;
     reviewerNotes?: string;
+    votingStartDate?: Date;
     content?: { quote?: string };
   } | null;
 
   const status = submission?.status ?? '';
   const needsChanges = status === 'needs_changes';
+  const isVoting = status === 'voting';
+  const votingWeekLabel =
+    isVoting && submission?.votingStartDate
+      ? formatVotingWeekLabel(getWeekStart(new Date(submission.votingStartDate)))
+      : null;
+  const votingWeekIsFuture =
+    isVoting && submission?.votingStartDate
+      ? !isVotingWeekLive(submission.votingStartDate)
+      : false;
   const badgeClass = submissionStatusBadgeClass(status);
   const statusLabel = submissionStatusLabel(status);
 
@@ -88,6 +103,17 @@ export default async function SpotlightDashboardPage() {
               <Button asChild>
                 <Link href="/dashboard/spotlight/apply">Edit application</Link>
               </Button>
+            </div>
+          ) : null}
+
+          {isVoting && votingWeekLabel ? (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-1">
+              <p className="text-sm font-medium text-blue-900">
+                Scheduled voting week: {votingWeekLabel}
+              </p>
+              {votingWeekIsFuture ? (
+                <p className="text-sm text-blue-800">Community voting opens that week.</p>
+              ) : null}
             </div>
           ) : null}
 

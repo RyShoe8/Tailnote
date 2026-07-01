@@ -1,4 +1,16 @@
+import { formatVotingWeekLabel, getWeekStart } from '@/lib/campaigns/votingWeekUtils';
+import { getAppBaseUrl } from '@/lib/email/appUrl';
 import type { CampaignSubmissionDoc } from '@/models/CampaignSubmission';
+
+function spotlightUrls() {
+  const baseUrl = getAppBaseUrl();
+  return {
+    editApply: `${baseUrl}/dashboard/spotlight/apply`,
+    dashboard: `${baseUrl}/dashboard/spotlight`,
+    vote: `${baseUrl}/spotlight/vote`,
+    hallOfFame: `${baseUrl}/spotlight/winners`,
+  };
+}
 
 export function buildSpotlightApprovedEmail(submission: CampaignSubmissionDoc) {
   const platforms = submission.socialPlatforms?.length
@@ -34,7 +46,7 @@ The Tailnote Team
 }
 
 export function buildSpotlightNeedsChangesEmail(submission: CampaignSubmissionDoc, notes?: string) {
-  const editUrl = 'https://tailnote.com/dashboard/spotlight/apply';
+  const { editApply: editUrl } = spotlightUrls();
   const subject = `Update required for your Tailnote Spotlight application`;
   const notesText = notes ? `\nReviewer Notes:\n${notes}\n` : '';
   const notesHtml = notes
@@ -99,39 +111,72 @@ The Tailnote Team
 }
 
 export function buildSpotlightVotingEmail(submission: CampaignSubmissionDoc, votingStartDate?: Date) {
-  const voteUrl = 'https://tailnote.com/spotlight/vote';
-  const subject = `You're approved for Spotlight voting week`;
+  const { vote: voteUrl, dashboard: dashboardUrl } = spotlightUrls();
+  const subject = `You're scheduled for Spotlight voting week`;
 
-  let dateTextHtml = 'for an upcoming Spotlight community vote week.';
-  let dateTextPlain = 'for an upcoming Spotlight community vote week.';
+  const weekLabel = votingStartDate
+    ? formatVotingWeekLabel(getWeekStart(votingStartDate))
+    : 'an upcoming Spotlight community vote week';
 
-  if (votingStartDate) {
-    const formattedDate = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric' }).format(votingStartDate);
-    dateTextHtml = `for the Spotlight community vote week starting <strong>${formattedDate}</strong>.`;
-    dateTextPlain = `for the Spotlight community vote week starting ${formattedDate}.`;
-  }
+  const weekIntroHtml = votingStartDate
+    ? `You are scheduled for <strong>${weekLabel}</strong>.`
+    : 'You are scheduled for an upcoming Spotlight community vote week.';
+
+  const weekIntroPlain = votingStartDate
+    ? `You are scheduled for ${weekLabel}.`
+    : 'You are scheduled for an upcoming Spotlight community vote week.';
+
+  const nextStepsHtml = `
+    <ul style="padding-left: 20px; line-height: 1.6;">
+      <li>Community voting opens that week on our <a href="${voteUrl}">public vote page</a>.</li>
+      <li>Share the vote link with your network to gather support for ${submission.companyName}.</li>
+      <li>The vote winner is featured on Tuesday; all entrants are featured on Thursday.</li>
+      <li>Track your status anytime on your <a href="${dashboardUrl}">Spotlight dashboard</a>.</li>
+    </ul>
+  `;
+
+  const nextStepsPlain = [
+    `Community voting opens that week: ${voteUrl}`,
+    'Share the vote link with your network to gather support.',
+    'The vote winner is featured on Tuesday; all entrants are featured on Thursday.',
+    `Track your status: ${dashboardUrl}`,
+  ].join('\n');
 
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>You're approved for voting week</h2>
+      <h2>You're scheduled for voting week</h2>
       <p>Hi ${submission.founder},</p>
-      <p>Great news! Your application has been approved ${dateTextHtml}</p>
-      <p>To win the top spot and get featured on Tuesday, you'll need the most community votes.</p>
-      <p><a href="${voteUrl}">Share this link and get your community to vote for you!</a></p>
-      <p>Even if you don't win, you are guaranteed to be featured as a runner-up on Thursday.</p>
+      <p>Great news! Your Tailnote Spotlight application has been approved. ${weekIntroHtml}</p>
+      <p><strong>What happens next</strong></p>
+      ${nextStepsHtml}
+      <p style="margin-top: 20px;">
+        <a href="${voteUrl}" style="display:inline-block;background:#0f172a;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Share the vote page</a>
+      </p>
+      <p style="margin-top: 16px;">
+        <a href="${dashboardUrl}">View your Spotlight dashboard</a>
+      </p>
       <br/>
-      <p>Good luck!</p>
-      <p>The Tailnote Team</p>
+      <p>Good luck!<br/>The Tailnote Team</p>
     </div>
   `;
 
-  const text = `Hi ${submission.founder},\n\nGreat news! Your application has been approved ${dateTextPlain}\n\nTo win the top spot and get featured on Tuesday, you'll need the most community votes. Share this link to get your community to vote for you: ${voteUrl}\n\nEven if you don't win, you are guaranteed to be featured as a runner-up on Thursday.\n\nGood luck!\nThe Tailnote Team`;
+  const text = `Hi ${submission.founder},
+
+Great news! Your Tailnote Spotlight application has been approved. ${weekIntroPlain}
+
+What happens next:
+${nextStepsPlain}
+
+Share the vote page: ${voteUrl}
+
+Good luck!
+The Tailnote Team`;
 
   return { subject, text, html };
 }
 
 export function buildSpotlightHallOfFameEmail(submission: CampaignSubmissionDoc) {
-  const hallOfFameUrl = 'https://tailnote.com/spotlight/winners';
+  const { hallOfFame: hallOfFameUrl } = spotlightUrls();
   const subject = `Welcome to the Tailnote Spotlight Hall of Fame`;
 
   const text = `Hi ${submission.founder},
@@ -149,7 +194,7 @@ The Tailnote Team
       <h2>Welcome to the Hall of Fame</h2>
       <p>Hi ${submission.founder},</p>
       <p>Congratulations! <strong>${submission.companyName}</strong> has been added to the Tailnote Spotlight Hall of Fame.</p>
-      <p><a href="${hallOfFameUrl}">View the Hall of Fame</a></p>
+      <p><a href="${hallOfFameUrl}" style="display:inline-block;background:#0f172a;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;">View the Hall of Fame</a></p>
       <br/>
       <p>Best,<br/>The Tailnote Team</p>
     </div>

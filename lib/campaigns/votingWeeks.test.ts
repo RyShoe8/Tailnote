@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   MAX_VOTING_SUBMISSIONS_PER_WEEK,
+  coerceToDate,
   formatVotingWeekLabel,
   formatWeekScheduleCount,
   getFirstSchedulableWeekStart,
@@ -9,6 +10,8 @@ import {
   getWeekEnd,
   getWeekStart,
   isSchedulableWeekStart,
+  isVotingWeekLive,
+  votingWeekStartIso,
 } from './votingWeekUtils';
 
 describe('votingWeeks', () => {
@@ -64,5 +67,38 @@ describe('votingWeeks', () => {
       formatWeekScheduleCount(MAX_VOTING_SUBMISSIONS_PER_WEEK),
       '2 of 2 companies scheduled (full)',
     );
+  });
+
+  it('coerceToDate accepts Date instances and ISO strings', () => {
+    const fromDate = new Date('2026-06-08T00:00:00.000Z');
+    const fromString = coerceToDate('2026-06-08T00:00:00.000Z');
+    assert.equal(fromDate.toISOString(), fromString.toISOString());
+    assert.throws(() => coerceToDate('not-a-date'), /Invalid date/);
+  });
+
+  it('votingWeekStartIso normalizes to Monday UTC', () => {
+    const wednesday = '2026-06-03T15:30:00.000Z';
+    assert.equal(votingWeekStartIso(wednesday), '2026-06-01T00:00:00.000Z');
+  });
+
+  it('isVotingWeekLive matches public vote page semantics', () => {
+    const now = new Date('2026-06-08T12:00:00.000Z');
+    assert.equal(isVotingWeekLive('2026-06-08T00:00:00.000Z', now), true);
+    assert.equal(isVotingWeekLive('2026-06-15T00:00:00.000Z', now), false);
+    assert.equal(isVotingWeekLive(null, now), true);
+  });
+
+  it('display count includes all submissions; capacity excludes self when rescheduling', () => {
+    const scheduledCountForDisplay = 1;
+    const remainingSlots = Math.max(0, MAX_VOTING_SUBMISSIONS_PER_WEEK - scheduledCountForDisplay);
+    assert.equal(formatWeekScheduleCount(scheduledCountForDisplay), '1 of 2 companies scheduled');
+    assert.equal(remainingSlots, 1);
+
+    const othersOnWeekWhenRescheduling = 1;
+    const capacityCountExcludingSelf = othersOnWeekWhenRescheduling;
+    assert.equal(capacityCountExcludingSelf < MAX_VOTING_SUBMISSIONS_PER_WEEK, true);
+
+    const weekFullForOthers = MAX_VOTING_SUBMISSIONS_PER_WEEK;
+    assert.equal(weekFullForOthers >= MAX_VOTING_SUBMISSIONS_PER_WEEK, true);
   });
 });

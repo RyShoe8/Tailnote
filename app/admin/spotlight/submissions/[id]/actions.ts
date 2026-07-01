@@ -17,6 +17,7 @@ import {
   getUpcomingVotingWeeks,
   getWeekStart,
 } from '@/lib/campaigns/votingWeeks';
+import { coerceToDate, MAX_VOTING_SUBMISSIONS_PER_WEEK } from '@/lib/campaigns/votingWeekUtils';
 import { canAddToHallOfFame } from '@/lib/campaigns/hallOfFame';
 import {
   notifySpotlightSubmitter,
@@ -33,6 +34,7 @@ export type VotingWeekOptionDto = {
   weekStart: string;
   label: string;
   scheduledCount: number;
+  remainingSlots: number;
 };
 
 export type SpotlightActionResult = {
@@ -41,7 +43,7 @@ export type SpotlightActionResult = {
   hallOfFame?: boolean;
 };
 
-export async function getVotingWeekOptionsAction(submissionId?: string): Promise<VotingWeekOptionDto[]> {
+export async function getVotingWeekOptionsAction(): Promise<VotingWeekOptionDto[]> {
   const session = await getServerSession();
   if (!session?.user?.id) throw new Error('Unauthorized');
   if (!(await isPlatformAdmin(session.user.id))) throw new Error('Forbidden');
@@ -50,11 +52,15 @@ export async function getVotingWeekOptionsAction(submissionId?: string): Promise
 
   const weeks = getUpcomingVotingWeeks(12);
   return Promise.all(
-    weeks.map(async (week) => ({
-      weekStart: week.weekStart.toISOString(),
-      label: week.label,
-      scheduledCount: await countVotingSubmissionsForWeek(week.weekStart, submissionId),
-    })),
+    weeks.map(async (week) => {
+      const scheduledCount = await countVotingSubmissionsForWeek(week.weekStart);
+      return {
+        weekStart: week.weekStart.toISOString(),
+        label: week.label,
+        scheduledCount,
+        remainingSlots: Math.max(0, MAX_VOTING_SUBMISSIONS_PER_WEEK - scheduledCount),
+      };
+    }),
   );
 }
 
@@ -91,11 +97,11 @@ export async function updateSubmissionStatusAction(
     if (!options?.votingStartDate) {
       throw new Error('Select a voting week before scheduling.');
     }
-    normalizedVotingStart = getWeekStart(options.votingStartDate);
+    normalizedVotingStart = getWeekStart(coerceToDate(options.votingStartDate));
     await assertCanScheduleForWeek(normalizedVotingStart, id);
     updatePayload.votingStartDate = normalizedVotingStart;
   } else if (options?.votingStartDate) {
-    updatePayload.votingStartDate = options.votingStartDate;
+    updatePayload.votingStartDate = getWeekStart(coerceToDate(options.votingStartDate));
   }
 
   if (options?.reviewerNotes !== undefined) {
@@ -122,10 +128,11 @@ export async function updateSubmissionStatusAction(
     }
 
     const notify = await notifySpotlightSubmitter(
-      submission.userId,
+      String(submission.userId),
       (s) =>
         buildSpotlightVotingEmail(s, normalizedVotingStart ?? submission.votingStartDate),
       doc,
+      submission.email,
     );
     emailWarning = spotlightEmailWarningMessage(notify);
   } else if (status === 'needs_changes') {
@@ -133,16 +140,18 @@ export async function updateSubmissionStatusAction(
       throw new Error('Please describe what the applicant should change.');
     }
     const notify = await notifySpotlightSubmitter(
-      submission.userId,
+      String(submission.userId),
       (s) => buildSpotlightNeedsChangesEmail(s, reviewerNotes),
       doc,
+      submission.email,
     );
     emailWarning = spotlightEmailWarningMessage(notify);
   } else if (status === 'rejected') {
     const notify = await notifySpotlightSubmitter(
-      submission.userId,
+      String(submission.userId),
       (s) => buildSpotlightRejectedEmail(s, reviewerNotes),
       doc,
+      submission.email,
     );
     emailWarning = spotlightEmailWarningMessage(notify);
   }
@@ -170,9 +179,10 @@ export async function toggleHallOfFameAction(id: string): Promise<SpotlightActio
   let emailWarning: string | undefined;
   if (turningOn) {
     const notify = await notifySpotlightSubmitter(
-      submission.userId,
+      String(submission.userId),
       buildSpotlightHallOfFameEmail,
       submission as unknown as CampaignSubmissionDoc,
+      submission.email,
     );
     emailWarning = spotlightEmailWarningMessage(notify);
   }

@@ -162,7 +162,7 @@ export type ExistingSpotlightSubmission = {
   avatarUrl?: string;
   industry?: string;
   companySize?: string;
-  content?: { quote?: string; description?: string; whyShouldWeFeatureYou?: string };
+  content?: { quote?: string; whyShouldWeFeatureYou?: string };
 };
 
 export function SpotlightEditorWorkspace({
@@ -640,8 +640,6 @@ export function SpotlightEditorWorkspace({
 
       const quoteBlock = contentBlocks.find(b => b.type === 'quote');
       const quote = quoteBlock?.quoteText || quoteBlock?.customText || 'No quote provided';
-      const listBlock = contentBlocks.find(b => b.type === 'list' || b.type === 'custom');
-      const description = listBlock?.listTitle || listBlock?.customText || listBlock?.listItems?.[0]?.description || 'No description provided';
       
       const socialLinks = org.socialLinks || {};
       const socialPlatforms = Object.keys(socialLinks).filter((k) => !!socialLinks[k as keyof typeof socialLinks]);
@@ -686,7 +684,6 @@ export function SpotlightEditorWorkspace({
           animation: org.animation,
           content: {
             quote,
-            description,
             whyShouldWeFeatureYou,
           },
           socialPlatforms,
