@@ -3,7 +3,6 @@ import { describe, it } from 'node:test';
 import {
   fieldLabel,
   getDragDropStatus,
-  zonePlacementLabel,
   classifyDragOverTarget,
 } from './dragDropStatus';
 
@@ -14,16 +13,7 @@ describe('dragDropStatus', () => {
     assert.equal(fieldLabel('email'), 'Email');
   });
 
-  it('zonePlacementLabel describes slot position', () => {
-    assert.equal(zonePlacementLabel(null), 'at the top');
-    assert.equal(zonePlacementLabel('title'), 'below Title');
-  });
-
-  it('classifyDragOverTarget detects preview zones and sidebar fields', () => {
-    assert.deepEqual(classifyDragOverTarget('zone-0'), {
-      overTarget: 'preview-zone',
-      zoneInsertAfter: null,
-    });
+  it('classifyDragOverTarget detects sidebar and brand fields', () => {
     assert.deepEqual(classifyDragOverTarget('email'), {
       overTarget: 'sidebar-field',
       zoneInsertAfter: null,
@@ -43,30 +33,26 @@ describe('dragDropStatus', () => {
       },
       layout: 'modern_professional',
       reorderableFields: ['logo', 'name', 'title', 'email', 'website'],
-      isLgUp: true,
-      dropZoneCount: 3,
     });
     assert.equal(result?.variant, 'warning');
     assert.match(result?.message ?? '', /fixed in this layout/i);
   });
 
-  it('getDragDropStatus shows active message when hovering a preview zone', () => {
+  it('getDragDropStatus shows active message when hovering a list row', () => {
     const result = getDragDropStatus({
       dragStatus: {
         draggedFieldId: 'email',
-        overTarget: 'preview-zone',
-        zoneInsertAfter: 'title',
+        overTarget: 'sidebar-field',
+        zoneInsertAfter: null,
       },
       layout: 'default',
       reorderableFields: ['name', 'title', 'email', 'website'],
-      isLgUp: true,
-      dropZoneCount: 2,
     });
     assert.equal(result?.variant, 'active');
-    assert.match(result?.message ?? '', /below Title/i);
+    assert.match(result?.message ?? '', /field list/i);
   });
 
-  it('getDragDropStatus guides mobile users to sidebar', () => {
+  it('getDragDropStatus points users to the order panel', () => {
     const result = getDragDropStatus({
       dragStatus: {
         draggedFieldId: 'email',
@@ -75,26 +61,8 @@ describe('dragDropStatus', () => {
       },
       layout: 'default',
       reorderableFields: ['name', 'title', 'email'],
-      isLgUp: false,
-      dropZoneCount: 2,
     });
     assert.equal(result?.variant, 'muted');
     assert.match(result?.message ?? '', /field order/i);
-  });
-
-  it('getDragDropStatus shows muted hint when no preview slots', () => {
-    const result = getDragDropStatus({
-      dragStatus: {
-        draggedFieldId: 'email',
-        overTarget: 'none',
-        zoneInsertAfter: null,
-      },
-      layout: 'default',
-      reorderableFields: ['name', 'title', 'email'],
-      isLgUp: true,
-      dropZoneCount: 0,
-    });
-    assert.equal(result?.variant, 'muted');
-    assert.match(result?.message ?? '', /name and email/i);
   });
 });

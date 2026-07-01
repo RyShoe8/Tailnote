@@ -24,7 +24,7 @@ export const FIELD_LABELS: Record<string, string> = {
   logoUrl: 'Logo',
 };
 
-export type DragOverTarget = 'none' | 'preview-zone' | 'sidebar-field' | 'brand-field';
+export type DragOverTarget = 'none' | 'sidebar-field' | 'brand-field';
 
 export type SignatureDragStatus = {
   draggedFieldId: string | null;
@@ -43,11 +43,6 @@ export function fieldLabel(fieldId: string | null): string {
   if (!fieldId) return 'Field';
   const previewId = formFieldToPreviewField(fieldId);
   return FIELD_LABELS[fieldId] ?? FIELD_LABELS[previewId] ?? fieldId;
-}
-
-export function zonePlacementLabel(insertAfterField: string | null): string {
-  if (insertAfterField === null) return 'at the top';
-  return `below ${FIELD_LABELS[insertAfterField] ?? insertAfterField}`;
 }
 
 const DETAIL_FIELD_IDS = new Set([
@@ -69,12 +64,6 @@ export function classifyDragOverTarget(overId: string | null): {
   if (!overId) {
     return { overTarget: 'none', zoneInsertAfter: null };
   }
-  if (overId.startsWith('zone-')) {
-    return { overTarget: 'preview-zone', zoneInsertAfter: null };
-  }
-  if (overId.startsWith('sig-order:')) {
-    return { overTarget: 'sidebar-field', zoneInsertAfter: null };
-  }
   if (BRAND_FIELD_IDS.has(overId)) {
     return { overTarget: 'brand-field', zoneInsertAfter: null };
   }
@@ -88,13 +77,11 @@ export type GetDragDropStatusInput = {
   dragStatus: SignatureDragStatus;
   layout: SignatureLayout;
   reorderableFields: readonly string[];
-  isLgUp: boolean;
-  dropZoneCount: number;
 };
 
 export function getDragDropStatus(input: GetDragDropStatusInput): DragDropStatusResult | null {
-  const { dragStatus, layout, reorderableFields, isLgUp, dropZoneCount } = input;
-  const { draggedFieldId, overTarget, zoneInsertAfter } = dragStatus;
+  const { dragStatus, layout, reorderableFields } = input;
+  const { draggedFieldId, overTarget } = dragStatus;
 
   if (!draggedFieldId) return null;
 
@@ -110,20 +97,6 @@ export function getDragDropStatus(input: GetDragDropStatusInput): DragDropStatus
     };
   }
 
-  if (!isLgUp) {
-    return {
-      message: 'Use Signature field order below the preview to reorder.',
-      variant: 'muted',
-    };
-  }
-
-  if (overTarget === 'preview-zone') {
-    return {
-      message: `Release to place ${label} ${zonePlacementLabel(zoneInsertAfter)}.`,
-      variant: 'active',
-    };
-  }
-
   if (overTarget === 'sidebar-field' || overTarget === 'brand-field') {
     return {
       message: `Release to reorder ${label} in the field list.`,
@@ -131,15 +104,8 @@ export function getDragDropStatus(input: GetDragDropStatusInput): DragDropStatus
     };
   }
 
-  if (dropZoneCount === 0) {
-    return {
-      message: 'Fill in name and email so preview slots appear.',
-      variant: 'muted',
-    };
-  }
-
   return {
-    message: `Drag in the list below, or drop ${label} into a highlighted slot in the preview.`,
-    variant: 'info',
+    message: 'Use Signature field order in My Details to change preview order.',
+    variant: 'muted',
   };
 }

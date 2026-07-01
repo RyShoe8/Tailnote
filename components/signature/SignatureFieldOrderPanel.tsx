@@ -1,6 +1,22 @@
 'use client';
 
-import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useCallback, useState } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  useSortable,
+  SortableContext,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
   getLayoutReorderRules,
@@ -18,6 +34,7 @@ type Props = {
   brandOrder?: string[];
   hiddenProfileFields?: string[];
   hiddenBrandFields?: string[];
+  onOrderChange: (orderedPreviewFields: string[]) => void;
 };
 
 function isFieldHidden(
@@ -52,8 +69,8 @@ function OrderRow({ id, label, reorderable }: { id: string; label: string; reord
         transition,
       }}
       className={cn(
-        'flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm shadow-sm',
-        isDragging && 'border-primary ring-1 ring-primary shadow-md',
+        'flex items-center gap-2 rounded-md border bg-card px-2.5 py-1.5 text-sm',
+        isDragging && 'border-primary/60 shadow-sm',
         !reorderable && 'opacity-60',
       )}
     >
@@ -68,7 +85,7 @@ function OrderRow({ id, label, reorderable }: { id: string; label: string; reord
         {...(reorderable ? { ...attributes, ...listeners } : {})}
         aria-label={reorderable ? `Drag to reorder ${label}` : `${label} is fixed in this layout`}
       >
-        {reorderable ? <GripVertical className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+        {reorderable ? <GripVertical className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
       </button>
       <span className="font-medium">{label}</span>
     </div>
@@ -81,13 +98,35 @@ export function SignatureFieldOrderPanel({
   brandOrder,
   hiddenProfileFields = [],
   hiddenBrandFields = [],
+  onOrderChange,
 }: Props) {
+  const [orderUpdated, setOrderUpdated] = useState(false);
   const rules = getLayoutReorderRules(layout);
   const previewFields = resolvePreviewFieldOrder(layout, contactDisplayOrder, brandOrder);
   const visibleFields = previewFields.filter(
     (field) => !isFieldHidden(field, hiddenProfileFields, hiddenBrandFields),
   );
   const sortableItems = visibleFields.map((field) => toSigOrderId(field));
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const oldIndex = sortableItems.indexOf(String(active.id));
+      const newIndex = sortableItems.indexOf(String(over.id));
+      if (oldIndex === -1 || newIndex === -1) return;
+      const nextOrder = arrayMove(visibleFields, oldIndex, newIndex);
+      onOrderChange(nextOrder);
+      setOrderUpdated(true);
+      window.setTimeout(() => setOrderUpdated(false), 1800);
+    },
+    [onOrderChange, sortableItems, visibleFields],
+  );
 
   if (!visibleFields.length) {
     return (
@@ -99,24 +138,27 @@ export function SignatureFieldOrderPanel({
 
   return (
     <div className="space-y-2">
-      <div>
-        <p className="text-sm font-medium">Signature field order</p>
-        <p className="text-xs text-muted-foreground">
-          Drag to match how fields appear in your signature. This is the most reliable way to reorder.
-        </p>
-      </div>
-      <SortableContext items={sortableItems} strategy={verticalListSortingStrategy}>
-        <div className="space-y-2">
-          {visibleFields.map((field) => (
-            <OrderRow
-              key={field}
-              id={toSigOrderId(field)}
-              label={fieldLabel(field)}
-              reorderable={isFieldReorderable(rules, field)}
-            />
-          ))}
+      <div className="flex items-baseline justify-between gap-2">
+        <div>
+          <p className="text-sm font-medium">Signature field order</p>
+          <p className="text-xs text-muted-foreground">Drag to change how fields appear in the preview.</p>
         </div>
-      </SortableContext>
+        {orderUpdated ? <span className="text-xs text-primary shrink-0">Updated</span> : null}
+      </div>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={sortableItems} strategy={verticalListSortingStrategy}>
+          <div className="space-y-1.5">
+            {visibleFields.map((field) => (
+              <OrderRow
+                key={field}
+                id={toSigOrderId(field)}
+                label={fieldLabel(field)}
+                reorderable={isFieldReorderable(rules, field)}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 }

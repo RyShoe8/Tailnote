@@ -6,6 +6,7 @@ import {
   resolveFieldOrder,
   type SignatureLayout,
 } from 'emailsignature-engine';
+import { arrayMove } from '@dnd-kit/sortable';
 
 export const DEFAULT_DETAIL_ORDER = [
   'avatarUrl',
@@ -47,31 +48,6 @@ export function brandOrderFromContactOrder(contactOrder: readonly string[]): str
     if (!order.includes(field)) order.push(field);
   }
   return order;
-}
-
-export type MeasuredDropZone = {
-  id: string;
-  insertAfterField: string | null;
-  clientRect: { top: number; left: number; width: number; height: number };
-};
-
-export function hitTestDropZone(
-  zones: readonly MeasuredDropZone[],
-  clientX: number,
-  clientY: number,
-): MeasuredDropZone | null {
-  for (const zone of zones) {
-    const { top, left, width, height } = zone.clientRect;
-    if (
-      clientX >= left &&
-      clientX <= left + width &&
-      clientY >= top &&
-      clientY <= top + height
-    ) {
-      return zone;
-    }
-  }
-  return null;
 }
 
 /** Preview field ids in signature order for the active layout. */
@@ -179,6 +155,17 @@ export function applyBrandFieldsToContactOrder(
   return applyBrandFieldOrder(base, [...brandOrder]);
 }
 
+export function contactOrderFromPanelReorder(
+  panelOrder: readonly string[],
+  reorderableFields: readonly string[],
+): string[] {
+  const result = [...panelOrder];
+  for (const field of reorderableFields) {
+    if (!result.includes(field)) result.push(field);
+  }
+  return result;
+}
+
 export function reorderPreviewFields(
   currentOrder: readonly string[],
   activeField: string,
@@ -189,8 +176,5 @@ export function reorderPreviewFields(
   const oldIndex = base.indexOf(activeField);
   const newIndex = base.indexOf(overField);
   if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return base;
-  const next = [...base];
-  next.splice(oldIndex, 1);
-  next.splice(newIndex, 0, activeField);
-  return next;
+  return arrayMove(base, oldIndex, newIndex);
 }
