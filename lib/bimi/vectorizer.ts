@@ -118,8 +118,12 @@ function stripTinyPaths(svg: string): string {
 }
 
 export function normalizeSvgViewBox(svg: string, size = TARGET_SIZE): string {
-  let out = svg.replace(/viewBox="[^"]+"/i, `viewBox="0 0 ${size} ${size}"`);
-  if (!out.includes('viewBox')) {
+  let out = svg
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/\s(width|height)="[^"]*"/gi, '');
+  if (out.match(/viewBox="/i)) {
+    out = out.replace(/viewBox="[^"]+"/i, `viewBox="0 0 ${size} ${size}"`);
+  } else {
     out = out.replace('<svg ', `<svg viewBox="0 0 ${size} ${size}" `);
   }
   return out;

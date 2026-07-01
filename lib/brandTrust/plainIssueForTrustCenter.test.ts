@@ -76,4 +76,40 @@ describe('plainIssueForTrustCenter', () => {
     assert.match(plain.nextStep, /acme\.com/);
     assert.match(plain.nextStep, /replace it with the value below/i);
   });
+
+  it('paraphrases multiple SPF records', () => {
+    const plain = plainIssueForTrustCenter(
+      issue({
+        category: 'spf',
+        title: 'Multiple SPF records detected',
+        explanation:
+          'Having more than one SPF record breaks authentication — many providers will ignore all of them.',
+        recommendation: 'Merge allowed senders into a single SPF TXT record and remove duplicates.',
+      }),
+    );
+    assert.match(plain.summary, /more than one sender policy/i);
+    assert.match(plain.nextStep, /merge/i);
+  });
+
+  it('paraphrases BIMI DNS mismatch', () => {
+    const plain = plainIssueForTrustCenter(
+      issue({
+        category: 'bimi',
+        title: 'Inbox-logo DNS points to a different file',
+        explanation:
+          'Your inbox-logo DNS record points to a different logo URL than your current Tailnote-hosted file.',
+        recommendation: 'Update the l= value in your default._bimi TXT record.',
+        dnsRecords: [
+          {
+            type: 'TXT',
+            host: 'default._bimi',
+            value: 'v=BIMI1; l=https://cdn.example.com/bimi-logo.svg',
+          },
+        ],
+      }),
+      { domain: 'acme.com' },
+    );
+    assert.match(plain.summary, /different file/i);
+    assert.match(plain.nextStep, /default\._bimi\.acme\.com/i);
+  });
 });

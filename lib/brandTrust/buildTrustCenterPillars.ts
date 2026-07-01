@@ -2,12 +2,14 @@ import {
   TRUST_CENTER_LEARN,
   TRUST_CENTER_PILLAR_COPY,
   TRUST_CENTER_SUMMARY,
+  brandingPartialBody,
   deliverabilityPartialBody,
   securityPartialBody,
   type TrustCenterLearnSection,
   type TrustCenterPillarId,
 } from '@/lib/brandTrust/trustCenterCopy';
 import { plainFixPhrase, plainIssueForTrustCenter } from '@/lib/brandTrust/plainIssueForTrustCenter';
+import { normalizeLogoUrl } from '@/lib/email-health/normalizeLogoUrl';
 import type { SerializedEmailHealthScan } from '@/lib/email-health/serialize';
 import type {
   DnsRecordSuggestion,
@@ -47,7 +49,9 @@ export type PillarResult = {
   dnsRecords?: DnsRecordSuggestion[];
   deliverabilityIssues?: DomainIssue[];
   securityIssues?: DomainIssue[];
+  brandingIssues?: DomainIssue[];
   fixIntro?: string;
+  brandingNeedsUpload?: boolean;
 };
 
 function aggregateDnsRecords(issues: DomainIssue[]): DnsRecordSuggestion[] {
@@ -111,35 +115,91 @@ function primaryIssue(
     .sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])[0];
 }
 
+function bimiBlockingIssues(scan: SerializedEmailHealthScan): DomainIssue[] {
+  return categoryIssues(scan, 'bimi');
+}
+
+function brandingIssuesForPillar(
+  scan: SerializedEmailHealthScan,
+  bimi: TrustCenterBimiState,
+): DomainIssue[] {
+  const issues = bimiBlockingIssues(scan);
+  if (issues.length > 0) return issues;
+
+  const hosted = bimi.bimiLogoUrl.trim();
+  const dnsL = scan.bimiDetail?.bimiRecordStatus?.tags?.l?.trim();
+  if (!hosted || !dnsL || dnsLogoMatchesHosted(scan, hosted)) return issues;
+
+  const suggested = bimi.bimiSuggestedRecord.trim();
+  return [
+    {
+      category: 'bimi',
+      severity: 'fail',
+      title: 'Inbox-logo DNS points to a different file',
+      explanation:
+        'Your inbox-logo DNS record points to a different logo URL than your current Tailnote-hosted file. Update the l= value so inboxes load the right logo.',
+      recommendation:
+        'Update the l= value in your default._bimi TXT record to match your current hosted logo URL.',
+      technicalDetail: `DNS l=${dnsL} | expected l=${hosted}`,
+      foundRecords: [dnsL, hosted],
+      dnsRecords: suggested
+        ? [
+            {
+              type: 'TXT',
+              host: 'default._bimi',
+              value: suggested,
+              note: 'Replace your default._bimi TXT record with this value.',
+            },
+          ]
+        : undefined,
+    },
+  ];
+}
+
+function brandingIssueKind(issues: DomainIssue[]): 'dns_mismatch' | 'svg' | 'dns_missing' | 'generic' {
+  const text = issues.map((i) => `${i.title} ${i.explanation}`.toLowerCase()).join(' ');
+  if (text.includes('different file') || text.includes('different logo')) return 'dns_mismatch';
+  if (text.includes('logo file') || text.includes('square') || text.includes('32kb')) return 'svg';
+  if (text.includes('missing') || text.includes('not yet set up')) return 'dns_missing';
+  return 'generic';
+}
+
+function dnsLogoMatchesHosted(
+  scan: SerializedEmailHealthScan,
+  bimiLogoUrl: string,
+): boolean {
+  const dnsL = scan.bimiDetail?.bimiRecordStatus?.tags?.l?.trim();
+  const hosted = bimiLogoUrl.trim();
+  if (!dnsL || !hosted) return true;
+  return normalizeLogoUrl(dnsL) === normalizeLogoUrl(hosted);
+}
+
 function brandingNeedsAction(
   scan: SerializedEmailHealthScan,
   bimi: TrustCenterBimiState,
 ): boolean {
-  const bimiResult = categoryResult(scan, 'bimi');
-  
-  // If their DNS already has a fully valid BIMI record, they are good to go!
-  if (bimiResult && bimiResult.status === 'pass') return false;
-
-  // Otherwise, if they haven't uploaded a logo to our hosting, they need action
-  if (!bimi.bimiLogoUrl.trim()) return true;
-
-  // Tailnote logo hosting provides self-asserted BIMI (no VMC).
-  // If their DNS correctly points to our logo, they are good to go.
-  if (scan.bimiDetail) {
-    const { dmarcStatus, bimiRecordStatus, svgStatus, certificateStatus } = scan.bimiDetail;
-    const isSelfAssertedBimi = 
-      dmarcStatus.status !== 'fail' && 
-      bimiRecordStatus.status === 'pass' && 
-      svgStatus.status === 'pass' &&
-      (certificateStatus.classification === 'none' || certificateStatus.classification === 'self_asserted');
-
-    if (isSelfAssertedBimi) return false;
+  if (!bimi.bimiLogoUrl.trim()) {
+    return true;
   }
 
-  // Even if they uploaded a logo, if the DNS is still warn/fail, they need action
+  if (bimiBlockingIssues(scan).length > 0) return true;
+  if (!dnsLogoMatchesHosted(scan, bimi.bimiLogoUrl)) return true;
+
+  if (scan.bimiDetail) {
+    const { dmarcStatus, bimiRecordStatus, svgStatus } = scan.bimiDetail;
+    if (
+      dmarcStatus.status !== 'fail' &&
+      bimiRecordStatus.status === 'pass' &&
+      svgStatus.status === 'pass' &&
+      dnsLogoMatchesHosted(scan, bimi.bimiLogoUrl)
+    ) {
+      return false;
+    }
+  }
+
+  const bimiResult = categoryResult(scan, 'bimi');
   if (bimiResult && (bimiResult.status === 'warn' || bimiResult.status === 'fail')) return true;
-  if (categoryIssues(scan, 'bimi').length > 0) return true;
-  
+
   return false;
 }
 
@@ -215,6 +275,7 @@ function buildBrandingPillar(
 ): PillarResult {
   const copy = TRUST_CENTER_PILLAR_COPY.branding;
   const needsAction = brandingNeedsAction(scan, bimi);
+  const brandingIssues = brandingIssuesForPillar(scan, bimi);
 
   if (!needsAction) {
     return {
@@ -248,17 +309,33 @@ function buildBrandingPillar(
       action: { label: copy.actionLabel, kind: 'branding_setup' },
       learnSections: TRUST_CENTER_LEARN.branding,
       showCertificateLearn: true,
+      brandingNeedsUpload: true,
     };
   }
+
+  const primary = primaryIssue(scan, ['bimi']);
+  const fixPhrase = plainFixPhrase(
+    primary,
+    'update your inbox-logo DNS record to match your current hosted logo',
+  );
+  const kind = brandingIssueKind(brandingIssues);
+  const needsUpload = kind === 'svg';
+  const allDnsRecords = aggregateDnsRecords(brandingIssues);
+  const actionLabel =
+    needsUpload ? copy.actionLabel : allDnsRecords.length > 0 ? copy.showDnsLabel : copy.showDnsLabel;
 
   return {
     id: 'branding',
     status: 'needs_action',
     headline: copy.headline,
-    body: copy.uploadedPending,
-    action: { label: copy.showDnsLabel, kind: 'branding_setup' },
+    body: brandingPartialBody(kind, fixPhrase),
+    action: { label: actionLabel, kind: 'branding_setup' },
     learnSections: TRUST_CENTER_LEARN.branding,
     showCertificateLearn: true,
+    brandingIssues: brandingIssues.length > 0 ? brandingIssues : undefined,
+    dnsRecords: allDnsRecords.length > 0 ? allDnsRecords : undefined,
+    brandingNeedsUpload: needsUpload,
+    fixIntro: allDnsRecords.length > 0 ? copy.fixIntro : undefined,
   };
 }
 

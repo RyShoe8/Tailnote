@@ -13,6 +13,8 @@ import {
   exampleBimiRecordValue,
   missingBimiTechnicalDetail,
 } from '@/lib/email-health/bimiDnsExample';
+import { normalizeLogoUrl } from '@/lib/email-health/normalizeLogoUrl';
+import { buildBimiSuggestedRecord } from '@/lib/brandTrust/domainFromOrg';
 import type { BIMIResult, BimiIssue, ProviderReadinessStatus } from '@/lib/email-health/bimiTypes';
 import type { CategoryResult, CheckStatus, DomainIssue } from '@/lib/email-health/types';
 import { buildCategoryResult } from '@/lib/email-health/scoring';
@@ -71,6 +73,8 @@ function overallStatus(parts: CheckStatus[]): CheckStatus | 'unknown' {
 
 export type AnalyzeBimiOptions = {
   dmarcParsed?: DmarcParsed | null;
+  /** When scanning from Tailnote, compare DNS l= to the org's current hosted logo URL. */
+  expectedLogoUrl?: string;
 };
 
 export async function analyzeBimi(domain: string, options?: AnalyzeBimiOptions): Promise<BIMIResult> {
@@ -164,6 +168,31 @@ export async function analyzeBimi(domain: string, options?: AnalyzeBimiOptions):
     };
   }
 
+  if (
+    bimiRecord &&
+    tags.l &&
+    options?.expectedLogoUrl?.trim() &&
+    normalizeLogoUrl(tags.l) !== normalizeLogoUrl(options.expectedLogoUrl)
+  ) {
+    issues.push({
+      title: 'Inbox-logo DNS points to a different file',
+      plainEnglishExplanation:
+        'Your inbox-logo DNS record points to a different logo URL than your current Tailnote-hosted file. Update the l= value so inboxes load the right logo.',
+      technicalDetail: `DNS l=${tags.l} | expected l=${options.expectedLogoUrl.trim()}`,
+      severity: 'fail',
+      howToFix: 'Update the l= value in your default._bimi TXT record to match your current hosted logo URL.',
+      foundRecords: [tags.l, options.expectedLogoUrl.trim()],
+      dnsRecords: [
+        {
+          type: 'TXT',
+          host: exampleBimiHost(domain),
+          value: buildBimiSuggestedRecord(options.expectedLogoUrl.trim()),
+          note: 'Replace your default._bimi TXT record with this value.',
+        },
+      ],
+    });
+  }
+
   const svgStatus = tags.l ? await validateBimiSvgUrl(tags.l) : {
     status: 'unknown' as const,
     summary: 'No logo URL to check yet',
@@ -186,7 +215,7 @@ export async function analyzeBimi(domain: string, options?: AnalyzeBimiOptions):
       title: 'Certificate not configured',
       plainEnglishExplanation: certificateStatus.summary,
       technicalDetail: tags.a,
-      severity: 'warn',
+      severity: 'info',
       howToFix: 'Work with a BIMI certificate provider if Gmail logo display is your goal.',
     });
     recommendations.push('Consider a VMC if Gmail inbox logos are important.');
@@ -199,12 +228,17 @@ export async function analyzeBimi(domain: string, options?: AnalyzeBimiOptions):
     cert: certificateStatus,
   });
 
-  const status = overallStatus([
+  const statusParts: CheckStatus[] = [
     dmarcStatus.status === 'unknown' ? 'warn' : dmarcStatus.status,
     bimiRecordStatus.status === 'unknown' ? 'warn' : bimiRecordStatus.status,
     svgStatus.status === 'unknown' ? 'warn' : svgStatus.status,
-    certificateStatus.status === 'unknown' ? 'warn' : certificateStatus.status,
-  ]);
+  ];
+  for (const issue of issues) {
+    if (issue.severity === 'fail' || issue.severity === 'warn') {
+      statusParts.push(issue.severity);
+    }
+  }
+  const status = overallStatus(statusParts);
 
   if (status === 'pass') {
     recommendations.push('Keep your SVG hosted and renew certificates before they expire.');
@@ -236,6 +270,7 @@ export function mapBimiResultToScanOutput(result: BIMIResult): {
     explanation: issue.plainEnglishExplanation,
     recommendation: issue.howToFix,
     technicalDetail: issue.technicalDetail,
+    foundRecords: issue.foundRecords,
     dnsRecords: issue.dnsRecords,
     callout: issue.callout,
     stepsToPass:

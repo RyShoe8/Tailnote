@@ -10,6 +10,7 @@ import { persistBimiScanResult } from '@/lib/email-health/persistBimi';
 import { runEmailHealthScan } from '@/lib/email-health/runScan';
 import { emailHealthScanJsonResponse } from '@/lib/email-health/scanJsonResponse';
 import { EmailHealthScanModel, type EmailHealthScanDoc } from '@/models/EmailHealthScan';
+import { OrganizationModel } from '@/models/Organization';
 import { logError } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
@@ -69,7 +70,16 @@ export async function POST(request: Request) {
   }
 
   try {
-    const report = await runEmailHealthScan(domain);
+    let expectedLogoUrl: string | undefined;
+    if (user.organizationId) {
+      const org = await OrganizationModel.findById(user.organizationId)
+        .select('bimiLogoUrl')
+        .lean<{ bimiLogoUrl?: string } | null>();
+      const url = org?.bimiLogoUrl?.trim();
+      if (url) expectedLogoUrl = url;
+    }
+
+    const report = await runEmailHealthScan(domain, { expectedLogoUrl });
     const saved = await persistEmailHealthScan(report, {});
 
     if (report.bimiDetail) {

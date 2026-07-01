@@ -1,4 +1,5 @@
 import { flattenTxt, resolveTxtRecords } from '@/lib/email-health/dns';
+import { mergeSpfRecords } from '@/lib/email-health/mergeSpfRecords';
 import { buildCategoryResult } from '@/lib/email-health/scoring';
 import { suggestSpfTxtFix } from '@/lib/email-health/spfSuggestions';
 import type { CategoryResult, DomainIssue } from '@/lib/email-health/types';
@@ -49,6 +50,7 @@ export async function scanSpf(domain: string): Promise<SpfScanResult> {
   }
 
   if (spfRecords.length > 1) {
+    const merged = mergeSpfRecords(spfRecords);
     issues.push({
       category: 'spf',
       severity: 'fail',
@@ -63,7 +65,20 @@ export async function scanSpf(domain: string): Promise<SpfScanResult> {
         'Keep a single ~all or -all at the end, then rescan.',
       ],
       technicalDetail: `Found ${spfRecords.length} SPF records: ${spfRecords.join(' | ')}`,
+      foundRecords: [...spfRecords],
+      dnsRecords: [
+        {
+          type: 'TXT',
+          host: '@',
+          value: merged,
+          note: 'Replace all SPF TXT records at @ with this single merged record.',
+        },
+      ],
     });
+    return {
+      category: buildCategoryResult('spf', 'fail', 'Multiple SPF records detected'),
+      issues,
+    };
   }
 
   const spf = spfRecords[0]!;

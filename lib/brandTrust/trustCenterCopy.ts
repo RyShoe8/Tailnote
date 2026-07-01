@@ -140,6 +140,7 @@ export const TRUST_CENTER_PILLAR_COPY = {
     actionLabel: 'Set it up free',
     showDnsLabel: 'Show DNS record',
     signupLabel: 'Create free account',
+    fixIntro: 'Add this record in your DNS provider (where you manage your domain settings).',
     notSignedIn:
       'Create a free Tailnote account to upload your logo, copy the DNS record we generate, add it at your provider, and rescan.',
     notUploaded:
@@ -217,4 +218,20 @@ export function securityPartialBody(working: string[], fixPhrase: string): strin
     return `Next, ${fixPhrase}`;
   }
   return `Good news: ${joinNaturalList(working)}. Next, ${fixPhrase}`;
+}
+
+export function brandingPartialBody(
+  kind: 'dns_missing' | 'dns_mismatch' | 'svg' | 'generic',
+  fixPhrase: string,
+): string {
+  switch (kind) {
+    case 'dns_mismatch':
+      return `Your logo is hosted on Tailnote, but your inbox-logo DNS record still points to a different file. The next step is to ${fixPhrase}.`;
+    case 'svg':
+      return `Your hosted logo file needs a small adjustment before inboxes can display it. Re-upload on Tailnote if needed, then ${fixPhrase}.`;
+    case 'dns_missing':
+      return `Your logo is ready on our side. The next step is to ${fixPhrase}.`;
+    default:
+      return `The next step is to ${fixPhrase}.`;
+  }
 }

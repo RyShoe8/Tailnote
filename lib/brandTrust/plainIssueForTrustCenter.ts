@@ -76,6 +76,14 @@ function defaultForCategory(category: EmailHealthCategory): PlainIssueCopy {
 
 function spfPlain(issue: DomainIssue): PlainIssueCopy | null {
   const t = `${issue.title} ${issue.explanation}`.toLowerCase();
+  if (t.includes('multiple spf')) {
+    return {
+      summary:
+        'You have more than one sender policy record at your domain. Mail providers only honor one — having two or more can break authentication entirely.',
+      nextStep:
+        'Merge every v=spf1 record into a single TXT record at @, delete the extras, then rescan.',
+    };
+  }
   if (t.includes('missing') || t.includes('no spf') || t.includes('not found')) {
     return {
       summary: 'Your domain does not list which servers are allowed to send email as you.',
@@ -88,16 +96,69 @@ function spfPlain(issue: DomainIssue): PlainIssueCopy | null {
       nextStep: 'Tighten the policy so only your real mail servers are listed, then rescan.',
     };
   }
-  if (t.includes('~all') || t.includes('?all') || t.includes('neutral')) {
+  if (t.includes('softfail') || t.includes('~all')) {
+    return {
+      summary: 'Your sender policy uses softfail (~all) instead of a stricter reject policy.',
+      nextStep: 'Update the policy to -all once every legitimate sender is listed, then rescan.',
+    };
+  }
+  if (t.includes('?all') || t.includes('neutral')) {
     return {
       summary: 'Your sender policy does not strongly tell providers to reject unauthorized senders.',
       nextStep: 'Update the policy to clearly soft-fail or reject unknown senders.',
     };
   }
-  if (t.includes('lookup') || t.includes('include')) {
+  if (t.includes('lookup') || (t.includes('include') && t.includes('many'))) {
     return {
       summary: 'Your sender policy has too many lookups or includes, which can cause random failures.',
       nextStep: 'Simplify the record with your email provider’s help, then rescan.',
+    };
+  }
+  return null;
+}
+
+function bimiPlain(issue: DomainIssue): PlainIssueCopy | null {
+  const t = `${issue.title} ${issue.explanation}`.toLowerCase();
+  if (t.includes('different logo') || t.includes('points to a different')) {
+    return {
+      summary:
+        'Your inbox-logo DNS record points to a different file than your current hosted logo.',
+      nextStep: 'Update the l= value in your default._bimi TXT record using the corrected record below.',
+    };
+  }
+  if (t.includes('missing') || t.includes('not yet set up') || t.includes('not found')) {
+    return {
+      summary: 'Your domain does not yet have an inbox-logo DNS record published.',
+      nextStep: 'Add the TXT record at default._bimi using the value below, then rescan.',
+    };
+  }
+  if (t.includes('incomplete') || t.includes('logo link is missing')) {
+    return {
+      summary: 'Your inbox-logo DNS record is missing the logo file link (l=).',
+      nextStep: 'Add the l= URL to your default._bimi TXT record, then rescan.',
+    };
+  }
+  if (t.includes('certificate')) {
+    return {
+      summary:
+        'No paid logo certificate is linked yet — Gmail may require one before showing your logo.',
+      nextStep:
+        'This is optional. Yahoo and Fastmail may still show your logo without a certificate.',
+    };
+  }
+  if (t.includes('kb') || t.includes('32kb') || t.includes('square')) {
+    const detail = issue.explanation.trim();
+    return {
+      summary: detail.endsWith('.') ? detail : `${detail}.`,
+      nextStep: 'Re-upload a square logo on Tailnote so we can convert it to the right format, then update DNS if the URL changes.',
+    };
+  }
+  if (t.includes('logo file')) {
+    return {
+      summary: issue.explanation.trim() || 'Your hosted logo file needs a few adjustments for inbox display.',
+      nextStep: issue.recommendation
+        ? stripAcronymsFromCard(issue.recommendation)
+        : 'Use a square, self-contained SVG under 32KB hosted over HTTPS.',
     };
   }
   return null;
@@ -166,6 +227,9 @@ function dnsAwareNextStep(issue: DomainIssue, domain: string | undefined, fallba
   if (host === '_dmarc') {
     return `Edit the TXT record at _dmarc.${domain} and replace it with the value below.`;
   }
+  if (host === 'default._bimi' || host.startsWith('default._bimi.')) {
+    return `Edit the TXT record at default._bimi.${domain} and replace it with the value below.`;
+  }
   return `Edit the ${records[0]!.type} record for ${domain} and replace it with the value below.`;
 }
 
@@ -188,18 +252,14 @@ export function plainIssueForTrustCenter(issue: DomainIssue, options?: PlainIssu
         ? dkimPlain(issue)
         : issue.category === 'dmarc'
           ? dmarcPlain(issue)
-          : null;
+          : issue.category === 'bimi'
+            ? bimiPlain(issue)
+            : null;
 
   if (specialized) return finalizePlainCopy(issue, specialized, options);
 
   const defaults = defaultForCategory(issue.category);
-  const hasCustomExplanation =
-    issue.explanation &&
-    !issue.explanation.toLowerCase().includes('spf') &&
-    !issue.explanation.toLowerCase().includes('dkim') &&
-    !issue.explanation.toLowerCase().includes('dmarc');
-
-  if (hasCustomExplanation) {
+  if (issue.explanation?.trim()) {
     return finalizePlainCopy(
       issue,
       {

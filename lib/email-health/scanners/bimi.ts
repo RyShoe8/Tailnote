@@ -10,6 +10,7 @@ export type BimiScanResult = {
 
 export type ScanBimiOptions = {
   dmarcRecord?: string;
+  expectedLogoUrl?: string;
 };
 
 export async function scanBimi(domain: string, options?: ScanBimiOptions): Promise<BimiScanResult> {
@@ -17,7 +18,10 @@ export async function scanBimi(domain: string, options?: ScanBimiOptions): Promi
     ? parseDmarcRecord(options.dmarcRecord)
     : undefined;
 
-  const result = await analyzeBimi(domain, { dmarcParsed });
+  const result = await analyzeBimi(domain, {
+    dmarcParsed,
+    expectedLogoUrl: options?.expectedLogoUrl,
+  });
   const mapped = mapBimiResultToScanOutput(result);
 
   return {

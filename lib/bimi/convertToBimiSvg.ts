@@ -34,6 +34,20 @@ function sanitizeSvg(svg: string): { svg: string; warnings: string[] } {
   return { svg: out, warnings };
 }
 
+function aggressiveOptimizeSvg(svg: string): string {
+  return optimize(svg, {
+    multipass: true,
+    floatPrecision: 1,
+    plugins: [
+      'preset-default',
+      'removeDimensions',
+      'removeMetadata',
+      'removeComments',
+      'removeEditorsNSData',
+    ],
+  }).data;
+}
+
 // removed rasterToSquareSvg
 
 export async function convertToBimiSvg(args: {
@@ -66,11 +80,16 @@ export async function convertToBimiSvg(args: {
 
   let finalSvg = sanitized.svg;
   if (finalSvg.length > BIMI_TARGET_BYTES) {
-    warnings.push(
-      `SVG is ${Math.round(finalSvg.length / 1024)}KB — aim for under 32KB for best BIMI compatibility.`
+    finalSvg = aggressiveOptimizeSvg(finalSvg);
+  }
+  if (finalSvg.length > BIMI_TARGET_BYTES) {
+    throw new SecureImageUploadError(
+      `Logo SVG is ${Math.round(finalSvg.length / 1024)}KB after optimization — BIMI requires under 32KB. Try a simpler logo.`,
+      400,
     );
-    const reoptimized = optimize(finalSvg, { multipass: true, plugins: ['preset-default'] });
-    finalSvg = reoptimized.data;
+  }
+  if (sanitized.svg.length > BIMI_TARGET_BYTES) {
+    warnings.push('SVG was compressed to meet the 32KB BIMI size limit.');
   }
 
   // We must use a new static filename because 'logo.svg' was previously cached for 1 year by Vercel Blob

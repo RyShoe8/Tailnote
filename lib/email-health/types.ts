@@ -29,6 +29,8 @@ export type DomainIssue = {
   recommendation: string;
   stepsToPass?: string[];
   technicalDetail?: string;
+  /** Raw DNS or file values found during the scan (e.g. duplicate SPF records). */
+  foundRecords?: string[];
   dnsRecords?: DnsRecordSuggestion[];
   callout?: string;
 };

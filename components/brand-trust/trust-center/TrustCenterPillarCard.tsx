@@ -172,14 +172,26 @@ export function TrustCenterPillarCard({
       ) : null}
 
       {showFix && pillar.id === 'branding' && pillar.action?.kind === 'branding_setup' ? (
-        <div ref={fixPanelRef} className="mt-4">
-          <TrustCenterBrandingAction
-            canUseBimiLogoHosting={canUseBimiLogoHosting}
-            bimiLogoUrl={bimiLogoUrl}
-            bimiSuggestedRecord={bimiSuggestedRecord}
-            onUploaded={onBimiUploaded}
-            upgradeHref={upgradeHref}
-          />
+        <div ref={fixPanelRef} className="mt-4 space-y-4">
+          {pillar.fixIntro ? (
+            <p className="text-sm text-muted-foreground">{pillar.fixIntro}</p>
+          ) : null}
+          {pillar.brandingIssues?.length ? (
+            <TrustCenterSecurityFix issues={pillar.brandingIssues} zoneDomain={domain} />
+          ) : pillar.dnsRecords?.length ? (
+            pillar.dnsRecords.map((rec) => (
+              <DnsRecordCopy key={`${rec.type}-${rec.host}`} record={rec} zoneDomain={domain} />
+            ))
+          ) : null}
+          {pillar.brandingNeedsUpload || !bimiLogoUrl.trim() ? (
+            <TrustCenterBrandingAction
+              canUseBimiLogoHosting={canUseBimiLogoHosting}
+              bimiLogoUrl={bimiLogoUrl}
+              bimiSuggestedRecord={bimiSuggestedRecord}
+              onUploaded={onBimiUploaded}
+              upgradeHref={upgradeHref}
+            />
+          ) : null}
         </div>
       ) : null}
 

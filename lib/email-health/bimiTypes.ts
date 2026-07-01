@@ -6,6 +6,7 @@ export type BimiIssue = {
   technicalDetail?: string;
   severity: IssueSeverity;
   howToFix: string;
+  foundRecords?: string[];
   dnsRecords?: DnsRecordSuggestion[];
   callout?: string;
 };

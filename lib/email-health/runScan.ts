@@ -23,7 +23,15 @@ async function withTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
   }
 }
 
-export async function runEmailHealthScan(rawDomain: string): Promise<EmailHealthReport> {
+export type RunEmailHealthScanOptions = {
+  /** Org-hosted BIMI logo URL — enables DNS l= mismatch detection on dashboard scans. */
+  expectedLogoUrl?: string;
+};
+
+export async function runEmailHealthScan(
+  rawDomain: string,
+  options?: RunEmailHealthScanOptions,
+): Promise<EmailHealthReport> {
   const { domain, domainSlug } = parseDomainInput(rawDomain);
   const scannedAt = new Date();
 
@@ -36,8 +44,11 @@ export async function runEmailHealthScan(rawDomain: string): Promise<EmailHealth
   ]);
 
   const bimi = await withTimeout(
-    scanBimi(domain, { dmarcRecord: dmarc.record }),
-    'BIMI'
+    scanBimi(domain, {
+      dmarcRecord: dmarc.record,
+      expectedLogoUrl: options?.expectedLogoUrl,
+    }),
+    'BIMI',
   );
 
   let tls;
