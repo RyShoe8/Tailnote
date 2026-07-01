@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { buildBimiLogoSummary } from './bimiLogoSummary';
+import { buildBimiLogoSummary, bimiLogoDisplayUrl } from './bimiLogoSummary';
 import type { BIMIResult } from '@/lib/email-health/bimiTypes';
 
 const baseBimiDetail = (): BIMIResult => ({
@@ -88,5 +88,21 @@ describe('buildBimiLogoSummary', () => {
     });
     assert.ok(summary.improvements.includes('Logo should be square'));
     assert.ok(summary.improvements.includes('Publish BIMI DNS record'));
+  });
+
+  it('bimiLogoDisplayUrl appends cache-bust query from uploadedAt', () => {
+    const url = 'https://tailnote.example/logo.svg';
+    const at = '2025-01-15T12:00:00.000Z';
+    const display = bimiLogoDisplayUrl(url, at);
+    assert.equal(display, `${url}?v=${new Date(at).getTime()}`);
+  });
+
+  it('buildBimiLogoSummary exposes previewDisplayUrl for img tags', () => {
+    const summary = buildBimiLogoSummary({
+      bimiLogoUrl: 'https://tailnote.example/logo.svg',
+      bimiLogoUploadedAt: '2025-01-15T12:00:00.000Z',
+    });
+    assert.equal(summary.previewUrl, 'https://tailnote.example/logo.svg');
+    assert.match(summary.previewDisplayUrl ?? '', /\?v=\d+$/);
   });
 });

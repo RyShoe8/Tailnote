@@ -35,7 +35,8 @@ type Props = {
   canUseBimiLogoHosting: boolean;
   bimiLogoUrl: string;
   bimiSuggestedRecord: string;
-  onBimiUploaded?: (payload: { url: string; suggestedRecord: string }) => void;
+  bimiLogoUploadedAt?: string | null;
+  onBimiUploaded?: (payload: { url: string; suggestedRecord: string; uploadedAt: string }) => void;
   onAction?: () => void;
   upgradeHref?: string;
 };
@@ -60,6 +61,7 @@ export function TrustCenterPillarCard({
   canUseBimiLogoHosting,
   bimiLogoUrl,
   bimiSuggestedRecord,
+  bimiLogoUploadedAt = null,
   onBimiUploaded,
   onAction,
   upgradeHref = DASHBOARD_UPGRADE_HREF,
@@ -188,6 +190,7 @@ export function TrustCenterPillarCard({
               canUseBimiLogoHosting={canUseBimiLogoHosting}
               bimiLogoUrl={bimiLogoUrl}
               bimiSuggestedRecord={bimiSuggestedRecord}
+              bimiLogoUploadedAt={bimiLogoUploadedAt}
               onUploaded={onBimiUploaded}
               upgradeHref={upgradeHref}
             />

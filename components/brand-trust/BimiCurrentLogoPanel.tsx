@@ -32,7 +32,12 @@ export function BimiCurrentLogoPanel({ bimiLogoUrl, bimiLogoUploadedAt, bimiDeta
         {summary.previewUrl ? (
           <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-lg border bg-white shadow-sm dark:bg-black/40">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={summary.previewUrl} alt="BIMI inbox logo" className="h-20 w-20 object-contain" />
+            <img
+              key={summary.uploadedAt?.getTime() ?? summary.previewUrl}
+              src={summary.previewDisplayUrl ?? summary.previewUrl}
+              alt="BIMI inbox logo"
+              className="h-20 w-20 object-contain"
+            />
           </div>
         ) : null}
         <div className="min-w-0 flex-1 space-y-2">

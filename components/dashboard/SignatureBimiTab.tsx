@@ -27,8 +27,10 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
   const [error, setError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const res = await fetch('/api/dashboard/brand-trust', { credentials: 'include' });
@@ -41,13 +43,49 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
     } catch {
       setError('Could not load BIMI status');
     } finally {
-      setLoading(false);
+      if (!opts?.silent) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     void load();
   }, []);
+
+  const handleRescanAfterUpload = async () => {
+    if (!data?.orgDomain) return;
+    try {
+      const res = await fetch('/api/dashboard/brand-trust/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain: data.orgDomain, force: true }),
+        credentials: 'include',
+      });
+      if (res.ok) {
+        await load({ silent: true });
+      }
+    } catch {
+      // Background refresh only — upload already succeeded
+    }
+  };
+
+  const handleBimiUploaded = (payload: {
+    url: string;
+    suggestedRecord: string;
+    uploadedAt: string;
+  }) => {
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            bimiLogoUrl: payload.url,
+            bimiSuggestedRecord: payload.suggestedRecord,
+            bimiLogoUploadedAt: payload.uploadedAt,
+          }
+        : prev,
+    );
+  };
 
   const handleRescan = async () => {
     if (!data?.orgDomain) return;
@@ -57,9 +95,10 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ domain: data.orgDomain, force: true }),
+        credentials: 'include',
       });
       if (res.ok) {
-        await load();
+        await load({ silent: true });
       }
     } finally {
       setIsScanning(false);
@@ -187,10 +226,12 @@ export function SignatureBimiTab({ canManageBimiLogo = true }: { canManageBimiLo
           <BimiLogoUpload
             canUseBimiLogoHosting={data.entitlements.canUseBimiLogoHosting}
             bimiLogoUrl={data.bimiLogoUrl}
+            bimiLogoUploadedAt={data.bimiLogoUploadedAt}
             bimiSuggestedRecord={data.bimiSuggestedRecord}
             hidePreview
             hideTitle
-            onUploaded={() => void load()}
+            onUploaded={handleBimiUploaded}
+            onRescanRequested={() => void handleRescanAfterUpload()}
           />
         </div>
       ) : null}

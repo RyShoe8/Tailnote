@@ -6,14 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DASHBOARD_UPGRADE_HREF } from '@/lib/billing/upgradeLinks';
+import { bimiLogoDisplayUrl } from '@/lib/brandTrust/bimiLogoSummary';
 import { RASTER_SVG_HONESTY } from '@/lib/email-health/bimiCopy';
 import { DnsRecordCopy } from '@/components/email-health/DnsRecordCopy';
 
 type Props = {
   canUseBimiLogoHosting: boolean;
   bimiLogoUrl?: string;
+  bimiLogoUploadedAt?: string | Date | null;
   bimiSuggestedRecord?: string;
-  onUploaded?: (payload: { url: string; suggestedRecord: string }) => void;
+  onUploaded?: (payload: { url: string; suggestedRecord: string; uploadedAt: string }) => void;
+  onRescanRequested?: () => void;
   variant?: 'default' | 'embedded';
   upgradeHref?: string;
   hidePreview?: boolean;
@@ -24,8 +27,10 @@ type Props = {
 export function BimiLogoUpload({
   canUseBimiLogoHosting,
   bimiLogoUrl,
+  bimiLogoUploadedAt,
   bimiSuggestedRecord,
   onUploaded,
+  onRescanRequested,
   variant = 'default',
   upgradeHref = DASHBOARD_UPGRADE_HREF,
   hidePreview = false,
@@ -36,11 +41,28 @@ export function BimiLogoUpload({
   const [error, setError] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [hostedUrl, setHostedUrl] = useState(bimiLogoUrl ?? '');
+  const [uploadedAt, setUploadedAt] = useState<string | null>(
+    bimiLogoUploadedAt
+      ? bimiLogoUploadedAt instanceof Date
+        ? bimiLogoUploadedAt.toISOString()
+        : String(bimiLogoUploadedAt)
+      : null,
+  );
   const [record, setRecord] = useState(bimiSuggestedRecord ?? '');
 
   useEffect(() => {
     setHostedUrl(bimiLogoUrl ?? '');
   }, [bimiLogoUrl]);
+
+  useEffect(() => {
+    if (bimiLogoUploadedAt) {
+      setUploadedAt(
+        bimiLogoUploadedAt instanceof Date
+          ? bimiLogoUploadedAt.toISOString()
+          : String(bimiLogoUploadedAt),
+      );
+    }
+  }, [bimiLogoUploadedAt]);
 
   useEffect(() => {
     setRecord(bimiSuggestedRecord ?? '');
@@ -88,11 +110,18 @@ export function BimiLogoUpload({
       }
       setHostedUrl(String(json.url ?? ''));
       setRecord(String(json.suggestedRecord ?? ''));
+      const nextUploadedAt =
+        typeof json.bimiLogoUploadedAt === 'string'
+          ? json.bimiLogoUploadedAt
+          : new Date().toISOString();
+      setUploadedAt(nextUploadedAt);
       setWarnings(Array.isArray(json.warnings) ? json.warnings : []);
       onUploaded?.({
         url: String(json.url ?? ''),
         suggestedRecord: String(json.suggestedRecord ?? ''),
+        uploadedAt: nextUploadedAt,
       });
+      onRescanRequested?.();
     } catch {
       setError('Upload failed');
     } finally {
@@ -144,7 +173,12 @@ export function BimiLogoUpload({
             <p className="text-sm font-medium mb-2">Hosted BIMI Logo</p>
             <div className="flex h-24 w-24 items-center justify-center rounded-lg border bg-white shadow-sm dark:bg-black/40">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={hostedUrl} alt="BIMI logo" className="h-20 w-20 object-contain" />
+              <img
+                key={uploadedAt ?? hostedUrl}
+                src={bimiLogoDisplayUrl(hostedUrl, uploadedAt) ?? hostedUrl}
+                alt="BIMI logo"
+                className="h-20 w-20 object-contain"
+              />
             </div>
           </div>
           <p className="text-sm break-all text-muted-foreground">

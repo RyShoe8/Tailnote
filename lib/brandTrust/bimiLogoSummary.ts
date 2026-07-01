@@ -2,6 +2,7 @@ import type { BIMIResult } from '@/lib/email-health/bimiTypes';
 
 export type BimiLogoSummary = {
   previewUrl: string | null;
+  previewDisplayUrl: string | null;
   hostedWithTailnote: boolean;
   dnsLogoUrl: string | null;
   dnsMismatch: boolean;
@@ -22,6 +23,20 @@ export type BimiLogoSummary = {
 function normalizeUrl(url: string | undefined | null): string | null {
   const trimmed = url?.trim();
   return trimmed || null;
+}
+
+/** Cache-busted URL for dashboard `<img>` previews only — keep canonical URL for DNS/links. */
+export function bimiLogoDisplayUrl(
+  url: string | null | undefined,
+  uploadedAt?: Date | string | null,
+): string | null {
+  const canonical = normalizeUrl(url);
+  if (!canonical) return null;
+  if (!uploadedAt) return canonical;
+  const at = uploadedAt instanceof Date ? uploadedAt : new Date(uploadedAt);
+  if (Number.isNaN(at.getTime())) return canonical;
+  const sep = canonical.includes('?') ? '&' : '?';
+  return `${canonical}${sep}v=${at.getTime()}`;
 }
 
 function urlsDiffer(a: string | null, b: string | null): boolean {
@@ -78,9 +93,11 @@ export function buildBimiLogoSummary(input: {
   const uploadedAt = input.bimiLogoUploadedAt
     ? new Date(input.bimiLogoUploadedAt)
     : null;
+  const previewDisplayUrl = bimiLogoDisplayUrl(previewUrl, uploadedAt);
 
   return {
     previewUrl,
+    previewDisplayUrl,
     hostedWithTailnote,
     dnsLogoUrl,
     dnsMismatch: urlsDiffer(hostedUrl, dnsLogoUrl),

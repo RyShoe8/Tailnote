@@ -35,6 +35,13 @@ export default async function DashboardBrandTrustResultPage({ params }: Props) {
       canUseBimiLogoHosting={entitlements.canUseBimiLogoHosting}
       bimiLogoUrl={String(org.bimiLogoUrl ?? '')}
       bimiSuggestedRecord={String(org.bimiSuggestedRecord ?? '')}
+      bimiLogoUploadedAt={
+        org.bimiLogoUploadedAt instanceof Date
+          ? org.bimiLogoUploadedAt.toISOString()
+          : org.bimiLogoUploadedAt
+            ? String(org.bimiLogoUploadedAt)
+            : null
+      }
     />
   );
 }

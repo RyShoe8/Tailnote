@@ -29,6 +29,7 @@ type Props = {
   canUseBimiLogoHosting?: boolean;
   bimiLogoUrl?: string;
   bimiSuggestedRecord?: string;
+  bimiLogoUploadedAt?: string | null;
   /** Public landing: navigate to /email-health/{slug} after scan instead of inline results. */
   navigateOnScan?: boolean;
   /** Hide TrustCenterPreScan headline when a page-level SEO hero is shown above. */
@@ -72,6 +73,7 @@ export function BrandTrustHubClient({
   canUseBimiLogoHosting = false,
   bimiLogoUrl: initialLogoUrl = '',
   bimiSuggestedRecord: initialRecord = '',
+  bimiLogoUploadedAt: initialUploadedAt = null,
   navigateOnScan = false,
   suppressPreScanHeading = false,
 }: Props) {
@@ -90,6 +92,7 @@ export function BrandTrustHubClient({
   const [selectedDomain, setSelectedDomain] = useState<string | null>(initialScan?.domain ?? null);
   const [bimiLogoUrl, setBimiLogoUrl] = useState(initialLogoUrl);
   const [bimiSuggestedRecord, setBimiSuggestedRecord] = useState(initialRecord);
+  const [bimiLogoUploadedAt, setBimiLogoUploadedAt] = useState<string | null>(initialUploadedAt);
   const [rescanningDomain, setRescanningDomain] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
 
@@ -200,9 +203,10 @@ export function BrandTrustHubClient({
   );
 
   const handleBimiUploaded = useCallback(
-    ({ url, suggestedRecord }: { url: string; suggestedRecord: string }) => {
+    ({ url, suggestedRecord, uploadedAt }: { url: string; suggestedRecord: string; uploadedAt: string }) => {
       setBimiLogoUrl(url);
       setBimiSuggestedRecord(suggestedRecord);
+      setBimiLogoUploadedAt(uploadedAt);
       if (scan && orgDomain && scan.domain.toLowerCase() === orgDomain.toLowerCase()) {
         const bimi = {
           canUseBimiLogoHosting,
@@ -212,8 +216,12 @@ export function BrandTrustHubClient({
         const row = domainRowFromScan(scan, bimi);
         setDomains((prev) => upsertDomainRow(prev, row));
       }
+      const domain = scan?.domain ?? orgDomain;
+      if (domain) {
+        void runScan(domain, true).catch(() => undefined);
+      }
     },
-    [scan, orgDomain, canUseBimiLogoHosting],
+    [scan, orgDomain, canUseBimiLogoHosting, runScan],
   );
 
   const showResults = Boolean(scan) || (!isPublic && domains.length > 0);
@@ -252,6 +260,7 @@ export function BrandTrustHubClient({
         <TrustCenterPostScan
           scan={scan}
           bimi={activeBimi}
+          bimiLogoUploadedAt={bimiLogoUploadedAt}
           rescanning={rescanningDomain !== null || switching}
           onRescan={() => void handleRescan()}
           onBimiUploaded={handleBimiUploaded}

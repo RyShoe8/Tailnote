@@ -48,13 +48,15 @@ export async function POST(request: Request) {
       organizationId: user.organizationId,
     });
 
+    const bimiLogoUploadedAt = new Date();
+
     await OrganizationModel.updateOne(
       { _id: user.organizationId },
       {
         $set: {
           bimiLogoUrl: result.url,
           bimiSuggestedRecord: result.suggestedRecord,
-          bimiLogoUploadedAt: new Date(),
+          bimiLogoUploadedAt,
         },
       }
     );
@@ -64,6 +66,7 @@ export async function POST(request: Request) {
       byteSize: result.byteSize,
       suggestedRecord: result.suggestedRecord,
       warnings: result.warnings,
+      bimiLogoUploadedAt: bimiLogoUploadedAt.toISOString(),
     });
   } catch (err) {
     if (err instanceof SecureImageUploadError) {

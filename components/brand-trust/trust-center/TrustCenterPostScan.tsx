@@ -14,15 +14,17 @@ import type { SerializedEmailHealthScan } from '@/lib/email-health/serialize';
 type Props = {
   scan: SerializedEmailHealthScan;
   bimi: TrustCenterBimiState;
+  bimiLogoUploadedAt?: string | null;
   rescanning: boolean;
   onRescan: () => void;
-  onBimiUploaded?: (payload: { url: string; suggestedRecord: string }) => void;
+  onBimiUploaded?: (payload: { url: string; suggestedRecord: string; uploadedAt: string }) => void;
   upgradeHref?: string;
 };
 
 export function TrustCenterPostScan({
   scan,
   bimi,
+  bimiLogoUploadedAt = null,
   rescanning,
   onRescan,
   onBimiUploaded,
@@ -70,6 +72,7 @@ export function TrustCenterPostScan({
             canUseBimiLogoHosting={bimi.canUseBimiLogoHosting}
             bimiLogoUrl={bimi.bimiLogoUrl}
             bimiSuggestedRecord={bimi.bimiSuggestedRecord}
+            bimiLogoUploadedAt={bimiLogoUploadedAt}
             onBimiUploaded={onBimiUploaded}
             upgradeHref={upgradeHref}
           />
