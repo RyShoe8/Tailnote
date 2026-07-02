@@ -104,4 +104,4 @@ export const BIMI_PROVIDER_MATRIX = {
 } as const;
 
 export const RASTER_SVG_HONESTY =
-  'Logos uploaded as PNG or JPEG are converted into a compact SVG. Vector artwork works best; complex or full-color marks may need a designer-prepared square SVG to stay under BIMI\'s 32KB limit.';
+  'Logos uploaded as PNG or JPEG are converted into a compact SVG. Vector artwork works best; logos with text or thin letterforms especially benefit from a designer-prepared square SVG. Complex or full-color marks may also need one to stay under BIMI\'s 32KB limit.';

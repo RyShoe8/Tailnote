@@ -13,10 +13,11 @@ describe('convertToBimiSvg helpers', () => {
     assert.match(msg, /SVG/i);
   });
 
-  it('RASTER_TRACE_PASSES includes imagetracer fallback passes', () => {
-    assert.equal(RASTER_TRACE_PASSES.length, 4);
-    assert.equal(RASTER_TRACE_PASSES[0]?.engine, 'imagetracer');
-    assert.equal(RASTER_TRACE_PASSES[3]?.floatPrecision, 0);
+  it('RASTER_TRACE_PASSES uses potrace-first ladder with imagetracer fallback', () => {
+    assert.equal(RASTER_TRACE_PASSES.length, 5);
+    assert.equal(RASTER_TRACE_PASSES[0]?.engine, 'potrace');
+    assert.equal(RASTER_TRACE_PASSES[3]?.engine, 'imagetracer');
+    assert.equal(RASTER_TRACE_PASSES[4]?.mode, 'mono');
   });
 
   it('pickBestTraceResult returns null when all passes exceed limit', () => {

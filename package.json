@@ -54,6 +54,7 @@
     "next": "^15.1.0",
     "next-mdx-remote": "^6.0.0",
     "posthog-js": "^1.376.1",
+    "potrace": "^2.1.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-google-recaptcha-v3": "^1.11.0",
