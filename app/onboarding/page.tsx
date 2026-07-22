@@ -6,6 +6,7 @@ import { getServerSession } from '@/lib/auth/session';
 import { sanitizeInternalRedirect } from '@/lib/auth/sanitizeInternalRedirect';
 import { connectMongoose } from '@/lib/mongoose';
 import { getPublicPricingPlans } from 'billing-engine';
+import { hasDashboardAccess } from '@/lib/billing/subscriptionAccess';
 import { OrganizationModel } from '@/models/Organization';
 import { findPendingInviteByEmail } from '@/lib/employees/findPendingInviteByEmail';
 
@@ -39,9 +40,30 @@ async function OnboardingContent({ redirectParam }: { redirectParam?: string }) 
 
   if (user.organizationId) {
     await connectMongoose();
-    const org = await OrganizationModel.findById(user.organizationId);
+    const org = await OrganizationModel.findById(user.organizationId).lean<{
+      name?: string;
+      plan?: string;
+      subscriptionStatus?: string;
+    }>();
+
     if (org) {
-      redirect(afterOnboarding);
+      if (hasDashboardAccess(org)) {
+        redirect(afterOnboarding);
+      }
+
+      const status = String(org.subscriptionStatus ?? 'none');
+      if (status === 'past_due' || status === 'canceled') {
+        redirect('/dashboard/billing');
+      }
+
+      // Incomplete unpaid checkout (or other unpaid non-freemium): resume Stripe checkout.
+      return (
+        <OnboardingForm
+          plans={plans}
+          resumeMode
+          organizationName={String(org.name ?? '')}
+        />
+      );
     }
   }
 

@@ -110,16 +110,32 @@ export function AdminOrganizationsTable({ organizations: initialOrganizations, a
                         </Button>
                       </td>
                       <td className="p-3 font-medium align-top">{org.name}</td>
-                      <td className="p-3 align-top">{org.planDisplayName}</td>
+                      <td className="p-3 align-top">
+                        <span
+                          className={
+                            org.checkoutIncomplete
+                              ? 'font-medium text-amber-800 dark:text-amber-400'
+                              : undefined
+                          }
+                        >
+                          {org.planDisplayName}
+                        </span>
+                      </td>
                       <td className="p-3 align-top">
                         <AdminOrgPlanInlineEditor
-                          key={`${org._id}-${org.subscriptionPlanId}`}
+                          key={`${org._id}-${org.subscriptionPlanId}-${org.subscriptionStatus}`}
                           organizationId={org._id}
                           subscriptionPlanId={org.subscriptionPlanId}
                           subscriptionStatus={org.subscriptionStatus}
+                          checkoutIncomplete={org.checkoutIncomplete}
                           assignablePlans={assignablePlans}
-                          onSaved={({ subscriptionPlanId, planDisplayName }) => {
-                            updateOrg(org._id, { subscriptionPlanId, planDisplayName });
+                          onSaved={({ subscriptionPlanId, planDisplayName, subscriptionStatus, checkoutIncomplete }) => {
+                            updateOrg(org._id, {
+                              subscriptionPlanId,
+                              planDisplayName,
+                              ...(subscriptionStatus ? { subscriptionStatus } : {}),
+                              ...(typeof checkoutIncomplete === 'boolean' ? { checkoutIncomplete } : {}),
+                            });
                           }}
                         />
                       </td>

@@ -6,6 +6,7 @@ import { OrganizationModel } from '@/models/Organization';
 import { SignatureTemplateModel } from '@/models/SignatureTemplate';
 import { getBillingEntitlements } from '@/lib/billing/entitlements';
 import { findOrgTemplateWithAvailablePreset } from '@/lib/templates/validateOrgTemplate';
+import { assertHasDashboardAccess } from '@/lib/dashboard/requireDashboardAccess';
 
 type SessionUser = { organizationId?: string };
 
@@ -19,6 +20,8 @@ async function requireOrgMember() {
   await connectMongoose();
   const org = await OrganizationModel.findById(user.organizationId);
   if (!org) return { error: NextResponse.json({ error: 'Organization not found' }, { status: 404 }) };
+  const accessDenied = assertHasDashboardAccess(org);
+  if (accessDenied) return { error: accessDenied };
   return { org, user };
 }
 

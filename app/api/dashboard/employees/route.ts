@@ -19,6 +19,7 @@ import {
 import { nameFromEmail } from '@/lib/employees/nameFromEmail';
 import { generateInviteToken, inviteExpiresAtFromNow } from '@/lib/employees/inviteToken';
 import { sendEmployeeInvite } from '@/lib/employees/sendEmployeeInvite';
+import { assertHasDashboardAccess } from '@/lib/dashboard/requireDashboardAccess';
 
 type SessionUser = { organizationId?: string };
 
@@ -32,6 +33,8 @@ async function requireOrg() {
   await connectMongoose();
   const org = await OrganizationModel.findById(user.organizationId);
   if (!org) return { error: NextResponse.json({ error: 'Organization not found' }, { status: 404 }) };
+  const accessDenied = assertHasDashboardAccess(org);
+  if (accessDenied) return { error: accessDenied };
   return { org, user };
 }
 

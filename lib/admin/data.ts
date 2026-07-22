@@ -8,6 +8,7 @@ import { SignatureCopyEventModel } from '@/models/SignatureCopyEvent';
 import { SignatureOpenEventModel } from '@/models/SignatureOpenEvent';
 import { OrganizationSubscriptionModel } from '@/models/OrganizationSubscription';
 import { SubscriptionPlanModel, type SubscriptionPlanDoc } from '@/models/SubscriptionPlan';
+import { formatAdminPlanDisplayName, isIncompleteCheckoutDisplay } from '@/lib/admin/incompleteCheckoutDisplay';
 
 export type AdminOrgRow = {
   _id: string;
@@ -19,6 +20,8 @@ export type AdminOrgRow = {
   /** Pinned SubscriptionPlan document id, or empty string */
   subscriptionPlanId: string;
   subscriptionStatus: string;
+  /** True when plan is pinned but Stripe checkout never completed */
+  checkoutIncomplete: boolean;
   createdAt?: Date;
   userCount: number;
 };
@@ -115,7 +118,13 @@ export async function listOrganizationsWithUserCounts(): Promise<AdminOrgRow[]> 
 
   const subs = await OrganizationSubscriptionModel.find({ organizationId: { $in: orgIds } })
     .populate('subscriptionPlanId')
-    .lean<Array<{ organizationId: mongoose.Types.ObjectId; subscriptionPlanId?: SubscriptionPlanDoc | null }>>();
+    .lean<
+      Array<{
+        organizationId: mongoose.Types.ObjectId;
+        subscriptionPlanId?: SubscriptionPlanDoc | null;
+        stripeSubscriptionId?: string;
+      }>
+    >();
 
   const subByOrgId = new Map(subs.map((s) => [String(s.organizationId), s]));
 
@@ -127,20 +136,35 @@ export async function listOrganizationsWithUserCounts(): Promise<AdminOrgRow[]> 
     const legacyPlan = String(o.plan ?? 'none');
     const sub = subByOrgId.get(oid);
     const pinned = sub?.subscriptionPlanId;
-    let planDisplayName = 'None';
+    const subscriptionPlanId = pinned?._id ? String(pinned._id) : '';
+    const subscriptionStatus = String(o.subscriptionStatus ?? 'none');
+    const stripeSubscriptionId =
+      String((o as { stripeSubscriptionId?: string }).stripeSubscriptionId ?? '').trim() ||
+      String(sub?.stripeSubscriptionId ?? '').trim();
+
+    let baseLabel = 'None';
     if (pinned) {
-      planDisplayName = formatPinnedPlanLabel(pinned);
+      baseLabel = formatPinnedPlanLabel(pinned);
     } else if (legacyPlan !== 'none') {
-      planDisplayName = legacyPlan;
+      baseLabel = legacyPlan;
     }
+
+    const displayInput = {
+      subscriptionStatus,
+      subscriptionPlanId,
+      stripeSubscriptionId,
+    };
+    const planDisplayName = formatAdminPlanDisplayName(baseLabel, displayInput);
+    const checkoutIncomplete = isIncompleteCheckoutDisplay(displayInput);
 
     out.push({
       _id: oid,
       name: String(o.name ?? ''),
       plan: legacyPlan,
       planDisplayName,
-      subscriptionPlanId: pinned?._id ? String(pinned._id) : '',
-      subscriptionStatus: String(o.subscriptionStatus ?? 'none'),
+      subscriptionPlanId,
+      subscriptionStatus,
+      checkoutIncomplete,
       createdAt: o.createdAt,
       userCount,
     });

@@ -35,6 +35,53 @@ export function isOrganizationPaid(
   return isActiveSubscriptionStatus(org.subscriptionStatus);
 }
 
+/** Intentional free-tier org (freemium signup); not an abandoned paid checkout. */
+export function isFreemiumOrganization(
+  org: { plan?: string | null } | null | undefined
+): boolean {
+  return normalizePlanSlug(org?.plan) === 'free';
+}
+
+/**
+ * Full dashboard/product access: paid (active/trialing) or freemium.
+ * Incomplete unpaid checkouts must not get platform access.
+ */
+export function hasDashboardAccess(org: PlanLike | null | undefined): boolean {
+  if (!org) return false;
+  if (stripeDevBypass()) return true;
+  if (isOrganizationPaid(org)) return true;
+  return isFreemiumOrganization(org);
+}
+
+export type DashboardAccessRedirect = '/onboarding' | '/dashboard/billing';
+
+/**
+ * Where to send a user who is signed in with an org but lacks full dashboard access.
+ * Returns null when the current pathname is already allowed (or access is granted).
+ */
+export function getDashboardAccessRedirect(
+  org: PlanLike | null | undefined,
+  pathname: string | null | undefined
+): DashboardAccessRedirect | null {
+  if (hasDashboardAccess(org)) return null;
+
+  const path = (pathname || '').split('?')[0] || '';
+  const status = String(org?.subscriptionStatus ?? 'none');
+
+  if (status === 'past_due' || status === 'canceled') {
+    if (path === '/dashboard/billing' || path.startsWith('/dashboard/billing/')) {
+      return null;
+    }
+    return '/dashboard/billing';
+  }
+
+  // incomplete, none (non-freemium), and any other unpaid state
+  if (path === '/onboarding' || path.startsWith('/onboarding/')) {
+    return null;
+  }
+  return '/onboarding';
+}
+
 function normalizePlanSlug(plan: string | null | undefined): string {
   return (plan || '').trim().toLowerCase();
 }

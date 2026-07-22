@@ -13,6 +13,7 @@ import {
   memberCanEditOrgBrand,
   orgPermissionFlags,
 } from '@/lib/org/permissions';
+import { assertHasDashboardAccess } from '@/lib/dashboard/requireDashboardAccess';
 
 type SessionUser = {
   id?: string;
@@ -118,6 +119,8 @@ export async function PATCH(request: Request) {
   if (!org) {
     return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
   }
+  const accessDenied = assertHasDashboardAccess(org);
+  if (accessDenied) return accessDenied;
 
   const role = user.role ?? 'member';
   const flags = orgPermissionFlags(org);

@@ -6,6 +6,7 @@ import { loginRedirectPath } from '@/lib/auth/redirectToLogin';
 import { sanitizeInternalRedirect } from '@/lib/auth/sanitizeInternalRedirect';
 import { isPlatformAdmin } from '@/lib/auth/platformAdmin';
 import { connectMongoose } from '@/lib/mongoose';
+import { getDashboardAccessRedirect } from '@/lib/billing/subscriptionAccess';
 import { OrganizationModel, type OrganizationDoc } from '@/models/Organization';
 
 export type DashboardUser = {
@@ -62,12 +63,23 @@ export const getShowPlatformAdmin = cache(async (userId: string) => {
   return isPlatformAdmin(userId);
 });
 
-/** Layout shell: session, org existence, and platform-admin flag (parallel). */
+/** Layout shell: session, org existence, subscription access, and platform-admin flag. */
 export const getDashboardLayoutContext = cache(async () => {
   const { user } = await getDashboardSession();
-  const [, showPlatformAdmin] = await Promise.all([
+  const [org, showPlatformAdmin] = await Promise.all([
     getDashboardOrg(user.organizationId),
     user.id ? getShowPlatformAdmin(user.id) : Promise.resolve(false),
   ]);
+
+  const headersList = await headers();
+  const pathname = headersList.get('x-pathname');
+  const accessRedirect = getDashboardAccessRedirect(
+    { plan: org.plan, subscriptionStatus: org.subscriptionStatus },
+    pathname,
+  );
+  if (accessRedirect) {
+    redirect(accessRedirect);
+  }
+
   return { user, showPlatformAdmin };
 });

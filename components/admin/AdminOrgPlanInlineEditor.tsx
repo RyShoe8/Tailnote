@@ -2,7 +2,12 @@
 
 import { useState } from 'react';
 import type { AdminAssignablePlan } from '@/lib/admin/data';
+import {
+  formatAdminPlanDisplayName,
+  isIncompleteCheckoutDisplay,
+} from '@/lib/admin/incompleteCheckoutDisplay';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const NONE_PLAN_VALUE = '';
 
@@ -10,14 +15,22 @@ type Props = {
   organizationId: string;
   subscriptionPlanId: string;
   subscriptionStatus: string;
+  /** From server list: incomplete pin with no Stripe subscription */
+  checkoutIncomplete?: boolean;
   assignablePlans: AdminAssignablePlan[];
-  onSaved?: (next: { subscriptionPlanId: string; planDisplayName: string }) => void;
+  onSaved?: (next: {
+    subscriptionPlanId: string;
+    planDisplayName: string;
+    subscriptionStatus?: string;
+    checkoutIncomplete?: boolean;
+  }) => void;
 };
 
 export function AdminOrgPlanInlineEditor({
   organizationId,
   subscriptionPlanId: initialPlanId,
   subscriptionStatus,
+  checkoutIncomplete = false,
   assignablePlans,
   onSaved,
 }: Props) {
@@ -27,6 +40,9 @@ export function AdminOrgPlanInlineEditor({
   const [message, setMessage] = useState<string | null>(null);
 
   const dirty = subscriptionPlanId !== savedPlanId;
+  const statusLabel = checkoutIncomplete
+    ? 'incomplete · checkout incomplete'
+    : subscriptionStatus || 'none';
 
   async function save() {
     setSaving(true);
@@ -51,15 +67,38 @@ export function AdminOrgPlanInlineEditor({
         | { name?: string; version?: number; interval?: string }
         | null
         | undefined;
-      let planDisplayName = 'None';
+      let baseLabel = 'None';
       if (pinned && typeof pinned === 'object' && pinned.name) {
-        planDisplayName = `${pinned.name} (v${pinned.version ?? 1}, ${pinned.interval ?? 'year'})`;
+        baseLabel = `${pinned.name} (v${pinned.version ?? 1}, ${pinned.interval ?? 'year'})`;
       } else if (subscriptionPlanId) {
         const match = assignablePlans.find((p) => p.id === subscriptionPlanId);
-        if (match) planDisplayName = `${match.name} (v${match.version}, ${match.interval})`;
+        if (match) baseLabel = `${match.name} (v${match.version}, ${match.interval})`;
       }
 
-      onSaved?.({ subscriptionPlanId, planDisplayName });
+      const nextStatus =
+        typeof j.organization?.subscriptionStatus === 'string'
+          ? j.organization.subscriptionStatus
+          : subscriptionPlanId
+            ? 'active'
+            : subscriptionStatus;
+      const stripeSubscriptionId = String(j.organization?.stripeSubscriptionId ?? '');
+      const planDisplayName = formatAdminPlanDisplayName(baseLabel, {
+        subscriptionStatus: nextStatus,
+        subscriptionPlanId,
+        stripeSubscriptionId,
+      });
+      const nextIncomplete = isIncompleteCheckoutDisplay({
+        subscriptionStatus: nextStatus,
+        subscriptionPlanId,
+        stripeSubscriptionId,
+      });
+
+      onSaved?.({
+        subscriptionPlanId,
+        planDisplayName,
+        subscriptionStatus: nextStatus,
+        checkoutIncomplete: nextIncomplete,
+      });
       setMessage('Saved');
     } finally {
       setSaving(false);
@@ -68,7 +107,14 @@ export function AdminOrgPlanInlineEditor({
 
   return (
     <div className="space-y-1.5 min-w-[10rem]">
-      <p className="text-xs text-muted-foreground">{subscriptionStatus}</p>
+      <p
+        className={cn(
+          'text-xs',
+          checkoutIncomplete ? 'font-medium text-amber-800 dark:text-amber-400' : 'text-muted-foreground',
+        )}
+      >
+        {statusLabel}
+      </p>
       <select
         aria-label="Subscription plan"
         className="flex h-8 w-full max-w-[14rem] rounded-md border border-input bg-transparent px-2 text-xs"
