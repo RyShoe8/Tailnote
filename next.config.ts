@@ -4,6 +4,12 @@ import { getNextHeaderRules } from './lib/security/securityHeaders';
 const nextConfig: NextConfig = {
   transpilePackages: ['emailsignature-engine'],
   serverExternalPackages: ['svgo', 'sharp'],
+  // Ensure Inter TTFs used by Dynamic Content PNG rendering ship with serverless functions.
+  outputFileTracingIncludes: {
+    '/api/content-images/**/*': ['./lib/dynamic-content/fonts/**/*'],
+    '/api/dashboard/dynamic-content/**/*': ['./lib/dynamic-content/fonts/**/*'],
+    '/api/cron/dynamic-content-refresh/**/*': ['./lib/dynamic-content/fonts/**/*'],
+  },
   reactStrictMode: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',

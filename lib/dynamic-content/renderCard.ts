@@ -1,5 +1,7 @@
 import 'server-only';
 import { createHash } from 'crypto';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import sharp from 'sharp';
 
 export type DynamicContentCardItem = {
@@ -8,6 +10,25 @@ export type DynamicContentCardItem = {
 
 const WIDTH = 600;
 const PAD = 28;
+
+const fontsDir = join(process.cwd(), 'lib/dynamic-content/fonts');
+const interSemiBoldBase64 = readFileSync(join(fontsDir, 'Inter-SemiBold.ttf')).toString('base64');
+const interBoldBase64 = readFileSync(join(fontsDir, 'Inter-Bold.ttf')).toString('base64');
+
+const FONT_FACE_CSS = `
+@font-face {
+  font-family: 'Inter';
+  font-weight: 600;
+  font-style: normal;
+  src: url('data:font/ttf;base64,${interSemiBoldBase64}') format('truetype');
+}
+@font-face {
+  font-family: 'Inter';
+  font-weight: 700;
+  font-style: normal;
+  src: url('data:font/ttf;base64,${interBoldBase64}') format('truetype');
+}
+`.trim();
 
 function escapeXml(s: string): string {
   return s
@@ -57,17 +78,17 @@ export async function renderDynamicContentCardPng(
     const lineEls = lines
       .map(
         (line, i) =>
-          `<text x="${PAD}" y="${88 + i * 36}" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="600" fill="#111827">${escapeXml(line)}</text>`
+          `<text x="${PAD}" y="${88 + i * 36}" font-family="Inter" font-size="28" font-weight="600" fill="#111827">${escapeXml(line)}</text>`
       )
       .join('');
     bodyHeight = 88 + lines.length * 36 + 48;
     bodySvg = `${lineEls}
-      <text x="${PAD}" y="${bodyHeight - 20}" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="600" fill="#2563eb">Read More →</text>`;
+      <text x="${PAD}" y="${bodyHeight - 20}" font-family="Inter" font-size="18" font-weight="600" fill="#2563eb">Read More →</text>`;
   } else {
     const bullets = display
       .map((item, i) => {
         const t = truncate(item.title, 48);
-        return `<text x="${PAD}" y="${92 + i * 40}" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="500" fill="#1f2937">• ${escapeXml(t)}</text>`;
+        return `<text x="${PAD}" y="${92 + i * 40}" font-family="Inter" font-size="22" font-weight="600" fill="#1f2937">• ${escapeXml(t)}</text>`;
       })
       .join('');
     bodyHeight = 92 + display.length * 40 + 28;
@@ -78,6 +99,9 @@ export async function renderDynamicContentCardPng(
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${WIDTH}" height="${height}" viewBox="0 0 ${WIDTH} ${height}" xmlns="http://www.w3.org/2000/svg">
   <defs>
+    <style type="text/css"><![CDATA[
+${FONT_FACE_CSS}
+    ]]></style>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#f8fafc"/>
       <stop offset="100%" stop-color="#eef2ff"/>
@@ -85,7 +109,7 @@ export async function renderDynamicContentCardPng(
   </defs>
   <rect width="${WIDTH}" height="${height}" rx="16" fill="url(#bg)"/>
   <rect x="0" y="0" width="8" height="${height}" fill="#2563eb"/>
-  <text x="${PAD}" y="42" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="1.2" fill="#64748b">LATEST CONTENT</text>
+  <text x="${PAD}" y="42" font-family="Inter" font-size="14" font-weight="700" letter-spacing="1.2" fill="#64748b">LATEST CONTENT</text>
   ${bodySvg}
 </svg>`;
 
