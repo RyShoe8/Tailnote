@@ -77,6 +77,8 @@ function classifyAnchor(
     const sk = ctx.socialByHref.get(h) ?? ctx.socialByHref.get(hNoMarketing);
     if (sk) return sk;
     if (ctx.logoHrefNorm && (h === ctx.logoHrefNorm || hNoMarketing === ctx.logoHrefNorm)) return 'logo';
+    const cbKind = ctx.contentBlockUrlMap.get(h) ?? ctx.contentBlockUrlMap.get(hNoMarketing);
+    if (cbKind) return cbKind;
     return null;
   }
   if (ctx.mailtoNorm && h === ctx.mailtoNorm) return 'email';
@@ -126,11 +128,17 @@ function buildClassificationContext(input: RenderSignatureInput) {
       if (block.type === 'book_a_call' && block.callUrl) {
         const h = normalizeHref(block.callUrl);
         if (h) contentBlockUrlMap.set(h, kind);
-      } else if (block.type === 'latest_blogs' && block.rssItems) {
-        block.rssItems.forEach(item => {
-          const h = normalizeHref(item.url);
+      } else if (block.type === 'latest_blogs' || block.type === 'dynamic_content') {
+        if (block.rssItems?.length) {
+          block.rssItems.forEach((item) => {
+            const h = normalizeHref(item.url);
+            if (h) contentBlockUrlMap.set(h, kind);
+          });
+        } else {
+          const dest = block.feedUrl || block.websiteUrl || block.rssUrl || '';
+          const h = normalizeHref(dest);
           if (h) contentBlockUrlMap.set(h, kind);
-        });
+        }
       } else if (block.type === 'custom' && block.customUrl) {
         const h = normalizeHref(block.customUrl);
         if (h) contentBlockUrlMap.set(h, kind);

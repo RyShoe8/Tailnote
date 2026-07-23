@@ -54,7 +54,8 @@ export function contentBlockDisplayLabel(block: ContentBlockData, slotIndex: num
     case 'book_a_call':
       return 'Book a call';
     case 'latest_blogs':
-      return 'Latest blogs';
+    case 'dynamic_content':
+      return 'Dynamic Content';
     case 'image':
       return 'Image promo';
     case 'list':
@@ -71,7 +72,8 @@ export function contentBlockClickDescription(block: ContentBlockData): string {
     case 'book_a_call':
       return 'Book-a-call button and link clicks';
     case 'latest_blogs':
-      return 'Blog item link clicks in this block';
+    case 'dynamic_content':
+      return 'Dynamic Content image link clicks';
     case 'image':
       return 'Promo image link clicks';
     case 'quote':
@@ -101,6 +103,7 @@ function isGenericPromoLabel(label: string, index: number): boolean {
     label === 'Promo block' ||
     label === 'Book a call' ||
     label === 'Latest blogs' ||
+    label === 'Dynamic Content' ||
     label === 'Image promo'
   );
 }

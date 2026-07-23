@@ -1133,7 +1133,14 @@ export function SignatureWorkspace() {
                   Blocks appear in a row beneath your signature on every layout, so they stay readable on phone-sized inboxes.
                 </p>
               </div>
-              <ContentBlocksEditor value={contentBlocks} onChange={setContentBlocks} />
+              <ContentBlocksEditor
+                value={contentBlocks}
+                onChange={setContentBlocks}
+                canUseDynamicContent={
+                  Boolean(org?.plan && org.plan !== 'free' && org.plan !== 'none') &&
+                  (org?.subscriptionStatus === 'active' || org?.subscriptionStatus === 'trialing')
+                }
+              />
               {isOwner ? (
                 <label className="flex items-start gap-2 text-sm cursor-pointer">
                   <input

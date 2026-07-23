@@ -25,17 +25,34 @@ export type ContentBlockListItem = {
 
 export type ContentBlockData = {
   /** `custom` is kept for legacy reads; new blocks should use `list` or `image`. */
-  type: 'book_a_call' | 'latest_blogs' | 'list' | 'image' | 'custom' | 'quote' | 'spotlight';
+  /** `latest_blogs` is legacy; prefer `dynamic_content`. */
+  type:
+    | 'book_a_call'
+    | 'latest_blogs'
+    | 'dynamic_content'
+    | 'list'
+    | 'image'
+    | 'custom'
+    | 'quote'
+    | 'spotlight';
   enabled: boolean;
   // Book a call
   callTitle?: string;
   callUrl?: string;
   callButtonText?: string;
-  // Latest blogs (RSS)
+  // Latest blogs (RSS) — legacy fields retained for migration
   rssUrl?: string;
   rssItems?: { title: string; url: string; imageUrl?: string; pubDate?: string }[];
   rssLastFetched?: string;
   rssRefreshInterval?: 'none' | 'daily' | 'weekly';
+  // Dynamic Content
+  contentSourceId?: string;
+  websiteUrl?: string;
+  feedUrl?: string;
+  detectionMode?: 'auto' | 'rss';
+  postsToDisplay?: 1 | 2 | 3;
+  /** Stable PNG URL: /api/content-images/{contentSourceId}.png */
+  contentImageUrl?: string;
   // List (formerly custom)
   listTitle?: string;
   listItems?: ContentBlockListItem[];

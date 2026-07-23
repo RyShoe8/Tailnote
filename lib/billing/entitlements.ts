@@ -9,6 +9,7 @@ export type BillingEntitlements = {
   maxTemplates: number;
   canUseTemplateAnimationSlot: boolean;
   canUseBimiLogoHosting: boolean;
+  canUseDynamicContent: boolean;
 };
 
 const FULL_MAX_TEMPLATES = 10;
@@ -23,6 +24,7 @@ export function getBillingEntitlements(
       maxTemplates: MAX_TEMPLATES_BASIC,
       canUseTemplateAnimationSlot: false,
       canUseBimiLogoHosting: true,
+      canUseDynamicContent: false,
     };
   }
   return {
@@ -30,6 +32,7 @@ export function getBillingEntitlements(
     maxTemplates: FULL_MAX_TEMPLATES,
     canUseTemplateAnimationSlot: true,
     canUseBimiLogoHosting: true,
+    canUseDynamicContent: true,
   };
 }
 

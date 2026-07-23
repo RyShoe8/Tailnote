@@ -47,7 +47,7 @@ const FEATURES = [
     icon: Sparkles,
     title: 'Promotional blocks',
     description:
-      'Add book-a-call buttons, offer lists, RSS feeds, banners, and quotes from the Tailnote library (or custom quotes) below the signature so every send can promote something new.',
+      'Add book-a-call buttons, offer lists, Dynamic Content, banners, and quotes from the Tailnote library (or custom quotes) below the signature so every send can promote something new.',
   },
   {
     icon: BarChart3,

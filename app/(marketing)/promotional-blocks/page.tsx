@@ -44,7 +44,7 @@ const BENEFITS = [
 const STEPS = [
   {
     title: 'Add your blocks',
-    description: 'Pick book-a-call, lists, RSS, banners, image links, or quotes from our library (or your own) — no HTML required.',
+    description: 'Pick book-a-call, lists, Dynamic Content, banners, image links, or quotes from our library (or your own) — no HTML required.',
   },
   {
     title: 'Set org defaults',

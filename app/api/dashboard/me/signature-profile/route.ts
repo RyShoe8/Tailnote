@@ -16,6 +16,7 @@ import {
 } from '@/lib/org/permissions';
 import { resolveEmployeeContentBlocks } from '@/lib/org/resolveEmployeeContentBlocks';
 import { ContentBlocksArraySchema, sanitizeContentBlocksForSave } from '@/lib/quotes/contentBlockSchema';
+import { getBillingEntitlements } from '@/lib/billing/entitlements';
 
 const ProfileSchema = z.object({
   firstName: z.string().trim().max(120),
@@ -169,6 +170,21 @@ export async function PATCH(request: Request) {
       { error: 'Your organization owner has locked promotional blocks and templates' },
       { status: 403 }
     );
+  }
+
+  if (sendsBlocks && canEditPromo) {
+    const blocks = (p.contentBlocks ?? []) as ContentBlockData[];
+    const wantsDynamic = blocks.some(
+      (b) =>
+        b.enabled &&
+        (b.type === 'dynamic_content' || b.type === 'latest_blogs')
+    );
+    if (wantsDynamic && !getBillingEntitlements(org).canUseDynamicContent) {
+      return NextResponse.json(
+        { error: 'Dynamic Content is available on paid plans' },
+        { status: 402 }
+      );
+    }
   }
 
   let templateObjectId: import('mongoose').Types.ObjectId | undefined;

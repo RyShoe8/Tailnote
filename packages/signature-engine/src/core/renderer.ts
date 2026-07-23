@@ -354,6 +354,25 @@ function buildQuoteBlocksHtml(blocks: ContentBlockData[], primaryColor: string, 
   return enabled.map((b) => buildQuoteBlockHtml(b, primaryColor, isDark)).join('');
 }
 
+/** Server-generated Dynamic Content PNG: `<a><img></a>` only. */
+function buildDynamicContentImageHtml(block: ContentBlockData, origin: string): string {
+  const imageUrl = (block.contentImageUrl || '').trim();
+  if (!imageUrl) return '';
+  const absImg = escapeHtml(ensureAbsolutePublicUrl(normalizeImageUrl(imageUrl), origin));
+  const linkUrl =
+    (block.rssItems?.[0]?.url || '').trim() ||
+    (block.feedUrl || '').trim() ||
+    (block.websiteUrl || '').trim() ||
+    (block.rssUrl || '').trim() ||
+    '#';
+  const imgTag = `<img src="${absImg}" width="300" border="0" alt="Latest Content" style="display:block;max-width:300px;width:300px;height:auto;border:0;outline:none;text-decoration:none;border-radius:8px;" />`;
+  return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-bottom:12px;" width="100%">
+  <tr><td style="padding:0;">
+    <a href="${escapeHtml(linkUrl)}" style="text-decoration:none;border:0;outline:none;display:inline-block;">${imgTag}</a>
+  </td></tr>
+</table>`;
+}
+
 function buildContentBlockParts(
   blocks: ContentBlockData[],
   origin: string,
@@ -383,21 +402,27 @@ function buildContentBlockParts(
     </table>
   </td></tr>
 </table>`);
-    } else if (block.type === 'latest_blogs') {
-      const items = (block.rssItems || []).slice(0, 3);
-      if (items.length === 0) continue;
-      let itemsHtml = '';
-      for (const item of items) {
-        const itemTitle = escapeHtml((item.title || '').trim());
-        const itemUrl = escapeHtml((item.url || '#').trim());
-        itemsHtml += `<tr><td style="padding:0 0 6px 0;font-size:12px;line-height:1.4;">
+    } else if (block.type === 'dynamic_content' || block.type === 'latest_blogs') {
+      const dynamicHtml = buildDynamicContentImageHtml(block, origin);
+      if (dynamicHtml) {
+        parts.push(dynamicHtml);
+      } else if (block.type === 'latest_blogs') {
+        // Legacy text fallback until migration regenerates the PNG
+        const items = (block.rssItems || []).slice(0, 3);
+        if (items.length === 0) continue;
+        let itemsHtml = '';
+        for (const item of items) {
+          const itemTitle = escapeHtml((item.title || '').trim());
+          const itemUrl = escapeHtml((item.url || '#').trim());
+          itemsHtml += `<tr><td style="padding:0 0 6px 0;font-size:12px;line-height:1.4;">
   <a href="${itemUrl}" style="color:#333;text-decoration:none;font-weight:500;">${itemTitle}</a>
 </td></tr>`;
-      }
-      parts.push(`<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-bottom:12px;" width="100%">
-  <tr><td style="font-size:12px;font-weight:700;color:#333;padding-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">Latest Posts</td></tr>
+        }
+        parts.push(`<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-bottom:12px;" width="100%">
+  <tr><td style="font-size:12px;font-weight:700;color:#333;padding-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">Latest Content</td></tr>
   ${itemsHtml}
 </table>`);
+      }
     } else if (block.type === 'list') {
       const title = escapeHtml((block.listTitle || '').trim());
       const items = (block.listItems || []).filter(listItemHasBody).slice(0, 4);
@@ -530,6 +555,9 @@ function buildDefaultListFooterHtml(
   function columnHtml(block: ContentBlockData): string {
     if (block.type === 'quote') {
       return buildQuoteBlockHtml(block, primaryColor);
+    }
+    if (block.type === 'dynamic_content' || block.type === 'latest_blogs') {
+      return buildDynamicContentImageHtml(block, origin);
     }
     if (block.type === 'spotlight' && activeSpotlight) {
       const imageUrl = (activeSpotlight.signatureImageUrl || '').trim();

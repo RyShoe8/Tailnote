@@ -28,14 +28,22 @@ const EmployeeSchema = new Schema(
       {
         type: {
           type: String,
-          enum: ['book_a_call', 'latest_blogs', 'custom', 'list', 'image', 'quote'],
+          enum: [
+            'book_a_call',
+            'latest_blogs',
+            'dynamic_content',
+            'custom',
+            'list',
+            'image',
+            'quote',
+          ],
         },
         enabled: { type: Boolean, default: true },
         // Book a Call
         callTitle: { type: String },
         callUrl: { type: String },
         callButtonText: { type: String },
-        // Latest Blogs (RSS)
+        // Latest Blogs / Dynamic Content
         rssUrl: { type: String },
         rssItems: [
           {
@@ -48,6 +56,12 @@ const EmployeeSchema = new Schema(
         rssLastFetched: { type: Date },
         /** Optional auto-refresh cadence: 'none' (manual only), 'daily', 'weekly' */
         rssRefreshInterval: { type: String, enum: ['none', 'daily', 'weekly'], default: 'none' },
+        contentSourceId: { type: String },
+        websiteUrl: { type: String },
+        feedUrl: { type: String },
+        detectionMode: { type: String, enum: ['auto', 'rss'] },
+        postsToDisplay: { type: Number, enum: [1, 2, 3] },
+        contentImageUrl: { type: String },
         // List (and legacy custom)
         listTitle: { type: String },
         listItems: [

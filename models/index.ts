@@ -23,3 +23,5 @@ export { CampaignSubmissionModel, type CampaignSubmissionDoc } from './CampaignS
 export { CampaignAssetModel, type CampaignAssetDoc } from './CampaignAsset';
 export { CampaignScheduleModel, type CampaignScheduleDoc } from './CampaignSchedule';
 export { CampaignAnalyticsModel, type CampaignAnalyticsDoc } from './CampaignAnalytics';
+export { ContentSourceModel, type ContentSourceDoc } from './ContentSource';
+export { ContentItemModel, type ContentItemDoc } from './ContentItem';

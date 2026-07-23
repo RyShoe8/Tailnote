@@ -24,7 +24,15 @@ const QuoteDisplayFields = {
 
 export const ContentBlockSchema = z
   .object({
-    type: z.enum(['book_a_call', 'latest_blogs', 'custom', 'list', 'image', 'quote']),
+    type: z.enum([
+      'book_a_call',
+      'latest_blogs',
+      'dynamic_content',
+      'custom',
+      'list',
+      'image',
+      'quote',
+    ]),
     enabled: z.boolean().optional(),
     callTitle: z.string().optional(),
     callUrl: z.string().optional(),
@@ -42,6 +50,12 @@ export const ContentBlockSchema = z
       .optional(),
     rssLastFetched: z.string().optional(),
     rssRefreshInterval: z.enum(['none', 'daily', 'weekly']).optional(),
+    contentSourceId: z.string().optional(),
+    websiteUrl: z.string().optional(),
+    feedUrl: z.string().optional(),
+    detectionMode: z.enum(['auto', 'rss']).optional(),
+    postsToDisplay: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+    contentImageUrl: z.string().optional(),
     listTitle: z.string().optional(),
     listItems: z.array(ContentBlockListItemSchema).max(4).optional(),
     imageUrl: z.string().optional(),

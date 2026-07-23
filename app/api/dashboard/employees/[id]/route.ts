@@ -15,6 +15,7 @@ import {
   orgPermissionFlags,
 } from '@/lib/org/permissions';
 import { ContentBlockSchema, sanitizeContentBlocksForSave } from '@/lib/quotes/contentBlockSchema';
+import { getBillingEntitlements } from '@/lib/billing/entitlements';
 import type { ContentBlockData } from 'emailsignature-engine';
 
 type SessionUser = { organizationId?: string; id?: string; role?: string };
@@ -158,10 +159,20 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (data.twitter !== undefined) employee.twitter = data.twitter.trim();
   if (data.avatarUrl !== undefined) employee.avatarUrl = data.avatarUrl.trim();
   if (data.contentBlocks !== undefined && canEditPromo) {
+    const wantsDynamic = (data.contentBlocks as ContentBlockData[]).some(
+      (b) => b.enabled && (b.type === 'dynamic_content' || b.type === 'latest_blogs')
+    );
+    if (wantsDynamic && !getBillingEntitlements(orgDoc ?? org).canUseDynamicContent) {
+      return NextResponse.json(
+        { error: 'Dynamic Content is available on paid plans' },
+        { status: 402 }
+      );
+    }
     const sanitized = sanitizeContentBlocksForSave(data.contentBlocks as ContentBlockData[]);
     (employee as unknown as { contentBlocks: unknown }).contentBlocks = sanitized;
     if (!isOrgAdminRole(sessionUser.role)) {
       (employee as unknown as { promoBlocksCustomized: boolean }).promoBlocksCustomized = true;
+
     }
   }
 

@@ -115,9 +115,9 @@ const BLOCKS = [
   },
   {
     icon: Rss,
-    title: 'Latest blog posts',
+    title: 'Dynamic Content',
     description:
-      'Auto-pull recent articles from any RSS feed so your team always promotes your newest content without a code change.',
+      'Auto-detect your blog or newsletter and display the newest posts as a live image — no HTML edits when you publish again.',
     Demo: LatestBlogsDemo,
   },
   {

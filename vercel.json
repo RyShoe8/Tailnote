@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/campaign-publisher",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/dynamic-content-refresh",
+      "schedule": "0 */6 * * *"
+    }
+  ]
+}

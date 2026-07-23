@@ -13,6 +13,8 @@ type Props = {
   value: ContentBlockData[];
   onChange: (blocks: ContentBlockData[]) => void;
   spotlightMode?: boolean;
+  /** Paid entitlement for Dynamic Content. Defaults to true when omitted. */
+  canUseDynamicContent?: boolean;
 };
 
 /** Must match List editor slots so migrated docs persist four rows. */
@@ -79,7 +81,12 @@ function migrateCustomToListFields(
   };
 }
 
-export function ContentBlocksEditor({ value, onChange, spotlightMode = false }: Props) {
+export function ContentBlocksEditor({
+  value,
+  onChange,
+  spotlightMode = false,
+  canUseDynamicContent = true,
+}: Props) {
   const blocks = ensureSlots(value, spotlightMode);
   const [activeSlot, setActiveSlot] = useState<number>(0);
   const migratedCustomSlotRef = useRef<Set<number>>(new Set());
@@ -167,11 +174,17 @@ export function ContentBlocksEditor({ value, onChange, spotlightMode = false }: 
               <Label>Type</Label>
               <select
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-                value={block.type === 'custom' ? 'list' : block.type}
+                value={
+                  block.type === 'custom'
+                    ? 'list'
+                    : block.type === 'latest_blogs'
+                      ? 'dynamic_content'
+                      : block.type
+                }
                 onChange={(e) => updateBlock(activeSlot, { type: e.target.value as ContentBlockData['type'] })}
               >
                 <option value="book_a_call">Book a Call</option>
-                <option value="latest_blogs">Latest Blogs (RSS)</option>
+                <option value="dynamic_content">Dynamic Content</option>
                 <option value="list">List</option>
                 <option value="image">Image</option>
                 <option value="quote">Quote</option>
@@ -183,8 +196,17 @@ export function ContentBlocksEditor({ value, onChange, spotlightMode = false }: 
             {block.type === 'book_a_call' && (
               <BookACallEditor block={block} onChange={(p) => updateBlock(activeSlot, p)} />
             )}
-            {block.type === 'latest_blogs' && (
-              <LatestBlogsEditor block={block} onChange={(p) => updateBlock(activeSlot, p)} />
+            {(block.type === 'dynamic_content' || block.type === 'latest_blogs') && (
+              <DynamicContentEditor
+                block={block.type === 'latest_blogs' ? { ...block, type: 'dynamic_content' } : block}
+                canUseDynamicContent={canUseDynamicContent}
+                onChange={(p) =>
+                  updateBlock(activeSlot, {
+                    ...p,
+                    type: 'dynamic_content',
+                  })
+                }
+              />
             )}
             {(block.type === 'list' || block.type === 'custom') && (
               <ListEditor block={block} onChange={(p) => updateBlock(activeSlot, p)} />
@@ -248,66 +270,162 @@ function BookACallEditor({
   );
 }
 
-function LatestBlogsEditor({
+function DynamicContentEditor({
   block,
   onChange,
+  canUseDynamicContent,
 }: {
   block: ContentBlockData;
   onChange: (next: Partial<ContentBlockData>) => void;
+  canUseDynamicContent: boolean;
 }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const detectionMode = block.detectionMode || (block.rssUrl && !block.websiteUrl ? 'rss' : 'auto');
+  const postsToDisplay = (block.postsToDisplay || 1) as 1 | 2 | 3;
+
+  if (!canUseDynamicContent) {
+    return (
+      <div className="rounded-md border border-border bg-muted/40 p-4 space-y-2">
+        <p className="text-sm font-medium">🔒 Dynamic Content is available on paid plans.</p>
+        <p className="text-sm text-muted-foreground">
+          Automatically promote your newest articles, newsletters, and blog posts without ever
+          updating your signature again.
+        </p>
+        <Button type="button" size="sm" asChild>
+          <a href="/dashboard/billing">Upgrade</a>
+        </Button>
+      </div>
+    );
+  }
+
+  async function detectAndRefresh() {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/dashboard/dynamic-content/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          contentSourceId: block.contentSourceId,
+          websiteUrl: detectionMode === 'auto' ? block.websiteUrl || block.rssUrl : undefined,
+          feedUrl: detectionMode === 'rss' ? block.feedUrl || block.rssUrl || block.websiteUrl : undefined,
+          detectionMode,
+          postsToDisplay,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(typeof json.error === 'string' ? json.error : 'Could not refresh content');
+        return;
+      }
+      onChange({
+        type: 'dynamic_content',
+        contentSourceId: json.contentSourceId || block.contentSourceId,
+        contentImageUrl: json.contentImageUrl || block.contentImageUrl,
+        websiteUrl: json.websiteUrl || block.websiteUrl,
+        feedUrl: json.feedUrl || block.feedUrl,
+        detectionMode,
+        postsToDisplay,
+        rssItems: json.items || block.rssItems,
+        rssLastFetched: new Date().toISOString(),
+        rssUrl: json.feedUrl || block.feedUrl || block.rssUrl,
+      });
+    } catch {
+      setError('Could not refresh content');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <>
       <div className="space-y-2">
-        <Label>RSS Feed URL</Label>
-        <Input
-          value={block.rssUrl || ''}
-          onChange={(e) => onChange({ rssUrl: e.target.value })}
-          placeholder="https://blog.example.com/rss.xml"
-        />
+        <Label>Content Detection</Label>
+        <div className="flex flex-col gap-2 text-sm">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name={`dc-mode-${block.contentSourceId || 'new'}`}
+              checked={detectionMode === 'auto'}
+              onChange={() => onChange({ detectionMode: 'auto' })}
+            />
+            Auto Detect (Recommended)
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name={`dc-mode-${block.contentSourceId || 'new'}`}
+              checked={detectionMode === 'rss'}
+              onChange={() => onChange({ detectionMode: 'rss' })}
+            />
+            RSS Feed (Advanced)
+          </label>
+        </div>
       </div>
+
+      {detectionMode === 'auto' ? (
+        <div className="space-y-2">
+          <Label>Website URL</Label>
+          <Input
+            value={block.websiteUrl || block.rssUrl || ''}
+            onChange={(e) => onChange({ websiteUrl: e.target.value, rssUrl: e.target.value })}
+            placeholder="https://tailnote.io"
+          />
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <Label>RSS Feed URL</Label>
+          <Input
+            value={block.feedUrl || block.rssUrl || ''}
+            onChange={(e) => onChange({ feedUrl: e.target.value, rssUrl: e.target.value })}
+            placeholder="https://blog.example.com/rss.xml"
+          />
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <Label>Posts to Display</Label>
+        <div className="flex gap-4 text-sm">
+          {([1, 2, 3] as const).map((n) => (
+            <label key={n} className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={postsToDisplay === n}
+                onChange={() => onChange({ postsToDisplay: n })}
+              />
+              {n}
+            </label>
+          ))}
+        </div>
+      </div>
+
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={async () => {
-            if (!block.rssUrl) return;
-            try {
-              const res = await fetch('/api/dashboard/rss-preview', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: block.rssUrl }),
-              });
-              const json = await res.json();
-              if (json.items) {
-                onChange({ rssItems: json.items, rssLastFetched: new Date().toISOString() });
-              }
-            } catch {
-              /* swallow fetch errors; user can retry */
-            }
-          }}
-        >
-          Refresh Now
+        <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => void detectAndRefresh()}>
+          {busy ? 'Refreshing…' : block.contentSourceId ? 'Refresh Now' : 'Detect & Generate'}
         </Button>
         <span className="text-xs text-muted-foreground">
-          {block.rssLastFetched ? `Last fetched: ${new Date(block.rssLastFetched).toLocaleString()}` : 'Not fetched yet'}
+          {block.rssLastFetched
+            ? `Last refreshed: ${new Date(block.rssLastFetched).toLocaleString()}`
+            : 'Not refreshed yet'}
         </span>
       </div>
-      <div className="space-y-2">
-        <Label>Auto-refresh Schedule</Label>
-        <select
-          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-          value={block.rssRefreshInterval || 'none'}
-          onChange={(e) => onChange({ rssRefreshInterval: e.target.value as ContentBlockData['rssRefreshInterval'] })}
-        >
-          <option value="none">None (Manual only)</option>
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-        </select>
-      </div>
-      {block.rssItems && block.rssItems.length > 0 && (
-        <div className="text-sm space-y-1 mt-4">
-          <p className="font-medium text-xs text-muted-foreground">Preview items:</p>
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+
+      {block.contentImageUrl ? (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">Preview</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={block.contentImageUrl}
+            alt="Dynamic Content preview"
+            className="max-w-[300px] rounded-md border border-border"
+          />
+        </div>
+      ) : block.rssItems && block.rssItems.length > 0 ? (
+        <div className="text-sm space-y-1 mt-2">
+          <p className="font-medium text-xs text-muted-foreground">Detected items:</p>
           <ul className="list-disc pl-4 text-xs">
             {block.rssItems.slice(0, 3).map((item, idx) => (
               <li key={idx} className="truncate">
@@ -316,7 +434,7 @@ function LatestBlogsEditor({
             ))}
           </ul>
         </div>
-      )}
+      ) : null}
     </>
   );
 }
