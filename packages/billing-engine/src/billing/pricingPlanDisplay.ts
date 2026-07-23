@@ -85,6 +85,7 @@ export function planExcludedFeatureBullets(plan: PublicPricingPlan): string[] {
   return [
     'Remove Tailnote branding',
     'Click and open analytics',
+    'Dynamic Content',
     'Additional team seats',
     'Signature animation slot',
   ];

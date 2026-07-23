@@ -1,4 +1,4 @@
-import { BarChart3, LayoutTemplate, Link2, Mail, Megaphone, Users } from 'lucide-react';
+import { BarChart3, Image, Link2, Mail, Megaphone, Users } from 'lucide-react';
 import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
 
 const FEATURES = [
@@ -15,10 +15,10 @@ const FEATURES = [
       'Know exactly which signatures generate pipeline. Every promo-block link is automatically tagged so Google Analytics shows you the real ROI of your email channel.',
   },
   {
-    icon: LayoutTemplate,
-    title: 'Curated signatures',
+    icon: Image,
+    title: 'Dynamic Content',
     description:
-      'Nine polished layouts — including our new Modern Professional template — designed to look sharp in Gmail, Outlook, and Apple Mail. No HTML skills needed.',
+      'Keep every signature current without editing HTML. Point Tailnote at your website or RSS feed and we generate a branded image card that auto-refreshes every 24 hours as you publish.',
   },
   {
     icon: BarChart3,
