@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { connectMongoose } from '@/lib/mongoose';
 import { getServerSession } from '@/lib/auth/session';
 import { OrganizationModel } from '@/models/Organization';
+import { ContentSourceModel } from '@/models/ContentSource';
+import { regenerateContentImage } from '@/lib/dynamic-content/syncSource';
 import { unsetLegacyOrgAddressFields } from '@/lib/org/unsetLegacyOrgAddressFields';
 import { hasAnalytics } from 'billing-engine';
 import {
@@ -218,6 +220,26 @@ export async function PATCH(request: Request) {
   if (!updated) {
     return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
   }
+
+  const brandStyleChanged =
+    $set.primaryColor !== undefined ||
+    $set.secondaryColor !== undefined ||
+    $set.fontFamily !== undefined;
+  if (brandStyleChanged) {
+    const sources = await ContentSourceModel.find({ organizationId: user.organizationId })
+      .select('_id')
+      .lean();
+    const results = await Promise.allSettled(
+      sources.map((s) => regenerateContentImage(String(s._id)))
+    );
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        // eslint-disable-next-line no-console -- best-effort regen; do not fail brand PATCH
+        console.error('Failed to regenerate Dynamic Content card after brand update:', result.reason);
+      }
+    }
+  }
+
   return NextResponse.json({
     organization: updated,
     permissions: orgPermissionFlags(updated as Record<string, unknown>),

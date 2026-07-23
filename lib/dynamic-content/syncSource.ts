@@ -80,11 +80,13 @@ export async function regenerateContentImage(contentSourceId: string): Promise<{
   const posts = Math.min(3, Math.max(1, Number(source.postsToDisplay) || 1)) as 1 | 2 | 3;
 
   const org = (await OrganizationModel.findById(source.organizationId)
-    .select('fontFamily')
-    .lean()) as { fontFamily?: string } | null;
+    .select('fontFamily primaryColor secondaryColor')
+    .lean()) as { fontFamily?: string; primaryColor?: string; secondaryColor?: string } | null;
 
   const { buffer, contentHash } = await renderDynamicContentCardPng(cardItems, posts, {
     fontFamily: org?.fontFamily,
+    primaryColor: org?.primaryColor,
+    secondaryColor: org?.secondaryColor,
   });
 
   if (source.imageContentHash === contentHash && source.imageBlobUrl) {
