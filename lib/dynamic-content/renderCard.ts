@@ -1,34 +1,19 @@
 import 'server-only';
 import { createHash } from 'crypto';
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import sharp from 'sharp';
+import { Resvg } from '@resvg/resvg-js';
+import { resolveCardFont } from '@/lib/dynamic-content/resolveCardFont';
 
 export type DynamicContentCardItem = {
   title: string;
 };
 
+export type RenderDynamicContentCardOptions = {
+  /** Org brand font stack (CSS font-family). */
+  fontFamily?: string | null;
+};
+
 const WIDTH = 600;
 const PAD = 28;
-
-const fontsDir = join(process.cwd(), 'lib/dynamic-content/fonts');
-const interSemiBoldBase64 = readFileSync(join(fontsDir, 'Inter-SemiBold.ttf')).toString('base64');
-const interBoldBase64 = readFileSync(join(fontsDir, 'Inter-Bold.ttf')).toString('base64');
-
-const FONT_FACE_CSS = `
-@font-face {
-  font-family: 'Inter';
-  font-weight: 600;
-  font-style: normal;
-  src: url('data:font/ttf;base64,${interSemiBoldBase64}') format('truetype');
-}
-@font-face {
-  font-family: 'Inter';
-  font-weight: 700;
-  font-style: normal;
-  src: url('data:font/ttf;base64,${interBoldBase64}') format('truetype');
-}
-`.trim();
 
 function escapeXml(s: string): string {
   return s
@@ -65,8 +50,12 @@ function wrapTitle(title: string, maxChars: number, maxLines: number): string[] 
 /** Generate a retina-friendly PNG card for Dynamic Content. */
 export async function renderDynamicContentCardPng(
   items: DynamicContentCardItem[],
-  postsToDisplay: 1 | 2 | 3 = 1
+  postsToDisplay: 1 | 2 | 3 = 1,
+  options: RenderDynamicContentCardOptions = {}
 ): Promise<{ buffer: Buffer; contentHash: string; width: number; height: number }> {
+  const font = await resolveCardFont(options.fontFamily);
+  const familyAttr = escapeXml(font.familyName);
+
   const display = items.slice(0, postsToDisplay).filter((i) => i.title.trim());
   const single = display.length <= 1;
 
@@ -78,17 +67,17 @@ export async function renderDynamicContentCardPng(
     const lineEls = lines
       .map(
         (line, i) =>
-          `<text x="${PAD}" y="${88 + i * 36}" font-family="Inter" font-size="28" font-weight="600" fill="#111827">${escapeXml(line)}</text>`
+          `<text x="${PAD}" y="${88 + i * 36}" font-family="${familyAttr}" font-size="28" font-weight="600" fill="#111827">${escapeXml(line)}</text>`
       )
       .join('');
     bodyHeight = 88 + lines.length * 36 + 48;
     bodySvg = `${lineEls}
-      <text x="${PAD}" y="${bodyHeight - 20}" font-family="Inter" font-size="18" font-weight="600" fill="#2563eb">Read More →</text>`;
+      <text x="${PAD}" y="${bodyHeight - 20}" font-family="${familyAttr}" font-size="18" font-weight="600" fill="#2563eb">Read More →</text>`;
   } else {
     const bullets = display
       .map((item, i) => {
         const t = truncate(item.title, 48);
-        return `<text x="${PAD}" y="${92 + i * 40}" font-family="Inter" font-size="22" font-weight="600" fill="#1f2937">• ${escapeXml(t)}</text>`;
+        return `<text x="${PAD}" y="${92 + i * 40}" font-family="${familyAttr}" font-size="22" font-weight="600" fill="#1f2937">• ${escapeXml(t)}</text>`;
       })
       .join('');
     bodyHeight = 92 + display.length * 40 + 28;
@@ -99,9 +88,6 @@ export async function renderDynamicContentCardPng(
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${WIDTH}" height="${height}" viewBox="0 0 ${WIDTH} ${height}" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <style type="text/css"><![CDATA[
-${FONT_FACE_CSS}
-    ]]></style>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#f8fafc"/>
       <stop offset="100%" stop-color="#eef2ff"/>
@@ -109,11 +95,19 @@ ${FONT_FACE_CSS}
   </defs>
   <rect width="${WIDTH}" height="${height}" rx="16" fill="url(#bg)"/>
   <rect x="0" y="0" width="8" height="${height}" fill="#2563eb"/>
-  <text x="${PAD}" y="42" font-family="Inter" font-size="14" font-weight="700" letter-spacing="1.2" fill="#64748b">LATEST CONTENT</text>
+  <text x="${PAD}" y="42" font-family="${familyAttr}" font-size="14" font-weight="700" letter-spacing="1.2" fill="#64748b">LATEST CONTENT</text>
   ${bodySvg}
 </svg>`;
 
-  const buffer = await sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toBuffer();
+  const resvg = new Resvg(svg, {
+    fitTo: { mode: 'width', value: WIDTH },
+    font: {
+      fontFiles: [font.semiBoldPath, font.boldPath],
+      loadSystemFonts: false,
+      defaultFontFamily: font.familyName,
+    },
+  });
+  const buffer = Buffer.from(resvg.render().asPng());
   const contentHash = createHash('sha256').update(buffer).digest('hex').slice(0, 24);
   return { buffer, contentHash, width: WIDTH, height };
 }

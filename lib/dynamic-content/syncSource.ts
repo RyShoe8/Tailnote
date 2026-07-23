@@ -4,6 +4,7 @@ import { put } from '@vercel/blob';
 import mongoose from 'mongoose';
 import { ContentItemModel } from '@/models/ContentItem';
 import { ContentSourceModel, type ContentDetectionMethod } from '@/models/ContentSource';
+import { OrganizationModel } from '@/models/Organization';
 import { autoDetectContent, fetchContentSource, fetchManualRss } from '@/lib/dynamic-content/registry';
 import { renderDynamicContentCardPng } from '@/lib/dynamic-content/renderCard';
 import type { ParsedFeedItem } from '@/lib/dynamic-content/parseFeed';
@@ -77,7 +78,14 @@ export async function regenerateContentImage(contentSourceId: string): Promise<{
 
   const cardItems = items.map((i) => ({ title: String(i.title) }));
   const posts = Math.min(3, Math.max(1, Number(source.postsToDisplay) || 1)) as 1 | 2 | 3;
-  const { buffer, contentHash } = await renderDynamicContentCardPng(cardItems, posts);
+
+  const org = (await OrganizationModel.findById(source.organizationId)
+    .select('fontFamily')
+    .lean()) as { fontFamily?: string } | null;
+
+  const { buffer, contentHash } = await renderDynamicContentCardPng(cardItems, posts, {
+    fontFamily: org?.fontFamily,
+  });
 
   if (source.imageContentHash === contentHash && source.imageBlobUrl) {
     return {

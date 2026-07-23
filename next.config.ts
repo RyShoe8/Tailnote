@@ -3,7 +3,7 @@ import { getNextHeaderRules } from './lib/security/securityHeaders';
 
 const nextConfig: NextConfig = {
   transpilePackages: ['emailsignature-engine'],
-  serverExternalPackages: ['svgo', 'sharp'],
+  serverExternalPackages: ['svgo', 'sharp', '@resvg/resvg-js'],
   // Ensure Inter TTFs used by Dynamic Content PNG rendering ship with serverless functions.
   outputFileTracingIncludes: {
     '/api/content-images/**/*': ['./lib/dynamic-content/fonts/**/*'],
