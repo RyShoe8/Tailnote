@@ -37,10 +37,10 @@ function ListDemo() {
   );
 }
 
-function LatestBlogsDemo() {
+function DynamicContentDemo() {
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Latest posts</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Latest Content</p>
       <ul className="space-y-2 text-sm">
         <li>
           <p className="font-medium text-slate-900">Track signature clicks</p>
@@ -118,7 +118,7 @@ const BLOCKS = [
     title: 'Dynamic Content',
     description:
       'Auto-detect your blog or newsletter and display the newest posts as a live image — no HTML edits when you publish again.',
-    Demo: LatestBlogsDemo,
+    Demo: DynamicContentDemo,
   },
   {
     icon: ImageIcon,

@@ -33,21 +33,21 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     path: '/',
     title: SITE_TAGLINE,
     description:
-      `${SITE_TAGLINE}. Promotional content blocks, built-in UTM tracking, click and open analytics, and polished email signatures for Gmail and Outlook.`,
+      `${SITE_TAGLINE}. Promotional content blocks including Dynamic Content, built-in UTM tracking, click and open analytics, and polished email signatures for Gmail and Outlook.`,
   },
   {
     key: 'pricing',
     path: '/pricing',
     title: 'Email signature pricing',
     description:
-      'Free plan for core signatures with Tailnote branding, plus paid plans with branding removal, team seats, promotional blocks, UTM tracking, and click and open analytics.',
+      'Free plan for core signatures with Tailnote branding, plus paid plans with branding removal, team seats, Dynamic Content, promotional blocks, UTM tracking, and click and open analytics.',
   },
   {
     key: 'signatures',
     path: '/signatures',
     title: 'Email signatures for teams',
     description:
-      'Curated professional email signatures with built-in promotional blocks — book-a-call buttons, offer lists, blog feeds, image banners, and a quote library that work in Gmail and Outlook.',
+      'Curated professional email signatures with built-in promotional blocks — book-a-call buttons, offer lists, Dynamic Content, image banners, and a quote library that work in Gmail and Outlook.',
   },
   {
     key: 'fromSignature',
@@ -61,7 +61,7 @@ export const INDEXABLE_MARKETING_PAGES: readonly MarketingPageConfig[] = [
     path: '/promotional-blocks',
     title: 'Promotional blocks for email signatures',
     description:
-      'Add book-a-call buttons, offer lists, blog feeds, promo banners, and quotes from the Tailnote library to every employee email. Organization-wide updates with built-in UTM tracking.',
+      'Add book-a-call buttons, offer lists, Dynamic Content, promo banners, and quotes from the Tailnote library to every employee email. Organization-wide updates with built-in UTM tracking.',
   },
   {
     key: 'analytics',

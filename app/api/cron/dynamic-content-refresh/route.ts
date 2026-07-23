@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectMongoose } from '@/lib/mongoose';
 import { ContentSourceModel } from '@/models/ContentSource';
-import { OrganizationModel } from '@/models/Organization';
+import { OrganizationModel, type OrganizationDoc } from '@/models/Organization';
 import { getBillingEntitlements } from '@/lib/billing/entitlements';
 import { refreshExistingContentSource } from '@/lib/dynamic-content/syncSource';
 
@@ -37,9 +37,9 @@ export async function GET(request: Request) {
   let skippedUnpaid = 0;
 
   for (const source of sources) {
-    const org = await OrganizationModel.findById(source.organizationId)
+    const org = (await OrganizationModel.findById(source.organizationId)
       .select('plan subscriptionStatus')
-      .lean();
+      .lean()) as Pick<OrganizationDoc, 'plan' | 'subscriptionStatus'> | null;
     if (!org || !getBillingEntitlements(org).canUseDynamicContent) {
       skippedUnpaid += 1;
       continue;

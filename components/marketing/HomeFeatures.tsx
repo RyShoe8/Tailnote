@@ -6,7 +6,7 @@ const FEATURES = [
     icon: Megaphone,
     title: 'Promotional content blocks',
     description:
-      'Turn every send into a click. Add book-a-call buttons, offer lists, blog feeds, and banners below your signature — users see up to 2.4× more traffic to linked pages.',
+      'Turn every send into a click. Add book-a-call buttons, offer lists, Dynamic Content that auto-updates as a live image, and banners below your signature — users see up to 2.4× more traffic to linked pages.',
   },
   {
     icon: Link2,

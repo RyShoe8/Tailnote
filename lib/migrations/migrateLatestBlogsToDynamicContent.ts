@@ -5,7 +5,7 @@ import { ContentSourceModel } from '@/models/ContentSource';
 import { ContentItemModel } from '@/models/ContentItem';
 import { EmployeeModel } from '@/models/Employee';
 import { UserSignatureProfileModel } from '@/models/UserSignatureProfile';
-import { stableContentImageUrl, regenerateContentImage } from '@/lib/dynamic-content/syncSource';
+import { stableContentImageUrl } from '@/lib/dynamic-content/urls';
 import type { ContentBlockData } from 'emailsignature-engine';
 
 export type MigrateLatestBlogsResult = {
@@ -31,7 +31,6 @@ async function migrateBlockArray(
   }
 
   let sourcesCreated = 0;
-  let imagesGenerated = 0;
   const next: ContentBlockData[] = [];
 
   for (const block of blocks) {
@@ -73,13 +72,7 @@ async function migrateBlockArray(
           { upsert: true }
         );
       }
-
-      try {
-        await regenerateContentImage(contentSourceId);
-        imagesGenerated += 1;
-      } catch {
-        /* image can generate later via cron/refresh */
-      }
+      // Image bytes are generated later via cron / detect-refresh (avoid Sharp on startup).
     }
 
     next.push({
@@ -98,7 +91,7 @@ async function migrateBlockArray(
     });
   }
 
-  return { blocks: next, sourcesCreated, imagesGenerated };
+  return { blocks: next, sourcesCreated, imagesGenerated: 0 };
 }
 
 /** Idempotent: rewrite latest_blogs → dynamic_content and backfill ContentSource/Items. */

@@ -83,8 +83,8 @@ export default function PromotionalBlocksPage() {
           </h1>
           <p className="mt-4 text-pretty text-base text-muted-foreground sm:text-lg">
             Go beyond a static signature. Tailnote promotional blocks turn routine outbound mail into
-            mini campaigns — book-a-call buttons, offer lists, blog feeds, banners, image links, and
-            quotes that drive up to 3× more website traffic.
+            mini campaigns — book-a-call buttons, offer lists, Dynamic Content that auto-updates as a
+            live image, banners, image links, and quotes that drive up to 3× more website traffic.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg" className="gap-2 shadow-card">

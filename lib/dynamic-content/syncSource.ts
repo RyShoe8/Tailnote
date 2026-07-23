@@ -1,3 +1,4 @@
+import 'server-only';
 import { createHash } from 'crypto';
 import { put } from '@vercel/blob';
 import mongoose from 'mongoose';
@@ -7,12 +8,9 @@ import { autoDetectContent, fetchContentSource, fetchManualRss } from '@/lib/dyn
 import { renderDynamicContentCardPng } from '@/lib/dynamic-content/renderCard';
 import type { ParsedFeedItem } from '@/lib/dynamic-content/parseFeed';
 import { normalizeWebsiteUrl } from '@/lib/dynamic-content/types';
-import { getAppBaseUrl } from '@/lib/email/appUrl';
+import { stableContentImageUrl } from '@/lib/dynamic-content/urls';
 
-export function stableContentImageUrl(contentSourceId: string): string {
-  const base = getAppBaseUrl().replace(/\/$/, '');
-  return `${base}/api/content-images/${contentSourceId}.png`;
-}
+export { stableContentImageUrl } from '@/lib/dynamic-content/urls';
 
 function itemGuid(item: ParsedFeedItem): string {
   return (item.guid || item.url || item.title).trim();
