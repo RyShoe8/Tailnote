@@ -27,6 +27,7 @@ export {
   applyBrandFieldOrder,
   type LayoutReorderRules,
   type LayoutEditorFields,
+  type BrandSupportField,
 } from './core/layoutReorderRules';
 
 export { normalizePromoUrl } from './core/normalizePromoUrl';

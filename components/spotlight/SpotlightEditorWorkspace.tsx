@@ -48,6 +48,7 @@ import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 import { SignatureDragStatusBar } from '@/components/signature/SignatureDragStatusBar';
 import { SignaturePreviewReorderLayer } from '@/components/signature/SignaturePreviewReorderLayer';
 import { useSignatureDragDrop } from '@/lib/signature/useSignatureDragDrop';
+import { hashString } from '@/lib/signature/hashKey';
 import { defaultProfile, profileFromApi, trackedProfilePayload } from '@/lib/signature/profileApiHelpers';
 
 type OrgResponse = {
@@ -522,6 +523,9 @@ export function SpotlightEditorWorkspace({
       setTrackedHtml(null);
       return;
     }
+    // Drop stale tracked HTML immediately so the preview reflects hide/reorder changes
+    // via the instant client render while the tracked refetch is in flight.
+    setTrackedHtml(null);
     const ac = new AbortController();
     const timer = window.setTimeout(() => {
       void (async () => {
@@ -590,6 +594,7 @@ export function SpotlightEditorWorkspace({
     profile.detailOrder,
     profile.contactDisplayOrder,
     org?.brandOrder,
+    brand.hiddenFields,
     brand.companyName,
     brand.website,
     brand.logoUrl,
@@ -619,10 +624,12 @@ export function SpotlightEditorWorkspace({
 
   const previewHtml = trackedHtml ?? html;
 
+  // Hash full HTML (not length): reorders shuffle identical characters, so length alone
+  // misses changes and the drag overlay would never remeasure drop zones.
   const previewReorderKey = useMemo(
     () =>
-      `${previewHtml.length}-${org?.fontFamily ?? ''}-${(profile.contactDisplayOrder ?? []).join(',')}-${(org?.brandOrder ?? []).join(',')}`,
-    [previewHtml.length, org?.fontFamily, profile.contactDisplayOrder, org?.brandOrder],
+      `${hashString(previewHtml)}-${org?.fontFamily ?? ''}-${(profile.contactDisplayOrder ?? []).join(',')}-${(org?.brandOrder ?? []).join(',')}`,
+    [previewHtml, org?.fontFamily, profile.contactDisplayOrder, org?.brandOrder],
   );
 
   const canCopy = Boolean(

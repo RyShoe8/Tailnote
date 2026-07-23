@@ -48,6 +48,7 @@ import { appendSignatureAttributionIfNeeded } from '@/lib/signatureAttribution';
 import { SignatureDragStatusBar } from '@/components/signature/SignatureDragStatusBar';
 import { SignaturePreviewReorderLayer } from '@/components/signature/SignaturePreviewReorderLayer';
 import { useSignatureDragDrop } from '@/lib/signature/useSignatureDragDrop';
+import { hashString } from '@/lib/signature/hashKey';
 import {
   defaultProfile,
   profileFromApi,
@@ -339,10 +340,15 @@ export function SignatureWorkspace() {
   }, []);
 
   const activeLayout = engineTemplate?.layout ?? 'default';
-  const brandFieldsInLayout = useMemo(
-    () => getLayoutEditorFields(activeLayout).brandFieldsInLayout,
-    [activeLayout],
-  );
+  const { brandFieldsInLayout, supportedBrandFields } = useMemo(() => {
+    const fields = getLayoutEditorFields(activeLayout);
+    return {
+      brandFieldsInLayout: fields.brandFieldsInLayout,
+      supportedBrandFields: fields.supportedBrandFields,
+    };
+  }, [activeLayout]);
+  const supportsBrandField = (field: string) =>
+    (supportedBrandFields as readonly string[]).includes(field);
 
   const brandSortableItems = useMemo(() => {
     if (!brandFieldsInLayout.length) return [];
@@ -423,6 +429,9 @@ export function SignatureWorkspace() {
       setTrackedHtml(null);
       return;
     }
+    // Drop stale tracked HTML immediately so the preview reflects hide/reorder changes
+    // via the instant client render while the tracked refetch is in flight.
+    setTrackedHtml(null);
     const ac = new AbortController();
     const timer = window.setTimeout(() => {
       void (async () => {
@@ -491,6 +500,7 @@ export function SignatureWorkspace() {
     profile.detailOrder,
     profile.contactDisplayOrder,
     org?.brandOrder,
+    brand.hiddenFields,
     brand.companyName,
     brand.website,
     brand.logoUrl,
@@ -520,10 +530,12 @@ export function SignatureWorkspace() {
 
   const previewHtml = trackedHtml ?? html;
 
+  // Hash full HTML (not length): reorders shuffle identical characters, so length alone
+  // misses changes and the drag overlay would never remeasure drop zones.
   const previewReorderKey = useMemo(
     () =>
-      `${previewHtml.length}-${org?.fontFamily ?? ''}-${(profile.contactDisplayOrder ?? []).join(',')}-${(org?.brandOrder ?? []).join(',')}`,
-    [previewHtml.length, org?.fontFamily, profile.contactDisplayOrder, org?.brandOrder],
+      `${hashString(previewHtml)}-${org?.fontFamily ?? ''}-${(profile.contactDisplayOrder ?? []).join(',')}-${(org?.brandOrder ?? []).join(',')}`,
+    [previewHtml, org?.fontFamily, profile.contactDisplayOrder, org?.brandOrder],
   );
 
   const canCopy = Boolean(
@@ -838,6 +850,7 @@ export function SignatureWorkspace() {
             <SortableContext items={brandSortableItems} strategy={verticalListSortingStrategy}>
               <div className="space-y-4">
                 {BRAND_FIELD_IDS.map((fieldId) => {
+                  if (!supportsBrandField(fieldId)) return null;
                   const isReorderable = brandFieldsInLayout.includes(fieldId);
                   if (fieldId === 'companyName') {
                     return (
@@ -879,12 +892,13 @@ export function SignatureWorkspace() {
                 })}
               </div>
             </SortableContext>
+            {supportsBrandField('address') && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium cursor-pointer" onClick={() => toggleBrandHidden('address')}>Address</p>
                   <p className="text-xs text-muted-foreground">
-                    Optional. Shown on the Corporate and Professional layouts when filled in.
+                    Optional. Shown when this layout supports it and the fields are filled in.
                   </p>
                 </div>
                 <Button
@@ -940,6 +954,8 @@ export function SignatureWorkspace() {
                 </div>
               )}
             </div>
+            )}
+            {supportsBrandField('socialLinks') && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -967,6 +983,8 @@ export function SignatureWorkspace() {
                 </div>
               )}
             </div>
+            )}
+            {supportsBrandField('logo') && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="cursor-pointer" onClick={() => toggleBrandHidden('logoUrl')}>Logo</Label>
@@ -1044,6 +1062,8 @@ export function SignatureWorkspace() {
                 </div>
               )}
             </div>
+            )}
+            {supportsBrandField('logo') && (
             <div className="space-y-2">
               <Label>Logo link (optional)</Label>
               <Input
@@ -1052,6 +1072,7 @@ export function SignatureWorkspace() {
                 placeholder="https://…"
               />
             </div>
+            )}
             <div className="space-y-2">
               <Label>Primary color</Label>
               <PrimaryColorField

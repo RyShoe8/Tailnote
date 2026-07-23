@@ -6,7 +6,22 @@ export type LayoutReorderRules = {
   reorderableFields: readonly string[];
   /** Regions that cannot be moved via drag (avatar, social strip, promo blocks, etc.). */
   fixedFields: readonly string[];
+  /** Brand-level fields this layout actually renders (audited against template HTML). */
+  supportedBrandFields: readonly BrandSupportField[];
 };
+
+export type BrandSupportField = 'companyName' | 'website' | 'address' | 'socialLinks' | 'logo';
+
+/** Every layout renders website, social links, and a logo region. */
+const BRAND_ALL: readonly BrandSupportField[] = [
+  'companyName',
+  'website',
+  'address',
+  'socialLinks',
+  'logo',
+];
+const BRAND_NO_COMPANY: readonly BrandSupportField[] = ['website', 'address', 'socialLinks', 'logo'];
+const BRAND_NO_COMPANY_NO_ADDRESS: readonly BrandSupportField[] = ['website', 'socialLinks', 'logo'];
 
 const MP_FIELDS = ['logo', 'name', 'title', 'email', 'website'] as const;
 const DEFAULT_MAIN_FIELDS = ['name', 'title', 'companyName', 'email', 'officePhone', 'mobilePhone', 'website'] as const;
@@ -20,51 +35,61 @@ const RULES: Record<SignatureLayout, LayoutReorderRules> = {
     layout: 'modern_professional',
     reorderableFields: MP_FIELDS,
     fixedFields: ['avatar', 'socialLinks', 'contentBlocks'],
+    supportedBrandFields: BRAND_NO_COMPANY_NO_ADDRESS,
   },
   default: {
     layout: 'default',
     reorderableFields: DEFAULT_MAIN_FIELDS,
     fixedFields: ['logo', 'address', 'socialLinks', 'contentBlocks'],
+    supportedBrandFields: BRAND_ALL,
   },
   standard: {
     layout: 'standard',
     reorderableFields: CORPORATE_FIELDS,
     fixedFields: ['logo', 'address', 'socialLinks', 'contentBlocks'],
+    supportedBrandFields: BRAND_ALL,
   },
   corporate: {
     layout: 'corporate',
     reorderableFields: CORPORATE_FIELDS,
     fixedFields: ['logo', 'socialLinks', 'contentBlocks'],
+    supportedBrandFields: BRAND_ALL,
   },
   professional: {
     layout: 'professional',
     reorderableFields: CORPORATE_FIELDS,
     fixedFields: ['logo', 'socialLinks', 'contentBlocks'],
+    supportedBrandFields: BRAND_ALL,
   },
   stacked: {
     layout: 'stacked',
     reorderableFields: STACKED_FIELDS,
     fixedFields: ['socialLinks', 'contentBlocks'],
+    supportedBrandFields: BRAND_ALL,
   },
   creator: {
     layout: 'creator',
     reorderableFields: CREATOR_FIELDS,
     fixedFields: ['socialLinks', 'contentBlocks'],
+    supportedBrandFields: BRAND_NO_COMPANY,
   },
   executive_minimalist: {
     layout: 'executive_minimalist',
     reorderableFields: CREATOR_FIELDS,
     fixedFields: ['logo', 'socialLinks', 'contentBlocks'],
+    supportedBrandFields: BRAND_NO_COMPANY,
   },
   portfolio: {
     layout: 'portfolio',
     reorderableFields: PORTFOLIO_FIELDS,
     fixedFields: ['logo', 'socialLinks', 'contentBlocks'],
+    supportedBrandFields: BRAND_NO_COMPANY_NO_ADDRESS,
   },
   ecard: {
     layout: 'ecard',
     reorderableFields: PORTFOLIO_FIELDS,
     fixedFields: ['logo', 'socialLinks', 'contentBlocks'],
+    supportedBrandFields: BRAND_NO_COMPANY_NO_ADDRESS,
   },
 };
 
