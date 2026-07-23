@@ -411,6 +411,10 @@ function DynamicContentEditor({
             : 'Not refreshed yet'}
         </span>
       </div>
+      <p className="text-xs text-muted-foreground">
+        Content refreshes automatically every 24 hours — no need to click Refresh unless you want to see changes
+        immediately.
+      </p>
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
 
       {block.contentImageUrl ? (

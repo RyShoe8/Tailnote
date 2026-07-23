@@ -373,6 +373,14 @@ function buildDynamicContentImageHtml(block: ContentBlockData, origin: string): 
 </table>`;
 }
 
+/** Dynamic Content images for custom-layout promo builders (Creator/Executive/Portfolio/eCard). */
+function buildDynamicContentBlocksHtml(blocks: ContentBlockData[], origin: string): string {
+  const enabled = blocks
+    .filter((b) => b.enabled && (b.type === 'dynamic_content' || b.type === 'latest_blogs'))
+    .slice(0, 2);
+  return enabled.map((b) => buildDynamicContentImageHtml(b, origin)).join('');
+}
+
 function buildContentBlockParts(
   blocks: ContentBlockData[],
   origin: string,
@@ -727,13 +735,18 @@ function collectFlattenedListItems(blocks: ContentBlockData[]): Array<{
   return out;
 }
 
-function buildCreatorPromoPillsHtml(blocks: ContentBlockData[], panelColor: string): string {
+function buildCreatorPromoPillsHtml(
+  blocks: ContentBlockData[],
+  panelColor: string,
+  origin: string
+): string {
   const quoteHtml = buildQuoteBlocksHtml(blocks, panelColor, true);
+  const dynamicHtml = buildDynamicContentBlocksHtml(blocks, origin);
   const items = collectFlattenedListItems(blocks.filter((b) => b.type !== 'quote'));
-  if (items.length === 0) return quoteHtml;
+  if (items.length === 0) return quoteHtml + dynamicHtml;
 
   const panel = escapeHtml(panelColor);
-  let html = quoteHtml;
+  let html = quoteHtml + dynamicHtml;
   for (const item of items) {
     const labelRaw = item.title || (item.url ? listItemLinkFallbackLabel(item.url) : '');
     if (!labelRaw) continue;
@@ -861,7 +874,11 @@ function buildExecutiveListBlockLineHtml(block: ContentBlockData, primaryColor: 
   return parts.join(' | ');
 }
 
-function buildExecutivePromoRowsHtml(blocks: ContentBlockData[], primaryColor: string): string {
+function buildExecutivePromoRowsHtml(
+  blocks: ContentBlockData[],
+  primaryColor: string,
+  origin: string
+): string {
   const enabled = blocks.filter((b) => b.enabled).slice(0, 2);
   const rows: string[] = [];
 
@@ -870,6 +887,13 @@ function buildExecutivePromoRowsHtml(blocks: ContentBlockData[], primaryColor: s
       const quoteHtml = buildQuoteBlockHtml(block, primaryColor);
       if (quoteHtml) {
         rows.push(`<div style="margin-bottom: 8px;">${quoteHtml}</div>`);
+      }
+      continue;
+    }
+    if (block.type === 'dynamic_content' || block.type === 'latest_blogs') {
+      const dynamicHtml = buildDynamicContentImageHtml(block, origin);
+      if (dynamicHtml) {
+        rows.push(`<div style="margin-bottom: 8px;">${dynamicHtml}</div>`);
       }
       continue;
     }
@@ -943,14 +967,16 @@ function buildPortfolioContactPillsHtml(
 function buildPortfolioNetworkSectionHtml(
   blocks: ContentBlockData[],
   accentColor: string,
-  panelColor: string
+  panelColor: string,
+  origin: string
 ): string {
   const quoteHtml = buildQuoteBlocksHtml(blocks, accentColor, true);
+  const dynamicHtml = buildDynamicContentBlocksHtml(blocks, origin);
   const enabledLists = blocks.filter((b) => b.enabled && b.type === 'list');
-  if (enabledLists.length === 0) return quoteHtml;
+  if (enabledLists.length === 0) return quoteHtml + dynamicHtml;
 
   const items = collectFlattenedListItems(enabledLists);
-  if (items.length === 0) return '';
+  if (items.length === 0) return quoteHtml + dynamicHtml;
 
   const sectionTitle =
     enabledLists.map((b) => (b.listTitle || b.customTitle || '').trim()).find(Boolean) ||
@@ -969,10 +995,10 @@ function buildPortfolioNetworkSectionHtml(
       pills += `<span style="display:inline-block;background-color:${panel};color:#F4F7F6;padding:6px 12px;border-radius:12px;font-size:12px;margin:0 6px 6px 0;font-weight:500;">${label}</span>`;
     }
   }
-  if (!pills) return quoteHtml;
+  if (!pills) return quoteHtml + dynamicHtml;
 
   const listSection = `<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${accent};font-weight:bold;margin-bottom:10px;text-align:left;">${escapeHtml(sectionTitle)}</div><div style="text-align:left;margin-bottom:18px;line-height:1.6;">${pills}</div>`;
-  return quoteHtml ? `${quoteHtml}${listSection}` : listSection;
+  return `${quoteHtml}${dynamicHtml}${listSection}`;
 }
 
 function buildEcardContactTableHtml(
@@ -1051,12 +1077,19 @@ function buildEcardListBlockLinksHtml(block: ContentBlockData, primaryColor: str
 }
 
 /** One titled section per list promo block (up to two), preserving each block's listTitle. */
-function buildEcardPortfolioSectionsHtml(blocks: ContentBlockData[], primaryColor: string): string {
+function buildEcardPortfolioSectionsHtml(
+  blocks: ContentBlockData[],
+  primaryColor: string,
+  origin: string
+): string {
   const quoteHtml = buildQuoteBlocksHtml(blocks, primaryColor);
+  const dynamicHtml = buildDynamicContentBlocksHtml(blocks, origin);
   const enabledLists = blocks.filter((b) => b.enabled && b.type === 'list').slice(0, 2);
-  if (enabledLists.length === 0) return quoteHtml;
+  if (enabledLists.length === 0) return quoteHtml + dynamicHtml;
 
-  const sections: string[] = quoteHtml ? [quoteHtml] : [];
+  const sections: string[] = [];
+  if (quoteHtml) sections.push(quoteHtml);
+  if (dynamicHtml) sections.push(dynamicHtml);
   for (const block of enabledLists) {
     const linksHtml = buildEcardListBlockLinksHtml(block, primaryColor);
     if (!linksHtml) continue;
@@ -1462,7 +1495,7 @@ export function mergeRenderContext(
       : '';
   const hasCreatorContactTable = Boolean(creatorContactTableHtml);
   const creatorPromoPillsHtml = isCreatorLayout
-    ? buildCreatorPromoPillsHtml(contentBlocks, creatorPanelColor)
+    ? buildCreatorPromoPillsHtml(contentBlocks, creatorPanelColor, origin)
     : '';
   const hasCreatorPromoPills = Boolean(creatorPromoPillsHtml);
 
@@ -1486,7 +1519,7 @@ export function mergeRenderContext(
       : '';
   const hasExecutiveSocialLine = Boolean(executiveSocialLineHtml);
   const executivePromoRowsHtml = isExecutiveLayout
-    ? buildExecutivePromoRowsHtml(contentBlocks, brand.primaryColor.trim() || '#901a1e')
+    ? buildExecutivePromoRowsHtml(contentBlocks, brand.primaryColor.trim() || '#901a1e', origin)
     : '';
   const hasExecutivePromoRows = Boolean(executivePromoRowsHtml);
 
@@ -1503,7 +1536,7 @@ export function mergeRenderContext(
       : '';
   const hasPortfolioContactPills = Boolean(portfolioContactPillsHtml);
   const portfolioNetworkSectionHtml = isPortfolioLayout
-    ? buildPortfolioNetworkSectionHtml(contentBlocks, brandSecondaryColor, portfolioPanelColor)
+    ? buildPortfolioNetworkSectionHtml(contentBlocks, brandSecondaryColor, portfolioPanelColor, origin)
     : '';
   const hasPortfolioNetworkSection = Boolean(portfolioNetworkSectionHtml);
 
@@ -1524,7 +1557,7 @@ export function mergeRenderContext(
       : '';
   const hasEcardContactTable = Boolean(ecardContactTableHtml);
   const ecardPortfolioSectionsHtml = isEcardLayout
-    ? buildEcardPortfolioSectionsHtml(contentBlocks, brandPrimaryColor)
+    ? buildEcardPortfolioSectionsHtml(contentBlocks, brandPrimaryColor, origin)
     : '';
   const hasEcardPortfolioSection = Boolean(ecardPortfolioSectionsHtml);
   const ecardLogoFrameWidth =
