@@ -9,16 +9,16 @@ const FEATURES = [
       'Turn every send into a click. Add book-a-call buttons, offer lists, Dynamic Content that auto-updates as a live image, and banners below your signature — users see up to 2.4× more traffic to linked pages.',
   },
   {
-    icon: Link2,
-    title: 'Built-in UTM tracking',
-    description:
-      'Know exactly which signatures generate pipeline. Every promo-block link is automatically tagged so Google Analytics shows you the real ROI of your email channel.',
-  },
-  {
     icon: Image,
     title: 'Dynamic Content',
     description:
-      'Keep every signature current without editing HTML. Point Tailnote at your website or RSS feed and we generate a branded image card that auto-refreshes every 24 hours as you publish.',
+      'Update your signature without ever re-pasting. Point Tailnote at your website or blog and we render a branded image card that auto-refreshes every 24 hours — your latest post or offer shows up automatically in every email you send.',
+  },
+  {
+    icon: Link2,
+    title: 'Built-in UTM tracking',
+    description:
+      'Know exactly which links get clicked. Every promo-block link is automatically tagged so Google Analytics shows the real traffic your email is driving.',
   },
   {
     icon: BarChart3,
@@ -34,9 +34,9 @@ const FEATURES = [
   },
   {
     icon: Users,
-    title: 'Team-wide control',
+    title: 'One brand across your team',
     description:
-      'Lock brand elements org-wide while letting employees personalize their own details. One admin update rolls out to everyone on the next send.',
+      'Set your logo, colors, and links once — everyone on your team inherits the same look while personalizing their own details. Dynamic Content and promo images refresh automatically, so campaign changes reach every inbox without anyone re-pasting.',
   },
 ] as const;
 

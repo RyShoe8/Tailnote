@@ -32,15 +32,15 @@ export function HomeHero({ presets }: Props) {
               New: Modern Professional template
             </span>
             <h1 className="mt-5 text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl md:text-7xl">
-              Your team sends thousands of emails.{' '}
+              Every email you send is a chance to{' '}
               <br className="hidden sm:block" />
-              Make every one{' '}
-              <span className="tn-grad-text">drive clicks and replies</span>
+              <span className="tn-grad-text">market your business</span>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-pretty text-base text-muted-foreground sm:text-xl">
               Tailnote pairs on-brand email signatures with promotional content
-              blocks — driving up to 32% higher reply rates and 3× more website
-              traffic. Built-in UTM tracking tells you exactly what&apos;s working.
+              blocks and built-in UTM tracking — so every message drives clicks
+              and shows you what&apos;s working. Built for solopreneurs and small
+              teams. No IT, no OAuth, ready in two minutes.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Button asChild size="lg" className="gap-2 px-8 py-6 text-base shadow-card tn-glow">

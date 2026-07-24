@@ -44,13 +44,14 @@ export function HomePricingTeaser({ plans }: Props) {
           <div className="min-w-0 max-w-2xl space-y-4">
             <p className="text-sm font-semibold uppercase tracking-wider text-primary">Pricing</p>
             <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-              Enterprise-grade email signatures{' '}
-              <span className="tn-grad-text">without enterprise pricing</span>
+              Marketing-grade signatures{' '}
+              <span className="tn-grad-text">without the enterprise setup</span>
             </h2>
             <p className="text-pretty text-muted-foreground">
-              Skip expensive agency rebuilds. Tailnote gives your whole team on-brand signatures,
-              promotional content blocks, built-in UTM tracking, and copy-paste install for Gmail and Outlook for a
-              fraction of what you&apos;d pay elsewhere.
+              No seat minimums, no IT project, no OAuth. Most signature tools are built for big
+              companies with admin deployment and 10-seat minimums — Tailnote works for a team of
+              one, with on-brand signatures, promotional blocks, UTM tracking, and copy-paste
+              install for Gmail and Outlook.
             </p>
             {fallback ? (
               <>
@@ -63,7 +64,7 @@ export function HomePricingTeaser({ plans }: Props) {
                   per subscription
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Most competitors charge $3–5 per user per month.
+                  Simple per-subscription pricing — add teammates as you grow.
                 </p>
               </>
             ) : null}

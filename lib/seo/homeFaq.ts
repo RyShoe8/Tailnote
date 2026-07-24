@@ -21,7 +21,7 @@ export const HOME_FAQS = [
   },
   {
     q: 'Is there a free tier?',
-    a: 'Tailnote is a paid product. When you sign up you choose a subscription plan and complete checkout before using the workspace. See Pricing for current plans.',
+    a: 'Yes. The Free plan includes core signature generation, every layout preset, promotional content blocks, and the domain email-health checker (SPF, DKIM, DMARC, BIMI) — with a "Powered by Tailnote" line on your signature. Paid plans remove the branding and add team seats, click and open analytics, and built-in UTM tracking. See Pricing for details.',
   },
   {
     q: 'How does Tailnote handle our data?',

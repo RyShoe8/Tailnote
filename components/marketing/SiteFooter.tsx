@@ -125,10 +125,10 @@ export function SiteFooter({ variant = 'full' }: SiteFooterProps) {
       <div className="container">
         <div className="border-b border-slate-200/70 pb-10 mb-10 text-center">
           <p className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
-            Ready to boost your reply rates?
+            Turn your email into a marketing channel
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Teams using Tailnote see up to 32% more replies and 3× more website traffic.
+            On-brand signatures, promotional blocks, and click tracking — free to start.
           </p>
           <div className="mt-4">
             <Button asChild size="lg" className="gap-2 shadow-card">

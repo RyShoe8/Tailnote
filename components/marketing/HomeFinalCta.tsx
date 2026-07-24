@@ -19,15 +19,16 @@ export function HomeFinalCta() {
           <div className="tn-drift tn-float-delay-2 h-full w-full rounded-full bg-[#4fd6b2]/30 blur-3xl" />
         </div>
         <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
-          Every email your team sends is a missed opportunity —{' '}
+          Every email you send is a missed opportunity —{' '}
           <span className="tn-grad-text">until now</span>
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-pretty text-base text-white/80 sm:text-lg">
-          Teams using branded signatures see up to 32% more replies and 3× more clicks to their website.
+          A branded signature with promotional blocks turns routine email into clicks,
+          bookings, and traffic — automatically.
         </p>
         <p className="mx-auto mt-2 max-w-xl text-pretty text-base text-white/70 sm:text-lg">
-          Join teams using Tailnote to promote offers, track clicks and opens, and keep every
-          outbound message on-brand.
+          Use Tailnote to promote offers, track clicks and opens, and keep every
+          message you send on-brand.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <Button

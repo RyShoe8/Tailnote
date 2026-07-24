@@ -1,9 +1,9 @@
 import { RevealOnScroll } from '@/components/marketing/RevealOnScroll';
 
 const STATS = [
-  { value: '32%', label: 'Higher reply rates', detail: 'vs. plain text signatures' },
-  { value: '3×', label: 'More website traffic', detail: 'from signature link clicks' },
-  { value: '100%', label: 'Brand consistency', detail: 'across every employee' },
+  { value: '6', label: 'Promo block types', detail: 'book-a-call, offers, banners & more' },
+  { value: '$0', label: 'Free plan', detail: 'core signatures included' },
+  { value: '100%', label: 'On-brand', detail: 'every signature, every send' },
   { value: '<2 min', label: 'Setup time', detail: 'copy, paste, done' },
 ] as const;
 
