@@ -132,8 +132,10 @@ function MobileSignaturePreviewFrame({
 
       let { width: nw, height: nh } = measureContentSize(contentRef.current);
 
-      // Professional card shells hug content; filling the frame would inflate empty right space.
-      const skipFillWidth = contentRef.current.innerHTML.includes('sig-prof-card-shell');
+      // Dashboard only: Professional card shells hug content. Marketing should fill so
+      // the carousel doesn't leave a tiny card (scale is capped at 1).
+      const skipFillWidth =
+        isDashboard && contentRef.current.innerHTML.includes('sig-prof-card-shell');
       if (useFillWidth && !skipFillWidth && nw < fitScaleW * 0.9 && transformEl) {
         transformEl.style.width = `${fitScaleW}px`;
         ({ width: nw, height: nh } = measureContentSize(contentRef.current));

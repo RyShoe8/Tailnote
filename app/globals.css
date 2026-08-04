@@ -354,7 +354,7 @@
         padding-left: 0 !important;
       }
       & table.sig-prof-card-shell {
-        width: auto !important;
+        width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
         overflow: visible !important;
@@ -450,10 +450,20 @@
     width: 100% !important;
     box-sizing: border-box !important;
   }
-  /* Professional: hug content width so the card border does not stretch across empty space. */
-  .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-prof-card-shell {
+  /* Professional: hug content in the dashboard creator preview only.
+     Marketing (carousel/hero) keeps full width so the card fills the frame. */
+  .signature-email-preview--mobile:not(.signature-email-preview--marketing)
+    .mobile-signature-scale-root
+    > table.sig-prof-card-shell {
     max-width: 100% !important;
     width: auto !important;
+    box-sizing: border-box !important;
+  }
+  .signature-email-preview--mobile.signature-email-preview--marketing
+    .mobile-signature-scale-root
+    > table.sig-prof-card-shell {
+    max-width: 100% !important;
+    width: 100% !important;
     box-sizing: border-box !important;
   }
   .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-executive-root {
