@@ -132,7 +132,9 @@ function MobileSignaturePreviewFrame({
 
       let { width: nw, height: nh } = measureContentSize(contentRef.current);
 
-      if (useFillWidth && nw < fitScaleW * 0.9 && transformEl) {
+      // Professional card shells hug content; filling the frame would inflate empty right space.
+      const skipFillWidth = contentRef.current.innerHTML.includes('sig-prof-card-shell');
+      if (useFillWidth && !skipFillWidth && nw < fitScaleW * 0.9 && transformEl) {
         transformEl.style.width = `${fitScaleW}px`;
         ({ width: nw, height: nh } = measureContentSize(contentRef.current));
       }

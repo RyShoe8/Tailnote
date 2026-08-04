@@ -142,7 +142,7 @@ assert.doesNotMatch(
 assert.doesNotMatch(htmlStandard, /\/api\/image-proxy/i, 'standard: no image proxy URLs in img src');
 assert.doesNotMatch(htmlStandard, /src="http:\/\//i, 'standard: no non-HTTPS image URLs');
 assert.ok(
-  htmlStandard.includes('border-collapse:collapse;margin-top:10px'),
+  htmlStandard.includes('border-collapse:collapse;margin-top:8px'),
   'standard: social row uses nested table'
 );
 assert.ok(
@@ -540,7 +540,7 @@ assert.match(
 const profGreyPanelCount = (htmlProfessional.match(/bgcolor="#f0f4ff"/g) ?? []).length;
 assert.ok(
   profGreyPanelCount >= 3,
-  `professional: multiple grey panels (logo, hero, contact/social); got ${profGreyPanelCount}`
+  `professional: multiple grey panels (logo, hero, contact, social); got ${profGreyPanelCount}`
 );
 assert.match(
   htmlProfessional,
@@ -1330,6 +1330,11 @@ assert.match(
   htmlProfessionalAddr,
   /sig-corp-logo-stack[\s\S]*?123 Main St/,
   'professional: address under logo'
+);
+assert.match(
+  htmlProfessionalAddr,
+  /sig-corp-logo-stack[\s\S]*?icon-linkedin\.png[\s\S]*?sig-corp-main-stack/,
+  'professional: social icons under logo column'
 );
 
 // Legacy custom block still renders for back-compat reads — but without "Learn more".

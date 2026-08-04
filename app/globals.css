@@ -354,7 +354,7 @@
         padding-left: 0 !important;
       }
       & table.sig-prof-card-shell {
-        width: 100% !important;
+        width: auto !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
         overflow: visible !important;
@@ -444,11 +444,16 @@
 
   /* Mobile preview: only the outer-most signature table flexes; nested block tables keep intrinsic width for measurement. */
   .signature-email-preview--mobile .mobile-signature-scale-root > table:first-of-type,
-  .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-prof-card-shell,
   .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-default-layout-table,
   .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-stacked-root {
     max-width: 100% !important;
     width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  /* Professional: hug content width so the card border does not stretch across empty space. */
+  .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-prof-card-shell {
+    max-width: 100% !important;
+    width: auto !important;
     box-sizing: border-box !important;
   }
   .signature-email-preview--mobile .mobile-signature-scale-root > table.sig-executive-root {

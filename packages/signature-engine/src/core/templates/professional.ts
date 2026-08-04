@@ -86,17 +86,9 @@ export const PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
               {{addressBlockHtml}}
             </div>
             {{/if}}
-          </td>
-
-          <!-- Info column -->
-          <td class="sig-corp-main-stack" style="vertical-align:top;padding-left:0;padding-right:6px;">
-            {{#if hasOrderedMainStack}}
-            {{orderedMainStackHtml}}
-            {{/if}}
-
             {{#if showSocialBlock}}
-            <div style="height:6px;line-height:6px;font-size:0;">&nbsp;</div>
-            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;"><tr>
+            <div style="height:8px;line-height:8px;font-size:0;">&nbsp;</div>
+            <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
               <td bgcolor="#f0f4ff" style="background-color:#f0f4ff;border-radius:10px;padding:8px 12px;">
             <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr>
               {{#if hasLinkedin}}
@@ -123,6 +115,13 @@ export const PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
             </tr></table>
               </td>
             </tr></table>
+            {{/if}}
+          </td>
+
+          <!-- Info column -->
+          <td class="sig-corp-main-stack" style="vertical-align:top;padding-left:0;padding-right:6px;">
+            {{#if hasOrderedMainStack}}
+            {{orderedMainStackHtml}}
             {{/if}}
           </td>
 
