@@ -23,7 +23,7 @@ export const ECARD_SIGNATURE_TEMPLATE = `<table class="sig-ecard-root" cellpaddi
             </table>
             {{/if}}
             {{#if hasEcardVcardUrl}}
-            <a href="{{ecardVcardUrl}}" style="display:inline-block;background-color:{{primaryColor}};color:#FFFFFF;text-decoration:none;padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:0.2px;margin-top:2px;">&#128229; Save Contact</a>
+            <a href="{{ecardVcardUrl}}" style="display:inline-block;background-color:{{primaryColor}};color:#FFFFFF;text-decoration:none;padding:7px 18px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:0.3px;margin-top:2px;">Save Contact</a>
             {{/if}}
           </td>
           {{#if hasLogo}}

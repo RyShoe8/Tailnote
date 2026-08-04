@@ -76,6 +76,7 @@ type OrgResponse = {
   brandOrder?: string[];
   hiddenFields?: string[];
   spotlightEnabled?: boolean;
+  fieldStyles?: Record<string, { fontFamily?: string; color?: string; fontSize?: string }>;
 };
 
 type OrgPermissions = {
@@ -124,6 +125,7 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
     brandOrder: org.brandOrder ?? [],
     hiddenFields: org.hiddenFields ?? [],
     spotlightEnabled: org.spotlightEnabled ?? false,
+    ...(org.fieldStyles ? { fieldStyles: org.fieldStyles as SignatureBrand['fieldStyles'] } : {}),
   };
 }
 

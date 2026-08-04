@@ -11,7 +11,7 @@ export const EXECUTIVE_MINIMALIST_SIGNATURE_TEMPLATE = `<table class="sig-execut
             <div data-sig-field="name" style="font-family: 'Times New Roman', Times, serif; font-size: 18px; color: #222222; margin-bottom: 2px;">{{fullName}}</div>
             {{/if}}
             {{#if hasExecutiveRoleLine}}
-            <div style="font-size: 11px; font-weight: bold; color: #777777; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">{{executiveRoleLine}}</div>
+            <div style="font-size: 11px; font-weight: bold; color: #777777; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">{{executiveRoleLine}}</div>
             {{/if}}
             {{#if hasExecutiveContactLine}}
             <div style="font-size: 12px; color: #555555;">
@@ -49,10 +49,10 @@ export const EXECUTIVE_MINIMALIST_SIGNATURE_TEMPLATE = `<table class="sig-execut
     </td>
   </tr>
   <tr>
-    <td style="padding-top: 10px;">
+    <td style="padding-top: 12px;">
       {{#if hasExecutiveSocialLine}}
       <div style="font-size: 10px; color: #888888; text-transform: uppercase; margin-bottom: 4px;">
-        <strong>Connect:</strong> &nbsp;
+        <strong style="color:{{primaryColor}};">Connect:</strong> &nbsp;
         {{executiveSocialLineHtml}}
       </div>
       {{/if}}

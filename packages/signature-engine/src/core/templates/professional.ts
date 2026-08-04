@@ -56,7 +56,7 @@ export const PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
     <td colspan="3" style="padding:0;">
       <table cellpadding="0" cellspacing="0" border="0" width="100%" role="presentation" style="border-collapse:collapse;width:100%;">
         <tr>
-          <td bgcolor="{{primaryColor}}" height="8" style="font-size:0;line-height:0;mso-line-height-rule:exactly;padding:0;height:8px;background-color:{{primaryColor}};border:0;">&nbsp;</td>
+          <td bgcolor="{{primaryColor}}" height="5" style="font-size:0;line-height:0;mso-line-height-rule:exactly;padding:0;height:5px;background-color:{{primaryColor}};border:0;">&#8204;</td>
         </tr>
       </table>
     </td>
@@ -159,7 +159,7 @@ export const PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
     <td colspan="3" style="padding:8px 10px 10px 10px;">
       <table cellpadding="0" cellspacing="0" border="0" width="100%" role="presentation" style="border-collapse:collapse;width:100%;">
         <tr>
-          <td bgcolor="#f3f4f6" style="font-size:11px;line-height:1.4;mso-line-height-rule:exactly;padding:10px 12px;background-color:#f3f4f6;border:0;border-radius:0 0 10px 10px;color:{{primaryColor}};font-family:{{fontFamily}}, Arial, Helvetica, sans-serif;font-weight:600;letter-spacing:0.3px;text-align:left;">
+          <td bgcolor="#f3f4f6" style="font-size:11px;line-height:1.4;mso-line-height-rule:exactly;padding:10px 14px;background-color:#f3f4f6;border:0;border-radius:0 0 14px 14px;color:{{primaryColor}};font-family:{{fontFamily}}, Arial, Helvetica, sans-serif;font-weight:600;letter-spacing:0.4px;text-align:left;">
             {{companyName}}
           </td>
         </tr>

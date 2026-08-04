@@ -44,6 +44,7 @@ const PATCHABLE_FIELDS = [
   'utmEnabled',
   'brandOrder',
   'hiddenFields',
+  'fieldStyles',
 ] as const;
 
 const OWNER_ONLY_FIELDS = ['employeesCanEditBrand', 'employeesCanEditPromoBlocks'] as const;
@@ -66,6 +67,7 @@ const MEMBER_BRAND_FIELDS = [
   'animation',
   'brandOrder',
   'hiddenFields',
+  'fieldStyles',
 ] as const;
 
 type PatchableField = (typeof PATCHABLE_FIELDS)[number];

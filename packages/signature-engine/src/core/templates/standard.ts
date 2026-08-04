@@ -67,7 +67,7 @@ export const STANDARD_SIGNATURE_TEMPLATE = `<style type="text/css">
 </style>
 <table class="sig-root-layout-table" cellpadding="0" cellspacing="0" border="0" width="100%" style="font-family: {{fontFamily}}, Arial, Helvetica, sans-serif; font-size:14px; color:#1a1a1a; line-height:1.4;width:100%;max-width:660px;">
   <tr>
-    <td class="sig-logo-stack" width="{{logoWidth}}" style="vertical-align:top;line-height:0;font-size:0;padding-right:24px;width:{{logoWidth}}px;">
+    <td class="sig-logo-stack" width="{{logoWidth}}" style="vertical-align:top;line-height:0;font-size:0;padding-right:18px;width:{{logoWidth}}px;">
       <table class="sig-logo-address-group" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:auto;">
         <tr>
           {{#if hasLogo}}
@@ -90,13 +90,13 @@ export const STANDARD_SIGNATURE_TEMPLATE = `<style type="text/css">
         </tr>
       </table>
     </td>
-    <td class="sig-main-stack" style="vertical-align:top; border-left:2px solid {{primaryColor}}; padding-left:13px;padding-right:9px;">
+    <td class="sig-main-stack" style="vertical-align:top; border-left:2px solid {{primaryColor}}; padding-left:14px;padding-right:9px;mso-line-height-rule:exactly;">
       {{#if hasOrderedMainStack}}
       {{orderedMainStackHtml}}
       {{/if}}
 
       {{#if showSocialBlock}}
-      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:10px;"><tr>
+      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:8px;"><tr>
         {{#if hasLinkedin}}
         <td style="{{socialTdLiStyle}}"><a href="{{linkedin}}" style="text-decoration:none;border:0;outline:none;display:inline-block;"><img src="{{iconLinkedin}}" width="16" height="16" border="0" alt="" style="display:block;border:0;outline:none;text-decoration:none;" /></a></td>
         {{/if}}

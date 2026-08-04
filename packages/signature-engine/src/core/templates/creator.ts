@@ -6,7 +6,7 @@ export const CREATOR_SIGNATURE_TEMPLATE = `<table class="sig-creator-root" cellp
     <td style="padding: 20px;">
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse: collapse;">
         <tr>
-          <td width="120" valign="top" style="text-align: center; padding-right: 20px; border-right: 1px solid #3f4147;">
+          <td width="130" valign="top" style="text-align: center; padding-right: 20px; border-right: 1px solid {{creatorPanelColor}};">
             {{#if hasLogo}}
             <table cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse: collapse; margin: 0 auto;">
               <tr>

@@ -8,6 +8,8 @@ export type {
   ContentBlockListItem,
   PromoUrlPrefix,
   RenderSignatureInput,
+  FieldStyleOverride,
+  StylableField,
 } from './core/types';
 
 export {

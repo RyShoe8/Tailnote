@@ -72,7 +72,7 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
   }
 }
 </style>
-<table class="sig-mp-card-shell" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;max-width:660px;width:100%;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background-color:#ffffff;">
+<table class="sig-mp-card-shell" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0;max-width:660px;width:100%;border:1px solid {{primaryColor}};border-radius:12px;overflow:hidden;background-color:#ffffff;opacity:1;">
   <tr>
     <td style="padding:16px 18px;">
       <table class="sig-mp-header-layout-table" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;font-family: {{fontFamily}}, Arial, Helvetica, sans-serif; font-size:14px; color:#111827; line-height:1.3;">
@@ -80,17 +80,17 @@ export const MODERN_PROFESSIONAL_SIGNATURE_TEMPLATE = `<style type="text/css">
           <!-- Left Column: Social Icons -->
           {{#if showSocialBlock}}
           <td data-sig-field="socialLinks" class="sig-social-col" width="40" valign="top" style="vertical-align:top;padding-right:12px;">
-            <table class="sig-mp-social-pill" cellpadding="0" cellspacing="0" border="0" height="100%" style="height:100%;border-collapse:separate;border:1px solid #e5e7eb;border-radius:24px;width:40px;text-align:center;">
+            <table class="sig-mp-social-pill" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border:1px solid #e5e7eb;border-radius:24px;width:40px;text-align:center;">
               <tr><td valign="middle" align="center" style="vertical-align:middle;text-align:center;padding:8px 0;">
                 <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
-                  {{#if hasWebsite}}<tr><td style="padding-bottom:16px;"><a href="{{website}}"><img src="{{iconGlobe}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasLinkedin}}<tr><td style="padding-bottom:16px;"><a href="{{linkedin}}"><img src="{{iconLinkedin}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasInstagram}}<tr><td style="padding-bottom:16px;"><a href="{{instagram}}"><img src="{{iconInstagram}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasFacebook}}<tr><td style="padding-bottom:16px;"><a href="{{facebook}}"><img src="{{iconFacebook}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasYoutube}}<tr><td style="padding-bottom:16px;"><a href="{{youtube}}"><img src="{{iconYoutube}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasReddit}}<tr><td style="padding-bottom:16px;"><a href="{{reddit}}"><img src="{{iconReddit}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasDiscord}}<tr><td style="padding-bottom:16px;"><a href="{{discord}}"><img src="{{iconDiscord}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
-                  {{#if hasBluesky}}<tr><td style="padding-bottom:16px;"><a href="{{bluesky}}"><img src="{{iconBluesky}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasWebsite}}<tr><td style="padding-bottom:10px;"><a href="{{website}}"><img src="{{iconGlobe}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasLinkedin}}<tr><td style="padding-bottom:10px;"><a href="{{linkedin}}"><img src="{{iconLinkedin}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasInstagram}}<tr><td style="padding-bottom:10px;"><a href="{{instagram}}"><img src="{{iconInstagram}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasFacebook}}<tr><td style="padding-bottom:10px;"><a href="{{facebook}}"><img src="{{iconFacebook}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasYoutube}}<tr><td style="padding-bottom:10px;"><a href="{{youtube}}"><img src="{{iconYoutube}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasReddit}}<tr><td style="padding-bottom:10px;"><a href="{{reddit}}"><img src="{{iconReddit}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasDiscord}}<tr><td style="padding-bottom:10px;"><a href="{{discord}}"><img src="{{iconDiscord}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
+                  {{#if hasBluesky}}<tr><td style="padding-bottom:10px;"><a href="{{bluesky}}"><img src="{{iconBluesky}}" width="18" height="18" style="display:block;width:18px;height:18px;" /></a></td></tr>{{/if}}
                 </table>
               </td></tr>
             </table>

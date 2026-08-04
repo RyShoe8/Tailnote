@@ -4,7 +4,7 @@
  * Card background uses {{primaryColor}}; panel/border colors are derived in the renderer.
  * Accent color uses {{secondaryColor}} (falls back to primaryColor in renderer).
  */
-export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:460px;width:100%;font-family:{{fontFamily}},-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background-color:{{primaryColor}};border-radius:24px;color:#F4F7F6;border:1px solid {{portfolioBorderColor}};">
+export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:460px;width:100%;font-family:{{fontFamily}},-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background-color:{{primaryColor}};border-radius:16px;color:#F4F7F6;border:1px solid {{portfolioBorderColor}};">
   <tr>
     <td style="padding:24px;text-align:center;">
       {{#if hasLogo}}
@@ -13,10 +13,10 @@ export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" c
           <td align="center" style="line-height:0;font-size:0;">
             <a href="{{logoLink}}" style="text-decoration:none;border:0;outline:none;display:block;">
               {{#if hasLogoSizedHeight}}
-              <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" style="display:block;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;max-width:{{logoWidth}}px;border-radius:{{logoImgBorderRadius}};border:3px solid {{secondaryColor}};background-color:#ffffff;" />
+              <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" height="{{logoDisplayHeight}}" style="display:block;width:{{logoWidth}}px;height:{{logoDisplayHeight}}px;max-width:{{logoWidth}}px;border-radius:{{logoImgBorderRadius}};border:2px solid {{secondaryColor}};background-color:#ffffff;" />
               {{/if}}
               {{#if hasLogoAutoHeight}}
-              <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:auto;border-radius:{{logoImgBorderRadius}};border:3px solid {{secondaryColor}};background-color:#ffffff;" />
+              <img src="{{logoUrl}}" alt="{{companyName}}" width="{{logoWidth}}" style="display:block;max-width:{{logoWidth}}px;width:{{logoWidth}}px;height:auto;border-radius:{{logoImgBorderRadius}};border:2px solid {{secondaryColor}};background-color:#ffffff;" />
               {{/if}}
             </a>
           </td>
@@ -27,7 +27,7 @@ export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" c
       <div data-sig-field="name" style="font-size:18px;font-weight:700;color:#FFFFFF;margin-bottom:2px;letter-spacing:-0.3px;">{{fullName}}</div>
       {{/if}}
       {{#if hasPortfolioRoleLine}}
-      <div style="font-size:11px;color:{{secondaryColor}};font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:20px;">{{portfolioRoleLine}}</div>
+      <div style="font-size:11px;color:{{secondaryColor}};font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:18px;">{{portfolioRoleLine}}</div>
       {{/if}}
       {{#if hasPortfolioContactPills}}
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin-bottom:4px;">
@@ -38,7 +38,7 @@ export const PORTFOLIO_SIGNATURE_TEMPLATE = `<table class="sig-portfolio-root" c
       {{portfolioNetworkSectionHtml}}
       {{/if}}
       {{#if showSocialBlock}}
-      <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:18px auto 0 auto;border-collapse:collapse;border-top:1px solid {{portfolioPanelColor}};width:100%;">
+      <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:14px auto 0 auto;border-collapse:collapse;border-top:1px solid {{portfolioPanelColor}};width:100%;">
         <tr>
           <td style="padding-top:14px;text-align:center;line-height:0;font-size:0;">
             <table cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:collapse;">

@@ -1,4 +1,4 @@
-import type { SignatureLayout } from './types';
+import type { SignatureLayout, FieldStyleOverride, StylableField } from './types';
 import {
   getLayoutReorderRules,
   resolveFieldOrder,
@@ -59,7 +59,38 @@ export type OrderedContactBuildInput = {
   portfolioAccentColor?: string;
   portfolioCardTextColor?: string;
   formatPortfolioPhoneDisplay?: (phone: string) => string;
+  /** Per-field style overrides (font, color, size). */
+  fieldStyles?: Partial<Record<StylableField, FieldStyleOverride>>;
 };
+
+/**
+ * Merge per-field style overrides into a base inline CSS string.
+ * The override values are appended, overriding any matching properties.
+ */
+function applyFieldStyle(
+  baseStyle: string,
+  field: StylableField,
+  fieldStyles?: Partial<Record<StylableField, FieldStyleOverride>>,
+): string {
+  if (!fieldStyles) return baseStyle;
+  const override = fieldStyles[field];
+  if (!override) return baseStyle;
+  let style = baseStyle;
+  if (override.fontFamily) {
+    // Remove existing font-family from base
+    style = style.replace(/font-family:[^;]+;?/gi, '');
+    style += `font-family:${escapeHtml(override.fontFamily)};`;
+  }
+  if (override.color) {
+    style = style.replace(/(?<!background-)color:[^;]+;?/gi, '');
+    style += `color:${escapeHtml(override.color)};`;
+  }
+  if (override.fontSize) {
+    style = style.replace(/font-size:[^;]+;?/gi, '');
+    style += `font-size:${escapeHtml(override.fontSize)};`;
+  }
+  return style;
+}
 
 function logoBlock(input: OrderedContactBuildInput): string | undefined {
   if (!input.hasLogo || input.bHidden.includes('logoUrl')) return undefined;
@@ -74,43 +105,53 @@ function logoBlock(input: OrderedContactBuildInput): string | undefined {
 
 function nameBlock(input: OrderedContactBuildInput, style: string): string | undefined {
   if (!input.hasName) return undefined;
-  return `<div data-sig-field="name" style="${style}">${escapeHtml(input.fullName)}</div>`;
+  const s = applyFieldStyle(style, 'name', input.fieldStyles);
+  return `<div data-sig-field="name" style="${s}">${escapeHtml(input.fullName)}</div>`;
 }
 
 function titleBlock(input: OrderedContactBuildInput, style: string): string | undefined {
   if (!input.hasTitle) return undefined;
-  return `<div data-sig-field="title" style="${style}">${escapeHtml(input.title)}</div>`;
+  const s = applyFieldStyle(style, 'title', input.fieldStyles);
+  return `<div data-sig-field="title" style="${s}">${escapeHtml(input.title)}</div>`;
 }
 
 function companyBlock(input: OrderedContactBuildInput, style: string): string | undefined {
   if (!input.companyName.trim() || input.bHidden.includes('companyName')) return undefined;
-  return `<div data-sig-field="companyName" style="${style}">${escapeHtml(input.companyName)}</div>`;
+  const s = applyFieldStyle(style, 'companyName', input.fieldStyles);
+  return `<div data-sig-field="companyName" style="${s}">${escapeHtml(input.companyName)}</div>`;
 }
 
 function addressBlock(input: OrderedContactBuildInput): string | undefined {
   if (!input.showAddressBlock || !input.addressBlockHtml) return undefined;
-  return `<div data-sig-field="address" style="font-size:12px;color:#555;line-height:1.35;margin-bottom:8px;">${input.addressBlockHtml}</div>`;
+  const s = applyFieldStyle('font-size:12px;color:#555;line-height:1.35;margin-bottom:8px;', 'address', input.fieldStyles);
+  return `<div data-sig-field="address" style="${s}">${input.addressBlockHtml}</div>`;
 }
 
 function websiteBlock(input: OrderedContactBuildInput, style: string): string | undefined {
   if (!input.website || input.bHidden.includes('website')) return undefined;
-  return `<div data-sig-field="website" style="${style}"><a href="${escapeHtml(input.website)}" style="color:inherit;text-decoration:none;">${escapeHtml(input.websiteDisplay)}</a></div>`;
+  const s = applyFieldStyle(style, 'website', input.fieldStyles);
+  return `<div data-sig-field="website" style="${s}"><a href="${escapeHtml(input.website)}" style="color:inherit;text-decoration:none;">${escapeHtml(input.websiteDisplay)}</a></div>`;
 }
 
 const CONTACT_FIELDS = new Set(['email', 'officePhone', 'mobilePhone', 'website']);
 
 function defaultContactInlinePart(input: OrderedContactBuildInput, field: string): string | undefined {
+  const fs = input.fieldStyles;
   if (field === 'officePhone' && input.officePhone) {
-    return `<span data-sig-field="officePhone"><span style="font-weight:600;color:#111111;">P:&nbsp;</span><a href="${escapeHtml(input.officePhoneTelHref)}" style="color:#555555;text-decoration:none;">${escapeHtml(input.officePhone)}</a></span>`;
+    const linkColor = fs?.officePhone?.color ?? '#555555';
+    return `<span data-sig-field="officePhone"><span style="font-weight:600;color:#111111;">P:&nbsp;</span><a href="${escapeHtml(input.officePhoneTelHref)}" style="color:${escapeHtml(linkColor)};text-decoration:none;">${escapeHtml(input.officePhone)}</a></span>`;
   }
   if (field === 'mobilePhone' && input.mobilePhone) {
-    return `<span data-sig-field="mobilePhone"><span style="font-weight:600;color:#111111;">P:&nbsp;</span><a href="${escapeHtml(input.mobilePhoneTelHref)}" style="color:#555555;text-decoration:none;">${escapeHtml(input.mobilePhone)}</a></span>`;
+    const linkColor = fs?.mobilePhone?.color ?? '#555555';
+    return `<span data-sig-field="mobilePhone"><span style="font-weight:600;color:#111111;">P:&nbsp;</span><a href="${escapeHtml(input.mobilePhoneTelHref)}" style="color:${escapeHtml(linkColor)};text-decoration:none;">${escapeHtml(input.mobilePhone)}</a></span>`;
   }
   if (field === 'email' && input.email && !input.pHidden.includes('email')) {
-    return `<span data-sig-field="email"><span style="font-weight:600;color:#111111;">E:&nbsp;</span><a href="mailto:${escapeHtml(input.email)}" style="color:#555555;text-decoration:none;">${escapeHtml(input.email)}</a></span>`;
+    const linkColor = fs?.email?.color ?? '#555555';
+    return `<span data-sig-field="email"><span style="font-weight:600;color:#111111;">E:&nbsp;</span><a href="mailto:${escapeHtml(input.email)}" style="color:${escapeHtml(linkColor)};text-decoration:none;">${escapeHtml(input.email)}</a></span>`;
   }
   if (field === 'website' && input.website && !input.bHidden.includes('website')) {
-    return `<span data-sig-field="website"><span style="font-weight:600;color:#111111;">W:&nbsp;</span><a href="${escapeHtml(input.website)}" style="color:#555555;text-decoration:none;">${escapeHtml(input.websiteDisplay)}</a></span>`;
+    const linkColor = fs?.website?.color ?? '#555555';
+    return `<span data-sig-field="website"><span style="font-weight:600;color:#111111;">W:&nbsp;</span><a href="${escapeHtml(input.website)}" style="color:${escapeHtml(linkColor)};text-decoration:none;">${escapeHtml(input.websiteDisplay)}</a></span>`;
   }
   return undefined;
 }

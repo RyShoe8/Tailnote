@@ -1411,6 +1411,7 @@ export function mergeRenderContext(
     portfolioAccentColor: brandSecondaryColor,
     portfolioCardTextColor: brandPrimaryColor,
     formatPortfolioPhoneDisplay,
+    fieldStyles: brand.fieldStyles,
   };
 
   const orderedMainStackLayouts = new Set([
@@ -1783,18 +1784,38 @@ export function renderSignature(input: RenderSignatureInput): string {
     html = appendUtmParams(html, utm);
   }
 
-  // Inject Google Fonts stylesheet if applicable
-  const primaryFont = (brand.fontFamily || '').split(',')[0].replace(/['"]/g, '').trim();
+  // Inject Google Fonts stylesheet if applicable — use @import inside <style>
+  // so it works when injected via dangerouslySetInnerHTML (browsers ignore <link>
+  // tags placed inside <div> elements).
   const googleFonts = new Set([
     'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Poppins', 'Raleway', 'Nunito', 
     'Work Sans', 'DM Sans', 'Manrope', 'Rubik', 'Outfit', 'Merriweather', 'Playfair Display', 'PT Serif'
   ]);
   
-  if (googleFonts.has(primaryFont)) {
-    const formattedFontName = primaryFont.replace(/\s+/g, '+');
-    const fontLink = `<link href="https://fonts.googleapis.com/css2?family=${formattedFontName}:wght@400;500;600;700&display=swap" rel="stylesheet" />\n`;
-    html = fontLink + html;
+  // Collect all fonts that need loading: primary + any fieldStyle overrides
+  const fontsToLoad = new Set<string>();
+  const primaryFont = (brand.fontFamily || '').split(',')[0].replace(/['"]/g, '').trim();
+  if (googleFonts.has(primaryFont)) fontsToLoad.add(primaryFont);
+  
+  if (brand.fieldStyles) {
+    for (const override of Object.values(brand.fieldStyles)) {
+      if (override?.fontFamily) {
+        const fieldFont = override.fontFamily.split(',')[0].replace(/['"]/g, '').trim();
+        if (googleFonts.has(fieldFont)) fontsToLoad.add(fieldFont);
+      }
+    }
+  }
+  
+  if (fontsToLoad.size > 0) {
+    const imports = [...fontsToLoad]
+      .map((f) => {
+        const formatted = f.replace(/\s+/g, '+');
+        return `@import url('https://fonts.googleapis.com/css2?family=${formatted}:wght@400;500;600;700&display=swap');`;
+      })
+      .join('\n');
+    html = `<style type="text/css">\n${imports}\n</style>\n` + html;
   }
 
   return html;
 }
+

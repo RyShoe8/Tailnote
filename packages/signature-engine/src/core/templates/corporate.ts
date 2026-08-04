@@ -75,7 +75,7 @@ export const CORPORATE_SIGNATURE_TEMPLATE = `<style type="text/css">
     <td colspan="3" style="padding:0;">
       <table cellpadding="0" cellspacing="0" border="0" width="100%" role="presentation" style="border-collapse:collapse;width:100%;">
         <tr>
-          <td bgcolor="{{primaryColor}}" height="3" style="font-size:0;line-height:0;mso-line-height-rule:exactly;padding:0;height:3px;background-color:{{primaryColor}};border:0;">&nbsp;</td>
+          <td bgcolor="{{primaryColor}}" height="4" style="font-size:0;line-height:0;mso-line-height-rule:exactly;padding:0;height:4px;background-color:{{primaryColor}};border:0;border-radius:2px;">&#8204;</td>
         </tr>
       </table>
     </td>
@@ -85,7 +85,7 @@ export const CORPORATE_SIGNATURE_TEMPLATE = `<style type="text/css">
       <table class="sig-corp-header-layout-table" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;width:100%;">
         <tr>
           <!-- Logo column -->
-          <td class="sig-corp-logo-stack" width="{{logoWidth}}" style="vertical-align:top;line-height:0;font-size:0;padding-right:28px;width:{{logoWidth}}px;">
+          <td class="sig-corp-logo-stack" width="{{logoWidth}}" style="vertical-align:top;line-height:0;font-size:0;padding-right:20px;width:{{logoWidth}}px;">
             {{#if hasLogo}}
             <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:block;">
 {{#if hasLogoSizedHeight}}
@@ -104,7 +104,7 @@ export const CORPORATE_SIGNATURE_TEMPLATE = `<style type="text/css">
           </td>
 
           <!-- Info column -->
-          <td class="sig-corp-main-stack" style="vertical-align:top; border-left:3px solid {{primaryColor}}; padding-left:13px;padding-right:9px;">
+          <td class="sig-corp-main-stack" style="vertical-align:top; border-left:3px solid {{primaryColor}}; padding-left:14px;padding-right:9px;mso-line-height-rule:exactly;">
             {{#if hasOrderedMainStack}}
             {{orderedMainStackHtml}}
             {{/if}}
@@ -171,7 +171,7 @@ export const CORPORATE_SIGNATURE_TEMPLATE = `<style type="text/css">
     <td colspan="3" style="padding-top:12px;">
       <table cellpadding="0" cellspacing="0" border="0" width="100%" role="presentation" style="border-collapse:collapse;width:100%;">
         <tr>
-          <td bgcolor="{{primaryColor}}" height="28" style="font-size:11px;line-height:28px;mso-line-height-rule:exactly;padding:0 12px;height:28px;background-color:{{primaryColor}};border:0;color:#ffffff;font-family:{{fontFamily}}, Arial, Helvetica, sans-serif;font-weight:500;letter-spacing:0.3px;">
+          <td bgcolor="{{primaryColor}}" height="28" style="font-size:11px;line-height:28px;mso-line-height-rule:exactly;padding:0 14px;height:28px;background-color:{{primaryColor}};border:0;color:#ffffff;font-family:{{fontFamily}}, Arial, Helvetica, sans-serif;font-weight:600;letter-spacing:0.5px;border-radius:2px;">
             {{companyName}}
           </td>
         </tr>

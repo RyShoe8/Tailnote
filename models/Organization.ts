@@ -46,6 +46,8 @@ const OrganizationSchema = new Schema(
     },
     hiddenFields: { type: [String], default: [] },
     brandOrder: { type: [String], default: [] },
+    /** Per-field style overrides (font, color, fontSize) keyed by StylableField name. */
+    fieldStyles: { type: Schema.Types.Mixed, default: undefined },
     /** When true, signature links are rewritten through /api/track/signature for click analytics. */
     signatureClickTrackingEnabled: { type: Boolean, default: true },
     /** When true, a 1×1 tracking pixel is appended to rendered signatures for open analytics. */

@@ -1,7 +1,7 @@
 /** Stacked layout: logo on top, full-width contact below (table-only, inline styles). */
 export const STACKED_SIGNATURE_TEMPLATE = `<table class="sig-stacked-root" cellpadding="0" cellspacing="0" border="0" width="100%" style="font-family: {{fontFamily}}, Arial, Helvetica, sans-serif; font-size:14px; color:#1a1a1a; line-height:1.4;width:100%;max-width:665px;">
   <tr>
-    <td valign="top" width="1%" style="vertical-align:top;line-height:0;font-size:0;padding-bottom:12px;padding-right:12px;white-space:nowrap;width:1%;">
+    <td valign="top" width="1%" style="vertical-align:top;line-height:0;font-size:0;padding-bottom:14px;padding-right:14px;white-space:nowrap;width:1%;">
       {{#if hasLogo}}
       <span data-sig-field="logo">
       <a href="{{logoLink}}" style="text-decoration:none; border:0; outline:none; display:block;">
@@ -28,7 +28,7 @@ export const STACKED_SIGNATURE_TEMPLATE = `<table class="sig-stacked-root" cellp
       {{/if}}
 
       {{#if showSocialBlock}}
-      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:10px;"><tr>
+      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:8px;"><tr>
         {{#if hasLinkedin}}
         <td style="{{socialTdLiStyle}}"><a href="{{linkedin}}" style="text-decoration:none;border:0;outline:none;display:inline-block;"><img src="{{iconLinkedin}}" width="16" height="16" border="0" alt="" style="display:block;border:0;outline:none;text-decoration:none;" /></a></td>
         {{/if}}

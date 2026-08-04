@@ -79,6 +79,24 @@ export type ContentBlockData = {
   customImageUrl?: string;
 };
 
+/** Per-field style override for individual signature fields. */
+export type FieldStyleOverride = {
+  fontFamily?: string;
+  color?: string;
+  fontSize?: string;
+};
+
+/** Valid field names that support per-field styling. */
+export type StylableField =
+  | 'name'
+  | 'title'
+  | 'email'
+  | 'officePhone'
+  | 'mobilePhone'
+  | 'companyName'
+  | 'website'
+  | 'address';
+
 export type SignatureBrand = {
   companyName: string;
   website: string;
@@ -92,6 +110,8 @@ export type SignatureBrand = {
   /** Accent color for Portfolio template; falls back to primaryColor when empty. */
   secondaryColor?: string;
   fontFamily: string;
+  /** Per-field font, color, and size overrides. Keys are StylableField values. */
+  fieldStyles?: Partial<Record<StylableField, FieldStyleOverride>>;
   socialLinks: {
     linkedin?: string;
     facebook?: string;

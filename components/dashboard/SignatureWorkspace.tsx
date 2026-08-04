@@ -81,6 +81,7 @@ type OrgResponse = {
   brandOrder?: string[];
   hiddenFields?: string[];
   spotlightEnabled?: boolean;
+  fieldStyles?: Record<string, { fontFamily?: string; color?: string; fontSize?: string }>;
 };
 
 type OrgPermissions = {
@@ -129,6 +130,7 @@ function orgToBrand(org: OrgResponse, displayName: string): SignatureBrand {
     brandOrder: org.brandOrder ?? [],
     hiddenFields: org.hiddenFields ?? [],
     spotlightEnabled: org.spotlightEnabled ?? false,
+    ...(org.fieldStyles ? { fieldStyles: org.fieldStyles as SignatureBrand['fieldStyles'] } : {}),
   };
 }
 
@@ -466,6 +468,7 @@ export function SignatureWorkspace() {
                 zip: brand.hiddenFields?.includes('zip') ? '' : brand.zip,
                 animation: brand.hiddenFields?.includes('animation') ? undefined : brand.animation,
                 brandOrder: org?.brandOrder ?? [],
+                fieldStyles: brand.fieldStyles,
               },
             }),
           });
@@ -522,6 +525,7 @@ export function SignatureWorkspace() {
     brand.zip,
     brand.animation?.enabled,
     brand.animation?.gifUrl,
+    brand.fieldStyles,
     org?.plan,
     engineTemplate,
     assetOriginNonce,
@@ -678,6 +682,7 @@ export function SignatureWorkspace() {
           spotlightEnabled: org.spotlightEnabled,
           brandOrder: org.brandOrder ?? [],
           hiddenFields: org.hiddenFields ?? [],
+          fieldStyles: org.fieldStyles ?? undefined,
         }),
       });
       const j = await res.json().catch(() => ({}));
@@ -1117,6 +1122,100 @@ export function SignatureWorkspace() {
               </select>
             </div>
 
+            {/* Per-field styling overrides */}
+            <details className="group">
+              <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors select-none">
+                <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-90" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" /></svg>
+                Field Styling
+              </summary>
+              <div className="mt-3 space-y-3 pl-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                <p className="text-xs text-muted-foreground">Override font and color for individual fields. Leave blank to use the global font above.</p>
+                {([
+                  ['name', 'Name'],
+                  ['title', 'Title'],
+                  ['email', 'Email'],
+                  ['officePhone', 'Office Phone'],
+                  ['mobilePhone', 'Mobile Phone'],
+                  ['companyName', 'Company Name'],
+                  ['website', 'Website'],
+                  ['address', 'Address'],
+                ] as const).map(([fieldKey, fieldLabel]) => {
+                  const currentStyle = org.fieldStyles?.[fieldKey] ?? {};
+                  const updateFieldStyle = (prop: string, value: string) => {
+                    setOrg((o) => {
+                      if (!o) return o;
+                      const prevStyles = { ...(o.fieldStyles ?? {}) };
+                      const prevField = prevStyles[fieldKey] ?? {};
+                      const nextField: Record<string, string | undefined> = { ...prevField, [prop]: value || undefined };
+                      // Remove empty overrides
+                      const cleaned: Record<string, string> = {};
+                      for (const [k, v] of Object.entries(nextField)) {
+                        if (v !== undefined && v !== '') cleaned[k] = v;
+                      }
+                      if (Object.keys(cleaned).length > 0) {
+                        prevStyles[fieldKey] = cleaned as { fontFamily?: string; color?: string; fontSize?: string };
+                      } else {
+                        delete prevStyles[fieldKey];
+                      }
+                      const hasStyles = Object.keys(prevStyles).length > 0;
+                      return { ...o, fieldStyles: hasStyles ? prevStyles : undefined } as OrgResponse;
+                    });
+                  };
+                  return (
+                    <div key={fieldKey} className="rounded-lg border bg-muted/30 p-3 space-y-2">
+                      <span className="text-xs font-semibold">{fieldLabel}</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-[10px] text-muted-foreground">Font</Label>
+                          <select
+                            className="flex h-7 w-full rounded border border-input bg-transparent px-2 text-xs"
+                            value={currentStyle.fontFamily ?? ''}
+                            onChange={(e) => updateFieldStyle('fontFamily', e.target.value)}
+                          >
+                            <option value="">Default</option>
+                            {FONT_GROUPS.map((group) => (
+                              <optgroup key={group.label} label={group.label}>
+                                {group.fonts.map((f) => (
+                                  <option key={f.id} value={f.stack}>{f.name}</option>
+                                ))}
+                              </optgroup>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[10px] text-muted-foreground">Color</Label>
+                          <div className="flex gap-1.5 items-center">
+                            <input
+                              type="color"
+                              className="h-7 w-7 rounded border border-input cursor-pointer p-0.5"
+                              value={currentStyle.color || '#000000'}
+                              onChange={(e) => updateFieldStyle('color', e.target.value)}
+                            />
+                            <Input
+                              className="h-7 text-xs flex-1"
+                              placeholder="#000000"
+                              value={currentStyle.color ?? ''}
+                              onChange={(e) => updateFieldStyle('color', e.target.value)}
+                            />
+                            {currentStyle.color && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-1.5 text-[10px]"
+                                onClick={() => updateFieldStyle('color', '')}
+                              >
+                                ✕
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </details>
             {message ? (
               <p
                 className={`text-sm ${messageIsError ? 'text-destructive' : 'text-muted-foreground'}`}
