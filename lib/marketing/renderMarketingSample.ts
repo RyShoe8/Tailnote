@@ -95,7 +95,6 @@ const BRAND_DEFS: MarketingBrandDef[] = [
     primaryColor: '#064E3B',
     secondaryColor: '#34D399',
     logoHeightPx: 60,
-    logoShape: 'circle',
     person: { firstName: 'Sam', lastName: 'Rivera', title: 'Founder', phone: '(555) 419-2203' },
     socialLinks: { linkedin: 'https://www.linkedin.com/company/frugalgambler', reddit: 'https://www.reddit.com/r/frugalgambler', bluesky: 'https://bsky.app/profile/frugalgambler.club' },
     presetId: 'portfolio',

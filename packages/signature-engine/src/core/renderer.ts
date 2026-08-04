@@ -1210,21 +1210,16 @@ export function mergeRenderContext(
   let hasLogoSizedHeight = false;
   let hasLogoAutoHeight = false;
   if (hasLogo) {
-    if (useCircleLogo) {
-      logoDisplayHeightStr = logoWidthStr;
-      hasLogoSizedHeight = true;
+    const resolved = resolveLogoDisplayHeight(
+      parseInt(logoWidthStr, 10) || 110,
+      explicitLogoH ? logoHeightPxRounded : brand.logoHeightPx,
+      useAnimation
+    );
+    if (resolved.useAutoHeight) {
+      hasLogoAutoHeight = true;
     } else {
-      const resolved = resolveLogoDisplayHeight(
-        parseInt(logoWidthStr, 10) || 110,
-        explicitLogoH ? logoHeightPxRounded : brand.logoHeightPx,
-        useAnimation
-      );
-      if (resolved.useAutoHeight) {
-        hasLogoAutoHeight = true;
-      } else {
-        logoDisplayHeightStr = resolved.displayHeight;
-        hasLogoSizedHeight = true;
-      }
+      logoDisplayHeightStr = resolved.displayHeight;
+      hasLogoSizedHeight = true;
     }
   }
 
