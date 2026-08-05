@@ -118,7 +118,7 @@ export default function EmailHealthLandingPage() {
           </p>
         </section>
 
-        <section className="mx-auto mt-20 max-w-4xl" aria-labelledby="score-breakdown-heading">
+        <section className="mx-auto mt-20 max-w-6xl" aria-labelledby="score-breakdown-heading">
           <h2
             id="score-breakdown-heading"
             className="text-center text-3xl font-bold tracking-tight sm:text-4xl"

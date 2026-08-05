@@ -36,43 +36,45 @@ export function TrustCenterPreScan({
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      {showHeading ? (
-        <div className="mx-auto max-w-xl space-y-3 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            {TRUST_CENTER_PRE_SCAN.headline}
-          </h1>
-          <p className="text-muted-foreground">{TRUST_CENTER_PRE_SCAN.intro}</p>
-        </div>
-      ) : null}
-
-      <div className="rounded-2xl border border-slate-200/80 bg-card p-6 shadow-card sm:p-8">
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            {initialDomain
-              ? TRUST_CENTER_PRE_SCAN.scanLead(initialDomain)
-              : TRUST_CENTER_PRE_SCAN.scanLeadGeneric}
-          </p>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Input
-              type="text"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              placeholder="yourcompany.com"
-              required
-              className="h-11 flex-1 text-base"
-            />
-            <Button type="submit" disabled={loading} size="lg" className="gap-2 shrink-0">
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-              ) : (
-                <Search className="h-4 w-4" aria-hidden />
-              )}
-              Scan domain
-            </Button>
+    <div className="mx-auto max-w-6xl space-y-8">
+      <div className="mx-auto max-w-2xl space-y-8">
+        {showHeading ? (
+          <div className="mx-auto max-w-xl space-y-3 text-center">
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              {TRUST_CENTER_PRE_SCAN.headline}
+            </h1>
+            <p className="text-muted-foreground">{TRUST_CENTER_PRE_SCAN.intro}</p>
           </div>
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-        </form>
+        ) : null}
+
+        <div className="rounded-2xl border border-slate-200/80 bg-card p-6 shadow-card sm:p-8">
+          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {initialDomain
+                ? TRUST_CENTER_PRE_SCAN.scanLead(initialDomain)
+                : TRUST_CENTER_PRE_SCAN.scanLeadGeneric}
+            </p>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Input
+                type="text"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                placeholder="yourcompany.com"
+                required
+                className="h-11 flex-1 text-base"
+              />
+              <Button type="submit" disabled={loading} size="lg" className="gap-2 shrink-0">
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <Search className="h-4 w-4" aria-hidden />
+                )}
+                Scan domain
+              </Button>
+            </div>
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          </form>
+        </div>
       </div>
 
       <section className="space-y-3">
