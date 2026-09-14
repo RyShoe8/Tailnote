@@ -657,14 +657,39 @@ export function SpotlightEditorWorkspace({
         return;
       }
 
-      const quoteBlock = contentBlocks.find(b => b.type === 'quote');
-      const quote = quoteBlock?.quoteText || quoteBlock?.customText || 'No quote provided';
-      
+      if (!whyShouldWeFeatureYou.trim()) {
+        setMessage('Please tell us why we should feature you.');
+        setMessageIsError(true);
+        setActiveTab('apply');
+        return;
+      }
+
+      const quoteBlock = contentBlocks.find((b) => b.type === 'quote' && b.enabled !== false);
+      const quoteText = (quoteBlock?.quoteText || quoteBlock?.customText || '').trim();
+      if (!quoteText) {
+        setMessage('Add a quote in Promo Blocks before submitting your Spotlight application.');
+        setMessageIsError(true);
+        setActiveTab('blocks');
+        return;
+      }
+
       const socialLinks = org.socialLinks || {};
       const socialPlatforms = Object.keys(socialLinks).filter((k) => !!socialLinks[k as keyof typeof socialLinks]);
       if (socialPlatforms.length === 0) {
         socialPlatforms.push('website');
       }
+
+      const logoHeightPx =
+        typeof org.logoHeightPx === 'number' && org.logoHeightPx > 0 ? org.logoHeightPx : undefined;
+
+      // Omit empty/disabled quote blocks so Zod does not reject incomplete quoteText.
+      const contentBlocksForSubmit = contentBlocks
+        .filter((b) => {
+          if (b.enabled === false) return false;
+          if (b.type !== 'quote') return true;
+          return Boolean((b.quoteText || b.customText || '').trim());
+        })
+        .slice(0, 2);
 
       const res = await fetch('/api/campaigns/apply', {
         method: isResubmit ? 'PATCH' : 'POST',
@@ -689,8 +714,8 @@ export function SpotlightEditorWorkspace({
           hiddenFields: profile.hiddenFields ?? [],
           brandOrder: org.brandOrder ?? [],
           templateId: selectedTemplateId,
-          contentBlocks,
-          logoHeightPx: org.logoHeightPx,
+          contentBlocks: contentBlocksForSubmit,
+          ...(logoHeightPx !== undefined ? { logoHeightPx } : {}),
           logoShape: org.logoShape,
           logoLink: org.logoLink,
           primaryColor: org.primaryColor,
@@ -702,8 +727,8 @@ export function SpotlightEditorWorkspace({
           zip: org.zip,
           animation: org.animation,
           content: {
-            quote,
-            whyShouldWeFeatureYou,
+            quote: quoteText,
+            whyShouldWeFeatureYou: whyShouldWeFeatureYou.trim(),
           },
           socialPlatforms,
           socialProfiles: socialLinks,
@@ -714,11 +739,21 @@ export function SpotlightEditorWorkspace({
 
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setMessage(typeof j.error === 'string' ? j.error : 'Failed to submit spotlight application.');
+        const details = Array.isArray(j.details) ? j.details : null;
+        if (details && details.length > 0) {
+          const lines = details.slice(0, 3).map((issue: { path?: unknown[]; message?: string }) => {
+            const path = Array.isArray(issue.path) ? issue.path.filter(Boolean).join('.') : '';
+            const msg = typeof issue.message === 'string' ? issue.message : 'Invalid value';
+            return path ? `${path}: ${msg}` : msg;
+          });
+          setMessage(lines.join(' · '));
+        } else {
+          setMessage(typeof j.error === 'string' ? j.error : 'Failed to submit spotlight application.');
+        }
         setMessageIsError(true);
         return;
       }
-      
+
       window.location.href = '/dashboard/spotlight';
     } finally {
       setSaving(false);
@@ -816,7 +851,7 @@ export function SpotlightEditorWorkspace({
             .
           </div>
         ) : null}
-        <div className="flex gap-2 pb-2 overflow-x-auto border-b hide-scrollbar">
+        <div className="flex flex-wrap gap-2 pb-2 border-b">
           {canSeeBrandTab ? (
             <button onClick={() => setActiveTab('brand')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'brand' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Brand</button>
           ) : null}
@@ -824,9 +859,15 @@ export function SpotlightEditorWorkspace({
             <button onClick={() => setActiveTab('blocks')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'blocks' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Promo Blocks</button>
           ) : null}
           <button onClick={() => setActiveTab('details')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'details' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Details</button>
-          <button onClick={() => setActiveTab('install')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'install' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Install</button>
           <button onClick={() => setActiveTab('apply')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'apply' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Apply</button>
+          <button onClick={() => setActiveTab('install')} className={`px-3 py-1.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${activeTab === 'install' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Install</button>
         </div>
+
+        {message && messageIsError ? (
+          <p className="pt-2 text-sm text-destructive" role="alert">
+            {message}
+          </p>
+        ) : null}
 
         <div className="pt-2 min-w-0">
           {activeTab === 'brand' && (
@@ -1181,6 +1222,11 @@ export function SpotlightEditorWorkspace({
                   onChange={setProfile}
                   layout={engineTemplate?.layout}
                 />
+                <div className="pt-4 border-t">
+                  <Button type="button" variant="outline" className="w-full" onClick={() => setActiveTab('apply')}>
+                    Continue to Apply
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}
