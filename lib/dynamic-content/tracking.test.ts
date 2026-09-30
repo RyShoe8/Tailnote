@@ -33,11 +33,13 @@ describe('dynamic content click tracking', () => {
         ],
       },
       template: {
+        id: 'corporate-test',
+        name: 'Corporate test',
         layout: 'corporate',
-        elements: [{ type: 'contentBlocks', enabled: true }],
+        elements: [{ type: 'contentBlocks' }],
       },
       publicSiteOrigin: 'https://tailnote.io',
-    } as RenderSignatureInput;
+    } satisfies RenderSignatureInput;
 
     const out = appendSignatureClickTracking({
       html,

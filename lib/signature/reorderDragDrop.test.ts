@@ -35,8 +35,7 @@ describe('reorderDragDrop', () => {
   });
 
   it('reorderDetailAndContact syncs sidebar and preview order', () => {
-    const reorderable = ['name', 'title', 'email', 'website', 'officePhone', 'mobilePhone'] as const;
-    const next = reorderDetailAndContact(baseProfile, 'email', 'title', reorderable);
+    const next = reorderDetailAndContact(baseProfile, 'email', 'title', 'corporate');
     assert.ok((next.detailOrder?.indexOf('email') ?? 0) < (next.detailOrder?.indexOf('title') ?? 0));
     assert.ok(
       (next.contactDisplayOrder?.indexOf('email') ?? 0) <

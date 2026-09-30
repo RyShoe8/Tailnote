@@ -1,6 +1,5 @@
 import sharp from 'sharp';
 import { optimize } from 'svgo';
-// @ts-expect-error No type definitions for imagetracerjs
 import ImageTracer from 'imagetracerjs';
 import {
   countDistinctColors,
