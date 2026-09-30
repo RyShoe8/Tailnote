@@ -9,6 +9,7 @@ import { OrganizationModel } from '@/models/Organization';
 import { OrganizationSubscriptionModel } from '@/models/OrganizationSubscription';
 import { SignatureTemplateModel } from '@/models/SignatureTemplate';
 import { SubscriptionPlanModel, type SubscriptionPlanDoc } from '@/models/SubscriptionPlan';
+import { PendingOrganizationCheckoutModel } from '@/models/PendingOrganizationCheckout';
 import { seedDefaultTemplates } from '@/lib/seedOrgTemplates';
 import { ensureOwnerEmployee } from '@/lib/employees/ensureOwnerEmployee';
 import { isValidObjectIdString } from '@/lib/admin/data';
@@ -18,11 +19,11 @@ import {
 } from '@/lib/admin/mongoErrors';
 import {
   assignOrganizationPlan,
-  createCheckoutSessionForOrganization,
   isFreemiumSubscriptionPlan,
   shouldAssignPlanWithoutCheckout,
   validatePlanForCheckout,
   CheckoutSessionError,
+  getStripe,
 } from 'billing-engine';
 import { stripeBillingEnabled } from 'billing-engine';
 import { linkUserToOrganization } from '@/lib/onboarding/linkUserToOrganization';
@@ -98,6 +99,43 @@ export async function POST(request: Request) {
         }
         throw e;
       }
+
+      const pending = await PendingOrganizationCheckoutModel.create({
+        userId: user.id,
+        userEmail: user.email ?? '',
+        userName: user.name ?? '',
+        organizationName: parsed.data.name.trim(),
+        subscriptionPlanId: new mongoose.Types.ObjectId(planId),
+      });
+      try {
+        const base = getAppBaseUrl();
+        const postSetupPath = sanitizeInternalRedirect(parsed.data.redirect) ?? '/dashboard';
+        const metadata = {
+          pendingOrganizationCheckoutId: String(pending._id),
+          subscriptionPlanId: planId,
+        };
+        const checkout = await getStripe().checkout.sessions.create({
+          mode: dbPlan.interval === 'lifetime' ? 'payment' : 'subscription',
+          line_items: [{ price: dbPlan.stripeBasePriceId, quantity: 1 }],
+          customer_email: user.email,
+          customer_creation: dbPlan.interval === 'lifetime' ? 'always' : undefined,
+          metadata,
+          ...(dbPlan.interval === 'lifetime' ? {} : {
+            subscription_data: { metadata },
+          }),
+          success_url: `${base}${postSetupPath}`,
+          cancel_url: `${base}/onboarding?checkout=cancelled`,
+        });
+        if (!checkout.url) throw new Error('No checkout URL');
+        await PendingOrganizationCheckoutModel.updateOne(
+          { _id: pending._id },
+          { $set: { checkoutSessionId: checkout.id } }
+        );
+        return NextResponse.json({ checkoutUrl: checkout.url });
+      } catch (err) {
+        await PendingOrganizationCheckoutModel.findByIdAndDelete(pending._id);
+        throw err;
+      }
     }
 
     let org;
@@ -148,19 +186,7 @@ export async function POST(request: Request) {
       const base = getAppBaseUrl();
       const safeRedirect = sanitizeInternalRedirect(parsed.data.redirect);
       const postSetupPath = safeRedirect ?? '/dashboard';
-      const checkoutUrl = assignWithoutCheckout
-        ? `${base}${postSetupPath}`
-        : (
-            await createCheckoutSessionForOrganization({
-              org,
-              userEmail: user.email,
-              subscriptionPlanId: planId,
-              successUrl: `${base}${postSetupPath}`,
-              cancelUrl: `${base}/onboarding?checkout=cancelled`,
-            })
-          ).url;
-
-      return NextResponse.json({ organization: org.toObject(), checkoutUrl });
+      return NextResponse.json({ organization: org.toObject(), checkoutUrl: `${base}${postSetupPath}` });
     } catch (err) {
       logError('api/onboarding/organization', err);
       await rollbackOrg(org._id);

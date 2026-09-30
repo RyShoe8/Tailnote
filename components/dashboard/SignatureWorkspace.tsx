@@ -157,6 +157,7 @@ export function SignatureWorkspace() {
   const isBrandHidden = (field: string) => org?.hiddenFields?.includes(field) ?? false;
 
   const [viewerRole, setViewerRole] = useState<string>('owner');
+  const [viewerPlatformAdmin, setViewerPlatformAdmin] = useState(false);
   const [permissions, setPermissions] = useState<OrgPermissions>({
     employeesCanEditBrand: false,
     employeesCanEditPromoBlocks: false,
@@ -207,6 +208,7 @@ export function SignatureWorkspace() {
       if (typeof oJson.viewer?.role === 'string') {
         setViewerRole(oJson.viewer.role);
       }
+      setViewerPlatformAdmin(oJson.viewer?.platformAdmin === true);
       if (oJson.permissions && typeof oJson.permissions === 'object') {
         const p = oJson.permissions as OrgPermissions;
         setPermissions({
@@ -272,7 +274,7 @@ export function SignatureWorkspace() {
   const isOwner = viewerRole === 'owner';
   const isAdmin = viewerRole === 'admin';
   const isMember = viewerRole === 'member';
-  const canSeeBrandTab = !isMember || permissions.employeesCanEditBrand;
+  const canSeeBrandTab = !isMember || permissions.employeesCanEditBrand || viewerPlatformAdmin;
   const canSeeBlocksTab = !isMember || permissions.employeesCanEditPromoBlocks;
   const canUploadOrgLogo = isOwner || isAdmin;
   const initialTabHandled = useRef(false);

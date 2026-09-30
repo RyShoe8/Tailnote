@@ -1,5 +1,6 @@
 import type mongoose from 'mongoose';
 import type { Model } from 'mongoose';
+import type Stripe from 'stripe';
 
 /** Legacy billing fields mirrored on the host Organization document. */
 export type OrganizationBillingFields = {
@@ -62,6 +63,10 @@ export type BillingEngineConfig = {
     /** Optional marketing bullets appended on pricing cards. */
     planFeatureBullets?: readonly string[];
   };
+
+  completePendingOrganizationCheckout?: (session: Stripe.Checkout.Session) => Promise<string | null>;
+  addAbandonedCheckoutToBrevo?: (session: Stripe.Checkout.Session) => Promise<void>;
+  removeCompletedCheckoutFromBrevo?: (session: Stripe.Checkout.Session) => Promise<void>;
 
   stripe?: {
     legacyPriceIds?: { basic?: string; pro?: string };

@@ -109,11 +109,17 @@ export async function POST(request: Request) {
 
   try {
     switch (event.type) {
-      case 'checkout.session.completed': {
+      case 'checkout.session.completed':
+      case 'checkout.session.async_payment_succeeded': {
         const session = event.data.object as Stripe.Checkout.Session;
-        const orgId = session.metadata?.organizationId;
-        if (!orgId || !session.customer || !validObjectId(orgId)) break;
         if (!isCheckoutSessionPayable(session)) break;
+        const orgId = session.metadata?.pendingOrganizationCheckoutId
+          ? await getBillingContext().completePendingOrganizationCheckout?.(session)
+          : session.metadata?.organizationId;
+        if (session.metadata?.pendingOrganizationCheckoutId && !orgId) {
+          throw new Error('Pending organization checkout could not be completed');
+        }
+        if (!orgId || !session.customer || !validObjectId(orgId)) break;
 
         const customerId = String(session.customer);
         const planDocId = await resolveSubscriptionPlanMongoId(stripe, session);
@@ -202,6 +208,12 @@ export async function POST(request: Request) {
             );
           }
         }
+        await getBillingContext().removeCompletedCheckoutFromBrevo?.(session);
+        break;
+      }
+      case 'checkout.session.expired': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        await getBillingContext().addAbandonedCheckoutToBrevo?.(session);
         break;
       }
       case 'customer.subscription.updated':
@@ -210,7 +222,13 @@ export async function POST(request: Request) {
         const orgId = sub.metadata?.organizationId;
         const isDeleted = event.type === 'customer.subscription.deleted';
         const subscriptionStatus = isDeleted ? 'canceled' : mapSubscriptionStatus(sub.status);
-        const planSlug = isDeleted ? 'none' : organizationPlanForStripeStatus(sub.status);
+        const metadataPlanId = sub.metadata?.subscriptionPlanId;
+        const metadataPlan = metadataPlanId && validObjectId(metadataPlanId)
+          ? await SubscriptionPlanModel.findById(metadataPlanId).select('slug').lean<{ slug?: string }>()
+          : null;
+        const planSlug = isDeleted
+          ? 'none'
+          : metadataPlan?.slug ?? organizationPlanForStripeStatus(sub.status);
 
         const patch: Record<string, unknown> = {
           stripeSubscriptionId: isDeleted ? '' : sub.id,

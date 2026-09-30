@@ -16,6 +16,7 @@ import {
   orgPermissionFlags,
 } from '@/lib/org/permissions';
 import { assertHasDashboardAccess } from '@/lib/dashboard/requireDashboardAccess';
+import { isPlatformAdmin } from '@/lib/auth/platformAdmin';
 
 type SessionUser = {
   id?: string;
@@ -97,6 +98,7 @@ export async function GET() {
   await connectMongoose();
   await unsetLegacyOrgAddressFields(user.organizationId);
   const organization = await OrganizationModel.findById(user.organizationId).lean();
+  const platformAdmin = user.id ? await isPlatformAdmin(user.id) : false;
   const permissions = organization ? orgPermissionFlags(organization as Record<string, unknown>) : null;
   return NextResponse.json({
     organization,
@@ -104,6 +106,7 @@ export async function GET() {
       id: user.id ?? '',
       email: (session.user as { email?: string }).email ?? '',
       role: user.role ?? 'member',
+      platformAdmin,
     },
     permissions,
   });
@@ -128,7 +131,8 @@ export async function PATCH(request: Request) {
 
   const role = user.role ?? 'member';
   const flags = orgPermissionFlags(org);
-  const canEditBrand = memberCanEditOrgBrand(role, flags);
+  const platformAdmin = user.id ? await isPlatformAdmin(user.id) : false;
+  const canEditBrand = memberCanEditOrgBrand(role, flags) || platformAdmin;
 
   if (!canEditBrand) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -157,7 +161,7 @@ export async function PATCH(request: Request) {
 
     if (!isPatchableField(key)) continue;
 
-    if (role === 'member' && !isMemberBrandField(key)) {
+    if (role === 'member' && !platformAdmin && !isMemberBrandField(key)) {
       continue;
     }
 

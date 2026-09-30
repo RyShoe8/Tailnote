@@ -12,8 +12,13 @@ import { buildSubscriptionPaymentFailedEmail } from '@/lib/email/templates/subsc
 import { buildSubscriptionCanceledEmail } from '@/lib/email/templates/subscriptionCanceledEmail';
 import { ensureOwnerEmployeeForOrganization } from '@/lib/employees/ensureOwnerEmployee';
 import { CORE_PRODUCT_FEATURE_BULLETS } from '@/lib/marketing/productFeatures';
+import { completePendingOrganizationCheckout } from '@/lib/onboarding/completePendingOrganizationCheckout';
+import { addAbandonedCheckoutToBrevo, removeCompletedCheckoutFromBrevo } from '@/lib/email/brevoAbandonedCheckout';
 
 export const billing = createBillingEngine({
+  completePendingOrganizationCheckout,
+  addAbandonedCheckoutToBrevo,
+  removeCompletedCheckoutFromBrevo,
   connect: async () => {
     await connectMongoose();
   },
