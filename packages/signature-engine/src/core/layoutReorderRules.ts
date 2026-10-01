@@ -20,7 +20,7 @@ const BRAND_ALL: readonly BrandSupportField[] = [
   'socialLinks',
   'logo',
 ];
-const BRAND_NO_COMPANY: readonly BrandSupportField[] = ['website', 'address', 'socialLinks', 'logo'];
+const BRAND_NO_ADDRESS: readonly BrandSupportField[] = ['companyName', 'website', 'socialLinks', 'logo'];
 const BRAND_NO_COMPANY_NO_ADDRESS: readonly BrandSupportField[] = ['website', 'socialLinks', 'logo'];
 
 const MP_FIELDS = ['logo', 'name', 'title', 'email', 'website'] as const;
@@ -71,25 +71,25 @@ const RULES: Record<SignatureLayout, LayoutReorderRules> = {
     layout: 'creator',
     reorderableFields: CREATOR_FIELDS,
     fixedFields: ['socialLinks', 'contentBlocks'],
-    supportedBrandFields: BRAND_NO_COMPANY,
+    supportedBrandFields: BRAND_ALL,
   },
   executive_minimalist: {
     layout: 'executive_minimalist',
     reorderableFields: CREATOR_FIELDS,
     fixedFields: ['logo', 'socialLinks', 'contentBlocks'],
-    supportedBrandFields: BRAND_NO_COMPANY,
+    supportedBrandFields: BRAND_ALL,
   },
   portfolio: {
     layout: 'portfolio',
     reorderableFields: PORTFOLIO_FIELDS,
     fixedFields: ['logo', 'socialLinks', 'contentBlocks'],
-    supportedBrandFields: BRAND_NO_COMPANY_NO_ADDRESS,
+    supportedBrandFields: BRAND_NO_ADDRESS,
   },
   ecard: {
     layout: 'ecard',
     reorderableFields: PORTFOLIO_FIELDS,
     fixedFields: ['logo', 'socialLinks', 'contentBlocks'],
-    supportedBrandFields: BRAND_NO_COMPANY_NO_ADDRESS,
+    supportedBrandFields: BRAND_NO_ADDRESS,
   },
 };
 

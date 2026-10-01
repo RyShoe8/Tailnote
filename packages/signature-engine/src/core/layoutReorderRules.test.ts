@@ -86,4 +86,12 @@ describe('layoutReorderRules', () => {
     assert.ok(stacked.brandFieldsInLayout.includes('website'));
     assert.ok(!stacked.brandFieldsInLayout.includes('companyName'));
   });
+
+  it('exposes organization name for layouts that render it in their role line', () => {
+    for (const layout of ['creator', 'executive_minimalist', 'portfolio', 'ecard'] as const) {
+      const fields = getLayoutEditorFields(layout);
+      assert.ok(fields.supportedBrandFields.includes('companyName'), layout);
+      assert.ok(!fields.brandFieldsInLayout.includes('companyName'), layout);
+    }
+  });
 });
