@@ -8,7 +8,7 @@ import { presetToEngineTemplate } from '@/lib/email/templatePresets';
 const label = z.string().trim().min(1).max(120);
 const https = z.string().max(2000).url().regex(/^https:\/\//);
 const concept = z.object({
-  logoHeightPx: z.number().int().min(24).max(240), email: z.string().email().max(254), phone: z.string().max(50).default(''), feed: z.union([https, z.literal('')]), feedXml: z.string().max(600000),
+  logoHeightPx: z.number().int().min(24).max(240), email: z.string().email().max(254), feed: z.union([https, z.literal('')]), feedXml: z.string().max(600000),
   company: label, website: https, logo: https, first_name: label, last_name: label, role: label,
   primary_color: z.string().regex(/^#[a-f\d]{6}$/i), secondary_color: z.string().regex(/^#[a-f\d]{6}$/i),
   preset: z.enum(['portfolio', 'creator', 'modern_professional']),
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     ? { type: 'book_a_call', enabled: true, callUrl: c.cta_url, callButtonText: c.cta_label, callTitle: c.cta_label }
     : { type: 'list', enabled: true, listTitle: 'Explore', listItems: [{ title: c.cta_label, url: c.cta_url }] };
   const render = (preset: typeof c.preset) => renderSignature({
-    profile: { firstName: c.first_name, lastName: c.last_name, title: c.role, email: c.email, officePhone: c.phone || undefined },
+    profile: { firstName: c.first_name, lastName: c.last_name, title: c.role, email: c.email },
     brand: { companyName: c.company, website: c.website, logoUrl: c.logo, logoHeightPx: c.logoHeightPx, logoLink: c.website, primaryColor: c.primary_color,
       secondaryColor: c.secondary_color, fontFamily: 'Arial', socialLinks: { [c.social.startsWith('https://bsky.app/') ? 'bluesky' : 'facebook']: c.social }, contentBlocks: [...promo, block] },
     template: presetToEngineTemplate(preset, 'outreach-concept'), publicSiteOrigin: 'https://tailnote.io',
